@@ -2078,6 +2078,7 @@ function AdventureTab({ game, profile, pokemon, caught, toggleCaught, obtainedMe
   if (!selectedChapterId) {
     return (
       <>
+        <div className="adv-grid-scroll">
         <div className="adv-ch-grid">
           {chapters.map((ch, idx) => {
             const comp     = chapterCompletion(ch)
@@ -2121,6 +2122,7 @@ function AdventureTab({ game, profile, pokemon, caught, toggleCaught, obtainedMe
               </button>
             )
           })}
+        </div>
         </div>
 
         {lockedModal && (() => {
@@ -2195,6 +2197,7 @@ function AdventureTab({ game, profile, pokemon, caught, toggleCaught, obtainedMe
 
         {/* Grille de zones */}
         {!selZone && (
+          <div className="adv-grid-scroll">
           <div className="adv-zone-grid">
             {chZones.map(zone => {
               const comp  = zoneCompletion(zone)
@@ -2230,6 +2233,7 @@ function AdventureTab({ game, profile, pokemon, caught, toggleCaught, obtainedMe
                 </button>
               )
             })}
+          </div>
           </div>
         )}
 

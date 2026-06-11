@@ -2988,6 +2988,14 @@ button, a, [role="button"] { cursor: none; }
 
 .lgd-empty-icon { font-size: 2.5rem; }
 
+/* ── Wrapper scrollable partagé chapitres + zones ── */
+.adv-grid-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
 /* ── Grille chapitres ─────────────────────────────── */
 .adv-ch-grid {
   display: grid;
@@ -2995,8 +3003,6 @@ button, a, [role="button"] { cursor: none; }
   grid-auto-rows: 1fr;
   gap: 1rem;
   padding: 1.25rem;
-  flex: 1;
-  min-height: 0;
   box-sizing: border-box;
 }
 
@@ -3150,8 +3156,6 @@ button, a, [role="button"] { cursor: none; }
   grid-auto-rows: 1fr;
   gap: 12px;
   padding: 14px;
-  flex: 1;
-  min-height: 0;
   box-sizing: border-box;
 }
 
@@ -8837,22 +8841,13 @@ button, a, [role="button"] { cursor: none; }
 
   /* ── 4. GRILLE DES CHAPITRES ───────────────────────────────────────────── */
 
-  /* gd-screen a overflow:hidden + flex:column → adv-ch-grid remplit toute la hauteur avec flex:1
-     Sur mobile il faut le détacher du flex et le rendre scrollable verticalement */
+  /* adv-grid-scroll (wrapper) gère le flex:1 + overflow-y:auto
+     adv-ch-grid n'a plus besoin de flex — juste 2 colonnes */
   .adv-ch-grid {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    grid-auto-rows: auto !important;
-    flex: unset !important;
-    flex-direction: unset !important;
-    flex-wrap: unset !important;
-    overflow-x: hidden !important;
-    overflow-y: auto !important;
-    height: 100% !important;
-    max-height: 100% !important;
-    gap: 12px !important;
-    padding: 12px !important;
-    align-items: unset !important;
+    grid-template-columns: 1fr 1fr;
+    grid-auto-rows: auto;
+    gap: 12px;
+    padding: 12px;
   }
 
   .adv-ch-tile {
@@ -8915,13 +8910,10 @@ button, a, [role="button"] { cursor: none; }
 
   /* ── 5. GRILLE DES ZONES ───────────────────────────────────────────────── */
 
+  /* adv-grid-scroll gère le scroll — zone-grid juste 2 colonnes */
   .adv-zone-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    grid-auto-rows: auto !important;
-    flex: unset !important;
-    height: 100% !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: auto;
     gap: 8px;
     padding: 10px;
   }
