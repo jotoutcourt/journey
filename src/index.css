@@ -8707,7 +8707,8 @@ button, a, [role="button"] { cursor: none; }
 @media (max-width: 767px) {
 
   /* ── DIAGNOSTIC — supprimer une fois confirmé ── */
-  .gd-nav { border-top: 3px solid #e63946 !important; }
+  body { outline: 4px solid red !important; }
+  .cs-title { color: #e63946 !important; }
 
   /* ── BASE ─────────────────────────────────────────────────────────────────── */
   html { font-size: 14px; }
