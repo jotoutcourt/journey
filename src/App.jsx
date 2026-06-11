@@ -3002,7 +3002,7 @@ function GameScreen({ game, cart, onBack, isDark, toggleTheme, onTabChange, onOp
     >
       {/* En-tête */}
       <header className="gd-header">
-        {/* Slot cartouche — masqué sur mobile */}
+        {/* Slot cartouche (desktop) / titre Journey Tracker (mobile) */}
         <div className="gd-slot">
           {cart && (
             <div
@@ -3020,6 +3020,8 @@ function GameScreen({ game, cart, onBack, isDark, toggleTheme, onTabChange, onOp
               />
             </div>
           )}
+          <span className="gd-header-title">Journey Tracker</span>
+          <button className="gd-home-btn" onClick={onBack} title={t('header.eject')} aria-label={t('header.eject')}>⌂</button>
         </div>
 
         <div className="gd-header-center">
@@ -3031,8 +3033,6 @@ function GameScreen({ game, cart, onBack, isDark, toggleTheme, onTabChange, onOp
             <span className="gd-hdr-btn-icon">🧩</span>
             <span>{t('header.tools')}</span>
           </button>
-          {/* Mobile : titre */}
-          <span className="gd-header-title">Journey Tracker</span>
         </div>
 
         <div className="gd-header-right">

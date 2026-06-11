@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { GBACart } from './GBACart.jsx'
 import { useT } from './i18n/index.jsx'
+import OnlineCounter from './OnlineCounter.jsx'
 
 const BMAC_URL = import.meta.env.VITE_BMAC_URL || 'https://buymeacoffee.com/jordanjoin'
 
@@ -28,6 +29,7 @@ const CARTS = [
     gradient: 'linear-gradient(160deg, #b01010 0%, #6a0808 100%)',
     accent: '#ff5533',
     available: true,
+    beta: true,
   },
   {
     id: 'alphasapphire',
@@ -35,7 +37,7 @@ const CARTS = [
     color: '#1155cc',
     gradient: 'linear-gradient(160deg, #1155cc 0%, #0a2e80 100%)',
     accent: '#55aaff',
-    available: true,
+    available: false,
   },
 ]
 
@@ -88,6 +90,7 @@ export function ConsoleScreen({ games, onSelectGame, returningCartId, onOpenBugR
                   accent={cart.accent}
                   available={cart.available}
                 />
+                {cart.beta && <span className="cart-beta-badge">BETA</span>}
                 <div className="cart-hover-name" style={{ '--cc': cart.color }}>
                   {cart.available ? `Pokémon ${cart.name}` : 'Bientôt disponible'}
                 </div>
@@ -101,6 +104,7 @@ export function ConsoleScreen({ games, onSelectGame, returningCartId, onOpenBugR
 
       <footer className="app-footer">
         <span className="app-footer-text">Pokémon Journey Tracker — Projet fan non officiel</span>
+        <OnlineCounter />
         <div className="app-footer-right">
           {BMAC_URL && (
             <a href={BMAC_URL} target="_blank" rel="noopener noreferrer" className="bmac-btn bmac-btn--small">

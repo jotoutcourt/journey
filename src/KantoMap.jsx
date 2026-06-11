@@ -438,11 +438,6 @@ export default function KantoMap({ game, onNavigate }) {
   const [search, setSearch]   = useState('')
   const [showResults, setShowResults] = useState(false)
 
-  // ── État éditeur ──
-  const [editMode, setEditMode]     = useState(false)
-  const [editPts, setEditPts]       = useState([])
-  const [editCursor, setEditCursor] = useState(null)
-  const [copied, setCopied]         = useState(false)
 
   const rootRef       = useRef(null)
   const svgRef        = useRef(null)
@@ -507,25 +502,14 @@ export default function KantoMap({ game, onNavigate }) {
     }
   }, []) // eslint-disable-line
 
-  // ── Convertit coordonnées écran → % SVG ──
-  const screenToSvgPct = useCallback((clientX, clientY) => {
-    const rect = svgRef.current?.getBoundingClientRect()
-    if (!rect) return null
-    return {
-      x: +((clientX - rect.left) / rect.width  * 100).toFixed(1),
-      y: +((clientY - rect.top)  / rect.height * 100).toFixed(1),
-    }
-  }, [])
-
   // ── Drag ──
   const onMouseDown = e => {
-    if (editMode || e.button !== 0) return
+    if (e.button !== 0) return
     isDragging.current = true
     hasDragged.current = false
     lastPos.current = { x: e.clientX, y: e.clientY }
   }
   const onMouseMove = e => {
-    if (editMode) { setEditCursor(screenToSvgPct(e.clientX, e.clientY)); return }
     if (!isDragging.current) return
     const dx = e.clientX - lastPos.current.x
     const dy = e.clientY - lastPos.current.y
@@ -534,7 +518,7 @@ export default function KantoMap({ game, onNavigate }) {
     setPan(p => clamp(p.x + dx, p.y + dy, scale))
   }
   const onMouseUp    = () => { isDragging.current = false }
-  const onMouseLeave = () => { isDragging.current = false; if (editMode) setEditCursor(null) }
+  const onMouseLeave = () => { isDragging.current = false }
 
   // ── Touch ──
   const onTouchStart = e => {
@@ -551,7 +535,7 @@ export default function KantoMap({ game, onNavigate }) {
       const dx = e.touches[0].clientX - lastTouchPos.current.x
       const dy = e.touches[0].clientY - lastTouchPos.current.y
       lastTouchPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
-      if (!editMode) setPan(p => clamp(p.x + dx, p.y + dy, scale))
+      setPan(p => clamp(p.x + dx, p.y + dy, scale))
     } else if (e.touches.length === 2 && lastTouchDist.current) {
       const dx = e.touches[0].clientX - e.touches[1].clientX
       const dy = e.touches[0].clientY - e.touches[1].clientY
@@ -562,7 +546,7 @@ export default function KantoMap({ game, onNavigate }) {
       setPan(p => clamp(p.x, p.y, next))
       lastTouchDist.current = dist
     }
-  }, [editMode, scale, clamp, getMinScale])
+  }, [scale, clamp, getMinScale])
 
   useEffect(() => {
     const el = rootRef.current
@@ -574,25 +558,15 @@ export default function KantoMap({ game, onNavigate }) {
   const onTouchEnd = () => { lastTouchPos.current = null; lastTouchDist.current = null }
 
   // ── Clic root ──
-  const onRootClick = e => {
-    if (editMode) return
+  const onRootClick = () => {
     if (!hasDragged.current) { setActive(null); setSearch(''); setShowResults(false) }
   }
 
   const closePanel = () => setActive(null)
 
   const handleZoneClick = (e, zone) => {
-    if (editMode) return
     e.stopPropagation()
     setActive(z => z?.id === zone.id ? null : zone)
-  }
-
-  // ── Éditeur ──
-  const onSvgClick = e => {
-    if (!editMode) return
-    e.stopPropagation()
-    const pos = screenToSvgPct(e.clientX, e.clientY)
-    if (pos) setEditPts(prev => [...prev, [pos.x, pos.y]])
   }
 
   const zoom = factor => {
@@ -606,17 +580,6 @@ export default function KantoMap({ game, onNavigate }) {
       setPan(p => clamp(cx - ratio * (cx - p.x), cy - ratio * (cy - p.y), next))
       return next
     })
-  }
-
-  const toggleEdit = () => {
-    setEditMode(m => !m); setEditPts([]); setEditCursor(null); setCopied(false); setActive(null)
-  }
-
-  const ptsString = editPts.map(([x, y]) => `${x},${y}`).join(' ')
-  const copyPts = () => {
-    navigator.clipboard.writeText(ptsString)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
   }
 
   // ── Recherche ──
@@ -643,14 +606,9 @@ export default function KantoMap({ game, onNavigate }) {
     setShowResults(false)
   }, [clamp, getMinScale])
 
-  const editPolyPoints = editPts.map(([x, y]) => `${x},${y}`).join(' ')
-  const previewLine = editPts.length > 0 && editCursor
-    ? { x1: editPts[editPts.length - 1][0], y1: editPts[editPts.length - 1][1], x2: editCursor.x, y2: editCursor.y }
-    : null
-
   return (
     <div
-      className={`kmap-root${editMode ? ' kmap-root-edit' : ''}`}
+      className="kmap-root"
       ref={rootRef}
       onMouseDown={onMouseDown}
       onMouseMove={onMouseMove}
@@ -666,7 +624,7 @@ export default function KantoMap({ game, onNavigate }) {
         style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${scale})`, transformOrigin: '0 0', willChange: 'transform' }}
       >
         <div className="kmap-viewport">
-          <svg ref={svgRef} className="kmap-svg" viewBox="0 0 100 100" preserveAspectRatio="none" onClick={onSvgClick}>
+          <svg ref={svgRef} className="kmap-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
             {ZONES.filter(z => z.pts).map(zone => (
               <polygon
                 key={zone.id}
@@ -681,32 +639,12 @@ export default function KantoMap({ game, onNavigate }) {
               />
             ))}
 
-            {/* Éditeur */}
-            {editMode && editPts.length > 1 && (
-              <polygon points={editPolyPoints} fill="rgba(255,80,80,0.25)" stroke="#ff5050"
-                strokeWidth="0.4" strokeDasharray="1,0.5" vectorEffect="non-scaling-stroke" style={{ pointerEvents: 'none' }} />
-            )}
-            {editMode && editPts.map(([x, y], i) => (
-              <circle key={i} cx={x} cy={y} r="0.6" fill="#ff5050" stroke="#fff" strokeWidth="0.2"
-                vectorEffect="non-scaling-stroke" style={{ pointerEvents: 'none' }} />
-            ))}
-            {editMode && previewLine && (
-              <line x1={previewLine.x1} y1={previewLine.y1} x2={previewLine.x2} y2={previewLine.y2}
-                stroke="#ff5050" strokeWidth="0.3" strokeDasharray="0.8,0.5"
-                vectorEffect="non-scaling-stroke" style={{ pointerEvents: 'none' }} />
-            )}
-            {editMode && editCursor && (
-              <>
-                <line x1={editCursor.x} y1={0} x2={editCursor.x} y2={100} stroke="rgba(255,80,80,0.35)" strokeWidth="0.2" vectorEffect="non-scaling-stroke" style={{ pointerEvents: 'none' }} />
-                <line x1={0} y1={editCursor.y} x2={100} y2={editCursor.y} stroke="rgba(255,80,80,0.35)" strokeWidth="0.2" vectorEffect="non-scaling-stroke" style={{ pointerEvents: 'none' }} />
-              </>
-            )}
           </svg>
         </div>
       </div>
 
       {/* ── Backdrop ── */}
-      {active && !editMode && <div className="kmap-backdrop" onClick={closePanel} />}
+      {active && <div className="kmap-backdrop" onClick={closePanel} />}
 
       {/* ── Barre de recherche ── */}
       <div className="kmap-search" onClick={e => e.stopPropagation()} ref={searchRef}>
@@ -735,7 +673,7 @@ export default function KantoMap({ game, onNavigate }) {
       </div>
 
       {/* ── Panneau info zone ── */}
-      {active && !editMode && (
+      {active && (
         <aside className="kmap-panel" style={{ '--zc': C[active.type] }}>
           <button className="kmap-panel-close" onClick={closePanel} aria-label="Fermer">✕</button>
           <div className="kmap-panel-header">
@@ -778,48 +716,23 @@ export default function KantoMap({ game, onNavigate }) {
         </aside>
       )}
 
-      {/* ── Panneau éditeur ── */}
-      {editMode && (
-        <div className="kmap-editor-panel">
-          <div className="kmap-editor-header">
-            <span className="kmap-editor-title">Mode éditeur</span>
-            {editCursor && <span className="kmap-editor-coords">{editCursor.x}%, {editCursor.y}%</span>}
-          </div>
-          <div className="kmap-editor-pts">
-            {ptsString || <span className="kmap-editor-hint">Clique sur la carte pour poser des points</span>}
-          </div>
-          <div className="kmap-editor-actions">
-            <button className="kmap-editor-btn" onClick={() => setEditPts(p => p.slice(0, -1))} disabled={editPts.length === 0}>↩ Annuler dernier</button>
-            <button className="kmap-editor-btn" onClick={() => { setEditPts([]); setCopied(false) }} disabled={editPts.length === 0}>🗑 Effacer</button>
-            <button className={`kmap-editor-btn kmap-editor-btn-copy${copied ? ' kmap-editor-btn-copied' : ''}`} onClick={copyPts} disabled={editPts.length < 3}>
-              {copied ? '✓ Copié !' : '📋 Copier pts'}
-            </button>
-          </div>
-          <p className="kmap-editor-info">{editPts.length} point{editPts.length !== 1 ? 's' : ''}</p>
-        </div>
-      )}
-
       {/* ── Légende ── */}
-      {!editMode && (
-        <div className="kmap-legend">
-          {Object.entries(C).map(([type, color]) => (
-            <span key={type} className="kmap-legend-item">
-              <span className="kmap-legend-dot" style={{ background: color }} />
-              {TYPE_LABEL[type]}
-            </span>
-          ))}
-        </div>
-      )}
+      <div className="kmap-legend">
+        {Object.entries(C).map(([type, color]) => (
+          <span key={type} className="kmap-legend-item">
+            <span className="kmap-legend-dot" style={{ background: color }} />
+            {TYPE_LABEL[type]}
+          </span>
+        ))}
+      </div>
 
-      {/* ── Contrôles zoom + éditeur ── */}
+      {/* ── Contrôles zoom ── */}
       <div className="kmap-zoom-ctrl">
         <button className="kmap-zoom-btn" onClick={() => zoom(1.25)}>+</button>
         <button className="kmap-zoom-btn" onClick={() => zoom(1 / 1.25)}>−</button>
         <button className="kmap-zoom-btn kmap-zoom-reset"
           onClick={() => { const m = getMinScale(); setScale(m); setPan(clamp(0, 0, m)) }}
           title="Réinitialiser">⌂</button>
-        <button className={`kmap-zoom-btn kmap-edit-toggle${editMode ? ' kmap-edit-toggle-on' : ''}`}
-          onClick={toggleEdit} title="Mode éditeur">🔧</button>
       </div>
     </div>
   )

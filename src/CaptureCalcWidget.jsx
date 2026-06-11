@@ -57,7 +57,7 @@ async function fetchPokemonStats(id) {
 
 function loadPokemonList() {
   try {
-    const raw = localStorage.getItem('pjt-pokemon-v8')
+    const raw = localStorage.getItem('pjt-pokemon-v9')
     if (!raw) return []
     return JSON.parse(raw)
   } catch { return [] }

@@ -1878,6 +1878,23 @@ button, a, [role="button"] { cursor: none; }
   transform: translateY(0);
 }
 
+/* Badge BETA sur les cartouches */
+.cart-beta-badge {
+  position: absolute;
+  top: 6px;
+  right: 4px;
+  background: #f59e0b;
+  color: #fff;
+  font-size: 0.5rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 1px 5px;
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 2;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+
 .gba-cart-svg {
   width: 110px;
   height: auto;
@@ -2293,6 +2310,20 @@ button, a, [role="button"] { cursor: none; }
   text-transform: uppercase;
   color: var(--text);
 }
+
+.gd-home-btn {
+  display: none; /* masqué sur desktop */
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary, #888);
+  font-size: 1rem;
+  padding: 0.2rem 0.3rem;
+  border-radius: 6px;
+  transition: color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+.gd-home-btn:hover { color: var(--text); background: var(--bg-hover, rgba(0,0,0,0.06)); }
 
 /* ── Centre du header — Outils + Équipe ── */
 .gd-header-center {
@@ -8755,6 +8786,29 @@ button, a, [role="button"] { cursor: none; }
   align-items: center;
   gap: 0.6rem;
 }
+
+/* Compteur en ligne */
+.online-counter {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.7rem;
+  color: var(--text-muted, #888);
+  font-weight: 500;
+}
+.online-counter-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #22c55e;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px rgba(34,197,94,0.25);
+  animation: online-pulse 2s ease-in-out infinite;
+}
+@keyframes online-pulse {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(34,197,94,0.25); }
+  50%       { box-shadow: 0 0 0 5px rgba(34,197,94,0.08); }
+}
 .app-footer-bug {
   background: none;
   border: none;
@@ -8853,12 +8907,14 @@ button, a, [role="button"] { cursor: none; }
 
   /* ── 2. HEADER DU JEU ────────────────────────────────────────────────────── */
   .gd-header { height: 46px; padding: 0 0.5rem; }
-  /* Masque le slot cartouche sur mobile */
-  .gd-slot   { display: none; }
-  /* Bouton Outils déplacé dans la nav — header center affiche le titre sur mobile */
+  /* Slot devient zone titre + home sur mobile */
+  .gd-slot { display: flex; align-items: center; gap: 0.5rem; width: auto; height: auto; overflow: visible; }
+  .gd-slot .gd-mini-cart { display: none; }
+  .gd-header-title { display: block; }
+  .gd-home-btn { display: flex; }
+  /* Centre vide — le flex:1 garde l'espace, right s'aligne à droite */
   .gd-header-center { display: flex !important; justify-content: center; }
   .gd-header-center .gd-hdr-btn { display: none; }
-  .gd-header-title   { display: block; }
   /* Outils visible dans la nav */
   .gd-tab-tools { display: flex; }
   .gd-hdr-btn { font-size: 0.7rem; padding: 0.25rem 0.55rem; }
