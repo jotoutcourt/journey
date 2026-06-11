@@ -7,6 +7,7 @@ import { ZONES, CHAPTERS } from './data/firered.js'
 const MOVE_FR    = new Map()
 const AREA_FR    = new Map()
 const ABILITY_FR = new Map()
+const SPECIES_FR = new Map() // id -> nom FR
 
 async function loadMoveNames(names) {
   const needed = names.filter(n => !MOVE_FR.has(n))
@@ -172,6 +173,16 @@ function calcCaptureProb(captureRate, hp, maxHP, ballRate, statusMod) {
   if (a >= 255) return 100
   const b = Math.floor(65536 / Math.pow(255 / a, 3 / 8))
   return Math.min(100, Math.pow(b / 65536, 4) * 100)
+}
+
+async function loadSpeciesNames(ids) {
+  const needed = ids.filter(id => !SPECIES_FR.has(id))
+  await Promise.all(needed.map(async id => {
+    try {
+      const d = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${id}/`).then(r => r.json())
+      SPECIES_FR.set(String(id), d.names.find(n => n.language.name === 'fr')?.name || d.name)
+    } catch { SPECIES_FR.set(String(id), String(id)) }
+  }))
 }
 
 function flattenChain(chain) {
@@ -741,6 +752,12 @@ function EvolutionTab({ chain, pokemonId, game }) {
   const entries = flattenChain(chain)
   const BANNED  = ['-mega','-gmax','-alola','-galar','-hisui','-paldea','-totem','-primal']
   const valid   = entries.filter(e => !BANNED.some(s => e.name.includes(s)))
+  const [namesReady, setNamesReady] = useState(false)
+
+  useEffect(() => {
+    const ids = valid.map(e => e.id)
+    loadSpeciesNames(ids).then(() => setNamesReady(true))
+  }, [chain])
 
   return (
     <div className="pdd-tab-content">
@@ -765,7 +782,7 @@ function EvolutionTab({ chain, pokemonId, game }) {
                     style={{ width:'60px', height:'60px', objectFit:'contain' }}
                   />
                   <p style={{ fontSize:'0.65rem', color: isCurrent ? game.color : '#999', textTransform:'capitalize', marginTop:'3px' }}>
-                    {entry.name}
+                    {SPECIES_FR.get(String(entry.id)) || slugToTitle(entry.name)}
                   </p>
                 </div>
               </div>

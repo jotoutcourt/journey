@@ -2314,16 +2314,46 @@ button, a, [role="button"] { cursor: none; }
 .gd-home-btn {
   display: none; /* masqué sur desktop */
   background: none;
-  border: none;
+  border: 1.5px solid var(--border);
   cursor: pointer;
   color: var(--text-secondary, #888);
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.22rem 0.6rem;
+  border-radius: 8px;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.gd-home-btn:hover { color: var(--text); border-color: var(--text-secondary); background: var(--bg-hover, rgba(0,0,0,0.06)); }
+
+/* Titre Journey Tracker sur desktop */
+.gd-brand-desktop {
+  font-family: var(--font-display);
   font-size: 1rem;
-  padding: 0.2rem 0.3rem;
-  border-radius: 6px;
-  transition: color 0.15s, background 0.15s;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text);
+  flex-shrink: 0;
+  margin-right: 0.4rem;
+}
+
+/* Boutons outils directs dans le header (desktop) */
+.gd-hdr-tool { /* hérite de gd-hdr-btn */ }
+
+/* Bouton Outils drawer (mobile seulement) */
+.gd-hdr-btn-mobile { display: none; }
+
+/* Barre compteur en ligne (footer desktop) */
+.gd-online-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0.2rem 1rem;
+  border-top: 1px solid var(--border, rgba(0,0,0,0.06));
   flex-shrink: 0;
 }
-.gd-home-btn:hover { color: var(--text); background: var(--bg-hover, rgba(0,0,0,0.06)); }
+.gd-online-bar .online-counter { font-size: 0.65rem; }
 
 /* ── Centre du header — Outils + Équipe ── */
 .gd-header-center {
@@ -3059,7 +3089,7 @@ button, a, [role="button"] { cursor: none; }
   background: #1a1a2e;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   text-align: left;
-  min-height: 0;
+  aspect-ratio: 3 / 4;
 }
 
 .adv-ch-tile:hover {
@@ -8912,9 +8942,13 @@ button, a, [role="button"] { cursor: none; }
   .gd-slot .gd-mini-cart { display: none; }
   .gd-header-title { display: block; }
   .gd-home-btn { display: flex; }
-  /* Centre vide — le flex:1 garde l'espace, right s'aligne à droite */
+  /* Sur mobile : cacher outils desktop, montrer bouton drawer */
   .gd-header-center { display: flex !important; justify-content: center; }
-  .gd-header-center .gd-hdr-btn { display: none; }
+  .gd-brand-desktop { display: none; }
+  .gd-hdr-tool { display: none; }
+  .gd-hdr-btn-mobile { display: flex; }
+  /* Masquer la barre compteur en ligne sur mobile (visible dans le footer consolescreen) */
+  .gd-online-bar { display: none; }
   /* Outils visible dans la nav */
   .gd-tab-tools { display: flex; }
   .gd-hdr-btn { font-size: 0.7rem; padding: 0.25rem 0.55rem; }
@@ -9141,3 +9175,29 @@ button, a, [role="button"] { cursor: none; }
   .gd-tab-label { font-size: 0.55rem; }
 }
 
+
+/* ── Overlay paysage mobile ────────────────────────────────────────────────── */
+@media (max-width: 900px) and (orientation: landscape) {
+  .landscape-overlay {
+    display: flex !important;
+  }
+}
+.landscape-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #0d0f1a;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  color: #fff;
+}
+.landscape-overlay-icon { font-size: 3rem; }
+.landscape-overlay-text { font-size: 1rem; font-weight: 600; text-align: center; opacity: 0.8; }
+
+/* ── Désactive l'animation de flottement sur mobile ──────────────────────── */
+@media (max-width: 767px) {
+  .cart-wrapper-available { animation: none; }
+}

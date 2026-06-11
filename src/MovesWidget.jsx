@@ -21,6 +21,18 @@ function fmtMove(slug) {
   return slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
 }
 
+const MOVE_NAMES_FR = new Map()
+
+async function loadMoveFR(slugs) {
+  const needed = slugs.filter(s => !MOVE_NAMES_FR.has(s))
+  await Promise.all(needed.map(async slug => {
+    try {
+      const d = await fetch(`https://pokeapi.co/api/v2/move/${slug}/`).then(r => r.json())
+      MOVE_NAMES_FR.set(slug, d.names.find(n => n.language.name === 'fr')?.name || fmtMove(slug))
+    } catch { MOVE_NAMES_FR.set(slug, fmtMove(slug)) }
+  }))
+}
+
 function miniSprite(id) {
   return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`
 }
@@ -76,11 +88,17 @@ function PokemonMovesCard({ poke, gameId }) {
   const [moves, setMoves] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
+  const [frReady, setFrReady] = useState(false)
 
   useEffect(() => {
     setLoading(true)
     fetchMoves(poke.id)
-      .then(m => { setMoves(m); setLoading(false) })
+      .then(m => {
+        setMoves(m)
+        setLoading(false)
+        return loadMoveFR(m.map(mv => mv.name))
+      })
+      .then(() => setFrReady(true))
       .catch(() => { setError(true); setLoading(false) })
   }, [poke.id])
 
@@ -142,7 +160,7 @@ function PokemonMovesCard({ poke, gameId }) {
               {upcoming.slice(0, 5).map(m => (
                 <div key={m.level + m.name} className="mvw-move mvw-move--next">
                   <span className="mvw-move-lvl">Niv.{m.level}</span>
-                  <span className="mvw-move-name">{fmtMove(m.name)}</span>
+                  <span className="mvw-move-name">{MOVE_NAMES_FR.get(m.name) || fmtMove(m.name)}</span>
                 </div>
               ))}
             </div>
@@ -155,7 +173,7 @@ function PokemonMovesCard({ poke, gameId }) {
                 {past.slice().reverse().map(m => (
                   <div key={m.level + m.name} className="mvw-move mvw-move--past">
                     <span className="mvw-move-lvl">Niv.{m.level}</span>
-                    <span className="mvw-move-name">{fmtMove(m.name)}</span>
+                    <span className="mvw-move-name">{MOVE_NAMES_FR.get(m.name) || fmtMove(m.name)}</span>
                   </div>
                 ))}
               </div>
@@ -168,7 +186,7 @@ function PokemonMovesCard({ poke, gameId }) {
               {moves.map(m => (
                 <div key={m.level + m.name} className="mvw-move">
                   <span className="mvw-move-lvl">Niv.{m.level}</span>
-                  <span className="mvw-move-name">{fmtMove(m.name)}</span>
+                  <span className="mvw-move-name">{MOVE_NAMES_FR.get(m.name) || fmtMove(m.name)}</span>
                 </div>
               ))}
             </div>

@@ -13,6 +13,7 @@ const CARTS = [
     gradient: 'linear-gradient(160deg, #cc2200 0%, #7a1100 100%)',
     accent: '#ff6633',
     available: true,
+    beta: true,
   },
   {
     id: 'leafgreen',
@@ -21,6 +22,7 @@ const CARTS = [
     gradient: 'linear-gradient(160deg, #1a7a35 0%, #0d4a1f 100%)',
     accent: '#44dd77',
     available: true,
+    beta: true,
   },
   {
     id: 'omegaruby',
@@ -28,8 +30,7 @@ const CARTS = [
     color: '#b01010',
     gradient: 'linear-gradient(160deg, #b01010 0%, #6a0808 100%)',
     accent: '#ff5533',
-    available: true,
-    beta: true,
+    available: false,
   },
   {
     id: 'alphasapphire',

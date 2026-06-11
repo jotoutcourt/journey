@@ -45,6 +45,7 @@ import WhichPokemon from './WhichPokemon.jsx'
 import TrophyWidget from './TrophyWidget.jsx'
 import SoftResetWidget from './SoftResetWidget.jsx'
 import MovesWidget from './MovesWidget.jsx'
+import OnlineCounter from './OnlineCounter.jsx'
 
 // ─── DONNÉES ──────────────────────────────────────────────────────────────────
 
@@ -3020,14 +3021,31 @@ function GameScreen({ game, cart, onBack, isDark, toggleTheme, onTabChange, onOp
               />
             </div>
           )}
+          <button className="gd-home-btn" onClick={onBack} title={t('header.eject')} aria-label={t('header.eject')}>←</button>
           <span className="gd-header-title">Journey Tracker</span>
-          <button className="gd-home-btn" onClick={onBack} title={t('header.eject')} aria-label={t('header.eject')}>⌂</button>
         </div>
 
         <div className="gd-header-center">
-          {/* Desktop : bouton Outils */}
+          {/* Desktop : titre + 3 outils directs */}
+          <span className="gd-brand-desktop">Journey Tracker</span>
+          <button className={`gd-hdr-btn gd-hdr-tool${openWidget === 'calc' ? ' gd-hdr-btn--active' : ''}`}
+            onClick={() => setOpenWidget(v => v === 'calc' ? null : 'calc')}>
+            <span className="gd-hdr-btn-icon">🎯</span>
+            <span>Capture</span>
+          </button>
+          <button className={`gd-hdr-btn gd-hdr-tool${whichOpen ? ' gd-hdr-btn--active' : ''}`}
+            onClick={() => setWhichOpen(o => !o)}>
+            <span className="gd-hdr-btn-icon">⚔️</span>
+            <span>{t('header.who')}</span>
+          </button>
+          <button className={`gd-hdr-btn gd-hdr-tool${openWidget === 'map' ? ' gd-hdr-btn--active' : ''}`}
+            onClick={() => setOpenWidget(v => v === 'map' ? null : 'map')}>
+            <span className="gd-hdr-btn-icon">🗾</span>
+            <span>Carte</span>
+          </button>
+          {/* Mobile : bouton Outils drawer */}
           <button
-            className={`gd-hdr-btn${widgetDrawerOpen ? ' gd-hdr-btn--active' : ''}`}
+            className={`gd-hdr-btn gd-hdr-btn-mobile${widgetDrawerOpen ? ' gd-hdr-btn--active' : ''}`}
             onClick={() => setWidgetDrawerOpen(o => !o)}
           >
             <span className="gd-hdr-btn-icon">🧩</span>
@@ -3111,6 +3129,11 @@ function GameScreen({ game, cart, onBack, isDark, toggleTheme, onTabChange, onOp
           </button>
         ))}
       </nav>
+
+      {/* Compteur en ligne — desktop uniquement */}
+      <div className="gd-online-bar">
+        <OnlineCounter />
+      </div>
 
       {/* Widget Picker Drawer */}
       {widgetDrawerOpen && (
@@ -3306,9 +3329,17 @@ function App() {
     setTimeout(() => setReturningCartId(null), 900)
   }
 
+  const landscapeOverlay = (
+    <div className="landscape-overlay">
+      <div className="landscape-overlay-icon">📱</div>
+      <p className="landscape-overlay-text">Tourne ton téléphone en portrait</p>
+    </div>
+  )
+
   if (selectedGame) {
     return (
       <>
+        {landscapeOverlay}
         <GameScreen
           game={selectedGame}
           cart={activeCart}
@@ -3325,6 +3356,7 @@ function App() {
 
   return (
     <>
+      {landscapeOverlay}
       <ConsoleScreen
         games={games}
         onSelectGame={handleSelectGame}
