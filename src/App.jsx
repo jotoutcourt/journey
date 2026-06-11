@@ -3002,7 +3002,7 @@ function GameScreen({ game, cart, onBack, isDark, toggleTheme, onTabChange, onOp
     >
       {/* En-tête */}
       <header className="gd-header">
-        {/* Slot Switch — seul le dessus de la cartouche dépasse */}
+        {/* Slot cartouche — masqué sur mobile */}
         <div className="gd-slot">
           {cart && (
             <div
@@ -3030,41 +3030,19 @@ function GameScreen({ game, cart, onBack, isDark, toggleTheme, onTabChange, onOp
             <span className="gd-hdr-btn-icon">🧩</span>
             <span>{t('header.tools')}</span>
           </button>
-          <button
-            className={`gd-hdr-btn${whichOpen ? ' gd-hdr-btn--active' : ''}`}
-            onClick={() => setWhichOpen(o => !o)}
-          >
-            <span className="gd-hdr-btn-icon">⚔️</span>
-            <span>{t('header.who')}</span>
-          </button>
-          <button
-            className={`gd-hdr-btn${teamPopupOpen ? ' gd-hdr-btn--active' : ''}`}
-            onClick={() => setTeamPopupOpen(o => !o)}
-          >
-            <span className="gd-hdr-btn-icon">⚡</span>
-            <span>{t('header.team')}</span>
-          </button>
         </div>
 
         <div className="gd-header-right">
-          <div className="gd-trainer-badge" style={{ '--gc': game.color }}>
-            👤 {profile.trainerName}
-          </div>
-          <div className="gd-region">{game.region}</div>
           <BmacButton size="small" />
           <button
-            className="theme-toggle-btn"
-            onClick={onOpenBugReport}
-            title={t('header.bug')}
-            aria-label={t('header.bug')}
-          >🐛</button>
-          <button
-            className="theme-toggle-btn"
+            className={`theme-switch${isDark ? ' theme-switch--dark' : ''}`}
             onClick={toggleTheme}
+            role="switch"
+            aria-checked={isDark}
             title={isDark ? t('header.theme_day') : t('header.theme_night')}
             aria-label={isDark ? t('header.theme_day') : t('header.theme_night')}
           >
-            {isDark ? '☀️' : '🌙'}
+            <span className="theme-switch-thumb">{isDark ? '🌙' : '☀️'}</span>
           </button>
           <button
             className="theme-toggle-btn"
@@ -3140,7 +3118,27 @@ function GameScreen({ game, cart, onBack, isDark, toggleTheme, onTabChange, onOp
                   <span className="wdg-card-label">{t(w.labelKey)}</span>
                 </button>
               ))}
+              <button
+                className="wdg-card"
+                onClick={() => { setWhichOpen(true); setWidgetDrawerOpen(false) }}
+              >
+                <span className="wdg-card-icon">⚔️</span>
+                <span className="wdg-card-label">{t('header.who')}</span>
+              </button>
+              <button
+                className="wdg-card"
+                onClick={() => { setTeamPopupOpen(true); setWidgetDrawerOpen(false) }}
+              >
+                <span className="wdg-card-icon">⚡</span>
+                <span className="wdg-card-label">{t('header.team')}</span>
+              </button>
             </div>
+            <button
+              className="wdg-bug-btn"
+              onClick={() => { onOpenBugReport(); setWidgetDrawerOpen(false) }}
+            >
+              🐛 {t('header.bug')}
+            </button>
           </div>
         </div>
       )}
