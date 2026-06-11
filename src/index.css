@@ -8697,17 +8697,24 @@ button, a, [role="button"] { cursor: none; }
 }
 
 
+
 /* ══════════════════════════════════════════════════════════════════════════════
-   RESPONSIVE MOBILE — iPhone Safari (≤ 480px)
+   RESPONSIVE MOBILE — max-width: 767px
+   Ne touche PAS aux styles desktop (min-width: 768px)
+   Testé à 375px (iPhone SE) et 390px (iPhone 14)
    ══════════════════════════════════════════════════════════════════════════════ */
 
-@media (max-width: 480px) {
+@media (max-width: 767px) {
 
-  /* ── 1. CONSOLE SCREEN ─────────────────────────────────────────────────── */
+  /* ── BASE ──────────────────────────────────────────────────────────────── */
+
+  html { font-size: 14px; }
+
+  /* ── 1. PAGE ACCUEIL — Cartouches ─────────────────────────────────────── */
 
   .cs-home {
     gap: 1.5rem;
-    padding: 1.5rem 1rem 5rem;
+    padding: 1.5rem 0 5rem;
   }
 
   .cs-title {
@@ -8718,21 +8725,43 @@ button, a, [role="button"] { cursor: none; }
   .cs-sub {
     font-size: 0.78rem;
     text-align: center;
+    padding: 0 1rem;
   }
 
+  /* Défilement horizontal avec snap */
   .carts-row {
-    gap: 10px;
-    flex-wrap: wrap;
-    justify-content: center;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 24px;
+    gap: 16px;
+    scrollbar-width: none;
+    width: 100%;
+    box-sizing: border-box;
+    align-items: flex-end;
+  }
+  .carts-row::-webkit-scrollbar { display: none; }
+
+  .cart-wrapper {
+    scroll-snap-align: center;
+    flex-shrink: 0;
+    width: 120px;
   }
 
-  /* Réduit le GBA SVG dans les cartouches */
   .gba-cart-svg {
-    width: 72px !important;
+    width: 100% !important;
+    height: auto;
   }
 
   .cart-hover-name {
     font-size: 0.6rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
   }
 
   .shelf-hint {
@@ -8741,54 +8770,39 @@ button, a, [role="button"] { cursor: none; }
     padding: 0 1rem;
   }
 
-  /* Footer console */
-  .cs-page .app-footer {
-    padding: 0.5rem 0.75rem;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-  }
-
-  .app-footer-text {
-    font-size: 0.6rem;
-  }
-
   /* ── 2. HEADER DU JEU ──────────────────────────────────────────────────── */
 
   .gd-header {
     height: 46px;
-    padding: 0 0.6rem 0 0;
+    padding: 0 0.5rem 0 0;
   }
 
   .gd-slot {
-    width: 52px;
+    width: 50px;
     height: 46px;
   }
 
-  .gd-mini-cart {
-    width: 40px;
-    top: 14px;
-  }
+  .gd-mini-cart { top: 13px; width: 38px; }
+  .gd-mini-cart .gba-cart-svg { width: 38px !important; }
 
-  .gd-mini-cart .gba-cart-svg {
-    width: 40px !important;
-  }
-
-  .gd-trainer-badge {
-    font-size: 0.62rem;
-  }
-
-  .gd-region {
+  /* Cache les boutons du centre sur mobile */
+  .gd-header-center {
     display: none;
   }
 
+  /* Droite : seulement profil + langue + thème */
   .gd-header-right {
-    gap: 0.3rem;
+    gap: 0.25rem;
   }
 
+  .gd-trainer-badge { font-size: 0.6rem; }
+  .gd-region { display: none; }
+
   .theme-toggle-btn {
-    width: 30px;
-    height: 30px;
-    font-size: 1rem;
+    width: 28px;
+    height: 28px;
+    font-size: 0.9rem;
+    padding: 0;
   }
 
   /* ── 3. NAVIGATION DU BAS ──────────────────────────────────────────────── */
@@ -8798,385 +8812,309 @@ button, a, [role="button"] { cursor: none; }
   }
 
   .gd-tab {
-    padding: 0.55rem 0.2rem 0.45rem;
+    flex: 1;
+    padding: 0.5rem 0.15rem 0.4rem;
     gap: 2px;
   }
 
-  .gd-tab-icon {
-    font-size: 1.2rem;
-  }
+  .gd-tab-icon { font-size: 1.35rem; line-height: 1; }
 
   .gd-tab-label {
-    font-size: 0.5rem;
+    font-size: 0.625rem; /* 10px at 14px base */
     letter-spacing: 0;
+    text-transform: uppercase;
   }
 
   /* ── 4. GRILLE DES CHAPITRES ───────────────────────────────────────────── */
 
   .adv-ch-grid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 0.65rem;
-    padding: 0.75rem;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    grid-auto-rows: auto !important;
+    flex-direction: unset !important;
+    flex-wrap: unset !important;
+    overflow-x: unset !important;
+    overflow-y: auto;
+    height: auto !important;
+    gap: 12px !important;
+    padding: 12px !important;
+    align-items: unset !important;
+  }
+
+  .adv-ch-tile {
+    aspect-ratio: 3 / 4;
+    flex: unset !important;
+    min-width: unset !important;
+    max-width: unset !important;
+    border-radius: 12px;
+  }
+
+  .adv-ch-tile-content {
+    padding: 10px 12px 12px;
   }
 
   .adv-ch-tile-label {
-    font-size: 0.9rem;
+    font-size: 0.8rem; /* ≈13px */
+    line-height: 1.2;
   }
 
-  .adv-ch-tile-meta {
-    font-size: 0.58rem;
+  .adv-ch-tile-meta,
+  .adv-ch-tile-pct {
+    font-size: 0.7rem; /* ≈11px */
+  }
+
+  /* Légendaires — override de la grille chapters */
+  .lgd-wrapper .adv-ch-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    flex-direction: unset !important;
+    flex-wrap: unset !important;
+    overflow-x: unset !important;
+    height: auto !important;
+    padding: 12px !important;
+    gap: 12px !important;
+    align-items: unset !important;
+  }
+
+  .lgd-wrapper .adv-ch-tile {
+    aspect-ratio: 2 / 3;
+    flex: unset !important;
+    min-width: unset !important;
+    max-width: unset !important;
+  }
+
+  /* Lock overlay centré */
+  .lgd-lock-overlay {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    inset: 0;
+    padding-bottom: 12px;
+  }
+
+  .lgd-lock-req {
+    font-size: 0.7rem;
+    text-align: center;
+    padding: 0 0.5rem;
   }
 
   /* ── 5. GRILLE DES ZONES ───────────────────────────────────────────────── */
 
   .adv-zone-grid {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    grid-template-columns: repeat(2, 1fr) !important;
     gap: 8px;
     padding: 10px;
   }
 
-  /* ── 6. DÉTAIL DE ZONE (zdv2) ──────────────────────────────────────────── */
-
-  .zdv2 {
-    padding-bottom: 1rem;
+  .adv-zt {
+    aspect-ratio: 16 / 10;
   }
 
-  .zdv2-header {
-    padding: 0.75rem 0.85rem 0.6rem;
-  }
-
-  .zdv2-progress-track {
-    margin: 0.4rem 0 0;  /* supprime le margin négatif */
-  }
-
-  .zdv2-blocks {
-    padding: 0 0.6rem;
-    gap: 0.6rem;
-  }
-
-  .zdv2-name {
-    font-size: 0.95rem;
-  }
-
-  .zdv2-tip {
-    margin: 0 0.6rem;
-    font-size: 0.8rem;
-  }
-
-  .zdv2-poke-row {
-    padding: 0.4rem 0.2rem;
-  }
-
-  .zdv2-poke-sprite {
-    width: 44px;
-    height: 44px;
-  }
-
-  .zdv2-poke-name {
-    font-size: 0.78rem;
-  }
-
-  .zdv2-poke-levels {
-    font-size: 0.68rem;
-  }
-
-  .zdv2-item-row {
-    padding: 0.45rem 0.5rem;
-  }
-
-  .zdv2-item-name {
-    font-size: 0.82rem;
-  }
-
-  .zdv2-item-source {
-    font-size: 0.7rem;
-  }
-
-  .zdv2-trainer-poke-name {
-    font-size: 0.7rem;
-  }
-
-  .zdv2-check-row {
-    padding: 0.5rem 0.25rem;
-    font-size: 0.82rem;
-  }
-
-  /* ── 7. POKÉDEX ─────────────────────────────────────────────────────────── */
-
-  .pdx-bar {
-    padding: 0.5rem 0.6rem 0.4rem;
-    gap: 0.4rem;
-  }
-
-  .pdx-search {
-    font-size: 0.85rem;
-    padding: 0.5rem 0.85rem;
-  }
-
-  .pdx-type-pill {
-    font-size: 0.6rem;
-    padding: 0.25rem 0.5rem;
-  }
-
-  .pdx-card-top {
-    min-height: 80px;
-  }
-
-  .pdx-sprite {
-    width: 72px;
-    height: 72px;
-  }
-
-  .pdx-num {
-    font-size: 0.58rem;
-  }
-
-  .pdx-name {
-    font-size: 0.68rem;
-  }
-
-  /* ── 8. PC BOX ──────────────────────────────────────────────────────────── */
-
-  .pcbox-screen {
-    padding: 0.5rem;
-  }
-
-  .pcbox-layout {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .pcbox-slots {
-    grid-template-columns: repeat(6, 1fr);
-    grid-template-rows: repeat(auto-fill, 1fr);
-  }
-
-  .pcbox-party-panel {
-    width: 100%;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 0.3rem;
-    padding: 0.5rem;
-  }
-
-  .pcbox-party-label {
-    width: 100%;
-    font-size: 0.65rem;
-    margin-bottom: 0.2rem;
-  }
-
-  .pcbox-party-list {
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 0.3rem;
-  }
-
-  .pcbox-party-slot {
-    width: 44px;
-    height: 44px;
-  }
-
-  .pcbox-hover-card {
-    display: none;
-  }
-
-  .pcbox-search-wrap {
-    margin-bottom: 0.4rem;
-  }
-
-  /* ── 9. TEAM BUILDER ────────────────────────────────────────────────────── */
-
-  .team-slots {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.5rem;
-  }
-
-  .team-slot {
-    min-height: 80px;
-  }
-
-  /* ── 10. LÉGENDAIRES — tuiles ───────────────────────────────────────────── */
-
-  .lgd-wrapper .adv-ch-grid {
-    padding: 0.75rem;
-    gap: 0.5rem;
-  }
-
-  .lgd-header {
-    padding: 1rem 0.85rem 0.6rem;
-  }
-
-  .lgd-title {
-    font-size: 1.1rem;
-  }
-
-  .lgd-subtitle {
+  .adv-zt-label {
     font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
   }
 
-  /* ── 11. MÉGA-ÉVOLUTIONS ────────────────────────────────────────────────── */
+  .adv-zt-bar-wrap {
+    font-size: 0.62rem;
+  }
+
+  /* ── 6. MÉGA-ÉVOLUTIONS ────────────────────────────────────────────────── */
 
   .mga-wrapper .adv-ch-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.5rem;
-    padding: 0.75rem;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+    padding: 10px !important;
+  }
+
+  .mga-wrapper .adv-ch-tile {
+    aspect-ratio: 3 / 4;
   }
 
   .mga-wrapper .adv-ch-tile-label {
-    font-size: 0.72rem;
-  }
-
-  .mga-wrapper .adv-ch-tile-meta {
-    font-size: 0.58rem;
+    font-size: 0.65rem;
   }
 
   .mga-cta {
-    font-size: 0.68rem;
-    padding: 0.4rem 0.5rem;
+    font-size: 0.65rem;
+    padding: 0.35rem 0.4rem;
   }
 
-  /* ── 12. PAGE LORE LÉGENDAIRE ───────────────────────────────────────────── */
+  /* ── 7. DÉTAIL DE ZONE (zdv2) ──────────────────────────────────────────── */
 
-  .llp-hero {
-    padding-top: 3.5rem;
-    padding-bottom: 0;
+  .zdv2-header { padding: 0.7rem 0.85rem 0.55rem; }
+
+  .zdv2-progress-track { margin: 0.4rem 0 0; }
+
+  .zdv2-blocks {
+    padding: 0 0.6rem;
+    gap: 0.55rem;
   }
 
-  .llp-artwork {
-    width: 160px;
-    height: 160px;
-  }
+  .zdv2-name { font-size: 0.95rem; }
 
-  .llp-content {
-    padding: 0 0.9rem 2rem;
-  }
-
-  .llp-name {
-    font-size: 1.6rem;
-  }
-
-  .llp-lore-text {
-    font-size: 0.82rem;
-    line-height: 1.65;
-  }
-
-  .llp-game-info {
-    font-size: 0.8rem;
-  }
-
-  .llp-section-title {
-    font-size: 0.82rem;
-  }
-
-  .llp-anecdote {
+  .zdv2-tip {
+    margin: 0 0.6rem;
     font-size: 0.78rem;
   }
 
-  .llp-catch-btn {
-    font-size: 0.85rem;
-    padding: 0.75rem 1.5rem;
+  .zdv2-poke-sprite { width: 42px; height: 42px; }
+  .zdv2-poke-name   { font-size: 0.75rem; }
+  .zdv2-poke-levels { font-size: 0.65rem; }
+
+  .zdv2-item-name   { font-size: 0.8rem; }
+  .zdv2-item-source { font-size: 0.68rem; }
+
+  .zdv2-check-row { font-size: 0.8rem; padding: 0.5rem 0.2rem; }
+
+  .zdv2-trainer-poke-name { font-size: 0.68rem; }
+
+  /* ── 8. POKÉDEX ─────────────────────────────────────────────────────────── */
+
+  .pdx-bar { padding: 0.5rem 0.6rem 0.35rem; gap: 0.35rem; }
+
+  .pdx-search { font-size: 0.875rem; padding: 0.5rem 0.85rem; }
+
+  .pdx-type-pill { font-size: 0.6rem; padding: 0.22rem 0.45rem; }
+
+  .pdx-card-top { min-height: 76px; }
+  .pdx-sprite   { width: 68px; height: 68px; }
+  .pdx-num      { font-size: 0.56rem; }
+  .pdx-name     { font-size: 0.65rem; }
+
+  /* ── 9. BOÎTE PC ────────────────────────────────────────────────────────── */
+
+  .pcbox-screen { padding: 0.4rem; }
+
+  .pcbox-layout { flex-direction: column; gap: 0.4rem; }
+
+  .pcbox-slots {
+    grid-template-columns: repeat(8, 1fr) !important;
+    grid-template-rows: auto !important;
+    gap: 4px;
+    padding: 0.45rem;
   }
 
-  /* ── 13. POPUP LÉGENDAIRE / MÉGA ────────────────────────────────────────── */
+  /* Cache le panel party sur mobile */
+  .pcbox-party-panel { display: none; }
 
-  .lgd-popup {
-    padding: 1.5rem 1rem;
+  .pcbox-search-wrap { margin-bottom: 0.35rem; }
+
+  /* ── 10. TEAM BUILDER ───────────────────────────────────────────────────── */
+
+  .team-slots {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.45rem;
   }
 
-  .lgd-popup-sprite-wrap {
-    width: 110px;
-    height: 110px;
+  .team-slot { min-height: 78px; }
+
+  /* ── 11. PAGE LORE LÉGENDAIRE ───────────────────────────────────────────── */
+
+  .llp-hero  { padding-top: 3.5rem; }
+  .llp-artwork { width: 150px; height: 150px; }
+  .llp-content { padding: 0 0.85rem 2rem; }
+  .llp-name    { font-size: 1.5rem; }
+  .llp-lore-text   { font-size: 0.8rem; line-height: 1.65; }
+  .llp-section-title { font-size: 0.8rem; }
+  .llp-anecdote    { font-size: 0.75rem; }
+  .llp-catch-btn   { font-size: 0.85rem; padding: 0.7rem 1.5rem; }
+
+  .llp-game-info { font-size: 0.78rem; }
+
+  /* ── 12. MODAUX → BOTTOM SHEET ──────────────────────────────────────────── */
+
+  /* Pattern commun à tous les modaux */
+  .bugrep-backdrop,
+  .team-popup-backdrop,
+  .lgd-popup-backdrop,
+  .badge-popup-overlay {
+    align-items: flex-end !important;
   }
 
-  .lgd-popup-name {
-    font-size: 1.1rem;
+  .bugrep-modal,
+  .team-popup,
+  .lgd-popup,
+  .badge-popup {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    border-radius: 16px 16px 0 0 !important;
+    margin: 0 !important;
+    padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
   }
 
-  /* ── 14. ARÈNE / GYM ────────────────────────────────────────────────────── */
+  /* ── 13. BOUTONS FLOTTANTS ──────────────────────────────────────────────── */
+
+  .bugrep-overlay-btn {
+    bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+    top: auto;
+    right: 0.75rem;
+    transform: scale(0.9);
+    transform-origin: bottom right;
+  }
+
+  /* ── 14. FOOTER CONSOLE ─────────────────────────────────────────────────── */
+
+  .app-footer {
+    padding: 0.4rem 0.75rem;
+  }
+
+  .app-footer-text { font-size: 0.58rem; }
+
+  .bmac-btn--small { display: none; }
+
+  /* ── 15. ARÈNE ──────────────────────────────────────────────────────────── */
 
   .gym-team-grid {
     grid-template-columns: repeat(3, 1fr);
     gap: 0.4rem;
   }
 
-  .gym-poke-card {
-    padding: 0.5rem 0.3rem;
+  .gym-poke-sprite { width: 46px; height: 46px; }
+  .gym-poke-name   { font-size: 0.62rem; }
+
+  .gym-rec-sprite { width: 36px; height: 36px; }
+  .gym-rec-name   { font-size: 0.56rem; }
+
+  /* ── 16. POPUP BADGE ────────────────────────────────────────────────────── */
+
+  .bp-badge-img { width: 60px; height: 60px; }
+
+  /* ── 17. LÉGENDAIRES — vieux composant lgd-tile ─────────────────────────── */
+
+  .lgd-grid {
+    flex-wrap: wrap;
+    overflow-x: unset;
   }
 
-  .gym-poke-sprite {
-    width: 48px;
-    height: 48px;
-  }
-
-  .gym-poke-name {
-    font-size: 0.65rem;
-  }
-
-  .gym-rec-row {
-    gap: 0.4rem;
-  }
-
-  .gym-rec-sprite {
-    width: 38px;
-    height: 38px;
-  }
-
-  .gym-rec-name {
-    font-size: 0.58rem;
-  }
-
-  /* ── 15. PHOTO SOUVENIR (trophy modal) ──────────────────────────────────── */
-
-  .trm-modal {
-    padding: 1rem 0.75rem;
-    margin: 0.5rem;
-  }
-
-  .trm-slots {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.4rem;
-  }
-
-  /* ── 16. BADGE POPUP ────────────────────────────────────────────────────── */
-
-  .badge-popup {
-    padding: 1.5rem 1rem;
-    margin: 1rem;
-  }
-
-  .bp-badge-img {
-    width: 64px;
-    height: 64px;
+  .lgd-grid .lgd-tile,
+  .lgd-tile {
+    flex: 1 0 calc(50% - 0.35rem);
+    min-width: unset;
+    max-width: unset;
   }
 
 }
 
-/* ── Très petit écran (< 360px, ancien iPhone SE) ──────────────────────────── */
+/* ── Très petit écran (iPhone SE 1ère gen, ≤ 360px) ────────────────────────── */
 @media (max-width: 360px) {
 
   .adv-ch-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.5rem;
-  }
-
-  .adv-zone-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
   }
 
   .mga-wrapper .adv-ch-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, 1fr) !important;
   }
 
-  .gd-tab-label {
-    display: none;
-  }
+  .gd-tab-label { display: none; }
+  .gd-tab-icon  { font-size: 1.4rem; }
 
-  .gd-tab-icon {
-    font-size: 1.3rem;
-  }
-
-  .team-slots {
-    grid-template-columns: repeat(3, 1fr);
+  .pcbox-slots {
+    grid-template-columns: repeat(6, 1fr) !important;
   }
 
 }
