@@ -8710,6 +8710,8 @@ button, a, [role="button"] { cursor: none; }
   body { outline: 4px solid red !important; }
   .cs-title { color: #e63946 !important; }
 
+
+
   /* ── BASE ─────────────────────────────────────────────────────────────────── */
   html { font-size: 14px; }
 
@@ -8937,3 +8939,6 @@ button, a, [role="button"] { cursor: none; }
   .pcbox-slots { grid-template-columns: repeat(6, 1fr) !important; }
   .gd-tab-label { font-size: 0.55rem; }
 }
+
+/* DIAG GLOBAL — hors media query */
+body { outline: 6px solid red !important; }
