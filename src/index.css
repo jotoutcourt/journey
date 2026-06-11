@@ -1475,8 +1475,7 @@ button, a, [role="button"] { cursor: none; }
   text-transform: uppercase;
   line-height: 1.0;
   color: var(--text);
-  /* Pas de dégradé — typographie noire pure */
-  -webkit-text-fill-color: #12121e;
+  -webkit-text-fill-color: var(--text);
   background: none;
 }
 
@@ -2211,6 +2210,7 @@ button, a, [role="button"] { cursor: none; }
 .game-device {
   /* height strict = nav reste toujours en bas, même quand on scrolle */
   height: 100vh;
+  height: 100dvh; /* iOS Safari: tient compte de la toolbar du navigateur */
   overflow: hidden;
   background-color: #f4f5f9;
   background-image: radial-gradient(circle, #c8cad8 1px, transparent 1px);
@@ -8710,6 +8710,8 @@ button, a, [role="button"] { cursor: none; }
 
   /* ── BASE ─────────────────────────────────────────────────────────────────── */
   html { font-size: 14px; }
+  /* iOS Safari — toolbar visible → 100dvh = hauteur réelle visible */
+  .game-device { height: 100dvh; }
 
   /* ── 1. PAGE ACCUEIL ─────────────────────────────────────────────────────── */
   .cs-home {
@@ -8742,6 +8744,7 @@ button, a, [role="button"] { cursor: none; }
   .cart-hover-name { font-size: 0.6rem; }
   .shelf-hint { font-size: 0.72rem; padding: 0 1rem; text-align: center; }
   .app-footer { padding: 0.4rem 0.75rem; }
+  .cs-page .app-footer { padding-bottom: env(safe-area-inset-bottom, 0px); }
   .app-footer-text { font-size: 0.58rem; }
   .bmac-btn--small { display: none; }
 
@@ -8751,8 +8754,10 @@ button, a, [role="button"] { cursor: none; }
   .gd-mini-cart { top: 13px; width: 38px; }
   .gd-mini-cart .gba-cart-svg { width: 38px !important; }
 
-  /* Masque Outils / Qui envoyer / Équipe */
-  .gd-header-center { display: none !important; }
+  /* Outils — icônes seules, texte masqué pour gagner de la place */
+  .gd-header-center { display: flex !important; gap: 0.1rem; }
+  .gd-header-center .gd-hdr-btn > span:not(.gd-hdr-btn-icon) { display: none; }
+  .gd-header-center .gd-hdr-btn { padding: 0.2rem 0.3rem; min-width: 28px; border-radius: 8px; }
 
   .gd-header-right  { gap: 0.25rem; }
   .gd-trainer-badge { font-size: 0.6rem; }
@@ -8760,10 +8765,12 @@ button, a, [role="button"] { cursor: none; }
   .theme-toggle-btn { width: 28px; height: 28px; font-size: 0.9rem; padding: 0; }
 
   /* ── 3. NAVIGATION BAS ───────────────────────────────────────────────────── */
-  .gd-nav { padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .gd-nav { padding-bottom: env(safe-area-inset-bottom, 0px); flex-shrink: 0; }
   .gd-tab { flex: 1; padding: 0.5rem 0.15rem 0.4rem; gap: 2px; }
   .gd-tab-icon  { font-size: 1.35rem; line-height: 1; }
   .gd-tab-label { font-size: 0.6rem; letter-spacing: 0; text-transform: uppercase; }
+  /* Empêche le scroll horizontal sur l'onglet aventure et les onglets scrollables */
+  .gd-scroll-pane { overflow-x: hidden; }
 
   /* ── 4. CHAPITRES ────────────────────────────────────────────────────────── */
   /* adv-grid-scroll (wrapper JSX) gère le flex:1 + scroll */
@@ -8856,10 +8863,14 @@ button, a, [role="button"] { cursor: none; }
   .pdx-type-pill { font-size: 0.6rem; padding: 0.22rem 0.45rem; }
 
   /* ── 9. BOÎTE PC ─────────────────────────────────────────────────────────── */
-  .pcbox-screen  { padding: 0.4rem; }
-  .pcbox-layout  { flex-direction: column; gap: 0.4rem; }
+  .pcbox-screen  { padding: 0.4rem; overflow-y: auto; height: 100%; }
+  .pcbox-layout  { flex-direction: column; gap: 0.4rem; min-height: min-content; }
+  .pcbox-box     { overflow: visible; }
   .pcbox-slots {
     grid-template-columns: repeat(8, 1fr) !important;
+    grid-template-rows: auto !important;
+    grid-auto-rows: auto !important;
+    flex: unset !important;
     gap: 4px;
     padding: 0.45rem;
   }
@@ -8913,6 +8924,21 @@ button, a, [role="button"] { cursor: none; }
     bottom: calc(60px + env(safe-area-inset-bottom, 0px));
     top: auto; right: 0.75rem;
   }
+
+  /* ── 17. ONBOARDING (prénom + starter) ──────────────────────────────────── */
+  .onb-page {
+    align-items: flex-start;
+    min-height: 100dvh;
+    overflow-y: auto;
+    padding: 2rem 1.25rem;
+    padding-bottom: calc(2.5rem + env(safe-area-inset-bottom, 0px));
+  }
+  .onb-inner { padding-top: 0.5rem; }
+  .onb-question { font-size: 1.6rem; }
+  .onb-starters { gap: 0.75rem; }
+  .onb-starter { padding: 0.85rem 0.75rem; }
+  .onb-starter-img { width: 90px; height: 90px; }
+  .onb-nav-row { flex-wrap: wrap; justify-content: center; gap: 0.75rem; margin-top: 0.75rem; }
 
   /* ── 15. LÉGENDAIRES — ancien composant lgd-tile ────────────────────────── */
   .lgd-grid { flex-wrap: wrap; overflow-x: unset; }
