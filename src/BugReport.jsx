@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useT } from './i18n/index.jsx'
 
-const BMAC_URL = import.meta.env.VITE_BMAC_URL || 'https://buymeacoffee.com/jordanjoin'
+const BMAC_URL = import.meta.env.VITE_BMAC_URL || 'https://buymeacoffee.com/jotoutcourt'
 
 // TODO: configure VITE_BUG_REPORT_WEBHOOK
 // to receive reports (Discord webhook, email service, etc.)

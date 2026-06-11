@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useT, useLocale, useTField } from './i18n/index.jsx'
 
 // ── Buy Me a Coffee — update VITE_BMAC_URL in .env to activate ──────────────
-const BMAC_URL = import.meta.env.VITE_BMAC_URL || 'https://buymeacoffee.com/jordanjoin'
+const BMAC_URL = import.meta.env.VITE_BMAC_URL || 'https://buymeacoffee.com/jotoutcourt'
 
 function BmacButton({ size = 'normal' }) {
   if (!BMAC_URL) return null

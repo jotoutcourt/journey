@@ -3,7 +3,7 @@ import { GBACart } from './GBACart.jsx'
 import { useT } from './i18n/index.jsx'
 import OnlineCounter from './OnlineCounter.jsx'
 
-const BMAC_URL = import.meta.env.VITE_BMAC_URL || 'https://buymeacoffee.com/jordanjoin'
+const BMAC_URL = import.meta.env.VITE_BMAC_URL || 'https://buymeacoffee.com/jotoutcourt'
 
 const CARTS = [
   {
