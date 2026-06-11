@@ -1382,8 +1382,9 @@ button, a, [role="button"] { cursor: none; }
 
 .cs-page {
   min-height: 100vh;
-  /* Fond blanc avec grille de points très subtile */
   background-color: var(--bg);
+  background-image: radial-gradient(circle, #c8cad8 1px, transparent 1px);
+  background-size: 28px 28px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -4351,23 +4352,29 @@ button, a, [role="button"] { cursor: none; }
   background: rgba(245,245,247,0.9);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(0,0,0,0.06);
-  overflow-x: auto;
-  scrollbar-width: none;
-  position: relative;
-}
-.pdd-tabbar::-webkit-scrollbar { display: none; }
-/* Indication visuelle que les onglets continuent à droite */
-.pdd-tabbar::after {
-  content: '';
+  overflow: hidden; /* le scroll est sur l'inner */
   position: sticky;
+  top: 0;
+  z-index: 10;
+}
+/* Dégradé indicateur "il y a plus →" */
+.pdd-tabbar::after {
+  content: '›';
+  position: absolute;
   right: 0;
   top: 0;
-  display: inline-block;
-  width: 3rem;
-  height: 100%;
-  background: linear-gradient(to left, rgba(245,245,247,0.95) 20%, transparent);
+  bottom: 0;
+  width: 2.5rem;
+  background: linear-gradient(to right, transparent, rgba(245,245,247,0.96) 60%);
   pointer-events: none;
-  flex-shrink: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 0.5rem;
+  font-size: 0.9rem;
+  color: #aaa;
+  font-weight: 700;
 }
 
 .pdd-tabbar-inner {
@@ -4375,7 +4382,10 @@ button, a, [role="button"] { cursor: none; }
   gap: 0.3rem;
   padding: 0.55rem 1rem;
   min-width: max-content;
+  overflow-x: auto;
+  scrollbar-width: none;
 }
+.pdd-tabbar-inner::-webkit-scrollbar { display: none; }
 
 .pdd-tab {
   flex-shrink: 0;
@@ -8962,31 +8972,35 @@ button, a, [role="button"] { cursor: none; }
   .pdx-type-pill { font-size: 0.6rem; padding: 0.22rem 0.45rem; }
 
   /* ── 9. BOÎTE PC ─────────────────────────────────────────────────────────── */
-  .pcbox-screen  { padding: 0.4rem; overflow-y: auto; height: 100%; }
-  .pcbox-layout  { flex-direction: column; gap: 0.4rem; min-height: min-content; }
-  .pcbox-box     { overflow: visible; }
+  /* Conteneur principal : remplit la hauteur dispo, pas de scroll externe */
+  .pcbox-screen  { padding: 0.4rem; height: 100%; overflow: hidden; }
+  .pcbox-layout  { flex-direction: column; gap: 0.35rem; height: 100%; }
+  /* La boîte prend tout l'espace vertical restant */
+  .pcbox-box     { flex: 1; min-height: 0; overflow: hidden; }
+  /* Grille : 6 colonnes × 5 rangées qui remplissent la hauteur disponible */
   .pcbox-slots {
+    flex: 1 !important;
+    min-height: 0 !important;
     grid-template-columns: repeat(6, 1fr) !important;
-    grid-template-rows: auto !important;
-    grid-auto-rows: auto !important;
-    flex: unset !important;
-    gap: 5px;
-    padding: 0.45rem;
+    grid-template-rows: repeat(5, 1fr) !important;
+    gap: 4px !important;
+    padding: 0.4rem !important;
   }
-  /* Panneau équipe : rangée horizontale en bas de la boîte */
+  /* Panneau équipe : rangée horizontale compacte en bas */
   .pcbox-party-panel {
     display: flex !important;
     flex-direction: row;
     width: 100%;
     height: auto;
+    flex-shrink: 0;
     align-items: center;
     gap: 0.3rem;
-    padding: 0.4rem 0.5rem;
+    padding: 0.35rem 0.4rem;
   }
-  .pcbox-party-label { font-size: 0.5rem; writing-mode: initial; flex-shrink: 0; width: 28px; text-align: left; }
-  .pcbox-party-list  { flex-direction: row; flex: 1; gap: 4px; }
+  .pcbox-party-label { font-size: 0.48rem; writing-mode: initial; flex-shrink: 0; width: 26px; text-align: left; }
+  .pcbox-party-list  { flex-direction: row; flex: 1; gap: 3px; min-height: 0; }
   .pcbox-party-slot  { flex: 1; min-height: 0; aspect-ratio: 1; }
-  .pcbox-search-wrap { margin-bottom: 0.35rem; }
+  .pcbox-search-wrap { margin-bottom: 0.3rem; }
 
   /* ── 10. TEAM BUILDER ────────────────────────────────────────────────────── */
   .team-slots { grid-template-columns: repeat(3, 1fr); gap: 0.45rem; }
