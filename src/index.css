@@ -8706,10 +8706,6 @@ button, a, [role="button"] { cursor: none; }
 
 @media (max-width: 767px) {
 
-  /* ── DIAGNOSTIC — supprimer une fois confirmé ── */
-  body { outline: 4px solid red !important; }
-  .cs-title { color: #e63946 !important; }
-
 
 
   /* ── BASE ─────────────────────────────────────────────────────────────────── */
@@ -8940,5 +8936,3 @@ button, a, [role="button"] { cursor: none; }
   .gd-tab-label { font-size: 0.55rem; }
 }
 
-/* DIAG GLOBAL — hors media query */
-body { outline: 6px solid red !important; }
