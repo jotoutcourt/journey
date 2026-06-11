@@ -3316,6 +3316,7 @@ function App() {
 
   return (
     <>
+      <div style={{position:'fixed',top:0,left:0,right:0,height:'6px',background:'#e63946',zIndex:99999}} />
       <ConsoleScreen
         games={games}
         onSelectGame={handleSelectGame}
