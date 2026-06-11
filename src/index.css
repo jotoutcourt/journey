@@ -8772,6 +8772,16 @@ button, a, [role="button"] { cursor: none; }
 
   /* ── 2. HEADER DU JEU ──────────────────────────────────────────────────── */
 
+  /* gd-screen overflow:hidden bloque les scroll enfants → passer en clip */
+  .gd-screen {
+    overflow: clip;
+  }
+
+  /* Libère le wrapper légendaire pour que gd-scroll-pane puisse scroller */
+  .lgd-wrapper {
+    height: auto !important;
+  }
+
   .gd-header {
     height: 46px;
     padding: 0 0.5rem 0 0;
@@ -8827,15 +8837,19 @@ button, a, [role="button"] { cursor: none; }
 
   /* ── 4. GRILLE DES CHAPITRES ───────────────────────────────────────────── */
 
+  /* gd-screen a overflow:hidden + flex:column → adv-ch-grid remplit toute la hauteur avec flex:1
+     Sur mobile il faut le détacher du flex et le rendre scrollable verticalement */
   .adv-ch-grid {
     display: grid !important;
     grid-template-columns: 1fr 1fr !important;
     grid-auto-rows: auto !important;
+    flex: unset !important;
     flex-direction: unset !important;
     flex-wrap: unset !important;
-    overflow-x: unset !important;
-    overflow-y: auto;
-    height: auto !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    height: 100% !important;
+    max-height: 100% !important;
     gap: 12px !important;
     padding: 12px !important;
     align-items: unset !important;
@@ -8903,6 +8917,11 @@ button, a, [role="button"] { cursor: none; }
 
   .adv-zone-grid {
     grid-template-columns: repeat(2, 1fr) !important;
+    grid-auto-rows: auto !important;
+    flex: unset !important;
+    height: 100% !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
     gap: 8px;
     padding: 10px;
   }
