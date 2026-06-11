@@ -4379,9 +4379,9 @@ button, a, [role="button"] { cursor: none; }
   display: flex;
   gap: 0.3rem;
   padding: 0.55rem 1rem;
-  min-width: max-content;
   overflow-x: auto;
   scrollbar-width: none;
+  touch-action: pan-x;
 }
 .pdd-tabbar-inner::-webkit-scrollbar { display: none; }
 
