@@ -1842,6 +1842,7 @@ button, a, [role="button"] { cursor: none; }
   cursor: none;
   display: block;
   background: transparent;
+  position: relative;
 }
 
 .cart-wrapper-available {
