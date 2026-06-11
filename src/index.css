@@ -1383,8 +1383,6 @@ button, a, [role="button"] { cursor: none; }
 .cs-page {
   min-height: 100vh;
   background-color: var(--bg);
-  background-image: radial-gradient(circle, #c8cad8 1px, transparent 1px);
-  background-size: 28px 28px;
   display: flex;
   flex-direction: column;
   align-items: center;
