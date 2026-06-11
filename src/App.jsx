@@ -3089,6 +3089,14 @@ function GameScreen({ game, cart, onBack, isDark, toggleTheme, onTabChange, onOp
 
       {/* Navigation */}
       <nav className="gd-nav">
+        {/* Bouton Outils — visible uniquement sur mobile (dans la nav), caché sur desktop */}
+        <button
+          className={`gd-tab gd-tab-tools${widgetDrawerOpen ? ' gd-tab-active' : ''}`}
+          onClick={() => setWidgetDrawerOpen(o => !o)}
+        >
+          <span className="gd-tab-icon">🧩</span>
+          <span className="gd-tab-label">{t('header.tools')}</span>
+        </button>
         {deviceTabs.map(dt => (
           <button
             key={dt.key}

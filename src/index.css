@@ -2282,6 +2282,8 @@ button, a, [role="button"] { cursor: none; }
   border-top: 1px solid var(--border);
   flex-shrink: 0;
 }
+/* Bouton Outils dans la nav — masqué sur desktop, visible sur mobile */
+.gd-tab-tools { display: none; }
 
 /* ── Centre du header — Outils + Équipe ── */
 .gd-header-center {
@@ -8836,8 +8838,10 @@ button, a, [role="button"] { cursor: none; }
   .gd-header { height: 46px; padding: 0 0.5rem; }
   /* Masque le slot cartouche sur mobile */
   .gd-slot   { display: none; }
-  /* Bouton Outils : texte visible, taille normale */
-  .gd-header-center { display: flex !important; }
+  /* Bouton Outils déplacé dans la nav — masqué dans le header sur mobile */
+  .gd-header-center { display: none !important; }
+  /* Outils visible dans la nav */
+  .gd-tab-tools { display: flex; }
   .gd-hdr-btn { font-size: 0.7rem; padding: 0.25rem 0.55rem; }
   .gd-header-right  { gap: 0.3rem; }
   .theme-toggle-btn { width: 28px; height: 28px; font-size: 0.9rem; padding: 0; }
