@@ -2285,6 +2285,16 @@ button, a, [role="button"] { cursor: none; }
 /* Bouton Outils dans la nav — masqué sur desktop, visible sur mobile */
 .gd-tab-tools { display: none; }
 
+/* ── Titre mobile dans le header ── */
+.gd-header-title {
+  display: none; /* masqué sur desktop */
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
 /* ── Centre du header — Outils + Équipe ── */
 .gd-header-center {
   display: flex;
@@ -8837,8 +8847,10 @@ button, a, [role="button"] { cursor: none; }
   .gd-header { height: 46px; padding: 0 0.5rem; }
   /* Masque le slot cartouche sur mobile */
   .gd-slot   { display: none; }
-  /* Bouton Outils déplacé dans la nav — masqué dans le header sur mobile */
-  .gd-header-center { display: none !important; }
+  /* Bouton Outils déplacé dans la nav — header center affiche le titre sur mobile */
+  .gd-header-center { display: flex !important; justify-content: center; }
+  .gd-header-center .gd-hdr-btn { display: none; }
+  .gd-header-title   { display: block; }
   /* Outils visible dans la nav */
   .gd-tab-tools { display: flex; }
   .gd-hdr-btn { font-size: 0.7rem; padding: 0.25rem 0.55rem; }

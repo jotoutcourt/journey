@@ -3023,6 +3023,7 @@ function GameScreen({ game, cart, onBack, isDark, toggleTheme, onTabChange, onOp
         </div>
 
         <div className="gd-header-center">
+          {/* Desktop : bouton Outils */}
           <button
             className={`gd-hdr-btn${widgetDrawerOpen ? ' gd-hdr-btn--active' : ''}`}
             onClick={() => setWidgetDrawerOpen(o => !o)}
@@ -3030,6 +3031,8 @@ function GameScreen({ game, cart, onBack, isDark, toggleTheme, onTabChange, onOp
             <span className="gd-hdr-btn-icon">🧩</span>
             <span>{t('header.tools')}</span>
           </button>
+          {/* Mobile : titre */}
+          <span className="gd-header-title">Journey Tracker</span>
         </div>
 
         <div className="gd-header-right">
