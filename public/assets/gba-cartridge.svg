@@ -1,0 +1,232 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 350 580" width="350" height="580">
+  <defs>
+    <!-- Plastic matte texture -->
+    <filter id="grain" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="4" stitchTiles="stitch" result="noise"/>
+      <feColorMatrix type="saturate" values="0" in="noise" result="grey"/>
+      <feBlend in="SourceGraphic" in2="grey" mode="multiply" result="blend"/>
+      <feComposite in="blend" in2="SourceGraphic" operator="in"/>
+    </filter>
+    <filter id="soft-shadow" x="-8%" y="-8%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="6" flood-color="#000" flood-opacity="0.18"/>
+    </filter>
+
+    <!-- Top highlight -->
+    <linearGradient id="top-highlight" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#fff" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Left edge 3D depth -->
+    <linearGradient id="left-edge" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%"   stop-color="#000" stop-opacity="0.30"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Bottom edge 3D depth -->
+    <linearGradient id="bottom-edge" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.28"/>
+    </linearGradient>
+
+    <!-- Body gradient (top-left light source) -->
+    <linearGradient id="body-grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"   stop-color="#3a3a3a"/>
+      <stop offset="50%"  stop-color="#2a2a2a"/>
+      <stop offset="100%" stop-color="#1e1e1e"/>
+    </linearGradient>
+
+    <!-- Label gradient -->
+    <linearGradient id="label-grad" x1="0" y1="0" x2="0.6" y2="1">
+      <stop offset="0%"   stop-color="var(--label-top, #cc2200)"/>
+      <stop offset="100%" stop-color="var(--label-bot, #7a1100)"/>
+    </linearGradient>
+
+    <!-- Label sheen -->
+    <linearGradient id="label-sheen" x1="0" y1="0" x2="0.5" y2="1">
+      <stop offset="0%"   stop-color="#fff" stop-opacity="0.12"/>
+      <stop offset="40%"  stop-color="#fff" stop-opacity="0.04"/>
+      <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Connector gold gradient -->
+    <linearGradient id="pin-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#c8a84b"/>
+      <stop offset="50%"  stop-color="#f0d060"/>
+      <stop offset="100%" stop-color="#9a7a30"/>
+    </linearGradient>
+
+    <!-- Clip for body shape -->
+    <clipPath id="body-clip">
+      <path d="
+        M 20,0
+        Q 0,0 0,20
+        L 0,490
+        L 110,490
+        L 110,510
+        Q 110,520 120,520
+        L 135,520
+        L 135,490
+        L 215,490
+        L 215,520
+        L 230,520
+        Q 240,520 240,510
+        L 240,490
+        L 350,490
+        L 350,20
+        Q 350,0 330,0
+        Z
+      "/>
+    </clipPath>
+  </defs>
+
+  <!-- ── LAYER: body ───────────────────────────────────────────────── -->
+  <g id="body" filter="url(#soft-shadow)">
+    <!-- Main body shape -->
+    <path d="
+      M 20,0
+      Q 0,0 0,20
+      L 0,490
+      L 110,490
+      L 110,510
+      Q 110,520 120,520
+      L 135,520
+      L 135,490
+      L 215,490
+      L 215,520
+      L 230,520
+      Q 240,520 240,510
+      L 240,490
+      L 350,490
+      L 350,20
+      Q 350,0 330,0
+      Z
+    " fill="url(#body-grad)"/>
+
+    <!-- 3D left edge shadow -->
+    <rect x="0" y="0" width="10" height="490" fill="url(#left-edge)" clip-path="url(#body-clip)"/>
+
+    <!-- 3D bottom edge shadow -->
+    <rect x="0" y="470" width="350" height="50" fill="url(#bottom-edge)" clip-path="url(#body-clip)"/>
+
+    <!-- Top edge highlight (light source top-left) -->
+    <rect x="0" y="0" width="350" height="30" fill="url(#top-highlight)" clip-path="url(#body-clip)"/>
+  </g>
+
+  <!-- ── LAYER: label ──────────────────────────────────────────────── -->
+  <g id="label">
+    <!-- Label recess/inset shadow -->
+    <rect x="24" y="52" width="302" height="360" rx="10" ry="10"
+          fill="#111" opacity="0.4"/>
+    <!-- Label background -->
+    <rect x="26" y="50" width="298" height="356" rx="9" ry="9"
+          fill="url(#label-grad)"/>
+    <!-- Label sheen overlay -->
+    <rect x="26" y="50" width="298" height="356" rx="9" ry="9"
+          fill="url(#label-sheen)"/>
+    <!-- Label border -->
+    <rect x="26" y="50" width="298" height="356" rx="9" ry="9"
+          fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  </g>
+
+  <!-- ── LAYER: text (on label) ───────────────────────────────────── -->
+  <g id="text">
+    <!-- Platform line top -->
+    <text x="175" y="76"
+          font-family="'Arial Narrow', Arial, sans-serif"
+          font-size="10" font-weight="700" letter-spacing="3"
+          fill="rgba(255,255,255,0.55)" text-anchor="middle"
+          text-decoration="none">GAME BOY ADVANCE</text>
+
+    <!-- POKÉMON large -->
+    <text x="175" y="165"
+          font-family="Impact, 'Arial Black', sans-serif"
+          font-size="46" font-weight="900" letter-spacing="2"
+          fill="#fff" text-anchor="middle"
+          style="text-shadow: 0 2px 8px rgba(0,0,0,0.5)">POKÉMON</text>
+
+    <!-- Game name -->
+    <text x="175" y="210"
+          font-family="Impact, 'Arial Black', sans-serif"
+          font-size="28" letter-spacing="4"
+          fill="rgba(255,220,200,0.95)" text-anchor="middle">ROUGE FEU</text>
+
+    <!-- Pokéball icon (simple circles) -->
+    <circle cx="175" cy="295" r="55" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
+    <circle cx="175" cy="295" r="36" fill="rgba(0,0,0,0.25)"/>
+    <circle cx="175" cy="295" r="36" fill="none" stroke="rgba(255,255,255,0.20)" stroke-width="1.5"/>
+    <!-- Top half -->
+    <path d="M 139,295 A 36,36 0 0 1 211,295 Z" fill="rgba(255,255,255,0.12)"/>
+    <!-- Center band -->
+    <rect x="139" y="291" width="72" height="8" fill="rgba(255,255,255,0.10)"/>
+    <!-- Center button -->
+    <circle cx="175" cy="295" r="9" fill="rgba(255,255,255,0.25)" stroke="rgba(255,255,255,0.30)" stroke-width="1.5"/>
+    <circle cx="175" cy="295" r="5" fill="rgba(255,255,255,0.15)"/>
+
+    <!-- Nintendo logo bottom of label -->
+    <text x="175" y="388"
+          font-family="'Arial Narrow', Arial, sans-serif"
+          font-size="9.5" font-weight="700" letter-spacing="1"
+          fill="rgba(255,255,255,0.40)" text-anchor="middle">Nintendo</text>
+
+    <!-- GBA logo corner -->
+    <text x="300" y="388"
+          font-family="'Arial Narrow', Arial, sans-serif"
+          font-size="8" font-weight="700" letter-spacing="1"
+          fill="rgba(255,255,255,0.30)" text-anchor="middle">GBA</text>
+  </g>
+
+  <!-- ── LAYER: front face details ────────────────────────────────── -->
+  <g id="highlights">
+    <!-- Embossed "Game Boy Advance" text above label -->
+    <text x="175" y="44"
+          font-family="'Arial Narrow', Arial, sans-serif"
+          font-size="8.5" font-weight="700" letter-spacing="2.5"
+          fill="#4a4a4a" text-anchor="middle">GAME BOY ADVANCE</text>
+
+    <!-- Cart release hole below label -->
+    <circle cx="175" cy="436" r="5.5" fill="#1a1a1a" stroke="#383838" stroke-width="1"/>
+    <circle cx="175" cy="436" r="3" fill="#111" opacity="0.8"/>
+
+    <!-- Top-left corner highlight streak -->
+    <path d="M 20,2 Q 2,2 2,20 L 2,60"
+          fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="2" stroke-linecap="round"/>
+  </g>
+
+  <!-- ── LAYER: connector ─────────────────────────────────────────── -->
+  <g id="connector">
+    <!-- Connector housing -->
+    <rect x="8" y="490" width="334" height="22" rx="2" fill="#1a1a1a"/>
+
+    <!-- Individual pins (16 pins) -->
+    <g fill="url(#pin-grad)">
+      <rect x="22"  y="493" width="12" height="16" rx="1"/>
+      <rect x="40"  y="493" width="12" height="16" rx="1"/>
+      <rect x="58"  y="493" width="12" height="16" rx="1"/>
+      <rect x="76"  y="493" width="12" height="16" rx="1"/>
+      <rect x="94"  y="493" width="12" height="16" rx="1"/>
+      <rect x="112" y="493" width="12" height="16" rx="1"/>
+
+      <!-- Gap for anti-insertion notch area (left tab) -->
+
+      <rect x="143" y="493" width="12" height="16" rx="1"/>
+      <rect x="161" y="493" width="12" height="16" rx="1"/>
+      <rect x="179" y="493" width="12" height="16" rx="1"/>
+      <rect x="197" y="493" width="12" height="16" rx="1"/>
+      <rect x="215" y="493" width="12" height="16" rx="1"/>
+      <rect x="233" y="493" width="12" height="16" rx="1"/>
+      <rect x="251" y="493" width="12" height="16" rx="1"/>
+      <rect x="269" y="493" width="12" height="16" rx="1"/>
+      <rect x="287" y="493" width="12" height="16" rx="1"/>
+      <rect x="305" y="493" width="12" height="16" rx="1"/>
+    </g>
+
+    <!-- Anti-insertion tab (left bump) -->
+    <rect x="109" y="488" width="28" height="6" rx="2" fill="#222"/>
+    <rect x="113" y="485" width="20" height="8" rx="2" fill="#1e1e1e"/>
+
+    <!-- Connector notch cutout (bottom center) -->
+    <rect x="110" y="490" width="130" height="30" rx="0" fill="#111"/>
+    <rect x="135" y="490" width="80"  height="30" rx="0" fill="#0a0a0a"/>
+  </g>
+</svg>
