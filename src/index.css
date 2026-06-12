@@ -3231,6 +3231,7 @@ button, a, [role="button"] { cursor: none; }
   gap: 12px;
   padding: 14px;
   box-sizing: border-box;
+  height: 100%;
 }
 
 .adv-zt {
@@ -3241,7 +3242,6 @@ button, a, [role="button"] { cursor: none; }
   cursor: pointer;
   background: #1a1a2e;
   padding: 0;
-  aspect-ratio: 3 / 4;
   transition: transform .15s ease, box-shadow .15s ease;
 }
 .adv-zt:hover {
