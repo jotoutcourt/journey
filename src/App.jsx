@@ -2571,9 +2571,8 @@ function LegendairesTab({ game, caught, toggleCaught, unavailableBeastIds = new 
       >
         <img
           src={`/assets/legendaries/${lgd.id}.png`}
-          alt=""
+          alt={lgd.id}
           className={`adv-ch-tile-bg${isCaught ? '' : ' lgd-img-hidden'}`}
-          onError={e => { e.currentTarget.style.display = 'none' }}
         />
         <div className="adv-ch-tile-overlay" />
         {isCaught && <span className="adv-ch-tile-done-tag">{t('lgd.caught')}</span>}
