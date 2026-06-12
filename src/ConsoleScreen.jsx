@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { GBACart } from './GBACart.jsx'
 import { useT } from './i18n/index.jsx'
 import OnlineCounter from './OnlineCounter.jsx'
+import LegalModal from './LegalModal.jsx'
 
 const BMAC_URL = import.meta.env.VITE_BMAC_URL || 'https://buymeacoffee.com/jotoutcourt'
 
@@ -47,6 +48,7 @@ export { CARTS }
 export function ConsoleScreen({ games, onSelectGame, returningCartId, onOpenBugReport }) {
   const t = useT()
   const [activeCartId, setActiveCartId] = useState(null)
+  const [legalOpen, setLegalOpen] = useState(false)
 
   function insert(cart) {
     if (!cart.available || activeCartId) return
@@ -104,7 +106,10 @@ export function ConsoleScreen({ games, onSelectGame, returningCartId, onOpenBugR
       </div>
 
       <footer className="app-footer">
-        <span className="app-footer-text">Pokémon Journey Tracker — Projet fan non officiel</span>
+        <span className="app-footer-text">
+          Pokémon Journey Tracker — Projet fan non officiel &nbsp;·&nbsp;
+          <button className="app-footer-legal" onClick={() => setLegalOpen(true)}>Mentions légales</button>
+        </span>
         <OnlineCounter />
         <div className="app-footer-right">
           {BMAC_URL && (
@@ -115,6 +120,7 @@ export function ConsoleScreen({ games, onSelectGame, returningCartId, onOpenBugR
           <button className="app-footer-bug" onClick={onOpenBugReport}>🐛 Signaler un bug</button>
         </div>
       </footer>
+      <LegalModal open={legalOpen} onClose={() => setLegalOpen(false)} />
     </div>
   )
 }
