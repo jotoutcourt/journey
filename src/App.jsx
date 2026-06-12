@@ -2570,7 +2570,7 @@ function LegendairesTab({ game, caught, toggleCaught, unavailableBeastIds = new 
         onClick={() => onSelectLegendary(lgd)}
       >
         <img
-          src={`/assets/legendaries/${lgd.id}.png`}
+          src={`/legendaries/${lgd.id}.png`}
           alt={lgd.id}
           className={`adv-ch-tile-bg${isCaught ? '' : ' lgd-img-hidden'}`}
         />
