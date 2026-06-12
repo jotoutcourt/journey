@@ -2656,7 +2656,8 @@ button, a, [role="button"] { cursor: none; }
 
 /* Image noire (silhouette) quand le légendaire n'est pas capturé */
 .lgd-img-hidden {
-  filter: grayscale(1) brightness(0);
+  filter: grayscale(0.6) brightness(0.35);
+  opacity: 0.9;
 }
 
 /* Les tiles légendaires ont besoin d'une hauteur propre (pas d'image garantie) */
@@ -8379,7 +8380,7 @@ button, a, [role="button"] { cursor: none; }
 .adv-ch-tile-silhouette {
   display: block !important;
   filter: brightness(0);
-  opacity: 0.55;
+  opacity: 0.35;
   position: absolute;
   inset: 0;
   width: 100%;
