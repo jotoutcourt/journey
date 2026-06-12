@@ -68,7 +68,19 @@
       "Bash(CLAUDE_CODE_TMPDIR=/tmp grep *)",
       "Bash(git *)",
       "Bash(head -n 8698 /Users/jordanjoin/Desktop/pokedex-tracker/src/index.css)",
-      "Bash(mv /tmp/css_base.tmp /Users/jordanjoin/Desktop/pokedex-tracker/src/index.css)"
+      "Bash(mv /tmp/css_base.tmp /Users/jordanjoin/Desktop/pokedex-tracker/src/index.css)",
+      "Bash(sed -n '1383,1400p' /Users/jordanjoin/Desktop/pokedex-tracker/src/index.css)",
+      "Bash(sed -n '4350,4395p' /Users/jordanjoin/Desktop/pokedex-tracker/src/index.css)",
+      "Bash(sed -n '9080,9090p' /Users/jordanjoin/Desktop/pokedex-tracker/src/index.css)",
+      "Bash(sed -n '5431,5445p' /Users/jordanjoin/Desktop/pokedex-tracker/src/index.css)",
+      "Bash(sed -n '5744,5800p' /Users/jordanjoin/Desktop/pokedex-tracker/src/index.css)",
+      "Bash(sed -n '3034,3060p' /Users/jordanjoin/Desktop/pokedex-tracker/src/index.css)",
+      "Bash(sed -n '3526,3560p' /Users/jordanjoin/Desktop/pokedex-tracker/src/index.css)",
+      "Bash(sed -n '2647,2660p' /Users/jordanjoin/Desktop/pokedex-tracker/src/index.css)",
+      "Bash(sed -n '8947,8950p' /Users/jordanjoin/Desktop/pokedex-tracker/src/index.css)",
+      "Bash(sed -n '1841,1848p' /Users/jordanjoin/Desktop/pokedex-tracker/src/index.css)",
+      "Bash(sed -n '8912,8920p' /Users/jordanjoin/Desktop/pokedex-tracker/src/index.css)",
+      "Bash(file /Users/jordanjoin/Desktop/pokedex-tracker/public/assets/legendaries/*.png)"
     ]
   }
 }
