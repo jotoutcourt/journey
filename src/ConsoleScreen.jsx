@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { GBACart } from './GBACart.jsx'
-import { useT } from './i18n/index.jsx'
+import { useT, useLocale } from './i18n/index.jsx'
 import OnlineCounter from './OnlineCounter.jsx'
 import LegalModal from './LegalModal.jsx'
 
@@ -47,6 +47,7 @@ export { CARTS }
 
 export function ConsoleScreen({ games, onSelectGame, returningCartId, onOpenBugReport }) {
   const t = useT()
+  const { locale, setLocale } = useLocale()
   const [activeCartId, setActiveCartId] = useState(null)
   const [legalOpen, setLegalOpen] = useState(false)
 
@@ -65,6 +66,16 @@ export function ConsoleScreen({ games, onSelectGame, returningCartId, onOpenBugR
         <header className="cs-header">
           <h1 className="cs-title">Pokémon<br />Journey Tracker</h1>
           <p className="cs-sub">{t('console.sub')}</p>
+          <div className="cs-lang-toggle">
+            <button
+              className={`cs-lang-btn${locale === 'fr' ? ' cs-lang-btn--active' : ''}`}
+              onClick={() => setLocale('fr')}
+            >FR</button>
+            <button
+              className={`cs-lang-btn${locale === 'en' ? ' cs-lang-btn--active' : ''}`}
+              onClick={() => setLocale('en')}
+            >EN</button>
+          </div>
         </header>
 
         <div className="carts-row">
