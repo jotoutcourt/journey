@@ -249,6 +249,7 @@ export default {
   'bug.cancel':        'Annuler',
   'bug.success_title': 'Merci pour ton rapport !',
   'bug.success_sub':   'On regardera ça dès que possible.',
+  'bug.bmac_text':     "Tu aimes le projet ? Tu peux soutenir l'hébergement ☕",
   'bug.toast':         'Bug signalé avec succès 🐛',
   'bug.clear_page':    'Effacer la page',
   'bug.close':         'Fermer',

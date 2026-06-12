@@ -249,6 +249,7 @@ export default {
   'bug.cancel':        'Cancel',
   'bug.success_title': 'Thank you for your report!',
   'bug.success_sub':   "We'll look into it as soon as possible.",
+  'bug.bmac_text':     'Like the project? You can support the hosting ☕',
   'bug.toast':         'Bug reported successfully 🐛',
   'bug.clear_page':    'Clear page',
   'bug.close':         'Close',

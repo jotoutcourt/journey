@@ -157,7 +157,7 @@ export default function BugReport({ open, onClose, page = '' }) {
                 <p className="bugrep-success-sub">{t('bug.success_sub')}</p>
                 {BMAC_URL && (
                   <div className="bugrep-bmac-banner">
-                    <p className="bugrep-bmac-text">Tu aimes le projet ? Tu peux soutenir l'hébergement ☕</p>
+                    <p className="bugrep-bmac-text">{t('bug.bmac_text')}</p>
                     <a href={BMAC_URL} target="_blank" rel="noopener noreferrer" className="bmac-btn">
                       ☕ Buy me a coffee
                     </a>
