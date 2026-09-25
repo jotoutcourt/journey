@@ -98,7 +98,7 @@ const RAW = [
   // ── Star Wars ─────────────────────────────────────────────────────────────
   { u: 'sw', type: 'CHAR', rarity: 'secrete', first: 'Dark', last: 'Vador',
     quote: 'No, I am your father.', role: 'Seigneur Sith · Empire Galactique',
-    period: 'Épisode III – Épisode VI', creditLabel: 'Voix', credit: 'James Earl Jones', emoji: '🌑' },
+    period: 'Épisode III – Épisode VI', creditLabel: 'Voix', credit: 'James Earl Jones', emoji: '🦹' },
   { u: 'sw', type: 'CHAR', rarity: 'rare', first: 'Luke', last: 'Skywalker',
     quote: "I'm a Jedi, like my father before me.", role: 'Chevalier Jedi · Rébellion',
     period: 'Épisode IV – Épisode IX', creditLabel: 'Acteur', credit: 'Mark Hamill', emoji: '🌅' },

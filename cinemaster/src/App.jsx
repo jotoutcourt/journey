@@ -3,17 +3,25 @@ import BoosterOpening from './components/BoosterOpening.jsx'
 import Collection from './components/Collection.jsx'
 import CardModal from './components/CardModal.jsx'
 import RarityGuide from './components/RarityGuide.jsx'
-import { CardBack } from './components/Card.jsx'
+import Atelier from './components/Atelier.jsx'
+import Pack from './components/Pack.jsx'
 import { CARDS, CARDS_BY_ID } from './data/cards.js'
 import { RARITIES } from './lib/rarity.js'
 import { openBooster } from './lib/booster.js'
+import { loadImages } from './lib/images.js'
 import { BOOSTER_DUST_COST, MAX_BOOSTERS, REGEN_MS, load, regen, save } from './lib/storage.js'
 
 const TABS = [
   { id: 'boosters', label: 'Boosters' },
   { id: 'collection', label: 'Collection' },
   { id: 'guide', label: 'Raretés' },
+  { id: 'atelier', label: 'Atelier' },
 ]
+
+// Trois boosters au choix, comme en boutique : seule l'illustration change.
+const PACK_COVERS = ['dark-vador', 'daenerys-targaryen', 'la-delorean']
+  .map(slug => CARDS.find(c => c.id.endsWith(slug)))
+  .filter(Boolean)
 
 function formatDelay(ms) {
   const m = Math.max(0, Math.ceil(ms / 60000))
@@ -28,6 +36,7 @@ export default function App() {
   const [now, setNow] = useState(() => Date.now())
 
   useEffect(() => { save(state) }, [state])
+  useEffect(() => { loadImages() }, [])
 
   useEffect(() => {
     const t = setInterval(() => {
@@ -46,7 +55,7 @@ export default function App() {
 
   const canOpen = state.boosters > 0 || state.dust >= BOOSTER_DUST_COST
 
-  const open = useCallback(() => {
+  const open = useCallback((cover = PACK_COVERS[0]) => {
     if (!canOpen) return
     const cards = openBooster()
     const newIds = new Set(cards.filter(c => !state.owned[c.id]).map(c => c.id))
@@ -63,7 +72,7 @@ export default function App() {
         dust: useFree ? s.dust : s.dust - BOOSTER_DUST_COST,
       }
     })
-    setPull({ cards, newIds, key: Date.now() })
+    setPull({ cards, newIds, cover, key: Date.now() })
   }, [canOpen, state.owned])
 
   const recycle = id => setState(s => {
@@ -119,57 +128,57 @@ export default function App() {
             <BoosterOpening
               key={pull.key}
               cards={pull.cards}
+              cover={pull.cover}
               isNew={id => pull.newIds.has(id)}
               canOpenAgain={canOpen}
-              onAgain={open}
+              onAgain={() => open(pull.cover)}
               onDone={() => { setPull(null); setTab('collection') }}
             />
           ) : (
             <section className="shop">
-              <div className="shop-deck" aria-hidden="true">
-                <CardBack className="deck-card d1" />
-                <CardBack className="deck-card d2" />
-                <CardBack className="deck-card d3" />
-              </div>
-              <h2>Série 1 · Premières Séances</h2>
+              <h2>Choisis ton booster</h2>
               <p className="muted">
-                {CARDS.length} cartes à collectionner : personnages, lieux cultes et objets cultes
-                de tes films et séries préférés.
+                Série 1 · Premières Séances · {CARDS.length} cartes : personnages, lieux cultes et objets cultes.
               </p>
-              <button className="btn primary big" onClick={open} disabled={!canOpen}>
+              <div className="pack-row">
+                {PACK_COVERS.map(cover => (
+                  <div key={cover.id} className="pack-slot">
+                    <Pack cover={cover} disabled={!canOpen} onClick={() => open(cover)} />
+                  </div>
+                ))}
+              </div>
+              <p className="muted small">
                 {state.boosters > 0
-                  ? `Ouvrir un booster (${state.boosters} dispo)`
-                  : `Acheter un booster (${BOOSTER_DUST_COST} 🎞️)`}
-              </button>
-              {state.boosters < MAX_BOOSTERS && (
-                <p className="muted small">Prochain booster gratuit dans {formatDelay(nextIn)}</p>
-              )}
-              {!canOpen && (
-                <p className="muted small">
-                  Recycle tes doublons dans la collection pour gagner des pellicules.
-                </p>
-              )}
+                  ? `${state.boosters} booster${state.boosters > 1 ? 's' : ''} gratuit${state.boosters > 1 ? 's' : ''} disponible${state.boosters > 1 ? 's' : ''}`
+                  : canOpen
+                    ? `Plus de booster gratuit : celui-ci coûte ${BOOSTER_DUST_COST} 🎞️`
+                    : 'Plus de booster : recycle tes doublons dans la collection pour gagner des pellicules.'}
+                {state.boosters < MAX_BOOSTERS && ` · prochain dans ${formatDelay(nextIn)}`}
+              </p>
             </section>
           ))}
 
         {tab === 'collection' && (
           <Collection
             owned={state.owned}
-            onSelect={setSelected}
+            onSelect={card => setSelected({ card })}
             onRecycleAll={recycleAll}
             duplicateDust={duplicateDust}
           />
         )}
 
         {tab === 'guide' && <RarityGuide />}
+
+        {tab === 'atelier' && <Atelier onSelect={card => setSelected({ card, edit: true })} />}
       </main>
 
       {selected && (
         <CardModal
-          card={selected}
-          count={state.owned[selected.id] || 0}
+          card={selected.card}
+          edit={selected.edit}
+          count={state.owned[selected.card.id] || 0}
           onClose={() => setSelected(null)}
-          onRecycle={() => recycle(selected.id)}
+          onRecycle={() => recycle(selected.card.id)}
         />
       )}
 

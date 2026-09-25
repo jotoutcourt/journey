@@ -1,0 +1,217 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Booster en aluminium
+   ═══════════════════════════════════════════════════════════════════════════ */
+.pack {
+  --mx: 50%; --my: 50%; --bgx: 50%; --bgy: 50%;
+  --rx: 0deg; --ry: 0deg; --o: 0; --hyp: 0;
+  --tear: 0;
+  container-type: inline-size;
+  width: 100%;
+  aspect-ratio: 62 / 100;
+  perspective: 1000px;
+  position: relative;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+  outline: none;
+}
+.pack.is-tearable { touch-action: none; cursor: grab; }
+.pack:focus-visible .pack-tilt { outline: 3px solid #ffd166; outline-offset: 6px; border-radius: 3cqw; }
+.pack.is-disabled { filter: grayscale(.85) brightness(.6); cursor: not-allowed; }
+
+.pack-tilt {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform: rotateX(var(--rx)) rotateY(var(--ry)) scale(calc(1 + var(--o) * .03));
+  transform-style: preserve-3d;
+  filter: drop-shadow(0 calc(4cqw + var(--o) * 4cqw) calc(8cqw + var(--o) * 6cqw) rgba(0, 0, 0, .6));
+}
+
+/* Aluminium : dégradé métallique aux couleurs de l'univers + reflet mobile */
+.pack-head,
+.pack-body {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background:
+    linear-gradient(105deg, transparent calc(var(--bgx) - 30%), rgba(255, 255, 255, .55) var(--bgx), transparent calc(var(--bgx) + 30%)),
+    radial-gradient(120% 80% at 50% 30%,
+      color-mix(in srgb, var(--c1) 70%, #fff) 0%,
+      var(--c1) 35%,
+      color-mix(in srgb, var(--c2) 75%, #000) 100%);
+}
+
+/* Bande à déchirer (haut) */
+.pack-head {
+  top: 0;
+  height: 13%;
+  -webkit-mask: conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg) 50% / 3.4cqw 100%;
+          mask: conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg) 50% / 3.4cqw 100%;
+}
+.pack-head::after {
+  /* ligne pointillée de découpe */
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-bottom: .8cqw dashed rgba(255, 255, 255, .55);
+}
+.pack-head-rest { clip-path: inset(0 0 0 calc(var(--tear) * 100%)); }
+.pack-head-torn {
+  clip-path: inset(-50% calc((1 - var(--tear)) * 100%) 0 -10%);
+  transform-origin: calc(var(--tear) * 100%) 100%;
+  transform: translateY(calc(var(--tear) * -22%)) rotate(calc(var(--tear) * -8deg));
+}
+.is-torn .pack-head-torn {
+  transition: transform .55s cubic-bezier(.4, 0, .9, .5), opacity .55s;
+  transform: translate(-40%, -260%) rotate(-32deg);
+  opacity: 0;
+}
+
+.crimp {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 55%;
+  background: repeating-linear-gradient(90deg,
+    rgba(255, 255, 255, .45) 0 .5cqw, rgba(0, 0, 0, .25) .5cqw 1.4cqw);
+  mix-blend-mode: overlay;
+}
+
+.pack-body {
+  top: 13%;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.4cqw;
+  padding: 6cqw 7cqw 12cqw;
+  box-sizing: border-box;
+  color: #fff;
+  text-align: center;
+  -webkit-mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 3.4cqw 100%;
+          mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 3.4cqw 100%;
+}
+.crimp-bottom { inset: auto 0 0; height: 6%; }
+
+.pack-logo {
+  font: 900 15cqw/.85 'Rubik', sans-serif;
+  letter-spacing: -.02em;
+  -webkit-text-stroke: .6cqw rgba(0, 0, 0, .35);
+  paint-order: stroke fill;
+  text-shadow: 0 1cqw 0 rgba(0, 0, 0, .25);
+}
+.pack-logo small {
+  display: block;
+  font-size: 9cqw;
+  font-weight: 700;
+  color: #ffd166;
+}
+
+.pack-cover {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  border-radius: 4cqw;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--c1) 60%, #fff), color-mix(in srgb, var(--c2) 70%, #000));
+  box-shadow: 0 0 0 1cqw rgba(255, 255, 255, .85), 0 0 0 1.8cqw rgba(0, 0, 0, .35), 0 3cqw 6cqw rgba(0, 0, 0, .4);
+}
+.pack-cover img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 22%;
+}
+.pack-cover-emoji {
+  font-size: 34cqw;
+  line-height: 1;
+  filter: drop-shadow(0 2cqw 3cqw rgba(0, 0, 0, .5));
+}
+
+.pack-universe {
+  font: 900 6.4cqw/1 'Rubik', sans-serif;
+  text-shadow: 0 .6cqw 1.2cqw rgba(0, 0, 0, .5);
+}
+.pack-set {
+  font: 500 3.6cqw/1 'Oswald', sans-serif;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  opacity: .9;
+}
+.pack-count {
+  font: 700 3.4cqw/1 'Oswald', sans-serif;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  padding: 1.4cqw 3cqw;
+  border-radius: 99px;
+  background: rgba(0, 0, 0, .35);
+}
+
+/* Holographie + froissé de l'aluminium */
+.pack-foil,
+.pack-glare {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  -webkit-mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 3.4cqw 100%;
+          mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 3.4cqw 100%;
+  top: 13%;
+}
+.pack-foil {
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='480'%3E%3Cfilter id='c'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.008 .03' numOctaves='4' seed='4'/%3E%3CfeDiffuseLighting lighting-color='%23fff' surfaceScale='3'%3E%3CfeDistantLight azimuth='225' elevation='50'/%3E%3C/feDiffuseLighting%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23c)'/%3E%3C/svg%3E"),
+    repeating-linear-gradient(0deg,
+      hsl(2 100% 73%) 5%, hsl(53 100% 69%) 10%, hsl(93 100% 69%) 15%,
+      hsl(176 100% 76%) 20%, hsl(228 100% 74%) 25%, hsl(283 100% 73%) 30%, hsl(2 100% 73%) 35%);
+  background-size: 100% 100%, 200% 600%;
+  background-position: 0 0, 0 var(--bgy);
+  background-blend-mode: overlay;
+  mix-blend-mode: soft-light;
+  opacity: calc(.55 + var(--o) * .35);
+}
+.pack-glare {
+  top: 0;
+  -webkit-mask: none;
+          mask: none;
+  background: radial-gradient(farthest-corner circle at var(--mx) var(--my),
+    rgba(255, 255, 255, .7) 5%, rgba(255, 255, 255, .15) 30%, rgba(0, 0, 0, .35) 100%);
+  mix-blend-mode: overlay;
+  opacity: calc(.3 + var(--o) * .6);
+}
+
+/* Indice : ciseaux qui glissent le long de la découpe */
+.tear-hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 13%;
+  height: 0;
+  pointer-events: none;
+}
+.tear-hint span {
+  position: absolute;
+  top: -4.2cqw;
+  font-size: 8cqw;
+  color: #fff;
+  text-shadow: 0 .5cqw 1.5cqw rgba(0, 0, 0, .6);
+  animation: scissors 2.2s ease-in-out infinite;
+}
+@keyframes scissors {
+  0%   { left: 2%;  opacity: 0; }
+  15%  { opacity: 1; }
+  80%  { left: 86%; opacity: 1; }
+  100% { left: 90%; opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pack-tilt { transform: none; }
+  .tear-hint span { animation: none; left: 45%; }
+}

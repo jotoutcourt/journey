@@ -1,14 +1,18 @@
-import { useRef } from 'react'
 import { RARITIES } from '../lib/rarity.js'
 import { SET, SET_SIZE } from '../data/cards.js'
+import { useCardImage } from '../lib/images.js'
+import { useTilt } from '../lib/tilt.js'
 import './card.css'
 
 const ILLUSTRATOR = 'JoDNR'
 
 // Illustration générée quand la carte n'a pas d'image : dégradé de l'univers,
 // motif selon le type et pictogramme central.
+// Priorité : image ajoutée dans l'Atelier, puis `image` du fichier de données.
 function Art({ card }) {
-  if (card.image) return <img className="art-img" src={card.image} alt="" draggable="false" />
+  const custom = useCardImage(card.id)
+  const src = custom || card.image
+  if (src) return <img className="art-img" src={src} alt="" draggable="false" />
   return (
     <div className={`art-gen art-${card.type.toLowerCase()}`}>
       <div className="art-rays" />
@@ -58,33 +62,10 @@ export function CardBack({ className = '' }) {
   )
 }
 
-export default function Card({ card, interactive = true, className = '', onClick, style }) {
-  const ref = useRef(null)
+export default function Card({ card, interactive = true, className = '', onClick, style, maxTilt }) {
+  const { attach, move: tiltMove, leave: tiltLeave, up: tiltUp } = useTilt({ maxTilt })
   const r = RARITIES[card.rarity]
   const full = r.layout === 'full'
-
-  // L'effet brillant suit le pointeur : on écrit directement des variables CSS
-  // sur l'élément pour éviter un re-render React à chaque mouvement.
-  const handleMove = e => {
-    const el = ref.current
-    if (!el) return
-    const rect = el.getBoundingClientRect()
-    const x = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width))
-    const y = Math.min(1, Math.max(0, (e.clientY - rect.top) / rect.height))
-    el.style.setProperty('--mx', `${x * 100}%`)
-    el.style.setProperty('--my', `${y * 100}%`)
-    el.style.setProperty('--rx', `${(0.5 - y) * 22}deg`)
-    el.style.setProperty('--ry', `${(x - 0.5) * 26}deg`)
-    el.style.setProperty('--hyp', Math.min(1, Math.hypot(x - 0.5, y - 0.5) * 2))
-    el.style.setProperty('--o', 1)
-    el.classList.add('is-active')
-  }
-  const handleLeave = () => {
-    const el = ref.current
-    if (!el) return
-    for (const p of ['--mx', '--my', '--rx', '--ry', '--hyp', '--o']) el.style.removeProperty(p)
-    el.classList.remove('is-active')
-  }
 
   const vars = {
     '--c1': card.universe.c1,
@@ -93,14 +74,20 @@ export default function Card({ card, interactive = true, className = '', onClick
     ...style,
   }
 
+  const handlers = interactive ? {
+    onPointerMove: tiltMove,
+    onPointerLeave: tiltLeave,
+    onPointerUp: tiltUp,
+    onPointerCancel: tiltLeave,
+  } : {}
+
   return (
     <div
-      ref={ref}
+      ref={attach}
       className={`card rarity-${card.rarity} foil-${r.foil} type-${card.type.toLowerCase()} ${full ? 'layout-full' : 'layout-framed'} ${className}`}
       style={vars}
-      onPointerMove={interactive ? handleMove : undefined}
-      onPointerLeave={interactive ? handleLeave : undefined}
       onClick={onClick}
+      {...handlers}
     >
       <div className="card-tilt">
         <div className="card-face">

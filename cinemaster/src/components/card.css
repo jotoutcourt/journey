@@ -9,6 +9,8 @@
   --my: 50%;
   --rx: 0deg;
   --ry: 0deg;
+  --bgx: 50%;
+  --bgy: 50%;
   --hyp: 0;
   --o: 0;
   --radius: 4.8cqw;
@@ -28,17 +30,14 @@
   width: 100%;
   height: 100%;
   border-radius: var(--radius);
-  transform: rotateX(var(--rx)) rotateY(var(--ry));
+  /* piloté image par image par useTilt (ressort) : pas de transition CSS */
+  transform: rotateX(var(--rx)) rotateY(var(--ry)) scale(calc(1 + var(--o) * .035));
   transform-style: preserve-3d;
-  transition: transform .5s cubic-bezier(.2, .8, .2, 1), box-shadow .5s;
-  box-shadow: 0 1.5cqw 4cqw rgba(0, 0, 0, .45);
-  will-change: transform;
+  box-shadow:
+    0 calc(1.5cqw + var(--o) * 3cqw) calc(4cqw + var(--o) * 7cqw) rgba(0, 0, 0, calc(.45 + var(--o) * .15));
 }
-
-.card.is-active .card-tilt {
-  transition: transform .08s linear, box-shadow .3s;
-  box-shadow: 0 4cqw 10cqw rgba(0, 0, 0, .55);
-}
+.card.is-active { z-index: 2; }
+.card.is-active .card-tilt { will-change: transform; }
 
 /* ─── Cadre argenté (double filet noir/blanc comme les cartes imprimées) ──── */
 .card-face {
@@ -157,6 +156,8 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: 50% 22%;
+  -webkit-user-drag: none;
 }
 
 .art-gen {
@@ -372,7 +373,24 @@
 
 /* ═══════════════════════════════════════════════════════════════════════════
    EFFETS BRILLANTS
+   Les calques suivent la lumière (--mx/--my = position du pointeur,
+   --bgx/--bgy = décalage des motifs, --o = intensité quand on manipule la carte).
    ═══════════════════════════════════════════════════════════════════════════ */
+.card {
+  /* bandes arc-en-ciel verticales façon feuille holographique */
+  --sunpillar: repeating-linear-gradient(0deg,
+    hsl(2 100% 73%) 5%, hsl(53 100% 69%) 10%, hsl(93 100% 69%) 15%,
+    hsl(176 100% 76%) 20%, hsl(228 100% 74%) 25%, hsl(283 100% 73%) 30%, hsl(2 100% 73%) 35%);
+  /* faisceaux diagonaux qui balaient la carte quand on l'incline */
+  --beams: repeating-linear-gradient(-45deg,
+    #0e152e 0%, hsl(180 10% 60%) 3.8%, hsl(180 29% 66%) 4.5%, hsl(180 10% 60%) 5.2%, #0e152e 10%, #0e152e 12%);
+  --gold: repeating-linear-gradient(0deg,
+    hsl(45 100% 55%) 5%, hsl(50 100% 80%) 10%, hsl(38 90% 45%) 15%,
+    hsl(48 100% 88%) 20%, hsl(35 95% 50%) 25%, hsl(45 100% 70%) 30%, hsl(45 100% 55%) 35%);
+  /* grain pailleté généré (bruit SVG seuillé) */
+  --sparkle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 11 0 0 0 -7.4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
 .foil-under,
 .foil-art,
 .foil-over,
@@ -383,87 +401,105 @@
   pointer-events: none;
   border-radius: inherit;
 }
-.foil-under { z-index: 1; opacity: 0; }
-.foil-art   { z-index: 3; opacity: 0; }
-.foil-over  { z-index: 7; opacity: 0; }
-.glitter    { z-index: 8; opacity: 0; }
+.foil-under { z-index: 1; display: none; }
+.foil-art   { z-index: 3; display: none; }
+.foil-over  { z-index: 7; display: none; }
+.glitter    { z-index: 8; display: none; }
+
+/* Reflet de lumière : toutes les cartes sont glacées */
 .glare {
   z-index: 9;
-  background: radial-gradient(circle at var(--mx) var(--my),
-    rgba(255, 255, 255, .75) 0%, rgba(255, 255, 255, .15) 25%, transparent 55%);
-  mix-blend-mode: soft-light;
-  opacity: var(--o);
-  transition: opacity .3s;
+  background: radial-gradient(farthest-corner circle at var(--mx) var(--my),
+    hsla(0, 0%, 100%, .85) 8%, hsla(0, 0%, 100%, .4) 22%, hsla(0, 0%, 0%, .45) 95%);
+  mix-blend-mode: overlay;
+  opacity: calc(var(--o) * .7);
+}
+.foil-holo .glare,
+.foil-rainbow .glare,
+.foil-gold .glare {
+  background: radial-gradient(farthest-corner circle at var(--mx) var(--my),
+    hsla(0, 0%, 100%, .95) 6%, hsla(0, 0%, 100%, .5) 18%, hsla(0, 0%, 0%, .55) 100%);
+  opacity: calc(.15 + var(--o) * .8);
 }
 
-/* Arc-en-ciel commun à tous les foils */
-.card {
-  --rainbow: repeating-linear-gradient(115deg,
-    hsl(0 100% 72%) 0%, hsl(45 100% 70%) 4%, hsl(110 90% 68%) 8%,
-    hsl(180 100% 68%) 12%, hsl(230 100% 74%) 16%, hsl(290 100% 74%) 20%, hsl(0 100% 72%) 24%);
-  --beams: repeating-linear-gradient(115deg,
-    rgba(0, 0, 0, .55) 0%, transparent 2%, transparent 5%, rgba(0, 0, 0, .55) 7%);
-}
-
-/* ★ Rare : reverse holo — le cadre brille, pas l'illustration */
+/* ★ Rare — reverse holo : tout brille sauf l'illustration */
 .foil-reverse .foil-under {
+  display: block;
   inset: var(--pad);
   border-radius: calc(var(--radius) - 2cqw);
-  background: var(--rainbow);
-  background-size: 400% 400%;
-  background-position: var(--mx) var(--my);
+  background-image: var(--sunpillar), var(--beams);
+  background-size: 200% 700%, 300% 100%;
+  background-position: 0 var(--bgy), var(--bgx) var(--bgy);
+  background-blend-mode: hard-light;
   mix-blend-mode: multiply;
-  opacity: calc(.28 + var(--o) * .35);
-  filter: saturate(1.4);
+  filter: saturate(1.3) brightness(1.25);
+  opacity: calc(.4 + var(--o) * .35);
 }
 
-/* ★H Holo : l'illustration est holographique */
+/* ★H Holo — l'illustration est holographique */
 .foil-holo .foil-art {
-  background: var(--beams), var(--rainbow);
-  background-size: 300% 300%, 400% 400%;
-  background-position: calc(var(--mx) * 1.2) var(--my), var(--mx) var(--my);
+  display: block;
+  background-image:
+    var(--sunpillar),
+    var(--beams),
+    radial-gradient(farthest-corner circle at var(--mx) var(--my), rgba(0, 0, 0, .1) 12%, rgba(0, 0, 0, .15) 20%, rgba(0, 0, 0, .3) 120%);
+  background-size: 200% 700%, 300% 100%, 200% 100%;
+  background-position: 0 var(--bgy), var(--bgx) var(--bgy), var(--bgx) var(--bgy);
+  background-blend-mode: hue, hard-light;
   mix-blend-mode: color-dodge;
-  opacity: calc(.35 + var(--o) * .45);
-  filter: brightness(.75) contrast(1.6) saturate(1.3);
+  filter: brightness(calc(.5 + var(--hyp) * .35)) contrast(2) saturate(1.5);
+  opacity: calc(.45 + var(--o) * .55);
 }
 
-/* ★★ Full art : arc-en-ciel sur toute la carte + paillettes */
+/* ★★ Full art — arc-en-ciel sur toute la carte, avec paillettes */
 .foil-rainbow .foil-over {
-  background: var(--beams), var(--rainbow);
-  background-size: 250% 250%, 400% 400%;
-  background-position: var(--mx) var(--my), calc(100% - var(--mx)) var(--my);
+  display: block;
+  background-image:
+    var(--sunpillar),
+    repeating-linear-gradient(133deg,
+      #0e152e 0%, hsl(180 10% 50%) 3.8%, hsl(180 29% 66%) 4.5%, hsl(180 10% 50%) 5.2%, #0e152e 10%, #0e152e 12%),
+    radial-gradient(farthest-corner circle at var(--mx) var(--my), rgba(0, 0, 0, .1) 12%, rgba(0, 0, 0, .15) 20%, rgba(0, 0, 0, .25) 120%);
+  background-size: 400% 400%, 300% 300%, 200% 200%;
+  background-position: 0 var(--bgy), var(--bgx) var(--bgy), var(--bgx) var(--bgy);
+  background-blend-mode: soft-light, hard-light;
   mix-blend-mode: color-dodge;
-  opacity: calc(.28 + var(--o) * .4);
-  filter: brightness(.7) contrast(1.8) saturate(1.4);
+  filter: brightness(calc(.45 + var(--hyp) * .3)) contrast(1.6) saturate(1.4);
+  opacity: calc(.4 + var(--o) * .55);
 }
+
 .foil-rainbow .glitter,
 .foil-gold .glitter {
-  background-image:
-    radial-gradient(circle, #fff 0 .35cqw, transparent .5cqw),
-    radial-gradient(circle, #fff 0 .25cqw, transparent .4cqw),
-    radial-gradient(circle, rgba(255, 255, 255, .8) 0 .5cqw, transparent .7cqw);
-  background-size: 7cqw 9cqw, 11cqw 6cqw, 17cqw 15cqw;
-  background-position: 0 0, 3cqw 4cqw, 8cqw 2cqw;
-  mix-blend-mode: overlay;
-  opacity: calc(.25 + var(--o) * .75);
-  -webkit-mask-image: radial-gradient(circle at var(--mx) var(--my), #000 0%, rgba(0, 0, 0, .3) 45%, transparent 80%);
-          mask-image: radial-gradient(circle at var(--mx) var(--my), #000 0%, rgba(0, 0, 0, .3) 45%, transparent 80%);
+  display: block;
+  background-image: var(--sparkle), var(--sparkle);
+  background-size: 34cqw 34cqw, 52cqw 52cqw;
+  background-position:
+    calc(var(--bgx) * -.6) calc(var(--bgy) * -.6),
+    calc(var(--bgx) * .4) calc(var(--bgy) * .4);
+  mix-blend-mode: color-dodge;
+  opacity: calc(.35 + var(--o) * .65);
+  -webkit-mask-image: radial-gradient(farthest-corner circle at var(--mx) var(--my), #000 5%, rgba(0, 0, 0, .35) 45%, rgba(0, 0, 0, .1) 90%);
+          mask-image: radial-gradient(farthest-corner circle at var(--mx) var(--my), #000 5%, rgba(0, 0, 0, .35) 45%, rgba(0, 0, 0, .1) 90%);
 }
 
-/* ★★★ Secrète : feuille d'or */
+/* ★★★ Secrète — feuille d'or */
 .foil-gold .card-face {
   background: linear-gradient(135deg, #fff3b0 0%, #d4a017 25%, #fff6c8 45%, #b8860b 70%, #ffe79a 100%);
 }
 .foil-gold .foil-over {
-  background:
-    repeating-linear-gradient(115deg,
-      rgba(255, 236, 160, .0) 0%, rgba(255, 223, 110, .9) 3%, rgba(255, 255, 255, .95) 5%,
-      rgba(210, 150, 20, .8) 8%, rgba(255, 236, 160, 0) 12%),
-    linear-gradient(135deg, #ffd766, #b07a10);
-  background-size: 300% 300%, 100% 100%;
-  background-position: var(--mx) var(--my), 0 0;
+  display: block;
+  background-image:
+    var(--gold),
+    repeating-linear-gradient(115deg, rgba(0, 0, 0, .5) 0%, transparent 3%, transparent 6%, rgba(0, 0, 0, .5) 9%),
+    linear-gradient(135deg, #ffd766, #9a6a08);
+  background-size: 200% 600%, 300% 300%, 100% 100%;
+  background-position: 0 var(--bgy), var(--bgx) var(--bgy), 0 0;
+  background-blend-mode: overlay, normal;
   mix-blend-mode: overlay;
-  opacity: calc(.55 + var(--o) * .35);
+  filter: brightness(calc(.9 + var(--hyp) * .3)) contrast(1.3);
+  opacity: calc(.6 + var(--o) * .35);
+}
+.foil-gold .glitter {
+  filter: sepia(1) saturate(4) hue-rotate(-10deg);
 }
 .foil-gold .n-first,
 .foil-gold .n-last {
@@ -473,19 +509,8 @@
 }
 .foil-gold .card-face::after { border-color: #5a3d00; }
 
-/* Petit halo animé permanent pour les cartes full art dans les grilles */
-.foil-rainbow:not(.is-active) .foil-over,
-.foil-gold:not(.is-active) .foil-over {
-  animation: foil-drift 6s ease-in-out infinite alternate;
-}
-@keyframes foil-drift {
-  from { background-position: 0% 20%, 100% 0%; }
-  to   { background-position: 100% 80%, 0% 100%; }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .card-tilt { transform: none !important; }
-  .foil-over { animation: none !important; }
 }
 
 /* ─── Dos de carte ─────────────────────────────────────────────────────── */
