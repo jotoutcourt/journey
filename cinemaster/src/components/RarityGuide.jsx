@@ -22,7 +22,7 @@ export default function RarityGuide() {
         Chaque booster contient <strong>5 cartes</strong> : 3 communes (ou peu communes), 1 peu commune
         (ou rare) et 1 emplacement rare garanti. Tu reçois un booster toutes
         les {REGEN_MS / 3600000} h (max {MAX_BOOSTERS}), ou tu peux en acheter un
-        avec {BOOSTER_DUST_COST} 🎞️ pellicules obtenues en recyclant tes doublons.
+        avec {BOOSTER_DUST_COST} pellicules obtenues en recyclant tes doublons.
         Passe la souris (ou le doigt) sur une carte pour faire bouger les reflets.
       </p>
       <div className="guide-grid">
@@ -37,7 +37,7 @@ export default function RarityGuide() {
               <p className="muted">
                 {CARDS.filter(c => c.rarity === k).length} cartes
                 {rareOdds[k] ? ` · ${rareOdds[k]} % dans l’emplacement rare` : ''}
-                {' · '}recyclage {r.dust} 🎞️
+                {' · '}recyclage : {r.dust} pellicules
               </p>
             </article>
           )

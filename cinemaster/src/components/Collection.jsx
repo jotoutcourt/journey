@@ -40,7 +40,7 @@ export default function Collection({ owned, onSelect, onRecycleAll, duplicateDus
         <span className="filter-count">{ownedInList}/{list.length}</span>
         {duplicateDust > 0 && (
           <button className="btn small" onClick={onRecycleAll}>
-            Recycler les doublons (+{duplicateDust} 🎞️)
+            Recycler les doublons (+{duplicateDust} pellicules)
           </button>
         )}
       </div>

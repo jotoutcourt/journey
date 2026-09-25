@@ -51,7 +51,7 @@ export default function CardModal({ card, count, edit, onClose, onRecycle }) {
 
           <div className="modal-actions">
             {!edit && count > 1 && (
-              <button className="btn small" onClick={onRecycle}>Recycler 1 doublon (+{r.dust} 🎞️)</button>
+              <button className="btn small" onClick={onRecycle}>Recycler 1 doublon (+{r.dust} pellicules)</button>
             )}
             <button className="btn small" onClick={onClose}>Fermer</button>
           </div>

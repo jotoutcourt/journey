@@ -130,7 +130,7 @@
 }
 .reveal-info .hint { text-align: center; }
 .reveal-info .hint.small { font-size: 13px; min-height: 0; }
-.reveal-info strong { color: var(--text); }
+.reveal-info strong { color: var(--screen); font-weight: 600; }
 
 .tray {
   display: flex;
@@ -148,3 +148,16 @@
   .rh-ultra .throwable,
   .rh-secrete .throwable { animation: none; }
 }
+
+/* Compteur de cartes : cinq segments de laiton */
+.reveal-progress { display: flex; gap: 6px; }
+.reveal-progress span {
+  width: 28px;
+  height: 3px;
+  background: rgba(214, 178, 115, .18);
+  transition: background .4s;
+}
+.reveal-progress .done { background: rgba(214, 178, 115, .55); }
+.reveal-progress .now { background: var(--brass-hi); box-shadow: 0 0 10px rgba(243, 220, 170, .6); }
+
+.tray-card { filter: drop-shadow(0 4px 8px rgba(0, 0, 0, .5)); }

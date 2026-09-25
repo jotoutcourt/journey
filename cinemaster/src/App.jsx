@@ -5,6 +5,7 @@ import CardModal from './components/CardModal.jsx'
 import RarityGuide from './components/RarityGuide.jsx'
 import Atelier from './components/Atelier.jsx'
 import Pack from './components/Pack.jsx'
+import { Wordmark } from './components/Brand.jsx'
 import { CARDS, CARDS_BY_ID } from './data/cards.js'
 import { RARITIES } from './lib/rarity.js'
 import { openBooster } from './lib/booster.js'
@@ -28,12 +29,45 @@ function formatDelay(ms) {
   return m >= 60 ? `${Math.floor(m / 60)} h ${String(m % 60).padStart(2, '0')}` : `${m} min`
 }
 
+function Ticket({ label, value, meter }) {
+  return (
+    <div className="ticket">
+      <span className="ticket-label">{label}</span>
+      <span className="ticket-value">{value}</span>
+      {meter !== undefined && <span className="ticket-meter"><i style={{ width: `${meter}%` }} /></span>}
+    </div>
+  )
+}
+
+// Scène éclairée par le faisceau du projecteur, avec de la poussière en suspension.
+const DUST = Array.from({ length: 16 }, (_, i) => ({
+  left: `${(i * 37) % 100}%`,
+  top: `${(i * 53) % 90}%`,
+  delay: `${-(i * 1.7) % 12}s`,
+  size: `${2 + (i % 3)}px`,
+}))
+
+function Stage({ children }) {
+  return (
+    <section className="stage">
+      <div className="beam" aria-hidden="true" />
+      <div className="dust" aria-hidden="true">
+        {DUST.map((d, i) => (
+          <i key={i} style={{ left: d.left, top: d.top, animationDelay: d.delay, width: d.size, height: d.size }} />
+        ))}
+      </div>
+      {children}
+    </section>
+  )
+}
+
 export default function App() {
   const [state, setState] = useState(() => regen(load()))
   const [tab, setTab] = useState('boosters')
   const [pull, setPull] = useState(null) // { cards, newIds }
   const [selected, setSelected] = useState(null)
   const [now, setNow] = useState(() => Date.now())
+  const [choosing, setChoosing] = useState(null)
 
   useEffect(() => { save(state) }, [state])
   useEffect(() => { loadImages() }, [])
@@ -99,20 +133,34 @@ export default function App() {
 
   const nextIn = state.boosters < MAX_BOOSTERS ? state.regenAt + REGEN_MS - now : 0
 
+  // Le booster choisi s'avance pendant que les autres quittent la scène,
+  // puis l'ouverture commence.
+  const choose = cover => {
+    if (!canOpen || choosing) return
+    setChoosing(cover.id)
+    setTimeout(() => {
+      setChoosing(null)
+      open(cover)
+    }, 560)
+  }
+
+  const plural = n => (n > 1 ? 's' : '')
+
   return (
     <div className="app">
+      <div className="grain" aria-hidden="true" />
+
       <header className="topbar">
-        <h1 className="logo"><span>Ciné</span>Master</h1>
-        <div className="stats">
-          <span className="stat" title="Boosters disponibles">🎴 {state.boosters}/{MAX_BOOSTERS}</span>
-          <span className="stat" title="Pellicules (recyclage des doublons)">🎞️ {state.dust}</span>
-          <span className="stat" title="Progression de la collection">📖 {ownedCount}/{CARDS.length}</span>
+        <div className="brand">
+          <Wordmark />
+          <span className="brand-sub">Série 1 — Premières Séances</span>
+        </div>
+        <div className="tickets">
+          <Ticket label="Boosters" value={`${state.boosters}/${MAX_BOOSTERS}`} />
+          <Ticket label="Pellicules" value={state.dust} />
+          <Ticket label="Collection" value={`${ownedCount}/${CARDS.length}`} meter={completion} />
         </div>
       </header>
-
-      <div className="progress" aria-label={`Collection complétée à ${completion} %`}>
-        <div className="progress-fill" style={{ width: `${completion}%` }} />
-      </div>
 
       <nav className="tabs">
         {TABS.map(t => (
@@ -125,37 +173,46 @@ export default function App() {
       <main>
         {tab === 'boosters' && (pull
           ? (
-            <BoosterOpening
-              key={pull.key}
-              cards={pull.cards}
-              cover={pull.cover}
-              isNew={id => pull.newIds.has(id)}
-              canOpenAgain={canOpen}
-              onAgain={() => open(pull.cover)}
-              onDone={() => { setPull(null); setTab('collection') }}
-            />
+            <Stage>
+              <BoosterOpening
+                key={pull.key}
+                cards={pull.cards}
+                cover={pull.cover}
+                isNew={id => pull.newIds.has(id)}
+                canOpenAgain={canOpen}
+                onAgain={() => open(pull.cover)}
+                onDone={() => { setPull(null); setTab('collection') }}
+              />
+            </Stage>
           ) : (
-            <section className="shop">
-              <h2>Choisis ton booster</h2>
-              <p className="muted">
-                Série 1 · Premières Séances · {CARDS.length} cartes : personnages, lieux cultes et objets cultes.
-              </p>
-              <div className="pack-row">
-                {PACK_COVERS.map(cover => (
-                  <div key={cover.id} className="pack-slot">
-                    <Pack cover={cover} disabled={!canOpen} onClick={() => open(cover)} />
+            <Stage>
+              <div className="stage-head">
+                <p className="eyebrow">{CARDS.length} cartes · personnages, lieux et objets cultes</p>
+                <h2>Choisis ton booster</h2>
+              </div>
+              <div className={`pack-row ${choosing ? 'is-choosing' : ''}`}>
+                {PACK_COVERS.map((cover, i) => (
+                  <div
+                    key={cover.id}
+                    className={`pack-slot ${choosing === cover.id ? 'is-chosen' : ''}`}
+                    style={{ '--i': i }}
+                  >
+                    <div className="pack-bob">
+                      <Pack cover={cover} disabled={!canOpen} onClick={() => choose(cover)} />
+                    </div>
+                    <div className="pack-floor" />
                   </div>
                 ))}
               </div>
-              <p className="muted small">
+              <p className="stage-foot">
                 {state.boosters > 0
-                  ? `${state.boosters} booster${state.boosters > 1 ? 's' : ''} gratuit${state.boosters > 1 ? 's' : ''} disponible${state.boosters > 1 ? 's' : ''}`
+                  ? `${state.boosters} booster${plural(state.boosters)} gratuit${plural(state.boosters)}`
                   : canOpen
-                    ? `Plus de booster gratuit : celui-ci coûte ${BOOSTER_DUST_COST} 🎞️`
-                    : 'Plus de booster : recycle tes doublons dans la collection pour gagner des pellicules.'}
+                    ? `Booster à ${BOOSTER_DUST_COST} pellicules`
+                    : 'Plus de booster · recycle tes doublons pour gagner des pellicules'}
                 {state.boosters < MAX_BOOSTERS && ` · prochain dans ${formatDelay(nextIn)}`}
               </p>
-            </section>
+            </Stage>
           ))}
 
         {tab === 'collection' && (
@@ -183,7 +240,7 @@ export default function App() {
       )}
 
       <footer className="foot">
-        Jeu de fans non officiel · Collection sauvegardée sur cet appareil
+        Jeu de fans non officiel, non affilié aux ayants droit · Collection sauvegardée sur cet appareil
       </footer>
     </div>
   )

@@ -2,15 +2,24 @@ import { useEffect, useRef, useState } from 'react'
 import { useTilt } from '../lib/tilt.js'
 import { useCardImage } from '../lib/images.js'
 import { SET } from '../data/cards.js'
+import { Wordmark } from './Brand.jsx'
 import './pack.css'
 
+// Affiche du booster : image de l'Atelier si elle existe, sinon une affiche
+// sérigraphiée (soleil + silhouette) aux couleurs de l'univers.
 function Cover({ card }) {
   const img = useCardImage(card.id) || card.image
   return (
     <div className="pack-cover">
       {img
         ? <img src={img} alt="" draggable="false" />
-        : <span className="pack-cover-emoji" aria-hidden="true">{card.emoji}</span>}
+        : (
+          <>
+            <span className="cover-sun" />
+            <span className="cover-sil" aria-hidden="true">{card.emoji}</span>
+          </>
+        )}
+      <span className="cover-halftone" />
     </div>
   )
 }
@@ -102,23 +111,28 @@ export default function Pack({ cover, tearable = false, onTorn, className = '', 
     >
       <div className="pack-tilt">
         {/* bande supérieure, en deux morceaux : la partie déjà déchirée se soulève */}
-        <div className="pack-head pack-head-rest"><span className="crimp" /></div>
-        <div className="pack-head pack-head-torn"><span className="crimp" /></div>
+        <div className="pack-head pack-head-rest"><span className="seal" /></div>
+        <div className="pack-head pack-head-torn"><span className="seal" /></div>
+
+        <div className="pack-light" aria-hidden="true" />
 
         <div className="pack-body">
-          <div className="pack-logo"><small>Ciné</small>Master</div>
+          <div className="pack-plate"><Wordmark /></div>
           <Cover card={cover} />
-          <div className="pack-universe">{cover.universe.name}</div>
-          <div className="pack-set">Série {SET.code.slice(1)} · {SET.name}</div>
-          <div className="pack-count">5 cartes</div>
-          <span className="crimp crimp-bottom" />
+          <div className="pack-title">{cover.universe.name}</div>
+          <div className="pack-meta">
+            <span>Série {SET.code.slice(1)} · {SET.name}</span>
+            <span>5 cartes</span>
+          </div>
+          <span className="seal seal-bottom" />
+          <div className="pack-pillow" />
+          <div className="pack-crinkle" />
+          <div className="pack-holo" />
+          <div className="pack-glare" />
         </div>
 
-        <div className="pack-foil" />
-        <div className="pack-glare" />
-
         {tearable && !torn && tear < 0.05 && (
-          <div className="tear-hint" aria-hidden="true"><span>✂</span></div>
+          <div className="tear-hint" aria-hidden="true"><span /></div>
         )}
       </div>
     </div>

@@ -2,6 +2,7 @@ import { RARITIES } from '../lib/rarity.js'
 import { SET, SET_SIZE } from '../data/cards.js'
 import { useCardImage } from '../lib/images.js'
 import { useTilt } from '../lib/tilt.js'
+import { Emblem } from './Brand.jsx'
 import './card.css'
 
 const ILLUSTRATOR = 'JoDNR'
@@ -16,8 +17,9 @@ function Art({ card }) {
   return (
     <div className={`art-gen art-${card.type.toLowerCase()}`}>
       <div className="art-rays" />
-      <div className="art-bokeh" />
+      <div className="art-sun" />
       <span className="art-emoji" aria-hidden="true">{card.emoji}</span>
+      <div className="art-halftone" />
     </div>
   )
 }
@@ -51,11 +53,12 @@ export function CardBack({ className = '' }) {
     <div className={`card card-back ${className}`}>
       <div className="card-tilt">
         <div className="back-face">
-          <div className="back-ring" />
-          <div className="back-logo">
-            <span>Ciné</span><strong>Master</strong>
+          <div className="back-rays" />
+          <div className="back-frame">
+            <Emblem className="back-emblem" />
+            <div className="back-logo">Ciné<b>Master</b></div>
+            <div className="back-sub">Série 1 · Premières Séances</div>
           </div>
-          <div className="back-sub">Trading Card Game</div>
         </div>
       </div>
     </div>
