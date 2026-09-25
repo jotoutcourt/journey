@@ -1,0 +1,529 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Carte CinéMaster
+   Toutes les tailles sont en cqw (% de la largeur de la carte) : la carte
+   s'adapte à n'importe quelle taille en gardant ses proportions (63 × 88 mm).
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.card {
+  --mx: 50%;
+  --my: 50%;
+  --rx: 0deg;
+  --ry: 0deg;
+  --hyp: 0;
+  --o: 0;
+  --radius: 4.8cqw;
+  --pad: 2.8cqw;
+
+  container-type: inline-size;
+  width: 100%;
+  aspect-ratio: 63 / 88;
+  perspective: 900px;
+  position: relative;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.card-tilt {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius);
+  transform: rotateX(var(--rx)) rotateY(var(--ry));
+  transform-style: preserve-3d;
+  transition: transform .5s cubic-bezier(.2, .8, .2, 1), box-shadow .5s;
+  box-shadow: 0 1.5cqw 4cqw rgba(0, 0, 0, .45);
+  will-change: transform;
+}
+
+.card.is-active .card-tilt {
+  transition: transform .08s linear, box-shadow .3s;
+  box-shadow: 0 4cqw 10cqw rgba(0, 0, 0, .55);
+}
+
+/* ─── Cadre argenté (double filet noir/blanc comme les cartes imprimées) ──── */
+.card-face {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius);
+  overflow: hidden;
+  padding: var(--pad);
+  box-sizing: border-box;
+  background:
+    linear-gradient(135deg, #f4f4f6 0%, #b9bcc4 22%, #f8f8fa 45%, #9ea2ab 70%, #eceef2 100%);
+  font-family: 'DM Sans', system-ui, sans-serif;
+  color: #1a1a1f;
+  isolation: isolate;
+}
+
+.card-face::after {
+  content: '';
+  position: absolute;
+  inset: calc(var(--pad) - .9cqw);
+  border-radius: calc(var(--radius) - 1.4cqw);
+  border: .7cqw solid #16161a;
+  box-shadow: inset 0 0 0 .5cqw #fff, 0 0 0 .35cqw #fff;
+  pointer-events: none;
+  z-index: 6;
+}
+
+/* ─── Mise en page « framed » : commune → holo ──────────────────────────── */
+.layout-framed .card-face {
+  display: grid;
+  grid-template-rows: auto auto 1fr auto auto auto auto;
+  row-gap: 1.1cqw;
+}
+.layout-framed .card-face::before {
+  /* panneau intérieur nacré teinté aux couleurs de l'univers */
+  content: '';
+  position: absolute;
+  inset: var(--pad);
+  border-radius: calc(var(--radius) - 2cqw);
+  background:
+    linear-gradient(160deg,
+      color-mix(in srgb, var(--c1) 22%, #f7f4ee) 0%,
+      #f5f3ee 45%,
+      color-mix(in srgb, var(--c2) 20%, #ebe8e2) 100%);
+  z-index: 0;
+}
+.layout-framed .card-content { display: contents; }
+.layout-framed .card-spacer { display: none; }
+.layout-framed .card-head   { grid-row: 1; }
+.layout-framed .card-name   { grid-row: 2; }
+.layout-framed .card-art    { grid-row: 3; }
+.layout-framed .card-quote  { grid-row: 4; }
+.layout-framed .card-bars   { grid-row: 5; }
+.layout-framed .card-credit { grid-row: 6; }
+.layout-framed .card-foot   { grid-row: 7; }
+
+.layout-framed .card-head,
+.layout-framed .card-name,
+.layout-framed .card-art,
+.layout-framed .card-quote,
+.layout-framed .card-bars,
+.layout-framed .card-credit,
+.layout-framed .card-foot {
+  position: relative;
+  z-index: 2;
+  margin-inline: 2.4cqw;
+}
+.layout-framed .card-head { margin-top: 2.2cqw; }
+.layout-framed .card-foot { margin-bottom: 2cqw; }
+
+.layout-framed .card-art {
+  min-height: 0;
+  border-radius: 1.6cqw;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 .6cqw #fff,
+    0 0 0 1.1cqw color-mix(in srgb, var(--ink) 70%, #000),
+    0 1.5cqw 3cqw rgba(0, 0, 0, .3);
+  position: relative;
+}
+
+/* ─── Mise en page « full art » : ultra & secrète ───────────────────────── */
+.layout-full .card-art {
+  position: absolute;
+  inset: var(--pad);
+  border-radius: calc(var(--radius) - 2cqw);
+  overflow: hidden;
+  z-index: 1;
+}
+.layout-full .card-content {
+  position: relative;
+  z-index: 3;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1cqw;
+  padding: 2.4cqw 2.6cqw 2cqw;
+  box-sizing: border-box;
+}
+.layout-full .card-spacer { flex: 1; }
+.layout-full .card-art::after {
+  /* voile bas pour la lisibilité du texte */
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom,
+    rgba(0, 0, 0, .35) 0%, transparent 22%, transparent 55%, rgba(0, 0, 0, .65) 100%);
+  z-index: 2;
+}
+
+/* ─── Illustration ──────────────────────────────────────────────────────── */
+.art-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.art-gen {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 38%, color-mix(in srgb, var(--c1) 85%, #fff) 0%, var(--c1) 30%, color-mix(in srgb, var(--c2) 80%, #000) 100%);
+}
+.art-rays {
+  position: absolute;
+  inset: -50%;
+  background: repeating-conic-gradient(from 0deg at 50% 50%,
+    rgba(255, 255, 255, .13) 0deg 7deg, transparent 7deg 18deg);
+  mix-blend-mode: overlay;
+}
+.art-lieu .art-rays {
+  inset: 0;
+  background:
+    linear-gradient(to top, rgba(0, 0, 0, .45), transparent 45%),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, .08) 0 2cqw, transparent 2cqw 7cqw);
+}
+.art-objet .art-rays {
+  background: repeating-radial-gradient(circle at 50% 45%,
+    rgba(255, 255, 255, .14) 0 1.2cqw, transparent 1.2cqw 5cqw);
+}
+.art-bokeh {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 18% 78%, rgba(255, 255, 255, .45) 0 2.5cqw, transparent 2.6cqw),
+    radial-gradient(circle at 82% 22%, rgba(255, 255, 255, .35) 0 3.5cqw, transparent 3.6cqw),
+    radial-gradient(circle at 70% 85%, rgba(255, 255, 255, .25) 0 1.8cqw, transparent 1.9cqw),
+    radial-gradient(circle at 30% 18%, rgba(255, 255, 255, .3) 0 1.4cqw, transparent 1.5cqw);
+  filter: blur(.6cqw);
+}
+.art-emoji {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 26cqw;
+  line-height: 1;
+  filter: drop-shadow(0 2cqw 3cqw rgba(0, 0, 0, .45));
+}
+.layout-full .art-emoji {
+  font-size: 46cqw;
+  top: 54%;
+}
+
+/* ─── En-tête ──────────────────────────────────────────────────────────── */
+.card-head {
+  display: flex;
+  align-items: center;
+  gap: 1.6cqw;
+  min-width: 0;
+}
+.type-pill {
+  flex: none;
+  font: 700 3.3cqw/1 'Oswald', sans-serif;
+  letter-spacing: .03em;
+  padding: .9cqw 1.8cqw;
+  border-radius: 99cqw 1.4cqw 1.4cqw 99cqw;
+  background: #fff;
+  color: #222;
+  border: .45cqw solid #222;
+}
+.type-lieu .type-pill  { background: #e3f6ea; }
+.type-objet .type-pill { background: #fbefdc; }
+
+.universe {
+  font: 900 6cqw/1.05 'Rubik', sans-serif;
+  color: var(--ink);
+  paint-order: stroke fill;
+  -webkit-text-stroke: .9cqw #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  filter: drop-shadow(0 .3cqw .4cqw rgba(0, 0, 0, .35));
+}
+
+/* ─── Nom ──────────────────────────────────────────────────────────────── */
+.card-name {
+  display: flex;
+  flex-direction: column;
+  line-height: .95;
+  font-family: 'Rubik', sans-serif;
+}
+.n-first { font-weight: 700; font-size: 5.6cqw; color: #2a2a30; }
+.n-last  { font-weight: 900; font-size: 9cqw; color: #121216; letter-spacing: -.01em; }
+.card-name.caps .n-first,
+.card-name.caps .n-last { text-transform: uppercase; }
+
+.layout-full .card-name { margin-top: 1cqw; }
+.layout-full .n-first,
+.layout-full .n-last,
+.layout-full .card-name.vertical {
+  background: linear-gradient(180deg, #fff 0%, color-mix(in srgb, var(--c1) 55%, #fff) 50%, color-mix(in srgb, var(--c2) 60%, #fff) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-stroke: .35cqw rgba(255, 255, 255, .9);
+  filter: drop-shadow(0 .5cqw .8cqw rgba(0, 0, 0, .6));
+}
+.layout-full .n-first { font-size: 8cqw; }
+.layout-full .n-last  { font-size: 13cqw; }
+
+/* Prénom vertical façon « ARIZONA » */
+.card-name.vertical {
+  position: relative;
+  display: block;
+  font-weight: 900;
+  line-height: 1;
+}
+.v-row {
+  display: block;
+  font-size: 12cqw;
+  height: 12.6cqw;
+  white-space: nowrap;
+}
+.v-last { font-size: inherit; }
+
+/* ─── Citation & barres d'info ─────────────────────────────────────────── */
+.card-quote {
+  margin: 0;
+  font: 700 4.1cqw/1.15 'Rubik', sans-serif;
+  color: #2a2a35;
+  text-align: center;
+  text-wrap: balance;
+}
+.layout-full .card-quote {
+  color: #fff;
+  text-align: right;
+  -webkit-text-stroke: .25cqw color-mix(in srgb, var(--c2) 60%, #000);
+  paint-order: stroke fill;
+  text-shadow: 0 .4cqw 1cqw rgba(0, 0, 0, .7);
+}
+
+.card-bars {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1.4cqw;
+}
+.bar {
+  font: 500 2.9cqw/1 'Oswald', sans-serif;
+  padding: 1.1cqw 2.2cqw;
+  background: linear-gradient(180deg, #fafafa, #d6d8de);
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-style: italic;
+  border: .25cqw solid rgba(0, 0, 0, .25);
+}
+.bar-role   { clip-path: polygon(0 0, 100% 0, calc(100% - 2.2cqw) 100%, 0 100%); padding-right: 3.4cqw; }
+.bar-period { clip-path: polygon(2.2cqw 0, 100% 0, 100% 100%, 0 100%); padding-left: 3.4cqw; }
+
+.card-credit {
+  display: flex;
+  align-items: flex-end;
+  gap: 2cqw;
+}
+.illus {
+  font: 700 2.4cqw/1 'Oswald', sans-serif;
+  color: #444;
+  flex: none;
+  padding-bottom: .6cqw;
+}
+.layout-full .illus { color: #eee; }
+.credit-box {
+  flex: 1;
+  display: grid;
+  min-width: 0;
+  clip-path: polygon(4cqw 0, 100% 0, 100% 100%, 0 100%);
+  background: linear-gradient(90deg, #ececf0, #fff 40%, color-mix(in srgb, var(--c1) 35%, #fff));
+  padding: .6cqw 2.4cqw .8cqw 5cqw;
+  border-bottom: .8cqw solid color-mix(in srgb, var(--c2) 50%, #9be7a8);
+}
+.rarity-ultra .credit-box,
+.rarity-secrete .credit-box {
+  background: linear-gradient(90deg, #ffd6e0, #fff4c2 35%, #c8f7dc 70%, #cfe3ff);
+}
+.credit-box small {
+  font: 500 2.4cqw/1 'Oswald', sans-serif;
+  text-align: center;
+  color: #555;
+}
+.credit-box strong {
+  font: 700 4cqw/1.1 'Oswald', sans-serif;
+  text-transform: uppercase;
+  text-align: right;
+  color: #1b1b22;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font: 500 2.4cqw/1 'Oswald', sans-serif;
+  color: #555;
+}
+.layout-full .card-foot { color: #ddd; }
+.rarity-sym {
+  font-size: 3.2cqw;
+  letter-spacing: -.1em;
+  color: #222;
+}
+.layout-full .rarity-sym { color: #fff; }
+.rarity-secrete .rarity-sym { color: #ffd166; text-shadow: 0 0 1cqw #ffb300; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   EFFETS BRILLANTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+.foil-under,
+.foil-art,
+.foil-over,
+.glitter,
+.glare {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+}
+.foil-under { z-index: 1; opacity: 0; }
+.foil-art   { z-index: 3; opacity: 0; }
+.foil-over  { z-index: 7; opacity: 0; }
+.glitter    { z-index: 8; opacity: 0; }
+.glare {
+  z-index: 9;
+  background: radial-gradient(circle at var(--mx) var(--my),
+    rgba(255, 255, 255, .75) 0%, rgba(255, 255, 255, .15) 25%, transparent 55%);
+  mix-blend-mode: soft-light;
+  opacity: var(--o);
+  transition: opacity .3s;
+}
+
+/* Arc-en-ciel commun à tous les foils */
+.card {
+  --rainbow: repeating-linear-gradient(115deg,
+    hsl(0 100% 72%) 0%, hsl(45 100% 70%) 4%, hsl(110 90% 68%) 8%,
+    hsl(180 100% 68%) 12%, hsl(230 100% 74%) 16%, hsl(290 100% 74%) 20%, hsl(0 100% 72%) 24%);
+  --beams: repeating-linear-gradient(115deg,
+    rgba(0, 0, 0, .55) 0%, transparent 2%, transparent 5%, rgba(0, 0, 0, .55) 7%);
+}
+
+/* ★ Rare : reverse holo — le cadre brille, pas l'illustration */
+.foil-reverse .foil-under {
+  inset: var(--pad);
+  border-radius: calc(var(--radius) - 2cqw);
+  background: var(--rainbow);
+  background-size: 400% 400%;
+  background-position: var(--mx) var(--my);
+  mix-blend-mode: multiply;
+  opacity: calc(.28 + var(--o) * .35);
+  filter: saturate(1.4);
+}
+
+/* ★H Holo : l'illustration est holographique */
+.foil-holo .foil-art {
+  background: var(--beams), var(--rainbow);
+  background-size: 300% 300%, 400% 400%;
+  background-position: calc(var(--mx) * 1.2) var(--my), var(--mx) var(--my);
+  mix-blend-mode: color-dodge;
+  opacity: calc(.35 + var(--o) * .45);
+  filter: brightness(.75) contrast(1.6) saturate(1.3);
+}
+
+/* ★★ Full art : arc-en-ciel sur toute la carte + paillettes */
+.foil-rainbow .foil-over {
+  background: var(--beams), var(--rainbow);
+  background-size: 250% 250%, 400% 400%;
+  background-position: var(--mx) var(--my), calc(100% - var(--mx)) var(--my);
+  mix-blend-mode: color-dodge;
+  opacity: calc(.28 + var(--o) * .4);
+  filter: brightness(.7) contrast(1.8) saturate(1.4);
+}
+.foil-rainbow .glitter,
+.foil-gold .glitter {
+  background-image:
+    radial-gradient(circle, #fff 0 .35cqw, transparent .5cqw),
+    radial-gradient(circle, #fff 0 .25cqw, transparent .4cqw),
+    radial-gradient(circle, rgba(255, 255, 255, .8) 0 .5cqw, transparent .7cqw);
+  background-size: 7cqw 9cqw, 11cqw 6cqw, 17cqw 15cqw;
+  background-position: 0 0, 3cqw 4cqw, 8cqw 2cqw;
+  mix-blend-mode: overlay;
+  opacity: calc(.25 + var(--o) * .75);
+  -webkit-mask-image: radial-gradient(circle at var(--mx) var(--my), #000 0%, rgba(0, 0, 0, .3) 45%, transparent 80%);
+          mask-image: radial-gradient(circle at var(--mx) var(--my), #000 0%, rgba(0, 0, 0, .3) 45%, transparent 80%);
+}
+
+/* ★★★ Secrète : feuille d'or */
+.foil-gold .card-face {
+  background: linear-gradient(135deg, #fff3b0 0%, #d4a017 25%, #fff6c8 45%, #b8860b 70%, #ffe79a 100%);
+}
+.foil-gold .foil-over {
+  background:
+    repeating-linear-gradient(115deg,
+      rgba(255, 236, 160, .0) 0%, rgba(255, 223, 110, .9) 3%, rgba(255, 255, 255, .95) 5%,
+      rgba(210, 150, 20, .8) 8%, rgba(255, 236, 160, 0) 12%),
+    linear-gradient(135deg, #ffd766, #b07a10);
+  background-size: 300% 300%, 100% 100%;
+  background-position: var(--mx) var(--my), 0 0;
+  mix-blend-mode: overlay;
+  opacity: calc(.55 + var(--o) * .35);
+}
+.foil-gold .n-first,
+.foil-gold .n-last {
+  background: linear-gradient(180deg, #fffbe6 0%, #ffd766 45%, #c7901a 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+}
+.foil-gold .card-face::after { border-color: #5a3d00; }
+
+/* Petit halo animé permanent pour les cartes full art dans les grilles */
+.foil-rainbow:not(.is-active) .foil-over,
+.foil-gold:not(.is-active) .foil-over {
+  animation: foil-drift 6s ease-in-out infinite alternate;
+}
+@keyframes foil-drift {
+  from { background-position: 0% 20%, 100% 0%; }
+  to   { background-position: 100% 80%, 0% 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-tilt { transform: none !important; }
+  .foil-over { animation: none !important; }
+}
+
+/* ─── Dos de carte ─────────────────────────────────────────────────────── */
+.card-back .card-tilt { transform: none; }
+.back-face {
+  position: relative;
+  height: 100%;
+  border-radius: var(--radius);
+  overflow: hidden;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  background:
+    radial-gradient(circle at 50% 45%, #2b1d52 0%, #120c24 60%, #07050d 100%);
+  box-shadow: inset 0 0 0 2.4cqw #c9ccd4, inset 0 0 0 3.2cqw #16161a, inset 0 0 0 3.7cqw #fff;
+}
+.back-ring {
+  position: absolute;
+  inset: 16% 10%;
+  border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg, #ff5f8f 0 10deg, #ffd166 10deg 20deg, #5ec8ff 20deg 30deg);
+  -webkit-mask: radial-gradient(circle, transparent 58%, #000 59%, #000 64%, transparent 65%);
+          mask: radial-gradient(circle, transparent 58%, #000 59%, #000 64%, transparent 65%);
+  opacity: .8;
+}
+.back-logo {
+  position: relative;
+  font-family: 'Rubik', sans-serif;
+  line-height: .9;
+  color: #fff;
+}
+.back-logo span   { display: block; font-weight: 700; font-size: 10cqw; color: #ffd166; }
+.back-logo strong { display: block; font-weight: 900; font-size: 15cqw; letter-spacing: -.02em; }
+.back-sub {
+  position: relative;
+  margin-top: 3cqw;
+  font: 500 3.4cqw 'Oswald', sans-serif;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: #a99fd6;
+}
