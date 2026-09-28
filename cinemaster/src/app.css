@@ -1156,3 +1156,45 @@ img {
 }
 .share-body p { margin: 0; text-align: center; }
 .share-body a.btn { text-decoration: none; }
+
+/* ─── Compte et échanges ──────────────────────────────────────────────── */
+.account p, .trades p { margin: 0; }
+.account-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.account-head h3 { font-size: 20px; }
+.account-form { display: grid; gap: 10px; }
+.account-form input,
+.trade-new select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text);
+  font: 600 16px/1.2 var(--f-ui);   /* 16 px : pas de zoom automatique sur iPhone */
+}
+.account-form input:focus,
+.trade-new select:focus { outline: none; border-color: var(--accent); }
+.sync-status { font-size: 13px; font-weight: 700; color: var(--muted); }
+.sync-status.is-ok { color: #2f9e56; }
+.sync-status.is-error { color: #c0632b; }
+.trade-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.trade { display: grid; gap: 8px; padding: 12px; border-radius: 14px; background: var(--bg); font-size: 14px; }
+.trade.is-received { background: linear-gradient(135deg, #fff7e0, #eef6ff); box-shadow: inset 0 0 0 1.5px #ffd166; }
+.trade .link-btn { justify-self: start; }
+.trade-list.past .trade { font-size: 13px; color: var(--muted); padding: 8px 12px; }
+.trade-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.trade-new { display: grid; gap: 10px; }
+.trade-new label { display: grid; gap: 4px; font-size: 13px; font-weight: 700; color: var(--muted); }
+.conflict h3 { margin: 0; }
+.conflict-choices { display: grid; gap: 10px; width: 100%; }
+.conflict-choices button {
+  display: grid;
+  gap: 2px;
+  padding: 14px 16px;
+  border: 0;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+.conflict-choices b { font-size: 16px; }
+.conflict-choices span { font-size: 13px; color: var(--muted); }

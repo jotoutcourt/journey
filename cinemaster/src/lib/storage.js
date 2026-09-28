@@ -16,21 +16,23 @@ export const initialState = () => ({
   opened: 0,
 })
 
+// Remet d'aplomb une sauvegarde (navigateur ou en ligne) : anciens
+// identifiants de cartes, soldes négatifs laissés par d'anciennes versions.
+export function normalize(saved) {
+  const owned = {}
+  for (const [id, n] of Object.entries(saved?.owned || {})) {
+    const key = migrateId(id)
+    if (n > 0) owned[key] = (owned[key] || 0) + n
+  }
+  const boosters = Math.max(0, Math.min(MAX_BOOSTERS, Number(saved?.boosters) || 0))
+  const dust = Math.max(0, Number(saved?.dust) || 0)
+  return { ...initialState(), ...saved, owned, boosters, dust }
+}
+
 export function load() {
   try {
     const raw = localStorage.getItem(KEY)
-    if (raw) {
-      const saved = JSON.parse(raw)
-      const owned = {}
-      for (const [id, n] of Object.entries(saved.owned || {})) {
-        const key = migrateId(id)
-        owned[key] = (owned[key] || 0) + n
-      }
-      // réparation : d'anciennes versions pouvaient laisser un solde négatif
-      const boosters = Math.max(0, Math.min(MAX_BOOSTERS, Number(saved.boosters) || 0))
-      const dust = Math.max(0, Number(saved.dust) || 0)
-      return { ...initialState(), ...saved, owned, boosters, dust }
-    }
+    if (raw) return normalize(JSON.parse(raw))
   } catch { /* stockage indisponible : on repart de zéro */ }
   return initialState()
 }

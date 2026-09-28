@@ -15,6 +15,8 @@ import { claim, track, withToday } from './lib/missions.js'
 import { recordPull } from './lib/stats.js'
 import Missions from './components/Missions.jsx'
 import Profile from './components/Profile.jsx'
+import Account, { SyncConflict } from './components/Account.jsx'
+import { useCloudSync } from './lib/sync.js'
 import { connectShared, loadImages } from './lib/images.js'
 import AdminGate from './components/AdminGate.jsx'
 import { PACK_COVERS } from './lib/packs.js'
@@ -66,6 +68,16 @@ export default function App() {
   const [confirmReset, setConfirmReset] = useState(false)
 
   useEffect(() => { save(state) }, [state])
+  const sync = useCloudSync(state, setState)
+
+  // échanges : une carte part ou arrive
+  const changeOwned = useCallback((id, delta) => setState(s => {
+    const owned = { ...s.owned }
+    const n = Math.max(0, (owned[id] || 0) + delta)
+    if (n) owned[id] = n
+    else delete owned[id]
+    return { ...s, owned }
+  }), [])
   useEffect(() => { loadImages(); connectShared() }, [])
 
   useEffect(() => {
@@ -279,6 +291,7 @@ export default function App() {
         onReset={resetCollection}
         confirmReset={confirmReset}
         setConfirmReset={setConfirmReset}
+        account={<Account sync={sync} owned={state.owned} changeOwned={changeOwned} />}
       />
     )
   } else {
@@ -345,6 +358,8 @@ export default function App() {
           onRecycle={() => recycle(selected.card.id)}
         />
       )}
+
+      <SyncConflict conflict={sync.conflict} resolve={sync.resolve} local={state} />
     </div>
   )
 }
