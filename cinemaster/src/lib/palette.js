@@ -95,3 +95,16 @@ export function sunpillarFrom(hues) {
   const col = (h, i) => `hsl(${h} 100% ${i % 2 ? 76 : 70}%) ${5 + i * 5}%`
   return `repeating-linear-gradient(0deg, ${stops.map(col).join(', ')}, hsl(${stops[0]} 100% 70%) 35%)`
 }
+
+// Couleurs des textes d'une carte à partir de son image : teinte principale
+// pour le nom de la série et le dégradé du nom, seconde teinte (ou la même,
+// plus sombre) pour les contours et le bas des dégradés. Saturation et
+// luminosité fixées pour rester lisibles sur le cadre clair comme sur l'image.
+export function textColorsFrom(hues) {
+  const [a, b = a] = hues
+  return {
+    '--t1': `hsl(${a} 80% 58%)`,
+    '--t2': `hsl(${b} 70% 38%)`,
+    '--tink': `hsl(${a} 75% 42%)`,
+  }
+}

@@ -3,11 +3,12 @@ import { RARITIES } from '../lib/rarity.js'
 import { SET, SET_SIZE } from '../data/cards.js'
 import { useCardImage } from '../lib/images.js'
 import { useTilt } from '../lib/tilt.js'
-import { sunpillarFrom, usePalette } from '../lib/palette.js'
+import { sunpillarFrom, textColorsFrom, usePalette } from '../lib/palette.js'
 import { Emblem } from './Brand.jsx'
 import './card.css'
 
 const ILLUSTRATOR = 'JoDNR'
+const PALETTE_RARITIES = new Set(['rare', 'holo', 'ultra'])
 
 // Illustration générée quand la carte n'a pas d'image : dégradé de l'univers,
 // motif selon le type et pictogramme central.
@@ -74,14 +75,18 @@ export default function Card({ card, interactive = true, touch = false, classNam
   const full = r.layout === 'full'
   const custom = useCardImage(card.id)
   const src = custom || card.image
-  // Rare : le reflet prend les couleurs de l'image de la carte
-  const hues = usePalette(card.rarity === 'rare' ? src : null)
+  // Couleurs de l'image : le reflet des Rare, les textes des Holo et Full
+  // Art (la Gold garde son or, les Holo et Full Art leur arc-en-ciel)
+  const hues = usePalette(PALETTE_RARITIES.has(card.rarity) ? src : null)
+  const foilFromImage = hues && card.rarity === 'rare'
+  const textFromImage = hues && card.rarity !== 'rare'
 
   const vars = {
     '--c1': card.universe.c1,
     '--c2': card.universe.c2,
     '--ink': card.universe.ink,
-    ...(hues && { '--sunpillar': sunpillarFrom(hues) }),
+    ...(foilFromImage && { '--sunpillar': sunpillarFrom(hues) }),
+    ...(textFromImage && textColorsFrom(hues)),
     ...style,
   }
 
