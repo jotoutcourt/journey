@@ -11,7 +11,7 @@ import { Icon } from './components/Icons.jsx'
 import { CARDS, CARDS_BY_ID } from './data/cards.js'
 import { RARITIES } from './lib/rarity.js'
 import { openBooster } from './lib/booster.js'
-import { claim, track, withToday } from './lib/missions.js'
+import { claim, refreshMissions, track, withToday } from './lib/missions.js'
 import { recordPull } from './lib/stats.js'
 import Missions from './components/Missions.jsx'
 import Profile from './components/Profile.jsx'
@@ -19,7 +19,9 @@ import Account, { SyncConflict } from './components/Account.jsx'
 import { useCloudSync } from './lib/sync.js'
 import { connectShared, loadImages } from './lib/images.js'
 import AdminGate from './components/AdminGate.jsx'
-import { PACK_COVERS } from './lib/packs.js'
+import { packFor } from './lib/packs.js'
+import { toChoose } from './lib/universes.js'
+import UniversePicker from './components/UniversePicker.jsx'
 import { BOOSTER_DUST_COST, MAX_BOOSTERS, REGEN_MS, initialState, load, regen, save } from './lib/storage.js'
 
 const TABS = [
@@ -95,6 +97,11 @@ export default function App() {
     (sum, [id, n]) => sum + (n > 1 && CARDS_BY_ID[id] ? (n - 1) * RARITIES[CARDS_BY_ID[id].rarity].dust : 0), 0
   ), [state.owned])
 
+  // boosters du joueur : un par univers choisi
+  const packs = useMemo(() => (state.universes || []).map(packFor).filter(Boolean), [state.universes])
+  const need = toChoose(state)
+  const chooseUniverses = list => setState(s => refreshMissions({ ...s, universes: [...(s.universes || []), ...list] }))
+
   const canOpen = state.boosters > 0 || state.dust >= BOOSTER_DUST_COST
   const nextIn = state.boosters < MAX_BOOSTERS ? state.regenAt + REGEN_MS - now : 0
 
@@ -103,10 +110,10 @@ export default function App() {
   const opening = useRef(false)
   useEffect(() => { opening.current = false }, [pull])
 
-  const open = useCallback((cover = PACK_COVERS[0]) => {
-    if (!canOpen || opening.current) return
+  const open = useCallback(cover => {
+    if (!canOpen || opening.current || !cover) return
     opening.current = true
-    const cards = openBooster({ theme: cover.u })
+    const cards = openBooster({ theme: cover.u, universes: state.universes })
     const newIds = new Set(cards.filter(c => !state.owned[c.id]).map(c => c.id))
     setState(s => {
       const useFree = s.boosters > 0
@@ -125,7 +132,7 @@ export default function App() {
       return recordPull(track(next, { type: 'open', cards, newIds }), cards, newIds)
     })
     setPull({ cards, newIds, cover, ownedBefore: state.owned, key: Date.now() })
-  }, [canOpen, state.owned])
+  }, [canOpen, state.owned, state.universes])
 
   const recycle = id => setState(s => {
     const n = s.owned[id] || 0
@@ -168,7 +175,7 @@ export default function App() {
     window.scrollTo({ top: 0 })
   }
 
-  const otherPack = () => setDetail(PACK_COVERS[(PACK_COVERS.indexOf(detail) + 1) % PACK_COVERS.length])
+  const otherPack = () => setDetail(packs[(packs.indexOf(detail) + 1) % packs.length])
 
   // Écran courant
   let screen
@@ -191,7 +198,7 @@ export default function App() {
     screen = (
       <section className="screen pack-detail" style={{ '--c1': detail.universe.c1, '--c2': detail.universe.c2 }}>
         {/* un fond par booster, en fondu (opacité seule) quand on coulisse */}
-        {PACK_COVERS.map(c => (
+        {packs.map(c => (
           <div
             key={c.id}
             className={`detail-bg ${c === detail ? 'is-on' : ''}`}
@@ -201,6 +208,8 @@ export default function App() {
         ))}
         <BoosterMeter boosters={state.boosters} nextIn={nextIn} />
         <PackCarousel
+          key={packs.length}
+          packs={packs}
           current={detail}
           onChange={setDetail}
           onOpen={() => open(detail)}
@@ -232,12 +241,12 @@ export default function App() {
       <section className="screen home">
         <div className="panel pack-panel">
           <div className="pack-panel-bg" aria-hidden="true" />
-          <div className="pack-row">
-            {PACK_COVERS.map((cover, i) => (
+          <div className="pack-row" style={{ '--n': packs.length }}>
+            {packs.map((cover, i) => (
               <div
                 key={cover.id}
                 className="pack-slot"
-                style={{ '--i': i, '--d': i - (PACK_COVERS.length - 1) / 2, '--ad': Math.abs(i - (PACK_COVERS.length - 1) / 2), zIndex: 10 - Math.abs(i - (PACK_COVERS.length - 1) / 2) * 2 }}
+                style={{ '--i': i, '--d': i - (packs.length - 1) / 2, '--ad': Math.abs(i - (packs.length - 1) / 2), zIndex: 10 - Math.abs(i - (packs.length - 1) / 2) * 2 }}
               >
                 <Pack cover={cover} onClick={() => setDetail(cover)} />
               </div>
@@ -275,6 +284,7 @@ export default function App() {
     screen = (
       <section className="screen">
         <Collection
+          universes={state.universes || []}
           owned={state.owned}
           onSelect={card => setSelected({ card })}
           onRecycleAll={recycleAll}
@@ -360,6 +370,10 @@ export default function App() {
       )}
 
       <SyncConflict conflict={sync.conflict} resolve={sync.resolve} local={state} />
+
+      {need > 0 && !pull && !sync.conflict && (
+        <UniversePicker key={(state.universes || []).join()} state={state} need={need} onConfirm={chooseUniverses} />
+      )}
     </div>
   )
 }

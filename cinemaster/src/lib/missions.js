@@ -1,7 +1,6 @@
 // Missions du jour : trois objectifs tirés chaque jour (les mêmes pour tout
 // le monde ce jour-là), avec une récompense à récupérer une fois réussis.
 import { UNIVERSES } from '../data/cards.js'
-import { PACK_COVERS } from './packs.js'
 import { rarityRank } from './rarity.js'
 import { BOOSTER_DUST_COST, MAX_BOOSTERS } from './storage.js'
 
@@ -35,8 +34,8 @@ const FAMILIES = [
     const n = pick([1, 2, 3], rand)
     return { kind: 'open', goal: n, label: n > 1 ? `Ouvre ${n} boosters` : 'Ouvre un booster', reward: { dust: 5 * n } }
   },
-  rand => {
-    const u = pick(PACK_COVERS, rand).u
+  (rand, universes) => {
+    const u = pick(universes, rand)
     return { kind: 'series', param: u, goal: 1, label: `Trouve une carte ${UNIVERSES[u].name}`, reward: { dust: 10 } }
   },
   rand => {
@@ -49,10 +48,13 @@ const FAMILIES = [
   () => ({ kind: 'recycle', goal: 1, label: 'Recycle un doublon', reward: { dust: 5 } }),
 ]
 
-export function missionsFor(day) {
+// `universes` : ceux du joueur (les missions « trouve une carte de… » en
+// viennent) ; tous les univers s'il n'a pas encore choisi.
+export function missionsFor(day, universes) {
+  const pool = universes?.length ? universes : Object.keys(UNIVERSES)
   const rand = seeded(`popcard-${day}`)
   const order = FAMILIES.map((f, i) => [rand(), i]).sort((a, b) => a[0] - b[0]).map(x => x[1])
-  const list = order.slice(0, 3).map((i, n) => ({ id: `${day}-${n}`, ...FAMILIES[i](rand) }))
+  const list = order.slice(0, 3).map((i, n) => ({ id: `${day}-${n}`, ...FAMILIES[i](rand, pool) }))
   // au moins une mission offre un booster : la plus exigeante
   if (!list.some(m => m.reward.booster)) {
     const hardest = list.reduce((a, b) => (b.goal > a.goal ? b : a))
@@ -61,11 +63,29 @@ export function missionsFor(day) {
   return list
 }
 
-// Remet les missions à zéro quand le jour change.
+// Remet les missions à zéro quand le jour change. La liste du jour est
+// gardée dans la sauvegarde : elle ne bouge plus de la journée.
 export function withToday(state, now = Date.now()) {
   const day = dayKey(now)
-  if (state.missions?.day === day) return state
-  return { ...state, missions: { day, progress: {}, claimed: {} } }
+  if (state.missions?.day === day && state.missions.list) return state
+  const same = state.missions?.day === day
+  return {
+    ...state,
+    missions: {
+      day,
+      list: missionsFor(day, state.universes),
+      progress: same ? state.missions.progress : {},
+      claimed: same ? state.missions.claimed : {},
+    },
+  }
+}
+
+// Univers choisis : si aucune mission n'est entamée, la liste du jour est
+// refaite avec ses univers.
+export function refreshMissions(state) {
+  const m = state.missions
+  if (!m || Object.keys(m.progress).length || Object.keys(m.claimed).length) return state
+  return { ...state, missions: { ...m, list: missionsFor(m.day, state.universes) } }
 }
 
 // Avance les missions selon un événement de jeu :
@@ -73,7 +93,7 @@ export function withToday(state, now = Date.now()) {
 export function track(state, event) {
   const s = withToday(state)
   const progress = { ...s.missions.progress }
-  for (const m of missionsFor(s.missions.day)) {
+  for (const m of s.missions.list) {
     let add = 0
     if (event.type === 'open') {
       if (m.kind === 'open') add = 1
@@ -92,7 +112,7 @@ export function track(state, event) {
 // est pleine est converti en pellicules (de quoi en ouvrir un).
 export function claim(state, id) {
   const s = withToday(state)
-  const m = missionsFor(s.missions.day).find(x => x.id === id)
+  const m = s.missions.list.find(x => x.id === id)
   if (!m || s.missions.claimed[id] || (s.missions.progress[id] || 0) < m.goal) return state
   const claimed = { ...s.missions.claimed, [id]: true }
   let { dust, boosters } = s

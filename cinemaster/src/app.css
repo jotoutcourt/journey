@@ -289,10 +289,13 @@ label.btn { cursor: pointer; }
    celui du milieu devant. Rotation et décalage par propriétés séparées
    pour que le survol et l'appui se combinent sans se remplacer. */
 .pack-slot {
-  width: min(27%, 170px);
-  margin-inline: min(-5.6%, -10px);
+  /* largeur selon le nombre de boosters (5 au départ, plus avec les
+     univers débloqués) : l'éventail tient toujours dans le panneau */
+  --w: min(27%, 136% / var(--n, 5), 170px);
+  width: var(--w);
+  margin-inline: calc(var(--w) * -.2);
   transform-origin: 50% 100%;
-  rotate: calc(var(--d) * 6deg);
+  rotate: calc(var(--d) * 30deg / var(--n, 5));
   translate: 0 calc(var(--ad) * 9px);
   animation: slot-in .8s var(--ease-out) both;
   animation-delay: calc(var(--i) * 70ms);
@@ -772,6 +775,14 @@ label.btn { cursor: pointer; }
 .series-count b { color: var(--text); }
 .series-tile.is-complete .series-count { color: #c99a16; }
 
+.series-group { margin: 18px 0 10px; font-size: 16px; font-weight: 800; }
+.series-group:first-of-type { margin-top: 0; }
+.series-hint { margin: -4px 0 12px; font-size: 13px; color: var(--muted); }
+.series-tile.is-locked { background: color-mix(in srgb, var(--surface) 70%, var(--bg)); }
+.series-tile.is-locked .series-cover { filter: grayscale(.85) opacity(.7); }
+.series-tile.is-locked .series-name { color: var(--muted); }
+.series-kind .icon { width: 11px; height: 11px; vertical-align: -1px; }
+
 /* En-tête d'une série */
 .series-head {
   display: flex;
@@ -1198,3 +1209,78 @@ img {
 }
 .conflict-choices b { font-size: 16px; }
 .conflict-choices span { font-size: 13px; color: var(--muted); }
+
+/* ─── Choix des univers ───────────────────────────────────────────────── */
+.picker-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background:
+    radial-gradient(ellipse 120% 50% at 50% 0%, var(--bg-hi), transparent 70%),
+    var(--bg);
+  padding: calc(20px + env(safe-area-inset-top, 0px)) 16px 0;
+  animation: fade .25s ease-out;
+}
+.picker-head { max-width: 720px; margin: 0 auto 16px; display: grid; gap: 6px; }
+.picker-head h2 { margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -.01em; }
+.picker-head p { margin: 0; }
+.picker-grid {
+  max-width: 720px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 160px), 1fr));
+  gap: 10px;
+}
+.picker-tile {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border: 0;
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm), inset 0 0 0 2px transparent;
+  text-align: left;
+  font: inherit;
+  color: var(--text);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: box-shadow .2s, transform .15s var(--ease-out), opacity .2s;
+}
+.picker-tile:active { transform: scale(.97); }
+.picker-tile .series-cover { width: 40px; }
+.picker-tile.is-on { box-shadow: var(--shadow-sm), inset 0 0 0 2.5px var(--accent); background: #f1fcff; }
+.picker-tile.is-full { opacity: .45; }
+.picker-text { display: grid; gap: 1px; min-width: 0; }
+.picker-name { font-size: 14px; font-weight: 800; line-height: 1.15; }
+.picker-count { font-size: 12px; font-weight: 600; color: var(--muted); }
+.picker-check {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 900;
+  box-shadow: 0 3px 8px rgba(39, 195, 220, .45);
+  transform: scale(0);
+  transition: transform .25s var(--ease-spring);
+}
+.picker-tile.is-on .picker-check { transform: scale(1); }
+.picker-foot {
+  position: sticky;
+  bottom: 0;
+  max-width: 720px;
+  margin: 16px auto 0;
+  padding: 14px 0 calc(14px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(transparent, var(--bg) 30%);
+}
+.picker-foot .pill-btn { width: 100%; }

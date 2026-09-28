@@ -1,4 +1,4 @@
-import { missionsFor, msUntilTomorrow, rewardLabel } from '../lib/missions.js'
+import { msUntilTomorrow, rewardLabel } from '../lib/missions.js'
 import { Icon } from './Icons.jsx'
 import { haptic, sfx } from '../lib/feedback.js'
 
@@ -10,8 +10,8 @@ function formatLeft(ms) {
 
 // Missions du jour : progression, puis bouton pour récupérer la récompense.
 export default function Missions({ missions, now, onClaim }) {
-  if (!missions) return null
-  const list = missionsFor(missions.day)
+  if (!missions?.list) return null
+  const list = missions.list
   const done = list.filter(m => missions.claimed[m.id]).length
 
   return (

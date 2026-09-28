@@ -1,6 +1,5 @@
 import { startTransition, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import Pack from './Pack.jsx'
-import { PACK_COVERS } from '../lib/packs.js'
 
 const GAP = 1.08       // écart entre deux boosters, en largeur de booster
 const OMEGA = 13       // raideur du ressort (rad/s) : arrêt en ~0,45 s
@@ -85,7 +84,7 @@ function createCarousel(n) {
 // voisins qui dépassent sur les bords.
 // On le fait glisser au doigt ; toucher un côté l'amène au centre, toucher
 // le centre ouvre le booster.
-export default function PackCarousel({ current, onChange, onOpen, disabled }) {
+export default function PackCarousel({ packs: PACK_COVERS, current, onChange, onOpen, disabled }) {
   const n = PACK_COVERS.length
   const [engine] = useState(() => createCarousel(n))
   const drag = useRef(null)

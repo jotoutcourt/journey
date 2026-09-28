@@ -3,6 +3,7 @@ import Card from './Card.jsx'
 import { CARDS, CARDS_BY_ID, UNIVERSES } from '../data/cards.js'
 import { RARITIES, RARITY_KEYS } from '../lib/rarity.js'
 import { setFeedback, useFeedbackSettings } from '../lib/feedback.js'
+import { completionOf, slotsFor } from '../lib/universes.js'
 
 function Toggle({ label, hint, checked, onChange }) {
   return (
@@ -23,12 +24,12 @@ export default function Profile({ state, onReset, confirmReset, setConfirmReset,
   const owned = CARDS.filter(c => state.owned[c.id]).length
   const best = stats.best && CARDS_BY_ID[stats.best.id]
 
-  // séries entamées les plus proches d'être complètes
-  const nearly = useMemo(() => Object.entries(UNIVERSES).map(([u, info]) => {
-    const cards = CARDS.filter(c => c.u === u)
-    const have = cards.filter(c => state.owned[c.id]).length
-    return { u, info, have, total: cards.length, pct: have / cards.length }
-  }).filter(s => s.have > 0 && s.have < s.total).sort((a, b) => b.pct - a.pct).slice(0, 3), [state.owned])
+  // ses univers les plus proches d'être complets (hors Gold : c'est ce qui
+  // débloque un univers de plus)
+  const nearly = useMemo(() => (state.universes || []).map(u => {
+    const { have, total } = completionOf(u, state.owned)
+    return { u, info: UNIVERSES[u], have, total, pct: have / total }
+  }).filter(s => s.have > 0 && s.have < s.total).sort((a, b) => b.pct - a.pct).slice(0, 3), [state.owned, state.universes])
 
   const pulledMax = Math.max(1, ...RARITY_KEYS.map(k => stats.byRarity?.[k] || 0))
 
@@ -77,6 +78,7 @@ export default function Profile({ state, onReset, confirmReset, setConfirmReset,
       {nearly.length > 0 && (
         <div className="panel stat-block">
           <h3>Presque complètes</h3>
+          <p className="muted small">Hors Gold · une collection complète débloque un univers ({(state.universes || []).length}/{slotsFor(state)} univers).</p>
           <ul className="nearly">
             {nearly.map(s => (
               <li key={s.u} style={{ '--c1': s.info.c1, '--c2': s.info.c2 }}>

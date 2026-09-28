@@ -1,5 +1,5 @@
 // Sauvegarde locale de la collection (navigateur).
-import { migrateId } from '../data/cards.js'
+import { migrateId, UNIVERSES } from '../data/cards.js'
 
 // clé historique conservée : renommer ferait perdre les collections existantes
 const KEY = 'cinemaster:v1'
@@ -14,6 +14,7 @@ export const initialState = () => ({
   regenAt: Date.now(),  // début du cycle de recharge en cours
   dust: 0,              // « pellicules », obtenues en recyclant les doublons
   opened: 0,
+  universes: null,      // univers choisis (null : pas encore choisis)
 })
 
 // Remet d'aplomb une sauvegarde (navigateur ou en ligne) : anciens
@@ -26,7 +27,10 @@ export function normalize(saved) {
   }
   const boosters = Math.max(0, Math.min(MAX_BOOSTERS, Number(saved?.boosters) || 0))
   const dust = Math.max(0, Number(saved?.dust) || 0)
-  return { ...initialState(), ...saved, owned, boosters, dust }
+  const universes = Array.isArray(saved?.universes)
+    ? [...new Set(saved.universes.filter(u => UNIVERSES[u]))]
+    : null
+  return { ...initialState(), ...saved, owned, boosters, dust, universes: universes?.length ? universes : null }
 }
 
 export function load() {

@@ -4,11 +4,13 @@ import { Icon } from './Icons.jsx'
 import { CARDS, UNIVERSES, TYPES } from '../data/cards.js'
 import { RARITIES, RARITY_KEYS } from '../lib/rarity.js'
 import { packImageKey, useCardImage } from '../lib/images.js'
+import { packFor } from '../lib/packs.js'
+import { completionOf } from '../lib/universes.js'
 
 // Visuel d'une série : image de booster si elle existe, sinon l'image de
 // son premier personnage, sinon le pictogramme sur le dégradé de la série.
-function SeriesCover({ u }) {
-  const lead = CARDS.find(c => c.u === u && c.type === 'CHAR') || CARDS.find(c => c.u === u)
+export function SeriesCover({ u }) {
+  const lead = packFor(u)
   const packImg = useCardImage(packImageKey(u))
   const leadImg = useCardImage(lead?.id)
   const img = packImg || leadImg || lead?.image
@@ -19,17 +21,53 @@ function SeriesCover({ u }) {
   )
 }
 
-// Collection : d'abord la liste des séries, puis les cartes de la série choisie.
-export default function Collection({ owned, onSelect, onRecycleAll, duplicateDust }) {
+function SeriesTile({ s, i, onOpen }) {
+  const { u, info, total, have, goal, locked } = s
+  return (
+    <button
+      className={`series-tile ${goal.done ? 'is-complete' : ''} ${locked ? 'is-locked' : ''}`}
+      style={{ '--c1': info.c1, '--c2': info.c2, '--i': i }}
+      onClick={() => onOpen(u)}
+    >
+      <SeriesCover u={u} />
+      <span className="series-text">
+        <span className="series-kind">{info.kind}{locked && <> · <Icon name="lock" /> À débloquer</>}</span>
+        <span className="series-name">{info.name}</span>
+        {!locked && <span className="series-bar"><i style={{ width: `${Math.round(goal.have / goal.total * 100)}%` }} /></span>}
+        <span className="series-count">
+          {locked
+            ? `${total} cartes`
+            : goal.done
+              ? <>Complète hors Gold · <b>{have}</b>/{total}</>
+              : <><b>{goal.have}</b>/{goal.total} hors Gold</>}
+        </span>
+      </span>
+    </button>
+  )
+}
+
+// Collection : d'abord la liste des séries (les siennes, puis celles à
+// débloquer), puis les cartes de la série choisie.
+export default function Collection({ universes, owned, onSelect, onRecycleAll, duplicateDust }) {
   const [universe, setUniverse] = useState(null)
 
   const series = useMemo(() => Object.entries(UNIVERSES).map(([u, info]) => {
     const cards = CARDS.filter(c => c.u === u)
-    return { u, info, total: cards.length, have: cards.filter(c => owned[c.id]).length }
-  }), [owned])
+    return {
+      u, info,
+      total: cards.length,
+      have: cards.filter(c => owned[c.id]).length,
+      goal: completionOf(u, owned),
+      locked: !universes.includes(u),
+    }
+  }), [owned, universes])
+
+  const open = u => { setUniverse(u); window.scrollTo({ top: 0 }) }
 
   if (!universe) {
     const have = series.reduce((a, s) => a + s.have, 0)
+    const mine = universes.map(u => series.find(s => s.u === u)).filter(Boolean)
+    const locked = series.filter(s => s.locked)
     return (
       <section className="collection">
         <div className="filters">
@@ -40,24 +78,19 @@ export default function Collection({ owned, onSelect, onRecycleAll, duplicateDus
             </button>
           )}
         </div>
+        <h3 className="series-group">Tes univers</h3>
         <div className="series-grid">
-          {series.map(({ u, info, total, have }, i) => (
-            <button
-              key={u}
-              className={`series-tile ${have === total ? 'is-complete' : ''}`}
-              style={{ '--c1': info.c1, '--c2': info.c2, '--i': i }}
-              onClick={() => { setUniverse(u); window.scrollTo({ top: 0 }) }}
-            >
-              <SeriesCover u={u} />
-              <span className="series-text">
-                <span className="series-kind">{info.kind}</span>
-                <span className="series-name">{info.name}</span>
-                <span className="series-bar"><i style={{ width: `${Math.round(have / total * 100)}%` }} /></span>
-                <span className="series-count"><b>{have}</b>/{total}{have === total && ' · Complète'}</span>
-              </span>
-            </button>
-          ))}
+          {mine.map((s, i) => <SeriesTile key={s.u} s={s} i={i} onOpen={open} />)}
         </div>
+        {locked.length > 0 && (
+          <>
+            <h3 className="series-group">À débloquer</h3>
+            <p className="series-hint">Complète une de tes collections (toutes les cartes sauf les Gold) pour choisir un univers de plus.</p>
+            <div className="series-grid">
+              {locked.map((s, i) => <SeriesTile key={s.u} s={s} i={mine.length + i} onOpen={open} />)}
+            </div>
+          </>
+        )}
       </section>
     )
   }

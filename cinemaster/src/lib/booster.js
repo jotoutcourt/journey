@@ -35,15 +35,21 @@ function pickAmong(weights, allowed, rand) {
 const coverage = (weights, pool) => Object.entries(weights)
   .reduce((sum, [k, w]) => sum + (pool[k]?.length ? w : 0), 0)
 
-// Ouvre un booster. Avec `theme` (clé d'univers), au moins une carte vient
-// de cette série. Elle prend la place de l'emplacement que la série couvre le
-// mieux, avec les mêmes taux de rareté : pour Friends ou The 100, dont toutes
-// les raretés existent, les taux restent strictement identiques ; pour une
-// série sans commune (Titanic), la carte garantie sort de l'emplacement rare.
-export function openBooster({ theme, rand = Math.random } = {}) {
+// Ouvre un booster.
+// - `universes` : univers du joueur ; toutes les cartes en viennent. Si une
+//   rareté tirée n'existe dans aucun de ses univers, on prend la rareté
+//   voisine la plus proche en dessous (puis au-dessus).
+// - `theme` (clé d'univers) : au moins une carte vient de cette série. Elle
+//   prend la place de l'emplacement que la série couvre le mieux, avec les
+//   mêmes taux de rareté (renormalisés sur les raretés que la série possède).
+const ORDER = ['commune', 'peu-commune', 'rare', 'holo', 'ultra', 'secrete']
+const groupByRarity = cards => cards.reduce((acc, c) => ((acc[c.rarity] ||= []).push(c), acc), {})
+
+export function openBooster({ theme, universes, rand = Math.random } = {}) {
   const pulled = new Set()
-  const themePool = theme ? CARDS.filter(c => c.u === theme)
-    .reduce((acc, c) => ((acc[c.rarity] ||= []).push(c), acc), {}) : null
+  const allowed = universes?.length ? new Set(universes) : null
+  const pool = allowed ? groupByRarity(CARDS.filter(c => allowed.has(c.u))) : POOL
+  const themePool = theme ? groupByRarity(CARDS.filter(c => c.u === theme)) : null
 
   let themeSlot = -1
   if (themePool) {
@@ -53,9 +59,21 @@ export function openBooster({ theme, rand = Math.random } = {}) {
     if (candidates.length) themeSlot = candidates[Math.floor(rand() * candidates.length)]
   }
 
-  const draw = (pool, rarity) => {
-    const fresh = pool[rarity].filter(c => !pulled.has(c.id))
-    const list = fresh.length ? fresh : pool[rarity]
+  // rareté disponible la plus proche de celle tirée
+  const nearest = (p, rarity) => {
+    if (p[rarity]?.length) return rarity
+    const i = ORDER.indexOf(rarity)
+    for (let d = 1; d < ORDER.length; d++) {
+      if (p[ORDER[i - d]]?.length) return ORDER[i - d]
+      if (p[ORDER[i + d]]?.length) return ORDER[i + d]
+    }
+    return null
+  }
+
+  const draw = (p, rarity) => {
+    const r = nearest(p, rarity)
+    const fresh = p[r].filter(c => !pulled.has(c.id))
+    const list = fresh.length ? fresh : p[r]
     const card = list[Math.floor(rand() * list.length)]
     pulled.add(card.id)
     return card
@@ -66,6 +84,6 @@ export function openBooster({ theme, rand = Math.random } = {}) {
       const rarity = pickAmong(weights, k => themePool[k]?.length, rand)
       return draw(themePool, rarity)
     }
-    return draw(POOL, pickWeighted(weights, rand))
+    return draw(pool, pickWeighted(weights, rand))
   })
 }
