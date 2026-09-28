@@ -369,9 +369,9 @@ const RAW = [
   { u: 'titanic', type: 'OBJET', rarity: 'ultra', first: 'Le Cœur', last: "de l'Océan",
     quote: 'Un diamant bleu au fond de l’Atlantique.', role: 'Collier de Rose',
     period: '1912', creditLabel: 'Offert par', credit: 'Cal Hockley', emoji: '💎' },
-  { u: 'titanic', type: 'LIEU', rarity: 'commune', first: 'La Proue du', last: 'Titanic',
-    quote: 'Je vole, Jack !', role: 'Atlantique Nord',
-    period: '1997', creditLabel: 'Navire', credit: 'RMS Titanic', emoji: '🚢' },
+  { u: 'titanic', type: 'SCENE', rarity: 'rare', first: 'À la proue', last: 'Je vole, Jack !', alias: 'je-vole-jack',
+    quote: "I'm flying, Jack!", role: 'Rose et Jack à la proue du Titanic',
+    period: '1997', creditLabel: 'Réalisateur', credit: 'James Cameron', emoji: '🕊️' },
 
   // ── The 100 ───────────────────────────────────────────────────────────────
   { u: 'the100', type: 'CHAR', rarity: 'ultra', first: 'Clarke', last: 'Griffin',
@@ -657,11 +657,11 @@ const RAW = [
     period: 'Saison 1 – Saison 8', creditLabel: 'Joueuses', credit: 'Les quatre amies', emoji: '🃏' },
 ]
 
-// ─── Personnages principaux ─────────────────────────────────────────────────
-// Chaque personnage principal existe en trois cartes : sa carte de base
+// ─── Personnages principaux et scènes phares ────────────────────────────────
+// Chaque entrée de cette liste existe en trois cartes : sa carte de base
 // (Rare), une Full Art (★★) et une Full Art or (Secrète Gold ★★★). Les deux
 // variantes sont générées ici à partir de la carte de base : il suffit
-// d'ajouter l'identifiant d'un personnage à cette liste.
+// d'ajouter l'identifiant d'un personnage ou d'une scène à cette liste.
 const MAIN_CHARACTERS = [
   // Grey's Anatomy
   'meredith-grey', 'derek-shepherd', 'cristina-yang', 'arizona-robbins',
@@ -687,6 +687,7 @@ const MAIN_CHARACTERS = [
   'thomas-anderson-neo',
   // Titanic
   'jack-dawson', 'rose-dewitt-bukater',
+  'a-la-proue-je-vole-jack',
   // The 100
   'clarke-griffin', 'bellamy-blake', 'octavia-blake', 'raven-reyes',
   // La La Land
@@ -706,7 +707,7 @@ const MAIN_CHARACTERS = [
 ]
 
 {
-  const baseId = c => c.first.concat(' ', c.last).normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  const baseId = c => c.first.concat(' ', c.last).replace(/œ/g, 'oe').replace(/æ/g, 'ae').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
   for (const id of MAIN_CHARACTERS) {
     const base = RAW.find(c => !c.variant && baseId(c) === id)
@@ -732,7 +733,7 @@ main.sort((a, b) =>
 
 export const SET_SIZE = main.length
 
-const slug = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+const slug = s => s.replace(/œ/g, 'oe').replace(/æ/g, 'ae').replace(/Œ/g, 'Oe').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
   .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 
 // Identifiant stable (indépendant du numéro, pour pouvoir ajouter des cartes
@@ -770,10 +771,12 @@ export function fileKeys(card) {
   if (card.variant) {
     if (short) keys.push(`${short}-${card.variant}`)
     if (firstOk && short !== first) keys.push(`${first}-${card.variant}`)
-  } else if (card.type === 'CHAR') {
+  } else {
     if (short) keys.push(short)
-    if (firstOk && short !== first) keys.push(first)
-    if (lastOk && short !== last) keys.push(last)
+    if (card.type === 'CHAR') {
+      if (firstOk && short !== first) keys.push(first)
+      if (lastOk && short !== last) keys.push(last)
+    }
   }
   return keys
 }
