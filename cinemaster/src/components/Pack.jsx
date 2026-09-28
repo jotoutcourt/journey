@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { memo, useEffect, useRef, useState } from 'react'
 import { useTilt } from '../lib/tilt.js'
 import { packFullKey, packImageKey, useCardImage } from '../lib/images.js'
 import { SET } from '../data/cards.js'
@@ -32,7 +32,7 @@ function Art({ card }) {
 
 // Sachet de booster. Avec `tearable`, on le déchire en glissant
 // le doigt le long de la bande pointillée (ou d'un simple toucher).
-export default function Pack({ cover, tearable = false, onTorn, className = '', onClick, disabled }) {
+function Pack({ cover, tearable = false, onTorn, className = '', onClick, disabled }) {
   const { attach, move: tiltMove, leave: tiltLeave, up: tiltUp } = useTilt({ maxTilt: 12, scale: 0.025, touch: tearable })
   // Booster complet fourni par le joueur : son image remplace tout le visuel.
   const fullImg = useCardImage(packFullKey(cover.u))
@@ -167,3 +167,7 @@ export default function Pack({ cover, tearable = false, onTorn, className = '', 
     </div>
   )
 }
+
+// Mémorisé : quand l'écran se met à jour (booster choisi, jauge…), les
+// sachets dont rien ne change ne sont pas recalculés.
+export default memo(Pack)

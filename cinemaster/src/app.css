@@ -44,6 +44,11 @@
 
 * { box-sizing: border-box; }
 
+/* Rien ne peut dépasser en largeur : aucun glissement latéral de la page */
+#root {
+  overflow-x: clip;
+}
+
 html {
   background: var(--bg);
   /* rien ne dépasse sur les côtés : l'écran ne glisse jamais latéralement */
@@ -128,7 +133,7 @@ button:disabled { cursor: not-allowed; opacity: .45; }
 .main { animation: screen-in .45s var(--ease-out) both; }
 /* opacité seule : un transform casserait les fonds en position fixe */
 @keyframes screen-in { from { opacity: 0; } }
-.screen { position: relative; display: grid; gap: 18px; }
+.screen { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; }
 
 .legal {
   margin: 36px 0 0;
@@ -292,8 +297,10 @@ label.btn { cursor: pointer; }
   display: flex;
   align-items: center;
   gap: 10px;
+  max-width: 100%;
 }
 .meter-pill {
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -305,6 +312,8 @@ label.btn { cursor: pointer; }
 .meter-pill > .icon { color: var(--brand); width: 22px; height: 22px; }
 .meter-track {
   position: relative;
+  flex: 0 1 130px;
+  min-width: 40px;
   width: 130px;
   height: 10px;
   border-radius: 99px;
@@ -330,6 +339,7 @@ label.btn { cursor: pointer; }
 }
 .meter-time .icon { width: 15px; height: 15px; }
 .meter-count {
+  flex: none;
   position: relative;
   display: grid;
   place-items: center;
@@ -431,7 +441,11 @@ label.btn { cursor: pointer; }
       color-mix(in srgb, var(--c1) 45%, #fff) 0%,
       color-mix(in srgb, var(--c1) 25%, #e7fbff) 100%);
   clip-path: polygon(0 0, 100% 0, 100% 32%, 0 48%);
+  opacity: 0;
+  transition: opacity .45s ease-out;
+  will-change: opacity;
 }
+.detail-bg.is-on { opacity: 1; }
 .pack-detail::after {
   /* halo blanc derrière le booster central */
   content: '';
@@ -444,10 +458,15 @@ label.btn { cursor: pointer; }
 .pack-detail .meter { justify-self: end; }
 .carousel {
   position: relative;
-  overflow: hidden;
-  overflow: clip;
-  overflow-clip-margin: 40px;
-  width: 100%;
+  /* pleine largeur d'écran, rognée sur les côtés seulement : les voisins
+     s'arrêtent au bord de l'écran et rien ne dépasse (aucun décalage au doigt) */
+  width: 100vw;
+  width: 100dvw;
+  justify-self: start;
+  margin-left: calc(50% - 50vw);
+  margin-left: calc(50% - 50dvw);
+  overflow-x: hidden;
+  overflow-x: clip;
   height: min(520px, 66vw * 1.72, 48vh);
   perspective: 1200px;
   touch-action: pan-y;

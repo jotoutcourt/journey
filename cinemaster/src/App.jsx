@@ -170,7 +170,15 @@ export default function App() {
   } else if (tab === 'home' && detail) {
     screen = (
       <section className="screen pack-detail" style={{ '--c1': detail.universe.c1, '--c2': detail.universe.c2 }}>
-        <div className="detail-bg" aria-hidden="true" />
+        {/* un fond par booster, en fondu (opacité seule) quand on coulisse */}
+        {PACK_COVERS.map(c => (
+          <div
+            key={c.id}
+            className={`detail-bg ${c === detail ? 'is-on' : ''}`}
+            style={{ '--c1': c.universe.c1 }}
+            aria-hidden="true"
+          />
+        ))}
         <BoosterMeter boosters={state.boosters} nextIn={nextIn} />
         <PackCarousel
           current={detail}
@@ -291,7 +299,7 @@ export default function App() {
         </div>
       </header>
 
-      <main key={pull ? `open-${pull.key}` : `${tab}-${detail?.id || ''}`} className="main">
+      <main key={pull ? `open-${pull.key}` : `${tab}-${detail ? 'booster' : ''}`} className="main">
         {screen}
       </main>
 

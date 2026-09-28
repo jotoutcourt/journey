@@ -1,23 +1,26 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { startTransition, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import Pack from './Pack.jsx'
 import { PACK_COVERS } from '../lib/packs.js'
 
-const GAP = 0.63        // écart entre deux boosters, en largeur de booster
-const STIFFNESS = 0.14
-const DAMPING = 0.72
+const GAP = 1.08       // écart entre deux boosters, en largeur de booster
+const OMEGA = 13       // raideur du ressort (rad/s) : arrêt en ~0,45 s
+const MAX_DT = 1 / 30
 
 const mod = (v, n) => ((v % n) + n) % n
 
 // Moteur du carrousel : une position continue (0 = 1er booster au centre)
-// que le doigt déplace 1:1, puis un ressort qui ramène sur un booster.
+// que le doigt déplace 1:1. Au lâcher, un ressort à amortissement critique
+// (calculé selon le temps écoulé, donc identique à 60 ou 120 Hz) fait
+// coulisser la rangée jusqu'au booster visé, sans rebond ni à-coup.
 // Tout est écrit directement en `transform`/opacité sur les emplacements :
-// aucun rendu React pendant le glissement, aucun booster reconstruit.
+// aucun rendu React pendant le mouvement, aucun booster reconstruit.
 function createCarousel(n) {
   const slots = []
   let pos = 0
-  let vel = 0
+  let vel = 0      // en boosters par seconde
   let target = 0
   let raf = 0
+  let last = 0
 
   const write = () => {
     for (let i = 0; i < n; i++) {
@@ -28,18 +31,22 @@ function createCarousel(n) {
       if (d > n / 2) d -= n
       const ad = Math.abs(d)
       const k = Math.min(ad, 1)
-      const side = Math.sign(d) * k
-      el.style.transform = `translate3d(${(d * GAP * 100).toFixed(2)}%, 0, 0) rotateY(${(-side * 38).toFixed(2)}deg) scale(${(1 - k * 0.3).toFixed(4)})`
-      el.style.opacity = ad <= 1 ? '1' : Math.max(0, (1.5 - ad) * 2).toFixed(3)
+      el.style.transform = `translate3d(${(d * GAP * 100).toFixed(2)}%, ${(k * 4).toFixed(2)}%, 0) scale(${(1 - k * 0.14).toFixed(4)})`
+      el.style.opacity = ad <= 1.2 ? '1' : Math.max(0, (1.5 - ad) / 0.3).toFixed(3)
       el.style.zIndex = String(10 - Math.round(ad * 4))
     }
   }
 
-  const step = () => {
-    vel = (vel + (target - pos) * STIFFNESS) * DAMPING
-    pos += vel
-    if (Math.abs(vel) < 0.0005 && Math.abs(target - pos) < 0.0005) {
+  const step = now => {
+    const dt = Math.min(MAX_DT, (now - last) / 1000 || 1 / 60)
+    last = now
+    // amortissement critique : x'' = -ω²(x - cible) - 2ω x'
+    const acc = -OMEGA * OMEGA * (pos - target) - 2 * OMEGA * vel
+    vel += acc * dt
+    pos += vel * dt
+    if (Math.abs(vel) < 0.002 && Math.abs(target - pos) < 0.0005) {
       pos = target
+      vel = 0
       raf = 0
     } else {
       raf = requestAnimationFrame(step)
@@ -60,18 +67,22 @@ function createCarousel(n) {
       vel = 0
       write()
     },
-    // glisse jusqu'à la position `p` avec le ressort
-    go(p, v = 0) {
+    // coulisse jusqu'à `p`, en partant de la vitesse `v` (boosters/s)
+    go(p, v = vel) {
       target = p
       vel = v
-      if (!raf) raf = requestAnimationFrame(step)
+      if (!raf) {
+        last = performance.now()
+        raf = requestAnimationFrame(step)
+      }
     },
     write,
     destroy: () => cancelAnimationFrame(raf),
   }
 }
 
-// Carrousel : le booster choisi au centre, les autres inclinés sur les côtés.
+// Carrousel : les boosters alignés sur un rail, le choisi au centre, ses
+// voisins qui dépassent sur les bords.
 // On le fait glisser au doigt ; toucher un côté l'amène au centre, toucher
 // le centre ouvre le booster.
 export default function PackCarousel({ current, onChange, onOpen, disabled }) {
@@ -100,7 +111,9 @@ export default function PackCarousel({ current, onChange, onOpen, disabled }) {
   const goTo = (p, v) => {
     engine.go(p, v)
     const cover = PACK_COVERS[mod(p, n)]
-    if (cover !== current) onChange(cover)
+    // mise à jour de l'écran (fond, boutons) en tâche de fond : elle ne
+    // retient jamais la première image de la glissade
+    if (cover !== current) startTransition(() => onChange(cover))
   }
 
   const down = e => {
@@ -137,11 +150,12 @@ export default function PackCarousel({ current, onChange, onOpen, disabled }) {
       }
       return
     }
-    // lâcher : un geste vif passe au suivant, sinon on revient au plus proche
-    const pv = -d.v * 1000 / d.span / 60   // vitesse en boosters par image
-    let p = Math.round(engine.pos + pv * 6)
+    // lâcher : un geste vif passe au suivant, sinon on revient au plus proche ;
+    // la rangée repart avec l'élan du doigt
+    const pv = -d.v * 1000 / d.span   // vitesse en boosters par seconde
+    let p = Math.round(engine.pos + pv * 0.12)
     p = Math.max(Math.round(d.from) - 1, Math.min(Math.round(d.from) + 1, p))
-    goTo(p, pv * 0.6)
+    goTo(p, pv)
   }
 
   return (
