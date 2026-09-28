@@ -9,6 +9,7 @@
 //   (lu une seule fois dans le CSS) ;
 // - chaque calque [data-o] reçoit l'intensité --o (il en tire son opacité).
 import { useEffect, useState } from 'react'
+import { subscribeMotion } from './motion.js'
 
 const STIFFNESS = 0.08
 const DAMPING = 0.8
@@ -24,6 +25,8 @@ function createTilt({ maxTilt, scale, touch }) {
   const cur = { ...REST }
   const vel = { x: 0, y: 0, o: 0 }
   let target = { ...REST }
+  let finger = false     // un doigt pilote la carte : le gyroscope attend
+  let unsubscribe = null
 
   const write = () => {
     const { x, y, o } = cur
@@ -63,14 +66,39 @@ function createTilt({ maxTilt, scale, touch }) {
 
   const kick = () => { if (!raf) raf = requestAnimationFrame(step) }
 
+  const activate = () => {
+    if (el.classList.contains('is-active')) return
+    // les feuilles et leurs coefficients sont relevés une fois par activation
+    sheets = [...el.querySelectorAll('.sheet')].map(node => {
+      const cs = getComputedStyle(node)
+      return { node, kx: parseFloat(cs.getPropertyValue('--kx')) || 0, ky: parseFloat(cs.getPropertyValue('--ky')) || 0 }
+    })
+    faders = [...el.querySelectorAll('[data-o]')]
+    el.classList.add('is-active')
+  }
+
   const leave = () => {
+    finger = false
     target = { ...REST }
+    kick()
+  }
+
+  // Téléphone penché : les reflets suivent l'appareil. Plus on penche, plus
+  // l'éclat est franc ; à plat, il reste un léger reflet.
+  const onMotion = (x, y) => {
+    if (!el || finger) return
+    const d = Math.hypot(x - 0.5, y - 0.5)
+    target = { x, y, o: Math.min(1, 0.45 + d * 2.2) }
+    activate()
     kick()
   }
 
   return {
     attach: node => {
+      unsubscribe?.()
+      unsubscribe = null
       el = node
+      if (node && touch) unsubscribe = subscribeMotion(onMotion)
       inner = node?.firstElementChild ?? null
       sheets = []
       faders = []
@@ -80,21 +108,14 @@ function createTilt({ maxTilt, scale, touch }) {
       // au doigt, seules les cartes prévues pour (grande carte, ouverture)
       // s'inclinent : dans les grilles, le doigt sert à faire défiler
       if (e.pointerType === 'touch' && !touch) return
+      if (e.pointerType === 'touch') finger = true
       const r = el.getBoundingClientRect()
       target = {
         x: Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)),
         y: Math.min(1, Math.max(0, (e.clientY - r.top) / r.height)),
         o: 1,
       }
-      if (!el.classList.contains('is-active')) {
-        // les feuilles et leurs coefficients sont relevés une fois par survol
-        sheets = [...el.querySelectorAll('.sheet')].map(node => {
-          const cs = getComputedStyle(node)
-          return { node, kx: parseFloat(cs.getPropertyValue('--kx')) || 0, ky: parseFloat(cs.getPropertyValue('--ky')) || 0 }
-        })
-        faders = [...el.querySelectorAll('[data-o]')]
-        el.classList.add('is-active')
-      }
+      activate()
       kick()
     },
     leave,
