@@ -263,6 +263,7 @@ label.btn { cursor: pointer; }
   overflow: hidden;
   padding: 26px 16px 18px;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 18px;
   justify-items: center;
 }
@@ -278,17 +279,24 @@ label.btn { cursor: pointer; }
   display: flex;
   justify-content: center;
   align-items: flex-end;
-  gap: clamp(8px, 3vw, 22px);
   width: 100%;
+  padding-top: 6px;
 }
+/* Boosters en éventail, comme une main de cartes : ils se chevauchent,
+   celui du milieu devant. Rotation et décalage par propriétés séparées
+   pour que le survol et l'appui se combinent sans se remplacer. */
 .pack-slot {
-  width: min(31%, 190px);
+  width: min(27%, 170px);
+  margin-inline: min(-5.6%, -10px);
+  transform-origin: 50% 100%;
+  rotate: calc(var(--d) * 6deg);
+  translate: 0 calc(var(--ad) * 9px);
   animation: slot-in .8s var(--ease-out) both;
-  animation-delay: calc(var(--i) * 80ms);
-  transition: transform .35s var(--ease-spring);
+  animation-delay: calc(var(--i) * 70ms);
+  transition: translate .35s var(--ease-spring), scale .2s var(--ease-out);
 }
-.pack-slot:hover { transform: translateY(-8px); }
-.pack-slot:active { transform: scale(.97); }
+.pack-slot:hover { translate: 0 calc(var(--ad) * 9px - 12px); }
+.pack-slot:active { scale: .97; }
 @keyframes slot-in { from { transform: translateY(40px); opacity: 0; } }
 
 /* Jauge de boosters */

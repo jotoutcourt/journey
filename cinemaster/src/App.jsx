@@ -214,7 +214,11 @@ export default function App() {
           <div className="pack-panel-bg" aria-hidden="true" />
           <div className="pack-row">
             {PACK_COVERS.map((cover, i) => (
-              <div key={cover.id} className="pack-slot" style={{ '--i': i }}>
+              <div
+                key={cover.id}
+                className="pack-slot"
+                style={{ '--i': i, '--d': i - (PACK_COVERS.length - 1) / 2, '--ad': Math.abs(i - (PACK_COVERS.length - 1) / 2), zIndex: 10 - Math.abs(i - (PACK_COVERS.length - 1) / 2) * 2 }}
+              >
                 <Pack cover={cover} onClick={() => setDetail(cover)} />
               </div>
             ))}
