@@ -5,7 +5,8 @@ import CardModal from './components/CardModal.jsx'
 import RarityGuide from './components/RarityGuide.jsx'
 import Atelier from './components/Atelier.jsx'
 import Pack from './components/Pack.jsx'
-import { Wordmark } from './components/Brand.jsx'
+import { Emblem } from './components/Brand.jsx'
+import { Icon } from './components/Icons.jsx'
 import { CARDS, CARDS_BY_ID } from './data/cards.js'
 import { RARITIES } from './lib/rarity.js'
 import { openBooster } from './lib/booster.js'
@@ -13,10 +14,10 @@ import { loadImages } from './lib/images.js'
 import { BOOSTER_DUST_COST, MAX_BOOSTERS, REGEN_MS, initialState, load, regen, save } from './lib/storage.js'
 
 const TABS = [
-  { id: 'boosters', label: 'Boosters' },
-  { id: 'collection', label: 'Collection' },
-  { id: 'guide', label: 'Raretés' },
-  { id: 'atelier', label: 'Atelier' },
+  { id: 'home', label: 'Accueil', icon: 'home' },
+  { id: 'collection', label: 'Collection', icon: 'cards' },
+  { id: 'guide', label: 'Raretés', icon: 'star' },
+  { id: 'atelier', label: 'Atelier', icon: 'image' },
 ]
 
 // Trois boosters au choix, comme en boutique : seule l'illustration change.
@@ -26,58 +27,39 @@ const PACK_COVERS = ['dark-vador', 'daenerys-targaryen', 'la-delorean']
 
 function formatDelay(ms) {
   const m = Math.max(0, Math.ceil(ms / 60000))
-  return m >= 60 ? `${Math.floor(m / 60)} h ${String(m % 60).padStart(2, '0')}` : `${m} min`
+  return m >= 60 ? `${Math.floor(m / 60)} h ${String(m % 60).padStart(2, '0')} min` : `${m} min`
 }
 
-function Ticket({ label, value, meter }) {
+// Jauge de boosters : barre de recharge, temps restant et nombre disponible.
+function BoosterMeter({ boosters, nextIn }) {
+  const full = boosters >= MAX_BOOSTERS
+  const pct = full ? 100 : Math.round((1 - nextIn / REGEN_MS) * 100)
   return (
-    <div className="ticket">
-      <span className="ticket-label">{label}</span>
-      <span className="ticket-value">{value}</span>
-      {meter !== undefined && <span className="ticket-meter"><i style={{ width: `${meter}%` }} /></span>}
-    </div>
-  )
-}
-
-// Scène éclairée par le faisceau du projecteur, avec de la poussière en suspension.
-const DUST = Array.from({ length: 16 }, (_, i) => ({
-  left: `${(i * 37) % 100}%`,
-  top: `${(i * 53) % 90}%`,
-  delay: `${-(i * 1.7) % 12}s`,
-  size: `${2 + (i % 3)}px`,
-}))
-
-function Stage({ children }) {
-  return (
-    <section className="stage">
-      <div className="beam" aria-hidden="true" />
-      <div className="dust" aria-hidden="true">
-        {DUST.map((d, i) => (
-          <i key={i} style={{ left: d.left, top: d.top, animationDelay: d.delay, width: d.size, height: d.size }} />
-        ))}
+    <div className="meter">
+      <div className="meter-pill">
+        <Icon name="pack" />
+        <div className="meter-track"><i style={{ width: `${pct}%` }} /></div>
+        <span className="meter-time">
+          <Icon name="clock" />
+          {full ? 'Au complet' : formatDelay(nextIn)}
+        </span>
       </div>
-      {children}
-    </section>
+      <span className="meter-count" title="Boosters disponibles">
+        <Icon name="pack" />
+        <b>{boosters}</b>
+      </span>
+    </div>
   )
 }
 
 export default function App() {
   const [state, setState] = useState(() => regen(load()))
-  const [tab, setTab] = useState('boosters')
-  const [pull, setPull] = useState(null) // { cards, newIds }
+  const [tab, setTab] = useState('home')
+  const [detail, setDetail] = useState(null)  // booster affiché en grand
+  const [pull, setPull] = useState(null)      // booster en cours d'ouverture
   const [selected, setSelected] = useState(null)
   const [now, setNow] = useState(() => Date.now())
-  const [choosing, setChoosing] = useState(null)
   const [confirmReset, setConfirmReset] = useState(false)
-
-  // Remise à zéro : collection, boosters et pellicules. Les images de l'Atelier restent.
-  const resetCollection = () => {
-    setState(initialState())
-    setPull(null)
-    setSelected(null)
-    setConfirmReset(false)
-    setTab('boosters')
-  }
 
   useEffect(() => { save(state) }, [state])
   useEffect(() => { loadImages() }, [])
@@ -98,6 +80,7 @@ export default function App() {
   ), [state.owned])
 
   const canOpen = state.boosters > 0 || state.dust >= BOOSTER_DUST_COST
+  const nextIn = state.boosters < MAX_BOOSTERS ? state.regenAt + REGEN_MS - now : 0
 
   const open = useCallback((cover = PACK_COVERS[0]) => {
     if (!canOpen) return
@@ -141,104 +124,185 @@ export default function App() {
     return { ...s, owned, dust }
   })
 
-  const nextIn = state.boosters < MAX_BOOSTERS ? state.regenAt + REGEN_MS - now : 0
-
-  // Le booster choisi s'avance pendant que les autres quittent la scène,
-  // puis l'ouverture commence.
-  const choose = cover => {
-    if (!canOpen || choosing) return
-    setChoosing(cover.id)
-    setTimeout(() => {
-      setChoosing(null)
-      open(cover)
-    }, 560)
+  // Remise à zéro : collection, boosters et pellicules. Les images de l'Atelier restent.
+  const resetCollection = () => {
+    setState(initialState())
+    setPull(null)
+    setDetail(null)
+    setSelected(null)
+    setConfirmReset(false)
+    setTab('home')
   }
 
-  const plural = n => (n > 1 ? 's' : '')
+  const goTab = id => {
+    setTab(id)
+    setPull(null)
+    setDetail(null)
+    window.scrollTo({ top: 0 })
+  }
+
+  const otherPack = () => {
+    const i = PACK_COVERS.findIndex(c => c.id === detail.id)
+    setDetail(PACK_COVERS[(i + 1) % PACK_COVERS.length])
+  }
+
+  // Écran courant
+  let screen
+  if (pull) {
+    screen = (
+      <section className="screen screen-open" style={{ '--c1': pull.cover.universe.c1, '--c2': pull.cover.universe.c2 }}>
+        <BoosterOpening
+          key={pull.key}
+          cards={pull.cards}
+          cover={pull.cover}
+          isNew={id => pull.newIds.has(id)}
+          ownedBefore={pull.ownedBefore}
+          canOpenAgain={canOpen}
+          onAgain={() => open(pull.cover)}
+          onDone={() => { setPull(null); setDetail(null); goTab('collection') }}
+        />
+      </section>
+    )
+  } else if (tab === 'home' && detail) {
+    screen = (
+      <section className="screen pack-detail" style={{ '--c1': detail.universe.c1, '--c2': detail.universe.c2 }}>
+        <div className="detail-bg" aria-hidden="true" />
+        <BoosterMeter boosters={state.boosters} nextIn={nextIn} />
+        <div className="detail-pack" key={detail.id}>
+          <Pack cover={detail} onClick={() => open(detail)} disabled={!canOpen} />
+        </div>
+        <p className="detail-note">
+          {state.boosters > 0
+            ? `${state.boosters} booster${state.boosters > 1 ? 's' : ''} disponible${state.boosters > 1 ? 's' : ''}`
+            : canOpen
+              ? `Plus de booster gratuit : ouvre-le avec ${BOOSTER_DUST_COST} pellicules`
+              : 'Plus de booster · recycle tes doublons pour gagner des pellicules'}
+        </p>
+        <button className="pill-btn primary big" onClick={() => open(detail)} disabled={!canOpen}>
+          {state.boosters > 0 ? 'Ouvrir un booster' : `Ouvrir (${BOOSTER_DUST_COST} pellicules)`}
+        </button>
+        <div className="detail-nav">
+          <button className="pill-btn soft" onClick={() => goTab('guide')}>Taux de tirage</button>
+          <button className="round-btn" onClick={() => setDetail(null)} aria-label="Retour">
+            <Icon name="back" />
+          </button>
+          <button className="pill-btn soft" onClick={otherPack}>
+            Autre booster <Icon name="chevron" />
+          </button>
+        </div>
+      </section>
+    )
+  } else if (tab === 'home') {
+    screen = (
+      <section className="screen home">
+        <div className="panel pack-panel">
+          <div className="pack-panel-bg" aria-hidden="true" />
+          <div className="pack-row">
+            {PACK_COVERS.map((cover, i) => (
+              <div key={cover.id} className="pack-slot" style={{ '--i': i }}>
+                <Pack cover={cover} onClick={() => setDetail(cover)} />
+              </div>
+            ))}
+          </div>
+          <BoosterMeter boosters={state.boosters} nextIn={nextIn} />
+        </div>
+
+        <div className="tiles">
+          <button className="panel tile" onClick={() => goTab('collection')}>
+            <span className="tile-icon"><Icon name="cards" /></span>
+            <span className="tile-title">Collection</span>
+            <span className="tile-sub">{ownedCount}/{CARDS.length} cartes</span>
+            <span className="tile-bar"><i style={{ width: `${completion}%` }} /></span>
+          </button>
+          <button className="panel tile" onClick={() => goTab('atelier')}>
+            <span className="tile-icon"><Icon name="image" /></span>
+            <span className="tile-title">Atelier</span>
+            <span className="tile-sub">Tes images</span>
+          </button>
+        </div>
+
+        <div className="panel dust-panel">
+          <span className="dust-icon"><Icon name="film" /></span>
+          <div>
+            <b>{state.dust} pellicules</b>
+            <p>Recycle tes doublons dans la collection. {BOOSTER_DUST_COST} pellicules = 1 booster.</p>
+          </div>
+        </div>
+      </section>
+    )
+  } else if (tab === 'collection') {
+    screen = (
+      <section className="screen">
+        <Collection
+          owned={state.owned}
+          onSelect={card => setSelected({ card })}
+          onRecycleAll={recycleAll}
+          duplicateDust={duplicateDust}
+        />
+      </section>
+    )
+  } else if (tab === 'guide') {
+    screen = <section className="screen"><RarityGuide /></section>
+  } else {
+    screen = (
+      <section className="screen">
+        <Atelier onSelect={card => setSelected({ card, edit: true })} />
+        <div className="panel reset-panel">
+          {confirmReset
+            ? (
+              <>
+                <p>Effacer toute ta collection, tes boosters et tes pellicules ? Tes images de l’Atelier sont conservées.</p>
+                <div className="reset-actions">
+                  <button className="pill-btn danger" onClick={resetCollection}>Oui, tout remettre à zéro</button>
+                  <button className="pill-btn soft" onClick={() => setConfirmReset(false)}>Annuler</button>
+                </div>
+              </>
+            )
+            : (
+              <>
+                <p>Recommencer une collection depuis le début.</p>
+                <button className="pill-btn soft" onClick={() => setConfirmReset(true)}>Réinitialiser ma collection</button>
+              </>
+            )}
+        </div>
+      </section>
+    )
+  }
 
   return (
     <div className="app">
-      <div className="grain" aria-hidden="true" />
-
-      <header className="topbar">
-        <div className="brand">
-          <Wordmark />
-          <span className="brand-sub">Série 1 — Premières Séances</span>
-        </div>
-        <div className="tickets">
-          <Ticket label="Boosters" value={`${state.boosters}/${MAX_BOOSTERS}`} />
-          <Ticket label="Pellicules" value={state.dust} />
-          <Ticket label="Collection" value={`${ownedCount}/${CARDS.length}`} meter={completion} />
+      <header className="appbar">
+        <button className="brand" onClick={() => goTab('home')} aria-label="Accueil">
+          <Emblem />
+          <span>Ciné<b>Master</b></span>
+        </button>
+        <div className="appbar-pills">
+          <span className="chip" title="Pellicules"><Icon name="film" />{state.dust}</span>
+          <span className="chip" title="Collection"><Icon name="cards" />{ownedCount}/{CARDS.length}</span>
         </div>
       </header>
 
-      <nav className="tabs">
-        {TABS.map(t => (
-          <button key={t.id} className={tab === t.id ? 'active' : ''} onClick={() => { setTab(t.id); setPull(null) }}>
-            {t.label}
-          </button>
-        ))}
-      </nav>
-
-      <main>
-        {tab === 'boosters' && (pull
-          ? (
-            <Stage>
-              <BoosterOpening
-                key={pull.key}
-                cards={pull.cards}
-                cover={pull.cover}
-                isNew={id => pull.newIds.has(id)}
-                ownedBefore={pull.ownedBefore}
-                canOpenAgain={canOpen}
-                onAgain={() => open(pull.cover)}
-                onDone={() => { setPull(null); setTab('collection') }}
-              />
-            </Stage>
-          ) : (
-            <Stage>
-              <div className="stage-head">
-                <p className="eyebrow">{CARDS.length} cartes · personnages, lieux et objets cultes</p>
-                <h2>Choisis ton booster</h2>
-              </div>
-              <div className={`pack-row ${choosing ? 'is-choosing' : ''}`}>
-                {PACK_COVERS.map((cover, i) => (
-                  <div
-                    key={cover.id}
-                    className={`pack-slot ${choosing === cover.id ? 'is-chosen' : ''}`}
-                    style={{ '--i': i }}
-                  >
-                    <div className="pack-bob">
-                      <Pack cover={cover} disabled={!canOpen} onClick={() => choose(cover)} />
-                    </div>
-                    <div className="pack-floor" />
-                  </div>
-                ))}
-              </div>
-              <p className="stage-foot">
-                {state.boosters > 0
-                  ? `${state.boosters} booster${plural(state.boosters)} gratuit${plural(state.boosters)}`
-                  : canOpen
-                    ? `Booster à ${BOOSTER_DUST_COST} pellicules`
-                    : 'Plus de booster · recycle tes doublons pour gagner des pellicules'}
-                {state.boosters < MAX_BOOSTERS && ` · prochain dans ${formatDelay(nextIn)}`}
-              </p>
-            </Stage>
-          ))}
-
-        {tab === 'collection' && (
-          <Collection
-            owned={state.owned}
-            onSelect={card => setSelected({ card })}
-            onRecycleAll={recycleAll}
-            duplicateDust={duplicateDust}
-          />
-        )}
-
-        {tab === 'guide' && <RarityGuide />}
-
-        {tab === 'atelier' && <Atelier onSelect={card => setSelected({ card, edit: true })} />}
+      <main key={pull ? `open-${pull.key}` : `${tab}-${detail?.id || ''}`} className="main">
+        {screen}
       </main>
+
+      <p className="legal">Jeu de fans non officiel, non affilié aux ayants droit</p>
+
+      {!pull && (
+        <nav className="tabbar" aria-label="Navigation">
+          {TABS.map(t => (
+            <button
+              key={t.id}
+              className={tab === t.id ? 'active' : ''}
+              onClick={() => goTab(t.id)}
+              aria-label={t.label}
+            >
+              <Icon name={t.icon} />
+              <span>{t.label}</span>
+            </button>
+          ))}
+        </nav>
+      )}
 
       {selected && (
         <CardModal
@@ -249,21 +313,6 @@ export default function App() {
           onRecycle={() => recycle(selected.card.id)}
         />
       )}
-
-      <footer className="foot">
-        <p>Jeu de fans non officiel, non affilié aux ayants droit · Collection sauvegardée sur cet appareil</p>
-        {confirmReset
-          ? (
-            <div className="reset-confirm">
-              <p>Effacer toute ta collection, tes boosters et tes pellicules ? Tes images de l’Atelier sont conservées.</p>
-              <div className="reset-actions">
-                <button className="btn small danger" onClick={resetCollection}>Oui, tout remettre à zéro</button>
-                <button className="btn small" onClick={() => setConfirmReset(false)}>Annuler</button>
-              </div>
-            </div>
-          )
-          : <button className="link-btn" onClick={() => setConfirmReset(true)}>Réinitialiser ma collection</button>}
-      </footer>
     </div>
   )
 }

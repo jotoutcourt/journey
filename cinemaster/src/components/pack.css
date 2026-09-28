@@ -313,3 +313,15 @@
 @media (prefers-reduced-motion: reduce) {
   .pack-tilt { transform: none; }
 }
+
+/* Logo sur la plaque de laiton (indépendant du style de l'interface) */
+.pack .wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: .28em;
+  font: 900 10.5cqw/1 'Big Shoulders Display', 'Oswald', Impact, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: .02em;
+  white-space: nowrap;
+}
+.pack .wordmark .emblem { width: .95em; height: .95em; flex: none; }
