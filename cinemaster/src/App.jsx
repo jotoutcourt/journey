@@ -106,7 +106,7 @@ export default function App() {
         dust: useFree ? s.dust : s.dust - BOOSTER_DUST_COST,
       }
     })
-    setPull({ cards, newIds, cover, key: Date.now() })
+    setPull({ cards, newIds, cover, ownedBefore: state.owned, key: Date.now() })
   }, [canOpen, state.owned])
 
   const recycle = id => setState(s => {
@@ -179,6 +179,7 @@ export default function App() {
                 cards={pull.cards}
                 cover={pull.cover}
                 isNew={id => pull.newIds.has(id)}
+                ownedBefore={pull.ownedBefore}
                 canOpenAgain={canOpen}
                 onAgain={() => open(pull.cover)}
                 onDone={() => { setPull(null); setTab('collection') }}

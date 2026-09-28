@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Card, { CardBack } from './Card.jsx'
 import Pack from './Pack.jsx'
+import RegisterNew from './RegisterNew.jsx'
 import { RARITIES, rarityRank } from '../lib/rarity.js'
 import './booster.css'
 
@@ -71,7 +72,7 @@ function Throwable({ children, onTap, onThrown, canThrow }) {
   )
 }
 
-export default function BoosterOpening({ cards, cover, isNew, onDone, onAgain, canOpenAgain }) {
+export default function BoosterOpening({ cards, cover, isNew, ownedBefore, onDone, onAgain, canOpenAgain }) {
   const [stage, setStage] = useState('tear') // tear | extract | reveal | summary
   const [index, setIndex] = useState(0)
   const [flipped, setFlipped] = useState(false)
@@ -80,10 +81,14 @@ export default function BoosterOpening({ cards, cover, isNew, onDone, onAgain, c
   const top = cards[index]
   const topHidden = index === lastIndex && !flipped
 
+  // Les nouvelles cartes passent d'abord par la grille de leur série.
+  const newCards = cards.filter(c => isNew(c.id))
+  const afterReveal = newCards.length ? 'register' : 'summary'
+
   const next = useCallback(() => {
-    if (index >= lastIndex) setStage('summary')
+    if (index >= lastIndex) setStage(afterReveal)
     else setIndex(i => i + 1)
-  }, [index, lastIndex])
+  }, [index, lastIndex, afterReveal])
 
   const tap = useCallback(fly => {
     if (topHidden) setFlipped(true)
@@ -107,6 +112,10 @@ export default function BoosterOpening({ cards, cover, isNew, onDone, onAgain, c
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [stage, topHidden, next])
+
+  if (stage === 'register') {
+    return <RegisterNew cards={newCards} ownedBefore={ownedBefore} onDone={() => setStage('summary')} />
+  }
 
   if (stage === 'summary') {
     return (
@@ -196,7 +205,7 @@ export default function BoosterOpening({ cards, cover, isNew, onDone, onAgain, c
             <p className="hint small">
               {topHidden ? ' ' : index === lastIndex ? 'Glisse pour voir ton booster' : 'Glisse la carte sur le côté pour passer à la suivante'}
             </p>
-            <button className="link-btn" onClick={() => setStage('summary')}>Tout révéler</button>
+            <button className="link-btn" onClick={() => setStage(afterReveal)}>Tout révéler</button>
           </>
         )}
       </div>
