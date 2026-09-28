@@ -7,7 +7,10 @@ import './booster.css'
 
 // Carte du dessus de la pile : on la fait glisser (ou on la touche) pour
 // l'envoyer hors de l'écran et découvrir la suivante.
-function Throwable({ children, onTap, onThrown, canThrow }) {
+// Chaque carte de la pile a son enveloppe dès le départ (`active` seulement
+// pour celle du dessus) : quand une carte passe au-dessus, rien n'est
+// reconstruit, elle devient simplement manipulable.
+function Throwable({ children, onTap, onThrown, canThrow, active }) {
   const ref = useRef(null)
   const drag = useRef(null)
 
@@ -21,6 +24,7 @@ function Throwable({ children, onTap, onThrown, canThrow }) {
   }, [onThrown])
 
   const down = e => {
+    if (!active) return
     e.currentTarget.setPointerCapture(e.pointerId)
     drag.current = { x: e.clientX, y: e.clientY, lx: e.clientX, lt: performance.now(), vx: 0, moved: false }
     ref.current.style.transition = 'none'
@@ -60,7 +64,7 @@ function Throwable({ children, onTap, onThrown, canThrow }) {
   return (
     <div
       ref={ref}
-      className="throwable"
+      className={`throwable ${active ? 'is-active' : ''}`}
       onPointerDown={down}
       onPointerMove={move}
       onPointerUp={up}
@@ -76,6 +80,13 @@ export default function BoosterOpening({ cards, cover, isNew, ownedBefore, onDon
   const [stage, setStage] = useState('tear') // tear | extract | reveal | register | summary
   const [index, setIndex] = useState(0)
   const [flipped, setFlipped] = useState(false)
+  // La pile est construite (cachée derrière le sachet) dès que le booster est posé : à la
+  // déchirure, il n'y a plus rien à préparer et l'animation reste fluide.
+  const [prepared, setPrepared] = useState(false)
+  useEffect(() => {
+    const t = setTimeout(() => setPrepared(true), 650)
+    return () => clearTimeout(t)
+  }, [])
 
   const lastIndex = cards.length - 1
   const top = cards[index]
@@ -142,32 +153,30 @@ export default function BoosterOpening({ cards, cover, isNew, ownedBefore, onDon
   return (
     <div className="opening">
       <div className={`booster-stage stage-${stage}`}>
-        {stage !== 'tear' && (
+        {(stage !== 'tear' || prepared) && (
           <div className="stack">
             {cards.map((c, j) => {
               const k = j - index
-              if (k < 0 || k > 3) return null
+              if (k < 0) return null
               const faceDown = j === lastIndex && !flipped
               const isTop = k === 0 && stage === 'reveal'
+              // carte à effet : elle le montre une fois en arrivant au-dessus
+              const shiny = RARITIES[c.rarity].foil !== 'none'
               const face = j === lastIndex
                 ? (
                   <div className={`flip3d ${faceDown ? '' : 'is-flipped'}`}>
                     <div className="flip3d-back"><CardBack /></div>
-                    <div className="flip3d-front"><Card card={c} interactive={isTop && !faceDown} touch /></div>
+                    <div className="flip3d-front"><Card card={c} interactive={isTop && !faceDown} touch showcase={isTop && !faceDown && shiny ? 700 : null} /></div>
                   </div>
                 )
-                : <Card card={c} interactive={isTop} touch />
+                : <Card card={c} interactive={isTop} touch showcase={isTop && shiny ? 320 : null} />
               return (
                 <div
                   key={j}
                   className={`stack-card ${isTop && faceDown ? `rare-hint rh-${c.rarity}` : ''} ${isTop && !faceDown && rarityRank(c.rarity) >= rarityRank('holo') && j === lastIndex ? `burst burst-${c.rarity}` : ''}`}
-                  style={{ '--k': k, zIndex: 10 - k }}
+                  style={{ '--k': Math.min(k, 3), zIndex: 10 - k, opacity: k > 3 ? 0 : undefined }}
                 >
-                  {isTop
-                    ? (
-                      <Throwable canThrow={!faceDown} onTap={tap} onThrown={next}>{face}</Throwable>
-                    )
-                    : face}
+                  <Throwable active={isTop} canThrow={!faceDown} onTap={tap} onThrown={next}>{face}</Throwable>
                 </div>
               )
             })}
@@ -210,7 +219,7 @@ export default function BoosterOpening({ cards, cover, isNew, ownedBefore, onDon
         )}
       </div>
 
-      {stage === 'reveal' && index > 0 && (
+      {stage === 'reveal' && (
         <div className="tray" aria-label="Cartes déjà vues">
           {cards.slice(0, index).map((c, i) => (
             <div key={i} className="tray-card"><Card card={c} interactive={false} /></div>

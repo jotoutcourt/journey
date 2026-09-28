@@ -45,10 +45,12 @@ export default function Pack({ cover, tearable = false, onTorn, className = '', 
 
   useEffect(() => () => cancelAnimationFrame(anim.current), [])
 
-  // Progression écrite directement sur l'élément : aucun rendu React par image.
+  // Progression écrite directement sur les deux morceaux de soudure (et eux
+  // seuls) : aucun rendu React ni recalcul de style du reste du sachet.
   const setTear = v => {
     tearRef.current = v
-    rootRef.current?.style.setProperty('--tear', v.toFixed(4))
+    const t = v.toFixed(4)
+    rootRef.current?.querySelectorAll('.pack-head').forEach(h => h.style.setProperty('--tear', t))
     if (v > 0.05 && !started) setStarted(true)
   }
   const setRef = node => {
@@ -127,6 +129,7 @@ export default function Pack({ cover, tearable = false, onTorn, className = '', 
       }}
       aria-label={tearable ? 'Déchirer le booster' : `Booster ${cover.universe.name}`}
     >
+      <div className="pack-shadow" aria-hidden="true" />
       <div className="pack-tilt">
         {/* soudure du haut, en deux morceaux : la partie déjà déchirée se soulève */}
         <div className="pack-head pack-head-rest"><span className="crimp" /></div>

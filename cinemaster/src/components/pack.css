@@ -31,10 +31,24 @@
   position: relative;
   width: 100%;
   height: 100%;
-  /* rotation écrite directement par useTilt ; ombre fixe (jamais recalculée) */
+  /* rotation écrite directement par useTilt */
   transform-style: preserve-3d;
-  filter: drop-shadow(0 3cqw 4.5cqw rgba(40, 50, 80, .33));
 }
+/* Ombre portée : calque à part, dessiné une seule fois. (Un filtre posé sur
+   le sachet serait redessiné à chaque image dès qu'un reflet bouge.) */
+.pack-shadow {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  top: 10%;
+  bottom: -1%;
+  border-radius: 6cqw;
+  background: rgba(40, 50, 80, .38);
+  filter: blur(4.5cqw);
+  transform: translateY(2.5cqw);
+  pointer-events: none;
+}
+
 
 /* ─── Soudure du haut (la bande à déchirer) ───────────────────────────── */
 .pack-head {

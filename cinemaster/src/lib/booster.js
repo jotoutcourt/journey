@@ -25,14 +25,47 @@ function pickWeighted(weights, rand) {
   return Object.keys(weights).at(-1)
 }
 
-export function openBooster(rand = Math.random) {
+// Rareté tirée parmi celles que `allowed` accepte, poids renormalisés.
+function pickAmong(weights, allowed, rand) {
+  const w = Object.fromEntries(Object.entries(weights).filter(([k]) => allowed(k)))
+  return Object.keys(w).length ? pickWeighted(w, rand) : null
+}
+
+// Part des chances d'un emplacement que le thème peut honorer
+const coverage = (weights, pool) => Object.entries(weights)
+  .reduce((sum, [k, w]) => sum + (pool[k]?.length ? w : 0), 0)
+
+// Ouvre un booster. Avec `theme` (clé d'univers), au moins une carte vient
+// de cette série. Elle prend la place de l'emplacement que la série couvre le
+// mieux, avec les mêmes taux de rareté : pour Friends ou The 100, dont toutes
+// les raretés existent, les taux restent strictement identiques ; pour une
+// série sans commune (Titanic), la carte garantie sort de l'emplacement rare.
+export function openBooster({ theme, rand = Math.random } = {}) {
   const pulled = new Set()
-  return SLOTS.map(weights => {
-    const rarity = pickWeighted(weights, rand)
-    const fresh = POOL[rarity].filter(c => !pulled.has(c.id))
-    const list = fresh.length ? fresh : POOL[rarity]
+  const themePool = theme ? CARDS.filter(c => c.u === theme)
+    .reduce((acc, c) => ((acc[c.rarity] ||= []).push(c), acc), {}) : null
+
+  let themeSlot = -1
+  if (themePool) {
+    const scores = SLOTS.map(w => coverage(w, themePool))
+    const best = Math.max(...scores)
+    const candidates = scores.flatMap((sc, i) => (sc === best && best > 0 ? [i] : []))
+    if (candidates.length) themeSlot = candidates[Math.floor(rand() * candidates.length)]
+  }
+
+  const draw = (pool, rarity) => {
+    const fresh = pool[rarity].filter(c => !pulled.has(c.id))
+    const list = fresh.length ? fresh : pool[rarity]
     const card = list[Math.floor(rand() * list.length)]
     pulled.add(card.id)
     return card
+  }
+
+  return SLOTS.map((weights, i) => {
+    if (i === themeSlot) {
+      const rarity = pickAmong(weights, k => themePool[k]?.length, rand)
+      return draw(themePool, rarity)
+    }
+    return draw(POOL, pickWeighted(weights, rand))
   })
 }

@@ -1,7 +1,9 @@
+import { useEffect } from 'react'
 import { RARITIES } from '../lib/rarity.js'
 import { SET, SET_SIZE } from '../data/cards.js'
 import { useCardImage } from '../lib/images.js'
 import { useTilt } from '../lib/tilt.js'
+import { sunpillarFrom, usePalette } from '../lib/palette.js'
 import { Emblem } from './Brand.jsx'
 import './card.css'
 
@@ -10,9 +12,7 @@ const ILLUSTRATOR = 'JoDNR'
 // Illustration générée quand la carte n'a pas d'image : dégradé de l'univers,
 // motif selon le type et pictogramme central.
 // Priorité : image ajoutée dans l'Atelier, puis `image` du fichier de données.
-function Art({ card }) {
-  const custom = useCardImage(card.id)
-  const src = custom || card.image
+function Art({ card, src }) {
   if (src) return <img className="art-img" src={src} alt="" draggable="false" />
   return (
     <div className={`art-gen art-${card.type.toLowerCase()}`}>
@@ -65,15 +65,23 @@ export function CardBack({ className = '' }) {
   )
 }
 
-export default function Card({ card, interactive = true, touch = false, className = '', onClick, style, maxTilt }) {
-  const { attach, move: tiltMove, leave: tiltLeave, up: tiltUp } = useTilt({ maxTilt, touch })
+// `showcase` : délai (ms) après lequel la carte montre son effet d'elle-même,
+// une fois (carte brillante qu'on vient de découvrir).
+export default function Card({ card, interactive = true, touch = false, className = '', onClick, style, maxTilt, showcase = null }) {
+  const { attach, move: tiltMove, leave: tiltLeave, up: tiltUp, sweep } = useTilt({ maxTilt, touch: touch && interactive })
+  useEffect(() => { if (showcase != null) sweep(showcase) }, [showcase, sweep])
   const r = RARITIES[card.rarity]
   const full = r.layout === 'full'
+  const custom = useCardImage(card.id)
+  const src = custom || card.image
+  // Rare : le reflet prend les couleurs de l'image de la carte
+  const hues = usePalette(card.rarity === 'rare' ? src : null)
 
   const vars = {
     '--c1': card.universe.c1,
     '--c2': card.universe.c2,
     '--ink': card.universe.ink,
+    ...(hues && { '--sunpillar': sunpillarFrom(hues) }),
     ...style,
   }
 
@@ -97,7 +105,7 @@ export default function Card({ card, interactive = true, touch = false, classNam
           <div className="foil-under" data-o><i className="sheet" /></div>
 
           <div className="card-art">
-            <Art card={card} />
+            <Art card={card} src={src} />
             <div className="foil-art" data-o><i className="sheet" /></div>
           </div>
 

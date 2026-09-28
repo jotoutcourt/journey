@@ -5,6 +5,7 @@ import CardModal from './components/CardModal.jsx'
 import RarityGuide from './components/RarityGuide.jsx'
 import Atelier from './components/Atelier.jsx'
 import Pack from './components/Pack.jsx'
+import PackCarousel from './components/PackCarousel.jsx'
 import { Emblem } from './components/Brand.jsx'
 import { Icon } from './components/Icons.jsx'
 import { CARDS, CARDS_BY_ID } from './data/cards.js'
@@ -50,36 +51,6 @@ function BoosterMeter({ boosters, nextIn }) {
   )
 }
 
-// Carrousel : le booster choisi au centre (avec son reflet), les autres
-// inclinés sur les côtés. On glisse ou on touche un côté pour changer.
-function PackCarousel({ current, onChange, onOpen, disabled }) {
-  const [start, setStart] = useState(null)
-  const i = PACK_COVERS.indexOf(current)
-  const at = d => PACK_COVERS[(i + d + PACK_COVERS.length) % PACK_COVERS.length]
-  return (
-    <div
-      className="carousel"
-      onPointerDown={e => setStart(e.clientX)}
-      onPointerUp={e => {
-        if (start === null) return
-        const dx = e.clientX - start
-        setStart(null)
-        if (Math.abs(dx) > 50) onChange(at(dx < 0 ? 1 : -1))
-      }}
-    >
-      <button className="car-side car-left" onClick={() => onChange(at(-1))} aria-label="Booster précédent">
-        <Pack cover={at(-1)} />
-      </button>
-      <div className="car-center" key={current.id}>
-        <Pack cover={current} onClick={onOpen} disabled={disabled} />
-      </div>
-      <button className="car-side car-right" onClick={() => onChange(at(1))} aria-label="Booster suivant">
-        <Pack cover={at(1)} />
-      </button>
-    </div>
-  )
-}
-
 export default function App() {
   const [state, setState] = useState(() => regen(load()))
   const [tab, setTab] = useState('home')
@@ -118,7 +89,7 @@ export default function App() {
   const open = useCallback((cover = PACK_COVERS[0]) => {
     if (!canOpen || opening.current) return
     opening.current = true
-    const cards = openBooster()
+    const cards = openBooster({ theme: cover.u })
     const newIds = new Set(cards.filter(c => !state.owned[c.id]).map(c => c.id))
     setState(s => {
       const useFree = s.boosters > 0
