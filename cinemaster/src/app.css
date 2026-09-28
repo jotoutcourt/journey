@@ -967,7 +967,8 @@ label.btn { cursor: pointer; }
   font-weight: 600;
 }
 .mode-banner b { font-weight: 900; }
-.mode-shared { background: #e3f8ee; color: #1f6f4a; }
+.mode-shared,
+.mode-online { background: #e3f8ee; color: #1f6f4a; }
 .mode-local { background: #fff4df; color: #8a5a12; }
 .mode-count {
   margin-left: auto;

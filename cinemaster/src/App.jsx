@@ -17,7 +17,7 @@ import Missions from './components/Missions.jsx'
 import Profile from './components/Profile.jsx'
 import Account, { SyncConflict } from './components/Account.jsx'
 import { useCloudSync } from './lib/sync.js'
-import { connectShared, loadImages } from './lib/images.js'
+import { connectOnline, connectShared, loadImages } from './lib/images.js'
 import AdminGate from './components/AdminGate.jsx'
 import { packFor } from './lib/packs.js'
 import { toChoose } from './lib/universes.js'
@@ -80,7 +80,7 @@ export default function App() {
     else delete owned[id]
     return { ...s, owned }
   }), [])
-  useEffect(() => { loadImages(); connectShared() }, [])
+  useEffect(() => { loadImages(); connectShared(); connectOnline() }, [])
 
   useEffect(() => {
     const t = setInterval(() => {

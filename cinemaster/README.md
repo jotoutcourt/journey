@@ -62,3 +62,13 @@ on peut les remplacer par `VITE_SUPABASE_URL` / `VITE_SUPABASE_KEY`).
 
 Les comptes ne fonctionnent que sur le site / l'appli installée, pas dans
 l'aperçu claude.ai.
+
+### Images visibles par tout le monde (site et appli installée)
+
+1. **SQL Editor** : coller `supabase/images.sql`, puis **Run**.
+2. Se connecter une fois dans l'appli (onglet Profil) avec son e-mail, puis
+   exécuter dans le SQL Editor (avec sa propre adresse) :
+   `insert into public.admins (user_id) select id from auth.users where email = 'ton@email.fr';`
+3. Dans l'Atelier du site (lien Admin), le bandeau indique « Images en ligne » :
+   tout ce qui y est déposé est visible par tous les joueurs, sur tous les
+   appareils. Seul un compte présent dans `admins` peut déposer.

@@ -1,8 +1,9 @@
 // PopCard : fonctionnement hors connexion.
 // - pages : réseau d'abord (toujours la dernière version), sinon la copie en cache ;
 // - fichiers de l'appli (/assets, noms uniques à chaque version) : cache d'abord ;
-// - polices Google et images : servies du cache, mises à jour en arrière-plan.
-const VERSION = 'popcard-v1'
+// - polices Google et images (dont celles des cartes en ligne) : servies du
+//   cache, mises à jour en arrière-plan.
+const VERSION = 'popcard-v2'
 const SHELL = ['/', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png', '/favicon.svg']
 
 self.addEventListener('install', event => {
@@ -42,6 +43,8 @@ self.addEventListener('fetch', event => {
 
   const sameOrigin = url.origin === self.location.origin
   const fonts = url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com'
+  // images des cartes déposées en ligne (Supabase) : gardées pour le hors-ligne
+  const cardImages = url.hostname.endsWith('.supabase.co') && url.pathname.includes('/storage/v1/object/public/')
 
   // fichiers versionnés de l'appli : ils ne changent jamais
   if (sameOrigin && url.pathname.startsWith('/assets/')) {
@@ -50,7 +53,7 @@ self.addEventListener('fetch', event => {
   }
 
   // polices, icônes, images : cache immédiat + mise à jour discrète
-  if (fonts || (sameOrigin && /\.(png|jpe?g|webp|svg|webmanifest)$/.test(url.pathname))) {
+  if (fonts || cardImages || (sameOrigin && /\.(png|jpe?g|webp|svg|webmanifest)$/.test(url.pathname))) {
     event.respondWith(
       caches.match(req).then(hit => {
         const fresh = fetch(req).then(res => put(req, res)).catch(() => hit)

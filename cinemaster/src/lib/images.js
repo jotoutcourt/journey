@@ -1,15 +1,18 @@
 // Images personnalisées des cartes et des boosters, ajoutées depuis l'Atelier.
 //
-// Deux stockages :
+// Trois stockages :
+// - EN LIGNE (Supabase, site et appli installée) : espace de fichiers public
+//   « card-images » + index `card_images`. Images vues par tous les joueurs,
+//   sur tous les appareils ; seul un compte admin peut en déposer.
 // - PARTAGÉ (page publiée sur claude.ai) : fichiers dans le stockage d'images
-//   de la page (`assets`) + index `images/<clé>` dans sa base (`db`). Ce sont
-//   les images par défaut vues par tous les joueurs ; seules les personnes
-//   qui peuvent modifier la page (l'admin) peuvent en déposer.
-// - LOCAL (IndexedDB, cet appareil) : quand le partage n'est pas disponible
-//   (version Vercel, ou joueur sans droit d'écriture).
-// À l'affichage, l'image partagée passe avant l'image locale.
+//   de la page (`assets`) + index `images/<clé>` dans sa base (`db`).
+// - LOCAL (IndexedDB, cet appareil) : quand aucun des deux n'est disponible.
+// À l'affichage : partagé, puis en ligne, puis local.
 import { useSyncExternalStore } from 'react'
 import { CARDS, UNIVERSES, fileKeys, migrateId, slug } from '../data/cards.js'
+import { supabase } from './cloud.js'
+
+const BUCKET = 'card-images'
 
 const DB_NAME = 'cinemaster-images' // nom historique, conservé pour garder les images
 const STORE = 'images'
@@ -17,6 +20,8 @@ const MAX_SIDE = 1000
 
 const urls = new Map()        // cardId → object URL (images locales)
 const shared = new Map()      // cardId → { asset, url } (images partagées)
+const online = new Map()      // cardId → { path, url } (images en ligne)
+let onlineAdmin = false       // compte connecté autorisé à déposer en ligne
 let dbNs = null               // base partagée (null hors claude.ai)
 let assetsNs = null           // stockage d'images (null si pas le droit d'écrire)
 const listeners = new Set()
@@ -110,12 +115,52 @@ export async function connectShared() {
   } catch { /* partage indisponible : mode local */ }
 }
 
-// 'shared' : les images déposées deviennent celles de tout le monde.
-export const storageMode = () => (dbNs && assetsNs ? 'shared' : 'local')
+// Images en ligne (Supabase) : lues par tout le monde, sans compte.
+const publicUrl = (path, t) => `${supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl}?v=${t}`
+
+async function fetchOnline() {
+  const { data, error } = await supabase.from('card_images').select('key, path, updated_at')
+  if (error) return
+  online.clear()
+  for (const r of data) online.set(r.key, { path: r.path, url: publicUrl(r.path, Date.parse(r.updated_at)) })
+  emit()
+}
+
+async function checkAdmin() {
+  const { data } = await supabase.rpc('is_admin')
+  onlineAdmin = data === true
+  emit()
+}
+
+export function connectOnline() {
+  if (!supabase) return
+  fetchOnline()
+  checkAdmin()
+  supabase.auth.onAuthStateChange(() => { checkAdmin() })
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') fetchOnline()
+  })
+}
+
+async function setOnline(cardId, blob) {
+  const path = `${cardId}.jpg`
+  const up = await supabase.storage.from(BUCKET).upload(path, blob, { upsert: true, contentType: 'image/jpeg', cacheControl: '3600' })
+  if (up.error) throw up.error
+  const updated = new Date().toISOString()
+  const { error } = await supabase.from('card_images').upsert({ key: cardId, path, updated_at: updated })
+  if (error) throw error
+  online.set(cardId, { path, url: publicUrl(path, Date.parse(updated)) })
+  emit()
+}
+
+// 'shared' (claude.ai) ou 'online' (admin connecté) : les images déposées
+// deviennent celles de tout le monde. Sinon 'local' : cet appareil seulement.
+export const storageMode = () => (dbNs && assetsNs ? 'shared' : onlineAdmin ? 'online' : 'local')
 
 export async function setImage(cardId, file) {
   const blob = await shrink(file, formatFor(cardId))
   if (storageMode() === 'shared') return setShared(cardId, blob)
+  if (storageMode() === 'online') return setOnline(cardId, blob)
   await tx('readwrite', s => s.put(blob, cardId))
   if (urls.has(cardId)) URL.revokeObjectURL(urls.get(cardId))
   urls.set(cardId, URL.createObjectURL(blob))
@@ -141,6 +186,15 @@ export async function removeImage(cardId) {
     await assetsNs.delete(asset).catch(() => {})
     return
   }
+  if (storageMode() === 'online' && online.has(cardId)) {
+    const { path } = online.get(cardId)
+    const { error } = await supabase.from('card_images').delete().eq('key', cardId)
+    if (error) throw error
+    online.delete(cardId)
+    emit()
+    await supabase.storage.from(BUCKET).remove([path]).catch(() => {})
+    return
+  }
   await tx('readwrite', s => s.delete(cardId))
   if (urls.has(cardId)) URL.revokeObjectURL(urls.get(cardId))
   urls.delete(cardId)
@@ -150,12 +204,12 @@ export async function removeImage(cardId) {
 const subscribe = l => (listeners.add(l), () => listeners.delete(l))
 
 export function useCardImage(cardId) {
-  return useSyncExternalStore(subscribe, () => shared.get(cardId)?.url ?? urls.get(cardId))
+  return useSyncExternalStore(subscribe, () => shared.get(cardId)?.url ?? online.get(cardId)?.url ?? urls.get(cardId))
 }
 
 export function useImageCount() {
   useSyncExternalStore(subscribe, () => version)
-  return new Set([...shared.keys(), ...urls.keys()]).size
+  return new Set([...shared.keys(), ...online.keys(), ...urls.keys()]).size
 }
 
 export function useStorageMode() {
@@ -166,17 +220,21 @@ export function useStorageMode() {
 // Images locales pas encore partagées (déposées avant l'activation du partage).
 export function useLocalOnlyCount() {
   useSyncExternalStore(subscribe, () => version)
-  return [...urls.keys()].filter(k => !shared.has(k)).length
+  const mode = storageMode()
+  const remote = mode === 'online' ? online : shared
+  return [...urls.keys()].filter(k => !remote.has(k)).length
 }
 
 // Envoie les images locales de cet appareil dans le stockage partagé.
 export async function publishLocalImages(onProgress) {
-  if (storageMode() !== 'shared') return 0
-  const keys = [...urls.keys()].filter(k => !shared.has(k))
+  const mode = storageMode()
+  if (mode === 'local') return 0
+  const remote = mode === 'online' ? online : shared
+  const keys = [...urls.keys()].filter(k => !remote.has(k))
   let done = 0
   for (const key of keys) {
     const blob = await tx('readonly', s => s.get(key))
-    if (blob) await setShared(key, blob)
+    if (blob) await (mode === 'online' ? setOnline(key, blob) : setShared(key, blob))
     onProgress?.(++done, keys.length)
   }
   return done

@@ -82,11 +82,13 @@ export default function Atelier({ onSelect }) {
     <section className="atelier">
       <div className={`mode-banner mode-${mode}`}>
         {mode === 'shared'
-          ? <><b>Images partagées.</b> Ce que tu déposes ici devient l’image par défaut pour tous les joueurs.</>
-          : <><b>Images locales.</b> Ce que tu déposes ici reste sur cet appareil (le partage n’est disponible que sur la page publiée, pour l’admin).</>}
+          ? <><b>Images partagées (page claude.ai).</b> Ce que tu déposes ici devient l’image par défaut sur cette page. Pour le site et l’appli installée, dépose-les depuis le site, connecté(e) avec ton compte admin.</>
+          : mode === 'online'
+            ? <><b>Images en ligne.</b> Ce que tu déposes ici devient l’image de tout le monde, sur tous les téléphones (site et appli installée).</>
+            : <><b>Images locales.</b> Ce que tu déposes ici reste sur cet appareil. Pour que tout le monde les voie, connecte-toi avec ton compte admin (onglet Profil) sur le site.</>}
         <span className="mode-count">{count} image{count > 1 ? 's' : ''}</span>
       </div>
-      {mode === 'shared' && localOnly > 0 && (
+      {mode !== 'local' && localOnly > 0 && (
         <div className="panel publish-local">
           <p>{localOnly} image{localOnly > 1 ? 's' : ''} déposée{localOnly > 1 ? 's' : ''} avant le partage {localOnly > 1 ? 'sont' : 'est'} encore sur cet appareil seulement.</p>
           <button className="pill-btn primary" onClick={publishLocal} disabled={!!publishing}>
