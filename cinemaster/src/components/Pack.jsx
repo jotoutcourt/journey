@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTilt } from '../lib/tilt.js'
-import { packImageKey, useCardImage } from '../lib/images.js'
+import { packFullKey, packImageKey, useCardImage } from '../lib/images.js'
 import { SET } from '../data/cards.js'
 import { Emblem } from './Brand.jsx'
 import './pack.css'
@@ -34,6 +34,8 @@ function Art({ card }) {
 // le doigt le long de la bande pointillée (ou d'un simple toucher).
 export default function Pack({ cover, tearable = false, onTorn, className = '', onClick, disabled }) {
   const { attach, move: tiltMove, leave: tiltLeave, up: tiltUp } = useTilt({ maxTilt: 12 })
+  // Booster complet fourni par le joueur : son image remplace tout le visuel.
+  const fullImg = useCardImage(packFullKey(cover.u))
   const [tear, setTearState] = useState(0)
   const [torn, setTorn] = useState(false)
   const tearRef = useRef(0)
@@ -97,8 +99,8 @@ export default function Pack({ cover, tearable = false, onTorn, className = '', 
   return (
     <div
       ref={attach}
-      className={`pack ${tearable ? 'is-tearable' : ''} ${torn ? 'is-torn' : ''} ${disabled ? 'is-disabled' : ''} ${className}`}
-      style={{ '--c1': cover.universe.c1, '--c2': cover.universe.c2, '--tear': tear }}
+      className={`pack ${fullImg ? 'is-full' : ''} ${tearable ? 'is-tearable' : ''} ${torn ? 'is-torn' : ''} ${disabled ? 'is-disabled' : ''} ${className}`}
+      style={{ '--c1': cover.universe.c1, '--c2': cover.universe.c2, '--tear': tear, ...(fullImg && { '--full': `url("${fullImg}")` }) }}
       onPointerDown={down}
       onPointerMove={move}
       onPointerUp={up}
@@ -123,17 +125,21 @@ export default function Pack({ cover, tearable = false, onTorn, className = '', 
         <div className="pack-light" aria-hidden="true" />
 
         <div className="pack-body">
-          <Art card={cover} />
-          <div className="pack-band pack-band-top">
-            <span className="pack-logo"><Emblem /><span>Ciné<b>Master</b></span></span>
-            <span className="pack-code">{SET.code}</span>
-          </div>
-          <span className="pack-stripe" />
-          <div className="pack-titles">
-            <span className="pack-kicker">Booster thématique</span>
-            <span className="pack-title" data-text={cover.universe.name}>{cover.universe.name}</span>
-          </div>
-          <div className="pack-band pack-band-bottom"><span>{SET.name} · 5 cartes</span></div>
+          {!fullImg && (
+            <>
+              <Art card={cover} />
+              <div className="pack-band pack-band-top">
+                <span className="pack-logo"><Emblem /><span>Ciné<b>Master</b></span></span>
+                <span className="pack-code">{SET.code}</span>
+              </div>
+              <span className="pack-stripe" />
+              <div className="pack-titles">
+                <span className="pack-kicker">Booster thématique</span>
+                <span className="pack-title" data-text={cover.universe.name}>{cover.universe.name}</span>
+              </div>
+              <div className="pack-band pack-band-bottom"><span>{SET.name} · 5 cartes</span></div>
+            </>
+          )}
           <span className="crimp crimp-bottom" />
           <div className="pack-pillow" />
           <div className="pack-gloss" />

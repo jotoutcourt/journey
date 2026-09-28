@@ -56,19 +56,31 @@ export async function loadImages() {
   } catch { /* IndexedDB indisponible : les illustrations générées restent */ }
 }
 
-// Redimensionne l'image (côté max 1000 px) pour garder un stockage léger.
-async function shrink(file) {
+// Redimensionne l'image (côté max 1000 px par défaut) pour garder un stockage
+// léger. Avec `aspect` (largeur / hauteur), l'image est d'abord recadrée à ce
+// format, centrée.
+async function shrink(file, { maxSide = MAX_SIDE, aspect } = {}) {
   const bitmap = await createImageBitmap(file)
-  const scale = Math.min(1, MAX_SIDE / Math.max(bitmap.width, bitmap.height))
+  let sx = 0, sy = 0, sw = bitmap.width, sh = bitmap.height
+  if (aspect) {
+    if (sw / sh > aspect) { sw = sh * aspect; sx = (bitmap.width - sw) / 2 }
+    else { sh = sw / aspect; sy = (bitmap.height - sh) / 2 }
+  }
+  const scale = Math.min(1, maxSide / Math.max(sw, sh))
   const canvas = document.createElement('canvas')
-  canvas.width = Math.round(bitmap.width * scale)
-  canvas.height = Math.round(bitmap.height * scale)
-  canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height)
-  return new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.88))
+  canvas.width = Math.round(sw * scale)
+  canvas.height = Math.round(sh * scale)
+  canvas.getContext('2d').drawImage(bitmap, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height)
+  return new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9))
 }
 
+// Format imposé pour certaines images : le booster complet a les proportions du sachet.
+export const PACK_ASPECT = 58 / 100
+const FORMATS = { full: { maxSide: 1600, aspect: PACK_ASPECT } }
+const formatFor = id => (id.startsWith('booster-') && id.endsWith('-full') ? FORMATS.full : undefined)
+
 export async function setImage(cardId, file) {
-  const blob = await shrink(file)
+  const blob = await shrink(file, formatFor(cardId))
   await tx('readwrite', s => s.put(blob, cardId))
   if (urls.has(cardId)) URL.revokeObjectURL(urls.get(cardId))
   urls.set(cardId, URL.createObjectURL(blob))
@@ -98,10 +110,14 @@ export function useImageCount() {
 // Illustration dédiée d'un booster : « booster-star-wars.jpg » → clé « booster-sw »
 export const packImageKey = u => `booster-${u}`
 export const packFileName = u => `booster-${slug(UNIVERSES[u].name)}`
+// Booster complet (de haut en bas) : « booster-star-wars-complet.jpg » → « booster-sw-full »
+export const packFullKey = u => `booster-${u}-full`
+export const packFullFileName = u => `${packFileName(u)}-complet`
 
 const BY_FILE_KEY = new Map([
   ...CARDS.flatMap(c => fileKeys(c).map(k => [k, c])),
   ...Object.keys(UNIVERSES).map(u => [packFileName(u), { id: packImageKey(u) }]),
+  ...Object.keys(UNIVERSES).map(u => [packFullFileName(u), { id: packFullKey(u) }]),
 ])
 
 export function cardForFile(name) {

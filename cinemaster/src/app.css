@@ -681,9 +681,12 @@ label.btn { cursor: pointer; }
 @keyframes fade { from { opacity: 0; } }
 
 .pack-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
-.pack-item { display: grid; justify-items: center; }
-.pack-pick { display: block; width: 100%; cursor: pointer; }
-.pack-pick .pack { pointer-events: none; }
+.pack-item { display: grid; justify-items: center; gap: 10px; align-content: start; }
+.pack-pick { display: block; width: 100%; }
+.pack-option { display: grid; justify-items: center; gap: 2px; width: 100%; }
+.pack-option .btn { width: 100%; padding-inline: 8px; }
+.pack-help { margin: -4px 0 12px 6px; font-size: 13px; line-height: 1.55; color: var(--muted); }
+.pack-help b { color: var(--text); }
 
 /* ─── Raretés & Atelier ───────────────────────────────────────────────── */
 .guide-intro {
@@ -787,6 +790,9 @@ label.btn { cursor: pointer; }
   .detail-nav .pill-btn { padding: 13px 10px; font-size: 13px; }
   .round-btn { width: 52px; height: 52px; }
   .import-box { grid-template-columns: 1fr; }
+  .pack-grid { grid-template-columns: 1fr !important; }
+  .pack-item { grid-template-columns: 110px 1fr; align-items: center; column-gap: 14px; }
+  .pack-pick { grid-row: span 2; }
 }
 
 @media (prefers-reduced-motion: reduce) {

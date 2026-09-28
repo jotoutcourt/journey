@@ -2,7 +2,7 @@ import { useState } from 'react'
 import Card from './Card.jsx'
 import { CARDS, UNIVERSES, fileKeys } from '../data/cards.js'
 import Pack from './Pack.jsx'
-import { importFiles, packFileName, packImageKey, removeImage, setImage, useCardImage, useImageCount } from '../lib/images.js'
+import { importFiles, packFileName, packFullFileName, packFullKey, packImageKey, removeImage, setImage, useCardImage, useImageCount } from '../lib/images.js'
 import { PACK_COVERS } from '../lib/packs.js'
 
 function Item({ card, onSelect }) {
@@ -16,14 +16,14 @@ function Item({ card, onSelect }) {
   )
 }
 
-// Illustration d'un booster : clic sur le booster pour choisir une image.
-function PackItem({ cover }) {
-  const key = packImageKey(cover.u)
-  const custom = useCardImage(key)
-  const inputId = `pack-image-${cover.u}`
+// Un booster : illustration seule (le jeu garde bandeau, logo et titre) ou
+// booster complet (ton image remplace tout le visuel, de haut en bas).
+function PackImageButton({ id, label, fileName }) {
+  const custom = useCardImage(id)
+  const inputId = `pack-image-${id}`
   return (
-    <div className="grid-item pack-item">
-      <label htmlFor={inputId} className="pack-pick"><Pack cover={cover} /></label>
+    <div className="pack-option">
+      <label htmlFor={inputId} className={`btn small ${custom ? 'primary' : ''}`}>{label}</label>
       <input
         id={inputId}
         type="file"
@@ -32,12 +32,21 @@ function PackItem({ cover }) {
         onChange={e => {
           const file = e.target.files?.[0]
           e.target.value = ''
-          if (file) setImage(key, file)
+          if (file) setImage(id, file)
         }}
       />
-      <span className={`img-badge ${custom ? 'has' : ''}`}>{custom ? 'Ton image' : 'Sans image'}</span>
-      <code className="file-key">{packFileName(cover.u)}</code>
-      {custom && <button className="link-btn" onClick={() => removeImage(key)}>Retirer</button>}
+      <code className="file-key">{fileName}</code>
+      {custom && <button className="link-btn" onClick={() => removeImage(id)}>Retirer</button>}
+    </div>
+  )
+}
+
+function PackItem({ cover }) {
+  return (
+    <div className="grid-item pack-item">
+      <div className="pack-pick"><Pack cover={cover} /></div>
+      <PackImageButton id={packImageKey(cover.u)} label="Illustration" fileName={packFileName(cover.u)} />
+      <PackImageButton id={packFullKey(cover.u)} label="Booster complet" fileName={packFullFileName(cover.u)} />
     </div>
   )
 }
@@ -98,6 +107,11 @@ export default function Atelier({ onSelect }) {
 
       <div className="atelier-group">
         <h3>Boosters</h3>
+        <p className="pack-help">
+          <b>Illustration</b> : format portrait 4:5 (800 × 1000 px), le jeu ajoute le bandeau, le logo et le titre.
+          <br /><b>Booster complet</b> : ton image couvre tout le sachet, de haut en bas, format 58:100 (1160 × 2000 px).
+          Le haut (5 %) sert de bande à déchirer.
+        </p>
         <div className="card-grid pack-grid">
           {PACK_COVERS.map(c => <PackItem key={c.u} cover={c} />)}
         </div>

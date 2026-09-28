@@ -162,6 +162,16 @@
   box-shadow: 0 0 3cqw rgba(255, 255, 255, .9), 0 .6cqw 0 color-mix(in srgb, var(--c1) 60%, #0aa3d6);
 }
 
+/* ─── Booster complet (image du joueur, de haut en bas) ───────────────
+   L'image est recadrée au format du sachet à l'import : la même taille
+   absolue (en cqw) sur la soudure et le corps la raccorde sans couture. */
+.pack.is-full .pack-head {
+  background: var(--full) 50% 0 / 100cqw calc(100cqw / .58) no-repeat;
+}
+.pack.is-full .pack-body {
+  background: var(--full) 50% 100% / 100cqw calc(100cqw / .58) no-repeat;
+}
+
 /* ─── Illustration ────────────────────────────────────────────────────── */
 .pack-art {
   position: absolute;
