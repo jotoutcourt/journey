@@ -30,4 +30,11 @@ Tout est dans `src/data/cards.js`. Pour ajouter une vraie illustration, dépose 
 
 ## Déploiement Vercel
 
-Crée un projet Vercel à partir de ce dépôt avec **Root Directory = `cinemaster`**.
+1. Sur vercel.com : **Add New… → Project**, importe le dépôt `jotoutcourt/journey`.
+2. **Root Directory** : `cinemaster` (le reste est lu dans `cinemaster/vercel.json`).
+3. **Production Branch** (Settings → Git) : la branche qui contient PopCard.
+4. Deploy.
+
+Sur Vercel, l'Atelier fonctionne en mode local : les images déposées restent
+sur l'appareil. Le partage des images de l'admin avec tous les joueurs n'existe
+que sur la page publiée sur claude.ai.
