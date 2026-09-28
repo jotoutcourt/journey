@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import BoosterOpening from './components/BoosterOpening.jsx'
 import Collection from './components/Collection.jsx'
 import CardModal from './components/CardModal.jsx'
@@ -110,14 +110,22 @@ export default function App() {
   const canOpen = state.boosters > 0 || state.dust >= BOOSTER_DUST_COST
   const nextIn = state.boosters < MAX_BOOSTERS ? state.regenAt + REGEN_MS - now : 0
 
+  // Verrou : un double appui (ou booster + bouton en même temps) ne doit
+  // ouvrir qu'un seul booster. Il est relâché une fois l'ouverture affichée.
+  const opening = useRef(false)
+  useEffect(() => { opening.current = false }, [pull])
+
   const open = useCallback((cover = PACK_COVERS[0]) => {
-    if (!canOpen) return
+    if (!canOpen || opening.current) return
+    opening.current = true
     const cards = openBooster()
     const newIds = new Set(cards.filter(c => !state.owned[c.id]).map(c => c.id))
     setState(s => {
+      const useFree = s.boosters > 0
+      // dernière vérification sur l'état réel : jamais de solde négatif
+      if (!useFree && s.dust < BOOSTER_DUST_COST) return s
       const owned = { ...s.owned }
       for (const c of cards) owned[c.id] = (owned[c.id] || 0) + 1
-      const useFree = s.boosters > 0
       return {
         ...s,
         owned,

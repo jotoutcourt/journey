@@ -26,7 +26,10 @@ export function load() {
         const key = migrateId(id)
         owned[key] = (owned[key] || 0) + n
       }
-      return { ...initialState(), ...saved, owned }
+      // réparation : d'anciennes versions pouvaient laisser un solde négatif
+      const boosters = Math.max(0, Math.min(MAX_BOOSTERS, Number(saved.boosters) || 0))
+      const dust = Math.max(0, Number(saved.dust) || 0)
+      return { ...initialState(), ...saved, owned, boosters, dust }
     }
   } catch { /* stockage indisponible : on repart de zéro */ }
   return initialState()
