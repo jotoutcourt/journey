@@ -688,6 +688,76 @@ label.btn { cursor: pointer; }
 .pack-help { margin: -4px 0 12px 6px; font-size: 13px; line-height: 1.55; color: var(--muted); }
 .pack-help b { color: var(--text); }
 
+/* Mot de passe de l'Atelier */
+.gate {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  max-width: 380px;
+  margin: 20px auto 0;
+  padding: 28px 22px;
+  text-align: center;
+}
+.gate p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
+.gate-icon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #e3f4ff, #eae4ff);
+  color: var(--brand);
+}
+.gate-icon .icon { width: 28px; height: 28px; }
+.gate-label { justify-self: start; margin-top: 8px; font-size: 13px; font-weight: 800; color: var(--muted); }
+.gate input {
+  width: 100%;
+  padding: 13px 16px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1.5px var(--line);
+  font: 700 16px var(--f-ui);
+  color: var(--text);
+}
+.gate input:focus { outline: none; box-shadow: inset 0 0 0 2px var(--accent); }
+.gate input.has-error { box-shadow: inset 0 0 0 2px var(--danger); }
+.gate .error { color: var(--danger); font-weight: 800; }
+.gate .pill-btn { width: 100%; margin-top: 6px; }
+
+/* Mode de stockage des images */
+.mode-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  padding: 14px 18px;
+  border-radius: 18px;
+  font-size: 14px;
+  line-height: 1.45;
+  font-weight: 600;
+}
+.mode-banner b { font-weight: 900; }
+.mode-shared { background: #e3f8ee; color: #1f6f4a; }
+.mode-local { background: #fff4df; color: #8a5a12; }
+.mode-count {
+  margin-left: auto;
+  padding: 3px 10px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, .7);
+  font-weight: 900;
+}
+.publish-local {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 16px 18px;
+}
+.publish-local p { margin: 0; font-size: 14px; color: var(--muted); }
+
 /* ─── Raretés & Atelier ───────────────────────────────────────────────── */
 .guide-intro {
   max-width: 64ch;

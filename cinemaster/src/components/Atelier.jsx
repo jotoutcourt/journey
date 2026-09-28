@@ -2,7 +2,7 @@ import { useState } from 'react'
 import Card from './Card.jsx'
 import { CARDS, UNIVERSES, fileKeys } from '../data/cards.js'
 import Pack from './Pack.jsx'
-import { importFiles, packFileName, packFullFileName, packFullKey, packImageKey, removeImage, setImage, useCardImage, useImageCount } from '../lib/images.js'
+import { importFiles, publishLocalImages, useLocalOnlyCount, useStorageMode, packFileName, packFullFileName, packFullKey, packImageKey, removeImage, setImage, useCardImage, useImageCount } from '../lib/images.js'
 import { PACK_COVERS } from '../lib/packs.js'
 
 function Item({ card, onSelect }) {
@@ -54,6 +54,15 @@ function PackItem({ cover }) {
 // Toutes les cartes de la série, possédées ou non, pour y mettre ses propres images.
 export default function Atelier({ onSelect }) {
   const count = useImageCount()
+  const mode = useStorageMode()
+  const localOnly = useLocalOnlyCount()
+  const [publishing, setPublishing] = useState(null)
+
+  const publishLocal = async () => {
+    setPublishing({ done: 0, total: localOnly })
+    await publishLocalImages((done, total) => setPublishing({ done, total }))
+    setPublishing(null)
+  }
   const [progress, setProgress] = useState(null)
   const [report, setReport] = useState(null)
 
@@ -71,10 +80,20 @@ export default function Atelier({ onSelect }) {
 
   return (
     <section className="atelier">
-      <p className="guide-intro">
-        Donne tes propres images aux cartes. Elles restent sur cet appareil et ne sont jamais publiées.
-        <br /><strong>{count}/{CARDS.length}</strong> cartes illustrées.
-      </p>
+      <div className={`mode-banner mode-${mode}`}>
+        {mode === 'shared'
+          ? <><b>Images partagées.</b> Ce que tu déposes ici devient l’image par défaut pour tous les joueurs.</>
+          : <><b>Images locales.</b> Ce que tu déposes ici reste sur cet appareil (le partage n’est disponible que sur la page publiée, pour l’admin).</>}
+        <span className="mode-count">{count} image{count > 1 ? 's' : ''}</span>
+      </div>
+      {mode === 'shared' && localOnly > 0 && (
+        <div className="panel publish-local">
+          <p>{localOnly} image{localOnly > 1 ? 's' : ''} déposée{localOnly > 1 ? 's' : ''} avant le partage {localOnly > 1 ? 'sont' : 'est'} encore sur cet appareil seulement.</p>
+          <button className="pill-btn primary" onClick={publishLocal} disabled={!!publishing}>
+            {publishing ? `Partage… ${publishing.done}/${publishing.total}` : 'Les partager avec tout le monde'}
+          </button>
+        </div>
+      )}
 
       <div className="import-box">
         <div className="import-text">

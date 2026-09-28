@@ -10,7 +10,8 @@ import { Icon } from './components/Icons.jsx'
 import { CARDS, CARDS_BY_ID } from './data/cards.js'
 import { RARITIES } from './lib/rarity.js'
 import { openBooster } from './lib/booster.js'
-import { loadImages } from './lib/images.js'
+import { connectShared, loadImages } from './lib/images.js'
+import AdminGate from './components/AdminGate.jsx'
 import { PACK_COVERS } from './lib/packs.js'
 import { BOOSTER_DUST_COST, MAX_BOOSTERS, REGEN_MS, initialState, load, regen, save } from './lib/storage.js'
 
@@ -89,7 +90,7 @@ export default function App() {
   const [confirmReset, setConfirmReset] = useState(false)
 
   useEffect(() => { save(state) }, [state])
-  useEffect(() => { loadImages() }, [])
+  useEffect(() => { loadImages(); connectShared() }, [])
 
   useEffect(() => {
     const t = setInterval(() => {
@@ -266,19 +267,11 @@ export default function App() {
           onRecycleAll={recycleAll}
           duplicateDust={duplicateDust}
         />
-      </section>
-    )
-  } else if (tab === 'guide') {
-    screen = <section className="screen"><RarityGuide /></section>
-  } else {
-    screen = (
-      <section className="screen">
-        <Atelier onSelect={card => setSelected({ card, edit: true })} />
         <div className="panel reset-panel">
           {confirmReset
             ? (
               <>
-                <p>Effacer toute ta collection, tes boosters et tes pellicules ? Tes images de l’Atelier sont conservées.</p>
+                <p>Effacer toute ta collection, tes boosters et tes pellicules ?</p>
                 <div className="reset-actions">
                   <button className="pill-btn danger" onClick={resetCollection}>Oui, tout remettre à zéro</button>
                   <button className="pill-btn soft" onClick={() => setConfirmReset(false)}>Annuler</button>
@@ -292,6 +285,16 @@ export default function App() {
               </>
             )}
         </div>
+      </section>
+    )
+  } else if (tab === 'guide') {
+    screen = <section className="screen"><RarityGuide /></section>
+  } else {
+    screen = (
+      <section className="screen">
+        <AdminGate>
+          <Atelier onSelect={card => setSelected({ card, edit: true })} />
+        </AdminGate>
       </section>
     )
   }

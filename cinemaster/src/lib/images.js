@@ -1,5 +1,13 @@
-// Images personnalisées des cartes, ajoutées depuis l'Atelier.
-// Stockées dans IndexedDB (trop lourdes pour localStorage), sur cet appareil.
+// Images personnalisées des cartes et des boosters, ajoutées depuis l'Atelier.
+//
+// Deux stockages :
+// - PARTAGÉ (page publiée sur claude.ai) : fichiers dans le stockage d'images
+//   de la page (`assets`) + index `images/<clé>` dans sa base (`db`). Ce sont
+//   les images par défaut vues par tous les joueurs ; seules les personnes
+//   qui peuvent modifier la page (l'admin) peuvent en déposer.
+// - LOCAL (IndexedDB, cet appareil) : quand le partage n'est pas disponible
+//   (version Vercel, ou joueur sans droit d'écriture).
+// À l'affichage, l'image partagée passe avant l'image locale.
 import { useSyncExternalStore } from 'react'
 import { CARDS, UNIVERSES, fileKeys, migrateId, slug } from '../data/cards.js'
 
@@ -7,7 +15,10 @@ const DB_NAME = 'cinemaster-images'
 const STORE = 'images'
 const MAX_SIDE = 1000
 
-const urls = new Map()        // cardId → object URL
+const urls = new Map()        // cardId → object URL (images locales)
+const shared = new Map()      // cardId → { asset, url } (images partagées)
+let dbNs = null               // base partagée (null hors claude.ai)
+let assetsNs = null           // stockage d'images (null si pas le droit d'écrire)
 const listeners = new Set()
 let version = 0
 
@@ -79,15 +90,57 @@ export const PACK_ASPECT = 58 / 100
 const FORMATS = { full: { maxSide: 1600, aspect: PACK_ASPECT } }
 const formatFor = id => (id.startsWith('booster-') && id.endsWith('-full') ? FORMATS.full : undefined)
 
+// Connexion au stockage partagé de la page publiée. Sans effet ailleurs.
+export async function connectShared() {
+  const claude = typeof window !== 'undefined' ? window.claude : null
+  if (!claude?.use) return
+  try {
+    dbNs = await claude.use('db')
+    if (!dbNs) return
+    dbNs.collection('images').onSnapshot(snap => {
+      shared.clear()
+      for (const d of snap.docs) {
+        const asset = d.data()?.asset
+        if (typeof asset === 'string') shared.set(d.id, { asset, url: `/_blob/${asset}` })
+      }
+      emit()
+    }, () => { /* abonnement terminé : on garde les images déjà connues */ })
+    assetsNs = await claude.use('assets')
+    emit()
+  } catch { /* partage indisponible : mode local */ }
+}
+
+// 'shared' : les images déposées deviennent celles de tout le monde.
+export const storageMode = () => (dbNs && assetsNs ? 'shared' : 'local')
+
 export async function setImage(cardId, file) {
   const blob = await shrink(file, formatFor(cardId))
+  if (storageMode() === 'shared') return setShared(cardId, blob)
   await tx('readwrite', s => s.put(blob, cardId))
   if (urls.has(cardId)) URL.revokeObjectURL(urls.get(cardId))
   urls.set(cardId, URL.createObjectURL(blob))
   emit()
 }
 
+async function setShared(cardId, blob) {
+  const previous = shared.get(cardId)?.asset
+  const { id } = await assetsNs.upload(blob, { type: 'image/jpeg' })
+  await dbNs.doc(`images/${cardId}`).set({ asset: id, updatedAt: Date.now() })
+  shared.set(cardId, { asset: id, url: `/_blob/${id}` })
+  emit()
+  // l'ancienne image n'est plus référencée : on la supprime
+  if (previous && previous !== id) assetsNs.delete(previous).catch(() => {})
+}
+
 export async function removeImage(cardId) {
+  if (storageMode() === 'shared' && shared.has(cardId)) {
+    const { asset } = shared.get(cardId)
+    await dbNs.doc(`images/${cardId}`).delete()
+    shared.delete(cardId)
+    emit()
+    await assetsNs.delete(asset).catch(() => {})
+    return
+  }
   await tx('readwrite', s => s.delete(cardId))
   if (urls.has(cardId)) URL.revokeObjectURL(urls.get(cardId))
   urls.delete(cardId)
@@ -97,12 +150,36 @@ export async function removeImage(cardId) {
 const subscribe = l => (listeners.add(l), () => listeners.delete(l))
 
 export function useCardImage(cardId) {
-  return useSyncExternalStore(subscribe, () => urls.get(cardId))
+  return useSyncExternalStore(subscribe, () => shared.get(cardId)?.url ?? urls.get(cardId))
 }
 
 export function useImageCount() {
   useSyncExternalStore(subscribe, () => version)
-  return urls.size
+  return new Set([...shared.keys(), ...urls.keys()]).size
+}
+
+export function useStorageMode() {
+  useSyncExternalStore(subscribe, () => version)
+  return storageMode()
+}
+
+// Images locales pas encore partagées (déposées avant l'activation du partage).
+export function useLocalOnlyCount() {
+  useSyncExternalStore(subscribe, () => version)
+  return [...urls.keys()].filter(k => !shared.has(k)).length
+}
+
+// Envoie les images locales de cet appareil dans le stockage partagé.
+export async function publishLocalImages(onProgress) {
+  if (storageMode() !== 'shared') return 0
+  const keys = [...urls.keys()].filter(k => !shared.has(k))
+  let done = 0
+  for (const key of keys) {
+    const blob = await tx('readonly', s => s.get(key))
+    if (blob) await setShared(key, blob)
+    onProgress?.(++done, keys.length)
+  }
+  return done
 }
 
 // Import groupé : chaque fichier est associé à la carte dont il porte le nom
