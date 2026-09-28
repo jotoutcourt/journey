@@ -640,3 +640,42 @@ label.btn { cursor: pointer; }
   }
   .grain { animation: none; }
 }
+
+/* ─── Import d'images (Atelier) ───────────────────────────────────────── */
+.import-box {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 14px 24px;
+  align-items: center;
+  margin-top: 24px;
+  padding: 20px 22px;
+  border: 1px solid var(--line-strong);
+  background: linear-gradient(180deg, rgba(214, 178, 115, .08), rgba(214, 178, 115, .02));
+}
+.import-text h3 {
+  margin: 0 0 6px;
+  font: 900 22px/1 var(--f-display);
+  text-transform: uppercase;
+  letter-spacing: .02em;
+}
+.import-text p { margin: 0; max-width: 62ch; color: var(--muted); font-size: 14px; line-height: 1.55; }
+.import-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.import-status { grid-column: 1 / -1; margin: 0; font-size: 14px; }
+.import-status p { margin: 0 0 4px; }
+.atelier code,
+.file-key {
+  font: 500 12px/1.4 var(--f-mono);
+  color: var(--brass);
+}
+.file-key {
+  display: block;
+  margin-top: 8px;
+  text-align: center;
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 720px) {
+  .import-box { grid-template-columns: 1fr; }
+}

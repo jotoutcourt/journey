@@ -1,4 +1,6 @@
 // Sauvegarde locale de la collection (navigateur).
+import { migrateId } from '../data/cards.js'
+
 const KEY = 'cinemaster:v1'
 
 export const MAX_BOOSTERS = 6
@@ -16,7 +18,15 @@ export const initialState = () => ({
 export function load() {
   try {
     const raw = localStorage.getItem(KEY)
-    if (raw) return { ...initialState(), ...JSON.parse(raw) }
+    if (raw) {
+      const saved = JSON.parse(raw)
+      const owned = {}
+      for (const [id, n] of Object.entries(saved.owned || {})) {
+        const key = migrateId(id)
+        owned[key] = (owned[key] || 0) + n
+      }
+      return { ...initialState(), ...saved, owned }
+    }
   } catch { /* stockage indisponible : on repart de zéro */ }
   return initialState()
 }

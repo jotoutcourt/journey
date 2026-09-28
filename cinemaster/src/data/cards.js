@@ -116,21 +116,89 @@ const RAW = [
     period: 'Toute la saga', creditLabel: 'Porté par', credit: 'Les Jedi', emoji: '🗡️' },
 
   // ── Friends ───────────────────────────────────────────────────────────────
+  // Les six amis en Rare, les personnages secondaires en Commune.
+  { u: 'friends', type: 'CHAR', rarity: 'rare', first: 'Rachel', last: 'Green',
+    quote: 'No uterus, no opinion.', role: 'Serveuse · Acheteuse de mode',
+    period: 'Saison 1 – Saison 10', creditLabel: 'Actrice', credit: 'Jennifer Aniston', emoji: '👜' },
+  { u: 'friends', type: 'CHAR', rarity: 'rare', first: 'Monica', last: 'Geller',
+    quote: 'I KNOW!', role: 'Cheffe cuisinière',
+    period: 'Saison 1 – Saison 10', creditLabel: 'Actrice', credit: 'Courteney Cox', emoji: '🍳' },
+  { u: 'friends', type: 'CHAR', rarity: 'rare', first: 'Phoebe', last: 'Buffay',
+    quote: 'Smelly cat, smelly cat…', role: 'Masseuse · Chanteuse',
+    period: 'Saison 1 – Saison 10', creditLabel: 'Actrice', credit: 'Lisa Kudrow', emoji: '🎸' },
   { u: 'friends', type: 'CHAR', rarity: 'rare', first: 'Joey', last: 'Tribbiani',
     quote: "How you doin'?", role: 'Acteur · Dr Drake Ramoray',
     period: 'Saison 1 – Saison 10', creditLabel: 'Acteur', credit: 'Matt LeBlanc', emoji: '🍕' },
-  { u: 'friends', type: 'CHAR', rarity: 'peu-commune', first: 'Ross', last: 'Geller',
+  { u: 'friends', type: 'CHAR', rarity: 'rare', first: 'Chandler', last: 'Bing',
+    quote: 'Could I BE any more…?', role: 'Analyste · Rédacteur publicitaire',
+    period: 'Saison 1 – Saison 10', creditLabel: 'Acteur', credit: 'Matthew Perry', emoji: '🦆' },
+  { u: 'friends', type: 'CHAR', rarity: 'rare', first: 'Ross', last: 'Geller',
     quote: 'We were on a break!', role: 'Paléontologue',
     period: 'Saison 1 – Saison 10', creditLabel: 'Acteur', credit: 'David Schwimmer', emoji: '🦖' },
-  { u: 'friends', type: 'CHAR', rarity: 'commune', first: 'Phoebe', last: 'Buffay',
-    quote: 'Smelly cat, smelly cat…', role: 'Masseuse · Chanteuse',
-    period: 'Saison 1 – Saison 10', creditLabel: 'Actrice', credit: 'Lisa Kudrow', emoji: '🎸' },
+
+  { u: 'friends', type: 'CHAR', rarity: 'commune', first: 'Le barista', last: 'Gunther',
+    quote: 'Rachel… I love you.', role: 'Gérant du Central Perk',
+    period: 'Saison 1 – Saison 10', creditLabel: 'Acteur', credit: 'James Michael Tyler', emoji: '💇' },
+  { u: 'friends', type: 'CHAR', rarity: 'commune', first: 'Janice', last: 'Litman',
+    quote: 'OH. MY. GOD.', role: 'Ex de Chandler',
+    period: 'Saison 1 – Saison 10', creditLabel: 'Actrice', credit: 'Maggie Wheeler', emoji: '💅' },
+  { u: 'friends', type: 'CHAR', rarity: 'commune', first: 'Ursula', last: 'Buffay',
+    quote: 'La jumelle de Phoebe.', role: 'Serveuse chez Riff’s',
+    period: 'Saison 1 – Saison 9', creditLabel: 'Actrice', credit: 'Lisa Kudrow', emoji: '👯' },
+  { u: 'friends', type: 'CHAR', rarity: 'commune', first: 'Mike', last: 'Hannigan',
+    quote: 'Appelez-moi Crap Bag.', role: 'Pianiste · Mari de Phoebe',
+    period: 'Saison 9 – Saison 10', creditLabel: 'Acteur', credit: 'Paul Rudd', emoji: '🎹' },
+  { u: 'friends', type: 'CHAR', rarity: 'commune', first: 'Richard', last: 'Burke',
+    quote: 'La moustache la plus célèbre de New York.', role: 'Ophtalmologiste',
+    period: 'Saison 2 – Saison 6', creditLabel: 'Acteur', credit: 'Tom Selleck', emoji: '🥸' },
+  { u: 'friends', type: 'CHAR', rarity: 'commune', first: 'Mr.', last: 'Heckles',
+    quote: 'Vous faites trop de bruit !', role: 'Voisin du dessous',
+    period: 'Saison 1 – Saison 2', creditLabel: 'Acteur', credit: 'Larry Hankin', emoji: '🧹' },
+
   { u: 'friends', type: 'LIEU', rarity: 'holo', first: 'Le Café', last: 'Central Perk',
     quote: 'Le canapé orange est pris.', role: 'Greenwich Village, New York',
     period: 'Saison 1 – Saison 10', creditLabel: 'Serveuse', credit: 'Rachel Green', emoji: '☕' },
   { u: 'friends', type: 'OBJET', rarity: 'commune', first: 'Le Cadre', last: 'Jaune',
     quote: 'Autour du judas de chez Monica.', role: 'Appartement 20',
     period: 'Saison 1 – Saison 10', creditLabel: 'Appartient à', credit: 'Monica Geller', emoji: '🖼️' },
+
+  // Les six amis en Full Art et en version Gold (même illustration, plus rare).
+  { u: 'friends', type: 'CHAR', rarity: 'ultra', variant: 'full', first: 'Rachel', last: 'Green',
+    quote: 'No uterus, no opinion.', role: 'Serveuse · Acheteuse de mode',
+    period: 'Saison 1 – Saison 10', creditLabel: 'Actrice', credit: 'Jennifer Aniston', emoji: '👜' },
+  { u: 'friends', type: 'CHAR', rarity: 'ultra', variant: 'full', first: 'Monica', last: 'Geller',
+    quote: 'I KNOW!', role: 'Cheffe cuisinière',
+    period: 'Saison 1 – Saison 10', creditLabel: 'Actrice', credit: 'Courteney Cox', emoji: '🍳' },
+  { u: 'friends', type: 'CHAR', rarity: 'ultra', variant: 'full', first: 'Phoebe', last: 'Buffay',
+    quote: 'Oh, I wish I could, but I don\'t want to.', role: 'Masseuse · Chanteuse',
+    period: 'Saison 1 – Saison 10', creditLabel: 'Actrice', credit: 'Lisa Kudrow', emoji: '🎸' },
+  { u: 'friends', type: 'CHAR', rarity: 'ultra', variant: 'full', first: 'Joey', last: 'Tribbiani',
+    quote: 'Joey doesn\'t share food!', role: 'Acteur · Dr Drake Ramoray',
+    period: 'Saison 1 – Saison 10', creditLabel: 'Acteur', credit: 'Matt LeBlanc', emoji: '🍕' },
+  { u: 'friends', type: 'CHAR', rarity: 'ultra', variant: 'full', first: 'Chandler', last: 'Bing',
+    quote: 'Can I interest you in a sarcastic comment?', role: 'Analyste · Rédacteur publicitaire',
+    period: 'Saison 1 – Saison 10', creditLabel: 'Acteur', credit: 'Matthew Perry', emoji: '🦆' },
+  { u: 'friends', type: 'CHAR', rarity: 'ultra', variant: 'full', first: 'Ross', last: 'Geller',
+    quote: 'PIVOT!', role: 'Paléontologue',
+    period: 'Saison 1 – Saison 10', creditLabel: 'Acteur', credit: 'David Schwimmer', emoji: '🦖' },
+  { u: 'friends', type: 'CHAR', rarity: 'secrete', variant: 'gold', first: 'Rachel', last: 'Green',
+    quote: 'No uterus, no opinion.', role: 'Serveuse · Acheteuse de mode',
+    period: 'Saison 1 – Saison 10', creditLabel: 'Actrice', credit: 'Jennifer Aniston', emoji: '👜' },
+  { u: 'friends', type: 'CHAR', rarity: 'secrete', variant: 'gold', first: 'Monica', last: 'Geller',
+    quote: 'I KNOW!', role: 'Cheffe cuisinière',
+    period: 'Saison 1 – Saison 10', creditLabel: 'Actrice', credit: 'Courteney Cox', emoji: '🍳' },
+  { u: 'friends', type: 'CHAR', rarity: 'secrete', variant: 'gold', first: 'Phoebe', last: 'Buffay',
+    quote: 'Oh, I wish I could, but I don\'t want to.', role: 'Masseuse · Chanteuse',
+    period: 'Saison 1 – Saison 10', creditLabel: 'Actrice', credit: 'Lisa Kudrow', emoji: '🎸' },
+  { u: 'friends', type: 'CHAR', rarity: 'secrete', variant: 'gold', first: 'Joey', last: 'Tribbiani',
+    quote: 'Joey doesn\'t share food!', role: 'Acteur · Dr Drake Ramoray',
+    period: 'Saison 1 – Saison 10', creditLabel: 'Acteur', credit: 'Matt LeBlanc', emoji: '🍕' },
+  { u: 'friends', type: 'CHAR', rarity: 'secrete', variant: 'gold', first: 'Chandler', last: 'Bing',
+    quote: 'Can I interest you in a sarcastic comment?', role: 'Analyste · Rédacteur publicitaire',
+    period: 'Saison 1 – Saison 10', creditLabel: 'Acteur', credit: 'Matthew Perry', emoji: '🦆' },
+  { u: 'friends', type: 'CHAR', rarity: 'secrete', variant: 'gold', first: 'Ross', last: 'Geller',
+    quote: 'PIVOT!', role: 'Paléontologue',
+    period: 'Saison 1 – Saison 10', creditLabel: 'Acteur', credit: 'David Schwimmer', emoji: '🦖' },
 
   // ── Breaking Bad ──────────────────────────────────────────────────────────
   { u: 'bb', type: 'CHAR', rarity: 'secrete', first: 'Walter', last: 'White', caps: true,
@@ -240,12 +308,39 @@ export const SET_SIZE = main.length
 const slug = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
   .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 
+// Identifiant stable (indépendant du numéro, pour pouvoir ajouter des cartes
+// sans perdre les collections ni les images déjà enregistrées).
+// Il sert aussi de nom de fichier pour l'import d'images dans l'Atelier.
 export const CARDS = [...main, ...secret].map((c, i) => ({
   ...c,
-  id: `${SET.code}-${String(i + 1).padStart(3, '0')}-${slug(`${c.first} ${c.last}`)}`,
+  id: slug(`${c.first} ${c.last}`) + (c.variant ? `-${c.variant}` : ''),
   number: i + 1,
   universe: UNIVERSES[c.u],
   typeInfo: TYPES[c.type],
 }))
 
 export const CARDS_BY_ID = Object.fromEntries(CARDS.map(c => [c.id, c]))
+if (Object.keys(CARDS_BY_ID).length !== CARDS.length) throw new Error('Identifiants de cartes en double')
+
+// Anciennes sauvegardes : « S1-012-joey-tribbiani » → « joey-tribbiani »
+export const migrateId = id => id.replace(/^S\d+-\d{3}-/, '')
+
+// Noms de fichier reconnus à l'import : l'identifiant complet, et pour les
+// variantes la forme courte « prenom-full » / « prenom-gold ».
+const countBy = key => RAW.reduce((m, c) => (c.variant ? m : m.set(slug(c[key]), (m.get(slug(c[key])) || 0) + 1)), new Map())
+const FIRST_COUNT = countBy('first')
+const LAST_COUNT = countBy('last')
+export function fileKeys(card) {
+  const keys = [card.id]
+  const first = slug(card.first)
+  const last = slug(card.last)
+  if (card.variant) keys.push(`${first}-${card.variant}`)
+  else if (card.type === 'CHAR') {
+    // prénom seul (« rachel ») ou nom seul (« heckles ») quand il n'y a pas d'ambiguïté
+    if (FIRST_COUNT.get(first) === 1 && first.length > 2 && !first.includes('-')) keys.push(first)
+    if (LAST_COUNT.get(last) === 1) keys.push(last)
+  }
+  return keys
+}
+
+export { slug }

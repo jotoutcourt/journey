@@ -1,6 +1,7 @@
 // Images personnalisées des cartes, ajoutées depuis l'Atelier.
 // Stockées dans IndexedDB (trop lourdes pour localStorage), sur cet appareil.
 import { useSyncExternalStore } from 'react'
+import { CARDS, fileKeys, migrateId, slug } from '../data/cards.js'
 
 const DB_NAME = 'cinemaster-images'
 const STORE = 'images'
@@ -34,13 +35,19 @@ async function tx(mode, fn) {
 export async function loadImages() {
   try {
     const db = await openDb()
-    const store = db.transaction(STORE).objectStore(STORE)
+    const store = db.transaction(STORE, 'readwrite').objectStore(STORE)
     await new Promise((resolve, reject) => {
       const req = store.openCursor()
       req.onsuccess = () => {
         const cur = req.result
         if (!cur) return resolve()
-        urls.set(cur.key, URL.createObjectURL(cur.value))
+        const key = migrateId(cur.key)
+        if (key !== cur.key) {
+          // ancienne clé numérotée : on déplace l'image sous l'identifiant stable
+          store.put(cur.value, key)
+          cur.delete()
+        }
+        urls.set(key, URL.createObjectURL(cur.value))
         cur.continue()
       }
       req.onerror = () => reject(req.error)
@@ -84,4 +91,33 @@ export function useCardImage(cardId) {
 export function useImageCount() {
   useSyncExternalStore(subscribe, () => version)
   return urls.size
+}
+
+// Import groupé : chaque fichier est associé à la carte dont il porte le nom
+// (« rachel-full.jpg », « rachel-green-gold.png », « derek-shepherd.jpg »…).
+const BY_FILE_KEY = new Map(CARDS.flatMap(c => fileKeys(c).map(k => [k, c])))
+
+export function cardForFile(name) {
+  return BY_FILE_KEY.get(slug(name.replace(/\.[^.]+$/, '')))
+}
+
+export async function importFiles(files, onProgress) {
+  const images = [...files].filter(f => f.type.startsWith('image/') || /\.(jpe?g|png|webp|gif|avif)$/i.test(f.name))
+  const imported = []
+  const unknown = []
+  for (const [i, file] of images.entries()) {
+    const card = cardForFile(file.name)
+    if (!card) {
+      unknown.push(file.name)
+    } else {
+      try {
+        await setImage(card.id, file)
+        imported.push(card)
+      } catch {
+        unknown.push(file.name)
+      }
+    }
+    onProgress?.(i + 1, images.length)
+  }
+  return { imported, unknown }
 }
