@@ -5,13 +5,9 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .card {
-  --mx: 50%;
-  --my: 50%;
-  --rx: 0deg;
-  --ry: 0deg;
-  --bgx: 50%;
-  --bgy: 50%;
-  --hyp: 0;
+  /* écrits par useTilt : position du pointeur (-0.5 → 0.5) et intensité */
+  --px: 0;
+  --py: 0;
   --o: 0;
   --radius: 4.8cqw;
   --pad: 2.8cqw;
@@ -26,15 +22,28 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+.card {
+  isolation: isolate;
+  -webkit-touch-callout: none;
+}
 .card-tilt {
   width: 100%;
   height: 100%;
   border-radius: var(--radius);
-  /* piloté image par image par useTilt (ressort) : pas de transition CSS */
-  transform: rotateX(var(--rx)) rotateY(var(--ry)) scale(calc(1 + var(--o) * .035));
+  /* la rotation est écrite directement par useTilt (transform seul) */
   transform-style: preserve-3d;
-  box-shadow:
-    0 calc(1.5cqw + var(--o) * 3cqw) calc(4cqw + var(--o) * 7cqw) rgba(0, 0, 0, calc(.45 + var(--o) * .15));
+  box-shadow: 0 1.5cqw 4cqw rgba(0, 0, 0, .4);
+}
+/* ombre portée plus large quand on manipule la carte : on n'anime que son opacité */
+.card-shadow {
+  content: '';
+  position: absolute;
+  inset: 6% 6% -2%;
+  z-index: -1;
+  border-radius: var(--radius);
+  box-shadow: 0 6cqw 12cqw rgba(0, 0, 0, .45);
+  opacity: var(--o);
+  pointer-events: none;
 }
 .card.is-active { z-index: 2; }
 .card.is-active .card-tilt { will-change: transform; }
@@ -405,8 +414,10 @@
 
 /* ═══════════════════════════════════════════════════════════════════════════
    EFFETS BRILLANTS
-   Les calques suivent la lumière (--mx/--my = position du pointeur,
-   --bgx/--bgy = décalage des motifs, --o = intensité quand on manipule la carte).
+   Chaque calque est une feuille déjà dessinée, deux fois plus grande que la
+   carte, qui GLISSE (transform) selon la position du pointeur (--px, --py)
+   et dont seule l'OPACITÉ varie (--o). Rien n'est repeint pendant le
+   mouvement : la carte graphique s'en charge, d'où la fluidité.
    ═══════════════════════════════════════════════════════════════════════════ */
 .card {
   /* bandes arc-en-ciel verticales façon feuille holographique */
@@ -423,6 +434,7 @@
   --sparkle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 11 0 0 0 -7.4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
+/* Conteneurs : ils découpent et fusionnent (mix-blend-mode) */
 .foil-under,
 .foil-art,
 .foil-over,
@@ -432,86 +444,106 @@
   inset: 0;
   pointer-events: none;
   border-radius: inherit;
+  overflow: hidden;
 }
 .foil-under { z-index: 1; display: none; }
 .foil-art   { z-index: 3; display: none; }
 .foil-over  { z-index: 7; display: none; }
 .glitter    { z-index: 8; display: none; }
 
-/* Reflet de lumière : toutes les cartes sont glacées */
+/* Feuilles mobiles : 2× la carte, centrées ; useTilt les fait glisser
+   (translate3d) selon leurs coefficients --kx / --ky. */
+.sheet {
+  --kx: -30%;
+  --ky: -30%;
+  position: absolute;
+  inset: -50%;
+}
+
+/* Pendant la manipulation, chaque feuille a son propre calque graphique :
+   la déplacer ne demande alors aucune repeinte. */
+.card.is-active .sheet { will-change: transform; }
+.card.is-active .foil-under,
+.card.is-active .foil-art,
+.card.is-active .foil-over,
+.card.is-active .glitter,
+.card.is-active .glare,
+.card.is-active .card-shadow { will-change: opacity; }
+
+/* Reflet de lumière : une tache lumineuse qui suit le pointeur */
 .glare {
   z-index: 9;
-  background: radial-gradient(farthest-corner circle at var(--mx) var(--my),
-    hsla(0, 0%, 100%, .85) 8%, hsla(0, 0%, 100%, .4) 22%, hsla(0, 0%, 0%, .45) 95%);
   mix-blend-mode: overlay;
-  opacity: calc(var(--o) * .7);
+  opacity: calc(var(--o) * .75);
+}
+.glare .sheet {
+  --kx: 50%;
+  --ky: 50%;
+  background: radial-gradient(circle at 50% 50%,
+    hsla(0, 0%, 100%, .9) 0%, hsla(0, 0%, 100%, .45) 12%, hsla(0, 0%, 100%, 0) 32%, hsla(0, 0%, 0%, .35) 60%);
 }
 .foil-holo .glare,
 .foil-rainbow .glare,
-.foil-gold .glare {
-  background: radial-gradient(farthest-corner circle at var(--mx) var(--my),
-    hsla(0, 0%, 100%, .95) 6%, hsla(0, 0%, 100%, .5) 18%, hsla(0, 0%, 0%, .55) 100%);
-  opacity: calc(.15 + var(--o) * .8);
-}
+.foil-gold .glare { opacity: calc(.15 + var(--o) * .8); }
 
 /* ★ Rare — reverse holo : tout brille sauf l'illustration */
 .foil-reverse .foil-under {
   display: block;
   inset: var(--pad);
   border-radius: calc(var(--radius) - 2cqw);
-  background-image: var(--sunpillar), var(--beams);
-  background-size: 200% 700%, 300% 100%;
-  background-position: 0 var(--bgy), var(--bgx) var(--bgy);
-  background-blend-mode: hard-light;
   mix-blend-mode: multiply;
-  filter: saturate(1.3) brightness(1.25);
   opacity: calc(.4 + var(--o) * .35);
+}
+.foil-reverse .foil-under .sheet {
+  background-image: var(--sunpillar), var(--beams);
+  background-size: 100% 350%, 150% 50%;
+  background-blend-mode: hard-light;
+  filter: saturate(1.3) brightness(1.25);
 }
 
 /* ★H Holo — l'illustration est holographique */
 .foil-holo .foil-art {
   display: block;
-  background-image:
-    var(--sunpillar),
-    var(--beams),
-    radial-gradient(farthest-corner circle at var(--mx) var(--my), rgba(0, 0, 0, .1) 12%, rgba(0, 0, 0, .15) 20%, rgba(0, 0, 0, .3) 120%);
-  background-size: 200% 700%, 300% 100%, 200% 100%;
-  background-position: 0 var(--bgy), var(--bgx) var(--bgy), var(--bgx) var(--bgy);
-  background-blend-mode: hue, hard-light;
   mix-blend-mode: color-dodge;
-  filter: brightness(calc(.5 + var(--hyp) * .35)) contrast(2) saturate(1.5);
   opacity: calc(.45 + var(--o) * .55);
+}
+.foil-holo .foil-art .sheet {
+  --kx: -45%;
+  --ky: -35%;
+  background-image: var(--sunpillar), var(--beams);
+  background-size: 100% 350%, 150% 50%;
+  background-blend-mode: hue;
+  filter: brightness(.62) contrast(2) saturate(1.5);
 }
 
 /* ★★ Full art — arc-en-ciel sur toute la carte, avec paillettes */
 .foil-rainbow .foil-over {
   display: block;
+  mix-blend-mode: color-dodge;
+  opacity: calc(.4 + var(--o) * .55);
+}
+.foil-rainbow .foil-over .sheet {
+  --kx: -40%;
+  --ky: -40%;
   background-image:
     var(--sunpillar),
     repeating-linear-gradient(133deg,
-      #0e152e 0%, hsl(180 10% 50%) 3.8%, hsl(180 29% 66%) 4.5%, hsl(180 10% 50%) 5.2%, #0e152e 10%, #0e152e 12%),
-    radial-gradient(farthest-corner circle at var(--mx) var(--my), rgba(0, 0, 0, .1) 12%, rgba(0, 0, 0, .15) 20%, rgba(0, 0, 0, .25) 120%);
-  background-size: 400% 400%, 300% 300%, 200% 200%;
-  background-position: 0 var(--bgy), var(--bgx) var(--bgy), var(--bgx) var(--bgy);
-  background-blend-mode: soft-light, hard-light;
-  mix-blend-mode: color-dodge;
-  filter: brightness(calc(.45 + var(--hyp) * .3)) contrast(1.6) saturate(1.4);
-  opacity: calc(.4 + var(--o) * .55);
+      #0e152e 0%, hsl(180 10% 50%) 3.8%, hsl(180 29% 66%) 4.5%, hsl(180 10% 50%) 5.2%, #0e152e 10%, #0e152e 12%);
+  background-size: 200% 200%, 150% 150%;
+  background-blend-mode: soft-light;
+  filter: brightness(.55) contrast(1.6) saturate(1.4);
 }
 
+/* Paillettes : deux trames qui glissent en sens opposés et scintillent */
 .foil-rainbow .glitter,
 .foil-gold .glitter {
   display: block;
-  background-image: var(--sparkle), var(--sparkle);
-  background-size: 34cqw 34cqw, 52cqw 52cqw;
-  background-position:
-    calc(var(--bgx) * -.6) calc(var(--bgy) * -.6),
-    calc(var(--bgx) * .4) calc(var(--bgy) * .4);
   mix-blend-mode: color-dodge;
-  opacity: calc(.35 + var(--o) * .65);
-  -webkit-mask-image: radial-gradient(farthest-corner circle at var(--mx) var(--my), #000 5%, rgba(0, 0, 0, .35) 45%, rgba(0, 0, 0, .1) 90%);
-          mask-image: radial-gradient(farthest-corner circle at var(--mx) var(--my), #000 5%, rgba(0, 0, 0, .35) 45%, rgba(0, 0, 0, .1) 90%);
+  /* pas de masque ici : un masque forcerait une repeinte à chaque mouvement */
+  opacity: calc(.3 + var(--o) * .55);
 }
+.glitter .sheet { --kx: -22%; --ky: -22%; background: var(--sparkle-png, var(--sparkle)) 0 0 / 17cqw 17cqw; }
+.glitter .s2  { --kx: 16%;  --ky: 16%;  background: var(--sparkle-png, var(--sparkle)) 7cqw 11cqw / 26cqw 26cqw; }
 
 /* ★★★ Secrète — feuille d'or */
 .foil-gold .card-face {
@@ -519,20 +551,21 @@
 }
 .foil-gold .foil-over {
   display: block;
+  mix-blend-mode: overlay;
+  opacity: calc(.6 + var(--o) * .35);
+}
+.foil-gold .foil-over .sheet {
+  --kx: -40%;
+  --ky: -30%;
   background-image:
     var(--gold),
     repeating-linear-gradient(115deg, rgba(0, 0, 0, .5) 0%, transparent 3%, transparent 6%, rgba(0, 0, 0, .5) 9%),
     linear-gradient(135deg, #ffd766, #9a6a08);
-  background-size: 200% 600%, 300% 300%, 100% 100%;
-  background-position: 0 var(--bgy), var(--bgx) var(--bgy), 0 0;
+  background-size: 100% 300%, 150% 150%, 100% 100%;
   background-blend-mode: overlay, normal;
-  mix-blend-mode: overlay;
-  filter: brightness(calc(.9 + var(--hyp) * .3)) contrast(1.3);
-  opacity: calc(.6 + var(--o) * .35);
+  filter: contrast(1.3);
 }
-.foil-gold .glitter {
-  filter: sepia(1) saturate(4) hue-rotate(-10deg);
-}
+.foil-gold .glitter { filter: sepia(1) saturate(4) hue-rotate(-10deg); }
 .foil-gold .n-first,
 .foil-gold .n-last {
   background: linear-gradient(180deg, #fffbe6 0%, #ffd766 45%, #c7901a 100%) !important;

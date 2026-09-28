@@ -65,8 +65,8 @@ export function CardBack({ className = '' }) {
   )
 }
 
-export default function Card({ card, interactive = true, className = '', onClick, style, maxTilt }) {
-  const { attach, move: tiltMove, leave: tiltLeave, up: tiltUp } = useTilt({ maxTilt })
+export default function Card({ card, interactive = true, touch = false, className = '', onClick, style, maxTilt }) {
+  const { attach, move: tiltMove, leave: tiltLeave, up: tiltUp } = useTilt({ maxTilt, touch })
   const r = RARITIES[card.rarity]
   const full = r.layout === 'full'
 
@@ -94,11 +94,11 @@ export default function Card({ card, interactive = true, className = '', onClick
     >
       <div className="card-tilt">
         <div className="card-face">
-          <div className="foil-under" />
+          <div className="foil-under" data-o><i className="sheet" /></div>
 
           <div className="card-art">
             <Art card={card} />
-            <div className="foil-art" />
+            <div className="foil-art" data-o><i className="sheet" /></div>
           </div>
 
           <div className="card-content">
@@ -132,11 +132,12 @@ export default function Card({ card, interactive = true, className = '', onClick
             </footer>
           </div>
 
-          <div className="foil-over" />
-          <div className="glitter" />
-          <div className="glare" />
+          <div className="foil-over" data-o><i className="sheet" /></div>
+          <div className="glitter" data-o><i className="sheet" /><i className="sheet s2" /></div>
+          <div className="glare" data-o><i className="sheet" /></div>
         </div>
       </div>
+      <div className="card-shadow" data-o />
     </div>
   )
 }

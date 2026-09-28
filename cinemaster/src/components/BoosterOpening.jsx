@@ -158,10 +158,10 @@ export default function BoosterOpening({ cards, cover, isNew, ownedBefore, onDon
                 ? (
                   <div className={`flip3d ${faceDown ? '' : 'is-flipped'}`}>
                     <div className="flip3d-back"><CardBack /></div>
-                    <div className="flip3d-front"><Card card={c} interactive={isTop && !faceDown} /></div>
+                    <div className="flip3d-front"><Card card={c} interactive={isTop && !faceDown} touch /></div>
                   </div>
                 )
-                : <Card card={c} interactive={isTop} />
+                : <Card card={c} interactive={isTop} touch />
               return (
                 <div
                   key={j}

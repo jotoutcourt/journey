@@ -3,6 +3,9 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 .picker {
   position: relative;
+  overflow: hidden;
+  overflow: clip;
+  overflow-clip-margin: 30px;
   display: grid;
   justify-items: center;
   gap: 8px;
@@ -35,7 +38,8 @@
   place-items: center;
   perspective: 1100px;
   perspective-origin: 50% 40%;
-  touch-action: pan-y;
+  /* le doigt fait tourner le cercle : pas de défilement ni de zoom ici */
+  touch-action: none;
   cursor: grab;
   user-select: none;
   -webkit-user-select: none;

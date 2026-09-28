@@ -44,11 +44,25 @@
 
 * { box-sizing: border-box; }
 
-html { background: var(--bg); }
+html {
+  background: var(--bg);
+  /* rien ne dépasse sur les côtés : l'écran ne glisse jamais latéralement */
+  overflow-x: hidden;
+  overflow-x: clip;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
 
 body {
   margin: 0;
   min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  overflow-x: clip;
+  /* pas de rebond ni de « tirer pour rafraîchir » pendant les gestes */
+  overscroll-behavior: none;
+  /* pas de zoom au double-tap */
+  touch-action: manipulation;
   color: var(--text);
   font: 600 15px/1.45 var(--f-ui);
   -webkit-font-smoothing: antialiased;
@@ -135,10 +149,10 @@ button:disabled { cursor: not-allowed; opacity: .45; }
   justify-content: center;
   gap: 4px;
   padding: 8px 12px calc(8px + env(safe-area-inset-bottom, 0px));
-  background: rgba(248, 249, 252, .92);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  /* fond opaque : un flou d'arrière-plan serait recalculé à chaque défilement */
+  background: rgba(248, 249, 252, .98);
   border-top: 1px solid var(--line);
+  transform: translateZ(0);
 }
 .tabbar button {
   flex: 1;
@@ -430,6 +444,9 @@ label.btn { cursor: pointer; }
 .pack-detail .meter { justify-self: end; }
 .carousel {
   position: relative;
+  overflow: hidden;
+  overflow: clip;
+  overflow-clip-margin: 40px;
   width: 100%;
   height: min(520px, 66vw * 1.72, 48vh);
   display: grid;
@@ -488,6 +505,7 @@ label.btn { cursor: pointer; }
 /* ─── Ouverture ───────────────────────────────────────────────────────── */
 .screen-open {
   min-height: calc(100vh - 140px);
+  min-height: calc(100dvh - 140px);
   align-content: start;
   padding-top: 4px;
 }
@@ -644,9 +662,8 @@ label.btn { cursor: pointer; }
   z-index: 50;
   overflow-y: auto;
   padding: 32px 16px;
-  background: rgba(238, 241, 246, .82);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  background: rgba(238, 241, 246, .95);
+  overscroll-behavior: contain;
   animation: fade .25s ease-out;
 }
 .modal-body {
@@ -860,6 +877,8 @@ label.btn { cursor: pointer; }
   .detail-nav .pill-btn { padding: 13px 10px; font-size: 13px; }
   .round-btn { width: 52px; height: 52px; }
   .import-box { grid-template-columns: 1fr; }
+  /* 16 px minimum : sinon l'iPhone zoome automatiquement sur le champ */
+  .filters select { font-size: 16px; }
   .pack-grid { grid-template-columns: 1fr !important; }
   .pack-item { grid-template-columns: 110px 1fr; align-items: center; column-gap: 14px; }
   .pack-pick { grid-row: span 2; }
@@ -886,3 +905,15 @@ label.btn { cursor: pointer; }
 }
 .admin-link .icon { width: 11px; height: 11px; }
 .admin-link:hover { color: var(--muted); }
+
+/* Aucun appui long (menu « enregistrer l'image ») ni sélection sur les éléments de jeu */
+.pack,
+.card,
+.tile,
+.tabbar,
+.picker,
+img {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}

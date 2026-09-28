@@ -33,18 +33,28 @@ function Art({ card }) {
 // Sachet de booster. Avec `tearable`, on le déchire en glissant
 // le doigt le long de la bande pointillée (ou d'un simple toucher).
 export default function Pack({ cover, tearable = false, onTorn, className = '', onClick, disabled }) {
-  const { attach, move: tiltMove, leave: tiltLeave, up: tiltUp } = useTilt({ maxTilt: 12 })
+  const { attach, move: tiltMove, leave: tiltLeave, up: tiltUp } = useTilt({ maxTilt: 12, scale: 0.025, touch: tearable })
   // Booster complet fourni par le joueur : son image remplace tout le visuel.
   const fullImg = useCardImage(packFullKey(cover.u))
-  const [tear, setTearState] = useState(0)
   const [torn, setTorn] = useState(false)
+  const [started, setStarted] = useState(false) // la déchirure a commencé (masque l'indice)
   const tearRef = useRef(0)
+  const rootRef = useRef(null)
   const drag = useRef(null)
   const anim = useRef(0)
 
   useEffect(() => () => cancelAnimationFrame(anim.current), [])
 
-  const setTear = v => { tearRef.current = v; setTearState(v) }
+  // Progression écrite directement sur l'élément : aucun rendu React par image.
+  const setTear = v => {
+    tearRef.current = v
+    rootRef.current?.style.setProperty('--tear', v.toFixed(4))
+    if (v > 0.05 && !started) setStarted(true)
+  }
+  const setRef = node => {
+    rootRef.current = node
+    attach(node)
+  }
 
   const animateTo = (target, done) => {
     cancelAnimationFrame(anim.current)
@@ -98,9 +108,9 @@ export default function Pack({ cover, tearable = false, onTorn, className = '', 
 
   return (
     <div
-      ref={attach}
+      ref={setRef}
       className={`pack ${fullImg ? 'is-full' : ''} ${tearable ? 'is-tearable' : ''} ${torn ? 'is-torn' : ''} ${disabled ? 'is-disabled' : ''} ${className}`}
-      style={{ '--c1': cover.universe.c1, '--c2': cover.universe.c2, '--tear': tear, ...(fullImg && { '--full': `url("${fullImg}")` }) }}
+      style={{ '--c1': cover.universe.c1, '--c2': cover.universe.c2, ...(fullImg && { '--full': `url("${fullImg}")` }) }}
       onPointerDown={down}
       onPointerMove={move}
       onPointerUp={up}
@@ -142,12 +152,12 @@ export default function Pack({ cover, tearable = false, onTorn, className = '', 
           )}
           <span className="crimp crimp-bottom" />
           <div className="pack-pillow" />
-          <div className="pack-gloss" />
-          <div className="pack-holo" />
-          <div className="pack-glare" />
+          <div className="pack-gloss"><i className="sheet" /></div>
+          <div className="pack-holo" data-o><i className="sheet" /></div>
+          <div className="pack-glare" data-o><i className="sheet" /></div>
         </div>
 
-        {tearable && !torn && tear < 0.05 && (
+        {tearable && !torn && !started && (
           <div className="tear-hint" aria-hidden="true"><span /></div>
         )}
       </div>

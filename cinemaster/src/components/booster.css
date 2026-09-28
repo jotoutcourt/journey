@@ -46,8 +46,19 @@
   inset: 0;
   transform: translateY(calc(var(--k) * -2.4%)) scale(calc(1 - var(--k) * .035));
   transform-origin: 50% 0;
-  transition: transform .45s cubic-bezier(.2, .9, .3, 1.15), filter .45s;
-  filter: brightness(calc(1 - var(--k) * .12));
+  transition: transform .45s cubic-bezier(.2, .9, .3, 1.15);
+}
+/* cartes du dessous assombries par un voile (opacité seule, pas de filtre) */
+.stack-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  border-radius: 4.8% / 3.4%;
+  background: #1a1d2b;
+  opacity: calc(var(--k) * .14);
+  transition: opacity .45s;
+  pointer-events: none;
 }
 
 .throwable {

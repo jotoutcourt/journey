@@ -32,7 +32,7 @@ export default function CardModal({ card, count, edit, onClose, onRecycle }) {
   return (
     <div className="modal" onClick={onClose}>
       <div className="modal-body" onClick={e => e.stopPropagation()}>
-        <div className="modal-card"><Card card={card} maxTilt={24} /></div>
+        <div className="modal-card"><Card card={card} maxTilt={24} touch /></div>
         <div className="modal-info">
           <span className="rarity-chip" style={{ '--rc': r.color }}>{r.symbol} {r.label}</span>
           <h3>{card.first} {card.last}</h3>
