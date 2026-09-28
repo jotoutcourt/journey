@@ -672,9 +672,8 @@ label.btn { cursor: pointer; }
   margin-top: 8px;
   text-align: center;
   font-size: 11px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  user-select: all;
 }
 @media (max-width: 720px) {
   .import-box { grid-template-columns: 1fr; }
