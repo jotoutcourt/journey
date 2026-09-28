@@ -1,4 +1,4 @@
-// Emblème CinéMaster : une bobine de projection vue de face.
+// Emblème PopCard : une bobine de projection vue de face.
 export function Emblem({ className = '' }) {
   return (
     <svg className={`emblem ${className}`} viewBox="0 0 48 48" aria-hidden="true">
@@ -21,7 +21,7 @@ export function Wordmark({ className = '' }) {
   return (
     <span className={`wordmark ${className}`}>
       <Emblem />
-      <span className="wordmark-text">Ciné<b>Master</b></span>
+      <span className="wordmark-text">Pop<b>Card</b></span>
     </span>
   )
 }

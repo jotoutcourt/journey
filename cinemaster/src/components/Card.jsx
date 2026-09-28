@@ -56,7 +56,7 @@ export function CardBack({ className = '' }) {
           <div className="back-rays" />
           <div className="back-frame">
             <Emblem className="back-emblem" />
-            <div className="back-logo">Ciné<b>Master</b></div>
+            <div className="back-logo">Pop<b>Card</b></div>
             <div className="back-sub">Série 1 · Premières Séances</div>
           </div>
         </div>

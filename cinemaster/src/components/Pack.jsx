@@ -129,7 +129,7 @@ export default function Pack({ cover, tearable = false, onTorn, className = '', 
             <>
               <Art card={cover} />
               <div className="pack-band pack-band-top">
-                <span className="pack-logo"><Emblem /><span>Ciné<b>Master</b></span></span>
+                <span className="pack-logo"><Emblem /><span>Pop<b>Card</b></span></span>
                 <span className="pack-code">{SET.code}</span>
               </div>
               <span className="pack-stripe" />

@@ -11,7 +11,7 @@
 import { useSyncExternalStore } from 'react'
 import { CARDS, UNIVERSES, fileKeys, migrateId, slug } from '../data/cards.js'
 
-const DB_NAME = 'cinemaster-images'
+const DB_NAME = 'cinemaster-images' // nom historique, conservé pour garder les images
 const STORE = 'images'
 const MAX_SIDE = 1000
 

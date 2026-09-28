@@ -304,7 +304,7 @@ export default function App() {
       <header className="appbar">
         <button className="brand" onClick={() => goTab('home')} aria-label="Accueil">
           <Emblem />
-          <span>Ciné<b>Master</b></span>
+          <span>Pop<b>Card</b></span>
         </button>
         <div className="appbar-pills">
           <span className="chip" title="Pellicules"><Icon name="film" />{state.dust}</span>

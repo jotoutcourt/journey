@@ -1,4 +1,4 @@
-# CinéMaster
+# PopCard
 
 Jeu de cartes à collectionner sur l'univers des films et séries : personnages (CHAR), lieux cultes (LIEU) et objets cultes (OBJET).
 

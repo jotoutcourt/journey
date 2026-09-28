@@ -1,6 +1,7 @@
 // Sauvegarde locale de la collection (navigateur).
 import { migrateId } from '../data/cards.js'
 
+// clé historique conservée : renommer ferait perdre les collections existantes
 const KEY = 'cinemaster:v1'
 
 export const MAX_BOOSTERS = 6

@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// CinéMaster — Série 1 « Premières Séances »
+// PopCard — Série 1 « Premières Séances »
 //
 // Types   : CHAR (personnage) · LIEU (lieu culte) · OBJET (objet culte)
 // Raretés : commune · peu-commune · rare · holo · ultra (full art) · secrete (gold)
