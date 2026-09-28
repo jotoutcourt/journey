@@ -11,6 +11,10 @@ import { Icon } from './components/Icons.jsx'
 import { CARDS, CARDS_BY_ID } from './data/cards.js'
 import { RARITIES } from './lib/rarity.js'
 import { openBooster } from './lib/booster.js'
+import { claim, track, withToday } from './lib/missions.js'
+import { recordPull } from './lib/stats.js'
+import Missions from './components/Missions.jsx'
+import Profile from './components/Profile.jsx'
 import { connectShared, loadImages } from './lib/images.js'
 import AdminGate from './components/AdminGate.jsx'
 import { PACK_COVERS } from './lib/packs.js'
@@ -20,6 +24,7 @@ const TABS = [
   { id: 'home', label: 'Accueil', icon: 'home' },
   { id: 'collection', label: 'Collection', icon: 'cards' },
   { id: 'guide', label: 'Raretés', icon: 'star' },
+  { id: 'profile', label: 'Profil', icon: 'user' },
 ]
 // L'Atelier (espace admin) n'est pas dans la barre d'onglets : lien discret en bas de page.
 
@@ -52,7 +57,7 @@ function BoosterMeter({ boosters, nextIn }) {
 }
 
 export default function App() {
-  const [state, setState] = useState(() => regen(load()))
+  const [state, setState] = useState(() => withToday(regen(load())))
   const [tab, setTab] = useState('home')
   const [detail, setDetail] = useState(null)  // booster affiché en grand
   const [pull, setPull] = useState(null)      // booster en cours d'ouverture
@@ -66,7 +71,7 @@ export default function App() {
   useEffect(() => {
     const t = setInterval(() => {
       setNow(Date.now())
-      setState(s => regen(s))
+      setState(s => withToday(regen(s)))
     }, 15000)
     return () => clearInterval(t)
   }, [])
@@ -97,7 +102,7 @@ export default function App() {
       if (!useFree && s.dust < BOOSTER_DUST_COST) return s
       const owned = { ...s.owned }
       for (const c of cards) owned[c.id] = (owned[c.id] || 0) + 1
-      return {
+      const next = {
         ...s,
         owned,
         opened: s.opened + 1,
@@ -105,6 +110,7 @@ export default function App() {
         regenAt: useFree && s.boosters >= MAX_BOOSTERS ? Date.now() : s.regenAt,
         dust: useFree ? s.dust : s.dust - BOOSTER_DUST_COST,
       }
+      return recordPull(track(next, { type: 'open', cards, newIds }), cards, newIds)
     })
     setPull({ cards, newIds, cover, ownedBefore: state.owned, key: Date.now() })
   }, [canOpen, state.owned])
@@ -112,23 +118,25 @@ export default function App() {
   const recycle = id => setState(s => {
     const n = s.owned[id] || 0
     if (n <= 1) return s
-    return {
+    return track({
       ...s,
       owned: { ...s.owned, [id]: n - 1 },
       dust: s.dust + RARITIES[CARDS_BY_ID[id].rarity].dust,
-    }
+    }, { type: 'recycle', count: 1 })
   })
 
   const recycleAll = () => setState(s => {
     let dust = s.dust
+    let count = 0
     const owned = { ...s.owned }
     for (const [id, n] of Object.entries(owned)) {
       if (n > 1 && CARDS_BY_ID[id]) {
         dust += (n - 1) * RARITIES[CARDS_BY_ID[id].rarity].dust
+        count += n - 1
         owned[id] = 1
       }
     }
-    return { ...s, owned, dust }
+    return count ? track({ ...s, owned, dust }, { type: 'recycle', count }) : s
   })
 
   // Remise à zéro : collection, boosters et pellicules. Les images de l'Atelier restent.
@@ -240,6 +248,8 @@ export default function App() {
           </button>
         </div>
 
+        <Missions missions={state.missions} now={now} onClaim={id => setState(s => claim(s, id))} />
+
         <div className="panel dust-panel">
           <span className="dust-icon"><Icon name="film" /></span>
           <div>
@@ -258,28 +268,19 @@ export default function App() {
           onRecycleAll={recycleAll}
           duplicateDust={duplicateDust}
         />
-        <div className="panel reset-panel">
-          {confirmReset
-            ? (
-              <>
-                <p>Effacer toute ta collection, tes boosters et tes pellicules ?</p>
-                <div className="reset-actions">
-                  <button className="pill-btn danger" onClick={resetCollection}>Oui, tout remettre à zéro</button>
-                  <button className="pill-btn soft" onClick={() => setConfirmReset(false)}>Annuler</button>
-                </div>
-              </>
-            )
-            : (
-              <>
-                <p>Recommencer une collection depuis le début.</p>
-                <button className="pill-btn soft" onClick={() => setConfirmReset(true)}>Réinitialiser ma collection</button>
-              </>
-            )}
-        </div>
       </section>
     )
   } else if (tab === 'guide') {
     screen = <section className="screen"><RarityGuide /></section>
+  } else if (tab === 'profile') {
+    screen = (
+      <Profile
+        state={state}
+        onReset={resetCollection}
+        confirmReset={confirmReset}
+        setConfirmReset={setConfirmReset}
+      />
+    )
   } else {
     screen = (
       <section className="screen">

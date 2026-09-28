@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import Card from './Card.jsx'
 import { CARDS, UNIVERSES } from '../data/cards.js'
 import './register.css'
+import { sfx } from '../lib/feedback.js'
 
 const FLY_WIDTH = 190      // taille de départ de la carte en vol (px)
 const FLIGHT_MS = 560      // durée d'un vol
@@ -93,6 +94,7 @@ export default function RegisterNew({ cards, ownedBefore, onDone }) {
   }, [group])
 
   const landed = card => {
+    sfx.pop()
     setFlights(f => f.filter(c => c.id !== card.id))
     setPlaced(p => new Set(p).add(card.id))
     setFlash(s => new Set(s).add(card.id))

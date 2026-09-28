@@ -9,6 +9,7 @@ const PATHS = {
   film: <><rect x="4" y="5" width="16" height="14" rx="2" /><path d="M8 5v14M16 5v14M4 9.5h4M4 14.5h4M16 9.5h4M16 14.5h4" /></>,
   back: <><path d="M9 7 4.5 11.5 9 16" /><path d="M5 11.5h9.5a4.5 4.5 0 0 1 0 9H12" /></>,
   chevron: <><path d="m9.5 6 6 6-6 6" /></>,
+  user: <><circle cx="12" cy="8.5" r="3.8" /><path d="M4.8 20a7.2 7.2 0 0 1 14.4 0" /></>,
   lock: <><rect x="5" y="10.5" width="14" height="10" rx="2.5" /><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" /><path d="M12 14.5v2.5" /></>,
 }
 

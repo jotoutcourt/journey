@@ -3,6 +3,7 @@ import Card, { CardBack } from './Card.jsx'
 import Pack from './Pack.jsx'
 import RegisterNew from './RegisterNew.jsx'
 import { RARITIES, rarityRank } from '../lib/rarity.js'
+import { haptic, sfx } from '../lib/feedback.js'
 import './booster.css'
 
 // Carte du dessus de la pile : on la fait glisser (ou on la touche) pour
@@ -20,6 +21,8 @@ function Throwable({ children, onTap, onThrown, canThrow, active }) {
     el.style.transition = 'transform .5s cubic-bezier(.3,.6,.4,1), opacity .5s'
     el.style.transform = `translate(${dir * 120}vw, ${dy}px) rotate(${dir * 38}deg)`
     el.style.opacity = '0'
+    sfx.swipe()
+    haptic('light')
     setTimeout(onThrown, 260)
   }, [onThrown])
 
@@ -101,10 +104,28 @@ export default function BoosterOpening({ cards, cover, isNew, ownedBefore, onDon
     else setIndex(i => i + 1)
   }, [index, lastIndex, afterReveal])
 
+  // Retourner la dernière carte : le téléphone vibre selon sa rareté (la
+  // vibration doit partir du geste lui-même sur iPhone)
+  const flip = useCallback(() => {
+    setFlipped(true)
+    sfx.flip()
+    const rank = rarityRank(cards[lastIndex].rarity)
+    haptic(rank >= rarityRank('holo') ? 'heavy' : rank >= rarityRank('rare') ? 'medium' : 'light')
+  }, [cards, lastIndex])
+
   const tap = useCallback(fly => {
-    if (topHidden) setFlipped(true)
+    if (topHidden) flip()
     else fly(-1)
-  }, [topHidden])
+  }, [topHidden, flip])
+
+  // Carte brillante qui arrive sur le dessus : petit carillon (plus riche
+  // selon la rareté), au moment où elle montre son effet.
+  const shownTop = stage === 'reveal' && top && !topHidden ? top : null
+  useEffect(() => {
+    if (!shownTop || RARITIES[shownTop.rarity].foil === 'none') return
+    const t = setTimeout(() => sfx.reveal(shownTop.rarity), index === lastIndex ? 650 : 280)
+    return () => clearTimeout(t)
+  }, [shownTop, index, lastIndex])
 
   const onTorn = () => {
     setStage('extract')
@@ -117,12 +138,12 @@ export default function BoosterOpening({ cards, cover, isNew, ownedBefore, onDon
     const onKey = e => {
       if (![' ', 'Enter', 'ArrowRight'].includes(e.key)) return
       e.preventDefault()
-      if (topHidden) setFlipped(true)
+      if (topHidden) flip()
       else next()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [stage, topHidden, next])
+  }, [stage, topHidden, next, flip])
 
   if (stage === 'register') {
     return <RegisterNew cards={newCards} ownedBefore={ownedBefore} onDone={() => setStage('summary')} />

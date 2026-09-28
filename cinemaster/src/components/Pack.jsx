@@ -2,6 +2,7 @@ import { memo, useEffect, useRef, useState } from 'react'
 import { useTilt } from '../lib/tilt.js'
 import { packFullKey, packImageKey, useCardImage } from '../lib/images.js'
 import { SET } from '../data/cards.js'
+import { haptic, sfx } from '../lib/feedback.js'
 import { Emblem } from './Brand.jsx'
 import './pack.css'
 
@@ -77,6 +78,8 @@ function Pack({ cover, tearable = false, onTorn, className = '', onClick, disabl
   const finish = () => {
     if (finishing.current) return
     finishing.current = true
+    sfx.tear()
+    haptic('medium')
     animateTo(1, () => {
       setTorn(true)
       setTimeout(() => onTorn?.(), 500)
