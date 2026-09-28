@@ -1117,3 +1117,42 @@ img {
   -webkit-user-select: none;
   user-select: none;
 }
+
+/* ─── Partage d'une carte ─────────────────────────────────────────────── */
+.share-stage {
+  position: fixed;
+  left: -10000px;
+  top: 0;
+  width: 540px;
+  pointer-events: none;
+}
+.share-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 20px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+  background: rgba(20, 24, 36, .72);
+  animation: fade .2s ease-out;
+}
+.share-body {
+  width: min(420px, 100%);
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  padding: 16px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+  animation: modal-card .45s var(--ease-spring) both;
+}
+.share-body img {
+  width: 100%;
+  max-height: 62vh;
+  object-fit: contain;
+  border-radius: 12px;
+  -webkit-touch-callout: default;
+}
+.share-body p { margin: 0; text-align: center; }
+.share-body a.btn { text-decoration: none; }

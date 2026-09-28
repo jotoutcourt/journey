@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import Card from './Card.jsx'
 import { RARITIES } from '../lib/rarity.js'
+import ShareCard from './ShareCard.jsx'
 import { removeImage, setImage, useCardImage } from '../lib/images.js'
 
 export default function CardModal({ card, count, edit, onClose, onRecycle }) {
@@ -50,6 +51,7 @@ export default function CardModal({ card, count, edit, onClose, onRecycle }) {
           {error && <p className="error">{error}</p>}
 
           <div className="modal-actions">
+            {!edit && count > 0 && <ShareCard card={card} />}
             {!edit && count > 1 && (
               <button className="btn small" onClick={onRecycle}>Recycler 1 doublon (+{r.dust} pellicules)</button>
             )}

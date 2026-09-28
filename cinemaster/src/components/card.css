@@ -636,3 +636,11 @@
   text-transform: uppercase;
   color: rgba(214, 178, 115, .8);
 }
+
+/* Capture pour le partage : effet figé en plein reflet, lumière venant du
+   coin haut gauche (comme une carte inclinée sous une lampe). */
+.card.is-capture [data-o] { --o: .9; }
+.card.is-capture .sheet {
+  transform: translate3d(calc(var(--kx) * -.28), calc(var(--ky) * -.22), 0);
+}
+.card.is-capture .card-shadow { display: none; }
