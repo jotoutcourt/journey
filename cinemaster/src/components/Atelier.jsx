@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import Card from './Card.jsx'
 import { CARDS, UNIVERSES, fileKeys } from '../data/cards.js'
-import { importFiles, useCardImage, useImageCount } from '../lib/images.js'
+import Pack from './Pack.jsx'
+import { importFiles, packFileName, packImageKey, removeImage, setImage, useCardImage, useImageCount } from '../lib/images.js'
+import { PACK_COVERS } from '../lib/packs.js'
 
 function Item({ card, onSelect }) {
   const custom = useCardImage(card.id)
@@ -10,6 +12,32 @@ function Item({ card, onSelect }) {
       <Card card={card} onClick={() => onSelect(card)} />
       <span className={`img-badge ${custom ? 'has' : ''}`}>{custom ? 'Ton image' : 'Sans image'}</span>
       <code className="file-key">{fileKeys(card)[1] ?? card.id}</code>
+    </div>
+  )
+}
+
+// Illustration d'un booster : clic sur le booster pour choisir une image.
+function PackItem({ cover }) {
+  const key = packImageKey(cover.u)
+  const custom = useCardImage(key)
+  const inputId = `pack-image-${cover.u}`
+  return (
+    <div className="grid-item pack-item">
+      <label htmlFor={inputId} className="pack-pick"><Pack cover={cover} /></label>
+      <input
+        id={inputId}
+        type="file"
+        accept="image/*"
+        hidden
+        onChange={e => {
+          const file = e.target.files?.[0]
+          e.target.value = ''
+          if (file) setImage(key, file)
+        }}
+      />
+      <span className={`img-badge ${custom ? 'has' : ''}`}>{custom ? 'Ton image' : 'Sans image'}</span>
+      <code className="file-key">{packFileName(cover.u)}</code>
+      {custom && <button className="link-btn" onClick={() => removeImage(key)}>Retirer</button>}
     </div>
   )
 }
@@ -66,6 +94,13 @@ export default function Atelier({ onSelect }) {
             )}
           </div>
         )}
+      </div>
+
+      <div className="atelier-group">
+        <h3>Boosters</h3>
+        <div className="card-grid pack-grid">
+          {PACK_COVERS.map(c => <PackItem key={c.u} cover={c} />)}
+        </div>
       </div>
 
       {Object.entries(UNIVERSES).map(([key, u]) => (

@@ -3,8 +3,8 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 .booster-stage {
   position: relative;
-  width: min(300px, 74vw);
-  aspect-ratio: 62 / 100;
+  width: min(290px, 70vw, 44vh);
+  aspect-ratio: 58 / 100;
   margin-top: 8px;
 }
 

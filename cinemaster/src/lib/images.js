@@ -1,7 +1,7 @@
 // Images personnalisées des cartes, ajoutées depuis l'Atelier.
 // Stockées dans IndexedDB (trop lourdes pour localStorage), sur cet appareil.
 import { useSyncExternalStore } from 'react'
-import { CARDS, fileKeys, migrateId, slug } from '../data/cards.js'
+import { CARDS, UNIVERSES, fileKeys, migrateId, slug } from '../data/cards.js'
 
 const DB_NAME = 'cinemaster-images'
 const STORE = 'images'
@@ -95,7 +95,14 @@ export function useImageCount() {
 
 // Import groupé : chaque fichier est associé à la carte dont il porte le nom
 // (« rachel-full.jpg », « rachel-green-gold.png », « derek-shepherd.jpg »…).
-const BY_FILE_KEY = new Map(CARDS.flatMap(c => fileKeys(c).map(k => [k, c])))
+// Illustration dédiée d'un booster : « booster-star-wars.jpg » → clé « booster-sw »
+export const packImageKey = u => `booster-${u}`
+export const packFileName = u => `booster-${slug(UNIVERSES[u].name)}`
+
+const BY_FILE_KEY = new Map([
+  ...CARDS.flatMap(c => fileKeys(c).map(k => [k, c])),
+  ...Object.keys(UNIVERSES).map(u => [packFileName(u), { id: packImageKey(u) }]),
+])
 
 export function cardForFile(name) {
   return BY_FILE_KEY.get(slug(name.replace(/\.[^.]+$/, '')))

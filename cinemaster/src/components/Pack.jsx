@@ -1,30 +1,36 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTilt } from '../lib/tilt.js'
-import { useCardImage } from '../lib/images.js'
+import { packImageKey, useCardImage } from '../lib/images.js'
 import { SET } from '../data/cards.js'
-import { Wordmark } from './Brand.jsx'
+import { Emblem } from './Brand.jsx'
 import './pack.css'
 
-// Affiche du booster : image de l'Atelier si elle existe, sinon une affiche
-// sérigraphiée (soleil + silhouette) aux couleurs de l'univers.
-function Cover({ card }) {
-  const img = useCardImage(card.id) || card.image
+// Illustration du booster : image dédiée (« booster-star-wars.jpg »), sinon
+// l'image de la carte de couverture, sinon une affiche générée.
+function Art({ card }) {
+  const packImg = useCardImage(packImageKey(card.u))
+  const cardImg = useCardImage(card.id)
+  const img = packImg || cardImg || card.image
   return (
-    <div className="pack-cover">
+    <div className="pack-art">
       {img
         ? <img src={img} alt="" draggable="false" />
         : (
           <>
-            <span className="cover-sun" />
-            <span className="cover-sil" aria-hidden="true">{card.emoji}</span>
+            <span className="art-sky" />
+            <span className="art-sun" />
+            <span className="art-rays" />
+            <span className="art-sil" aria-hidden="true">{card.emoji}</span>
+            <span className="art-ground" />
+            <span className="art-sparkles" />
           </>
         )}
-      <span className="cover-halftone" />
+      <span className="art-leaks" />
     </div>
   )
 }
 
-// Paquet de booster en aluminium. Avec `tearable`, on le déchire en glissant
+// Sachet de booster. Avec `tearable`, on le déchire en glissant
 // le doigt le long de la bande pointillée (ou d'un simple toucher).
 export default function Pack({ cover, tearable = false, onTorn, className = '', onClick, disabled }) {
   const { attach, move: tiltMove, leave: tiltLeave, up: tiltUp } = useTilt({ maxTilt: 12 })
@@ -110,23 +116,27 @@ export default function Pack({ cover, tearable = false, onTorn, className = '', 
       aria-label={tearable ? 'Déchirer le booster' : `Booster ${cover.universe.name}`}
     >
       <div className="pack-tilt">
-        {/* bande supérieure, en deux morceaux : la partie déjà déchirée se soulève */}
-        <div className="pack-head pack-head-rest"><span className="seal" /></div>
-        <div className="pack-head pack-head-torn"><span className="seal" /></div>
+        {/* soudure du haut, en deux morceaux : la partie déjà déchirée se soulève */}
+        <div className="pack-head pack-head-rest"><span className="crimp" /></div>
+        <div className="pack-head pack-head-torn"><span className="crimp" /></div>
 
         <div className="pack-light" aria-hidden="true" />
 
         <div className="pack-body">
-          <div className="pack-plate"><Wordmark /></div>
-          <Cover card={cover} />
-          <div className="pack-title">{cover.universe.name}</div>
-          <div className="pack-meta">
-            <span>Série {SET.code.slice(1)} · {SET.name}</span>
-            <span>5 cartes</span>
+          <Art card={cover} />
+          <div className="pack-band pack-band-top">
+            <span className="pack-logo"><Emblem /><span>Ciné<b>Master</b></span></span>
+            <span className="pack-code">{SET.code}</span>
           </div>
-          <span className="seal seal-bottom" />
+          <span className="pack-stripe" />
+          <div className="pack-titles">
+            <span className="pack-kicker">Booster thématique</span>
+            <span className="pack-title" data-text={cover.universe.name}>{cover.universe.name}</span>
+          </div>
+          <div className="pack-band pack-band-bottom"><span>{SET.name} · 5 cartes</span></div>
+          <span className="crimp crimp-bottom" />
           <div className="pack-pillow" />
-          <div className="pack-crinkle" />
+          <div className="pack-gloss" />
           <div className="pack-holo" />
           <div className="pack-glare" />
         </div>

@@ -11,6 +11,7 @@ import { CARDS, CARDS_BY_ID } from './data/cards.js'
 import { RARITIES } from './lib/rarity.js'
 import { openBooster } from './lib/booster.js'
 import { loadImages } from './lib/images.js'
+import { PACK_COVERS } from './lib/packs.js'
 import { BOOSTER_DUST_COST, MAX_BOOSTERS, REGEN_MS, initialState, load, regen, save } from './lib/storage.js'
 
 const TABS = [
@@ -20,10 +21,6 @@ const TABS = [
   { id: 'atelier', label: 'Atelier', icon: 'image' },
 ]
 
-// Trois boosters au choix, comme en boutique : seule l'illustration change.
-const PACK_COVERS = ['dark-vador', 'daenerys-targaryen', 'la-delorean']
-  .map(slug => CARDS.find(c => c.id.endsWith(slug)))
-  .filter(Boolean)
 
 function formatDelay(ms) {
   const m = Math.max(0, Math.ceil(ms / 60000))
@@ -48,6 +45,36 @@ function BoosterMeter({ boosters, nextIn }) {
         <Icon name="pack" />
         <b>{boosters}</b>
       </span>
+    </div>
+  )
+}
+
+// Carrousel : le booster choisi au centre (avec son reflet), les autres
+// inclinés sur les côtés. On glisse ou on touche un côté pour changer.
+function PackCarousel({ current, onChange, onOpen, disabled }) {
+  const [start, setStart] = useState(null)
+  const i = PACK_COVERS.indexOf(current)
+  const at = d => PACK_COVERS[(i + d + PACK_COVERS.length) % PACK_COVERS.length]
+  return (
+    <div
+      className="carousel"
+      onPointerDown={e => setStart(e.clientX)}
+      onPointerUp={e => {
+        if (start === null) return
+        const dx = e.clientX - start
+        setStart(null)
+        if (Math.abs(dx) > 50) onChange(at(dx < 0 ? 1 : -1))
+      }}
+    >
+      <button className="car-side car-left" onClick={() => onChange(at(-1))} aria-label="Booster précédent">
+        <Pack cover={at(-1)} />
+      </button>
+      <div className="car-center" key={current.id}>
+        <Pack cover={current} onClick={onOpen} disabled={disabled} />
+      </div>
+      <button className="car-side car-right" onClick={() => onChange(at(1))} aria-label="Booster suivant">
+        <Pack cover={at(1)} />
+      </button>
     </div>
   )
 }
@@ -141,10 +168,7 @@ export default function App() {
     window.scrollTo({ top: 0 })
   }
 
-  const otherPack = () => {
-    const i = PACK_COVERS.findIndex(c => c.id === detail.id)
-    setDetail(PACK_COVERS[(i + 1) % PACK_COVERS.length])
-  }
+  const otherPack = () => setDetail(PACK_COVERS[(PACK_COVERS.indexOf(detail) + 1) % PACK_COVERS.length])
 
   // Écran courant
   let screen
@@ -168,9 +192,12 @@ export default function App() {
       <section className="screen pack-detail" style={{ '--c1': detail.universe.c1, '--c2': detail.universe.c2 }}>
         <div className="detail-bg" aria-hidden="true" />
         <BoosterMeter boosters={state.boosters} nextIn={nextIn} />
-        <div className="detail-pack" key={detail.id}>
-          <Pack cover={detail} onClick={() => open(detail)} disabled={!canOpen} />
-        </div>
+        <PackCarousel
+          current={detail}
+          onChange={setDetail}
+          onOpen={() => open(detail)}
+          disabled={!canOpen}
+        />
         <p className="detail-note">
           {state.boosters > 0
             ? `${state.boosters} booster${state.boosters > 1 ? 's' : ''} disponible${state.boosters > 1 ? 's' : ''}`

@@ -418,13 +418,52 @@ label.btn { cursor: pointer; }
       color-mix(in srgb, var(--c1) 25%, #e7fbff) 100%);
   clip-path: polygon(0 0, 100% 0, 100% 32%, 0 48%);
 }
-.pack-detail .meter { justify-self: end; }
-.detail-pack {
-  width: min(270px, 62vw, 36vh);
-  margin: 4px 0 0;
-  animation: detail-pack-in .7s var(--ease-spring) both;
+.pack-detail::after {
+  /* halo blanc derrière le booster central */
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(ellipse 45% 35% at 50% 42%, rgba(255, 255, 255, .85), transparent 70%);
+  pointer-events: none;
 }
-@keyframes detail-pack-in { from { transform: translateY(30px) scale(.9); opacity: 0; } }
+.pack-detail .meter { justify-self: end; }
+.carousel {
+  position: relative;
+  width: 100%;
+  height: min(520px, 66vw * 1.72, 48vh);
+  display: grid;
+  place-items: center;
+  perspective: 1200px;
+  touch-action: pan-y;
+}
+.car-center {
+  position: relative;
+  z-index: 2;
+  width: min(270px, 60vw, calc(48vh * .58));
+  animation: detail-pack-in .6s var(--ease-spring) both;
+  -webkit-box-reflect: below 8px linear-gradient(transparent 86%, rgba(255, 255, 255, .25));
+}
+@keyframes detail-pack-in { from { transform: scale(.88); opacity: 0; } }
+.car-side {
+  position: absolute;
+  top: 50%;
+  z-index: 1;
+  width: min(190px, 40vw, calc(48vh * .4));
+  padding: 0;
+  border: 0;
+  background: none;
+  opacity: .85;
+  filter: saturate(.9) brightness(1.03);
+  transition: transform .4s var(--ease-out), opacity .3s;
+}
+.car-side .pack { pointer-events: none; }
+.car-left  { left: -8%;  transform: translateY(-50%) rotateY(38deg) scale(.9); }
+.car-right { right: -8%; transform: translateY(-50%) rotateY(-38deg) scale(.9); }
+.car-side:hover { opacity: 1; }
+.car-left:hover  { transform: translateY(-50%) rotateY(30deg) scale(.93); }
+.car-right:hover { transform: translateY(-50%) rotateY(-30deg) scale(.93); }
+
 .detail-note {
   margin: 0;
   width: min(100%, 460px);
@@ -640,6 +679,11 @@ label.btn { cursor: pointer; }
 .modal-info em { font-style: normal; color: var(--brand); }
 .modal-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
 @keyframes fade { from { opacity: 0; } }
+
+.pack-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+.pack-item { display: grid; justify-items: center; }
+.pack-pick { display: block; width: 100%; cursor: pointer; }
+.pack-pick .pack { pointer-events: none; }
 
 /* ─── Raretés & Atelier ───────────────────────────────────────────────── */
 .guide-intro {
