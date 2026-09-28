@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import Card, { CardBack } from './Card.jsx'
 import Pack from './Pack.jsx'
 import RegisterNew from './RegisterNew.jsx'
+import PackPicker from './PackPicker.jsx'
 import { RARITIES, rarityRank } from '../lib/rarity.js'
 import './booster.css'
 
@@ -73,7 +74,7 @@ function Throwable({ children, onTap, onThrown, canThrow }) {
 }
 
 export default function BoosterOpening({ cards, cover, isNew, ownedBefore, onDone, onAgain, canOpenAgain }) {
-  const [stage, setStage] = useState('tear') // tear | extract | reveal | summary
+  const [stage, setStage] = useState('pick') // pick | tear | extract | reveal | summary
   const [index, setIndex] = useState(0)
   const [flipped, setFlipped] = useState(false)
 
@@ -112,6 +113,10 @@ export default function BoosterOpening({ cards, cover, isNew, ownedBefore, onDon
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [stage, topHidden, next])
+
+  if (stage === 'pick') {
+    return <PackPicker cover={cover} onPick={() => setStage('tear')} />
+  }
 
   if (stage === 'register') {
     return <RegisterNew cards={newCards} ownedBefore={ownedBefore} onDone={() => setStage('summary')} />

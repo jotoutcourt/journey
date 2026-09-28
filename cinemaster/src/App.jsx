@@ -19,8 +19,8 @@ const TABS = [
   { id: 'home', label: 'Accueil', icon: 'home' },
   { id: 'collection', label: 'Collection', icon: 'cards' },
   { id: 'guide', label: 'Raretés', icon: 'star' },
-  { id: 'atelier', label: 'Atelier', icon: 'image' },
 ]
+// L'Atelier (espace admin) n'est pas dans la barre d'onglets : lien discret en bas de page.
 
 
 function formatDelay(ms) {
@@ -242,10 +242,10 @@ export default function App() {
             <span className="tile-sub">{ownedCount}/{CARDS.length} cartes</span>
             <span className="tile-bar"><i style={{ width: `${completion}%` }} /></span>
           </button>
-          <button className="panel tile" onClick={() => goTab('atelier')}>
-            <span className="tile-icon"><Icon name="image" /></span>
-            <span className="tile-title">Atelier</span>
-            <span className="tile-sub">Tes images</span>
+          <button className="panel tile" onClick={() => goTab('guide')}>
+            <span className="tile-icon"><Icon name="star" /></span>
+            <span className="tile-title">Raretés</span>
+            <span className="tile-sub">Taux et effets</span>
           </button>
         </div>
 
@@ -316,7 +316,17 @@ export default function App() {
         {screen}
       </main>
 
-      <p className="legal">Jeu de fans non officiel, non affilié aux ayants droit</p>
+      <p className="legal">
+        Jeu de fans non officiel, non affilié aux ayants droit
+        {!pull && (
+          <>
+            {' · '}
+            <button className="admin-link" onClick={() => goTab('atelier')}>
+              <Icon name="lock" /> Admin
+            </button>
+          </>
+        )}
+      </p>
 
       {!pull && (
         <nav className="tabbar" aria-label="Navigation">
