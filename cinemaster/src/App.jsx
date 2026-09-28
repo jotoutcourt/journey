@@ -10,7 +10,7 @@ import { CARDS, CARDS_BY_ID } from './data/cards.js'
 import { RARITIES } from './lib/rarity.js'
 import { openBooster } from './lib/booster.js'
 import { loadImages } from './lib/images.js'
-import { BOOSTER_DUST_COST, MAX_BOOSTERS, REGEN_MS, load, regen, save } from './lib/storage.js'
+import { BOOSTER_DUST_COST, MAX_BOOSTERS, REGEN_MS, initialState, load, regen, save } from './lib/storage.js'
 
 const TABS = [
   { id: 'boosters', label: 'Boosters' },
@@ -68,6 +68,16 @@ export default function App() {
   const [selected, setSelected] = useState(null)
   const [now, setNow] = useState(() => Date.now())
   const [choosing, setChoosing] = useState(null)
+  const [confirmReset, setConfirmReset] = useState(false)
+
+  // Remise à zéro : collection, boosters et pellicules. Les images de l'Atelier restent.
+  const resetCollection = () => {
+    setState(initialState())
+    setPull(null)
+    setSelected(null)
+    setConfirmReset(false)
+    setTab('boosters')
+  }
 
   useEffect(() => { save(state) }, [state])
   useEffect(() => { loadImages() }, [])
@@ -241,7 +251,18 @@ export default function App() {
       )}
 
       <footer className="foot">
-        Jeu de fans non officiel, non affilié aux ayants droit · Collection sauvegardée sur cet appareil
+        <p>Jeu de fans non officiel, non affilié aux ayants droit · Collection sauvegardée sur cet appareil</p>
+        {confirmReset
+          ? (
+            <div className="reset-confirm">
+              <p>Effacer toute ta collection, tes boosters et tes pellicules ? Tes images de l’Atelier sont conservées.</p>
+              <div className="reset-actions">
+                <button className="btn small danger" onClick={resetCollection}>Oui, tout remettre à zéro</button>
+                <button className="btn small" onClick={() => setConfirmReset(false)}>Annuler</button>
+              </div>
+            </div>
+          )
+          : <button className="link-btn" onClick={() => setConfirmReset(true)}>Réinitialiser ma collection</button>}
       </footer>
     </div>
   )
