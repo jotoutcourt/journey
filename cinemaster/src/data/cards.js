@@ -66,6 +66,9 @@ const RAW = [
   { u: 'greys', type: 'OBJET', rarity: 'peu-commune', first: 'Le', last: 'Post-it',
     quote: 'Le mariage écrit sur un post-it.', role: 'Meredith & Derek',
     period: 'Saison 5', creditLabel: 'Appartient à', credit: 'Meredith Grey', emoji: '📝' },
+  { u: 'greys', type: 'SCENE', rarity: 'holo', first: 'Les Twisted', last: 'Sisters', alias: 'twisted-sisters',
+    quote: "You're my person.", role: 'Meredith Grey & Cristina Yang',
+    period: 'Saison 1 – Saison 10', creditLabel: 'Actrices', credit: 'Ellen Pompeo & Sandra Oh', emoji: '👯‍♀️' },
 
   // ── Revenge ───────────────────────────────────────────────────────────────
   { u: 'revenge', type: 'CHAR', rarity: 'ultra', first: 'Emily', last: 'Thorne', caps: true,
