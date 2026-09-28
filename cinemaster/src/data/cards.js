@@ -24,6 +24,9 @@ export const UNIVERSES = {
   st:       { name: 'Stranger Things',         kind: 'Série', c1: '#e50914', c2: '#14213d', ink: '#e50914' },
   matrix:   { name: 'Matrix',                  kind: 'Film',  c1: '#00c93a', c2: '#0d0208', ink: '#00a32e' },
   titanic:  { name: 'Titanic',                 kind: 'Film',  c1: '#0077b6', c2: '#caf0f8', ink: '#0077b6' },
+  the100:   { name: 'The 100',                 kind: 'Série', c1: '#5f8f6b', c2: '#1c2a2e', ink: '#3f6e50' },
+  lalaland: { name: 'La La Land',              kind: 'Film',  c1: '#7b6cf6', c2: '#1f2a6b', ink: '#5b4bd6' },
+  wicked:   { name: 'Wicked',                  kind: 'Film',  c1: '#3fae5a', c2: '#c2549a', ink: '#2e8b4a' },
 }
 
 export const TYPES = {
@@ -364,6 +367,111 @@ const RAW = [
   { u: 'titanic', type: 'LIEU', rarity: 'commune', first: 'La Proue du', last: 'Titanic',
     quote: 'Je vole, Jack !', role: 'Atlantique Nord',
     period: '1997', creditLabel: 'Navire', credit: 'RMS Titanic', emoji: '🚢' },
+
+  // ── The 100 ───────────────────────────────────────────────────────────────
+  { u: 'the100', type: 'CHAR', rarity: 'ultra', first: 'Clarke', last: 'Griffin',
+    quote: 'I bear it so they don\'t have to.', role: 'Leader des 100 · Wanheda',
+    period: 'Saison 1 – Saison 7', creditLabel: 'Actrice', credit: 'Eliza Taylor', emoji: '👑' },
+  { u: 'the100', type: 'CHAR', rarity: 'secrete', first: 'Commandante', last: 'Lexa',
+    quote: 'Jus drein jus daun.', role: 'Heda des Douze Clans',
+    period: 'Saison 2 – Saison 3', creditLabel: 'Actrice', credit: 'Alycia Debnam-Carey', emoji: '🛡️' },
+  { u: 'the100', type: 'CHAR', rarity: 'holo', first: 'Octavia', last: 'Blake',
+    quote: 'I am Blodreina.', role: 'Guerrière · Blodreina',
+    period: 'Saison 1 – Saison 7', creditLabel: 'Actrice', credit: 'Marie Avgeropoulos', emoji: '🗡️' },
+  { u: 'the100', type: 'CHAR', rarity: 'rare', first: 'Bellamy', last: 'Blake',
+    quote: 'Whatever the hell we want!', role: 'Leader des 100',
+    period: 'Saison 1 – Saison 7', creditLabel: 'Acteur', credit: 'Bob Morley', emoji: '🔦' },
+  { u: 'the100', type: 'CHAR', rarity: 'rare', first: 'Raven', last: 'Reyes',
+    quote: 'May we meet again.', role: 'Mécanicienne de génie',
+    period: 'Saison 1 – Saison 7', creditLabel: 'Actrice', credit: 'Lindsey Morgan', emoji: '🔧' },
+  { u: 'the100', type: 'CHAR', rarity: 'peu-commune', first: 'John', last: 'Murphy',
+    quote: 'Le cafard qui survit à tout.', role: 'Survivant',
+    period: 'Saison 1 – Saison 7', creditLabel: 'Acteur', credit: 'Richard Harmon', emoji: '🪳' },
+  { u: 'the100', type: 'LIEU', rarity: 'peu-commune', first: 'L\'Arche', last: 'Station spatiale',
+    quote: 'Treize stations, un seul espoir.', role: 'Orbite terrestre',
+    period: 'Saison 1 – Saison 2', creditLabel: 'Habitants', credit: 'Les Skaikru', emoji: '🛰️' },
+  { u: 'the100', type: 'LIEU', rarity: 'commune', first: 'La capitale', last: 'Polis',
+    quote: 'La tour du Commandant.', role: 'Capitale des Douze Clans',
+    period: 'Saison 3 – Saison 4', creditLabel: 'Dirigée par', credit: 'Heda', emoji: '🗼' },
+  { u: 'the100', type: 'OBJET', rarity: 'holo', first: 'La', last: 'Flamme',
+    quote: 'L’esprit des Commandants.', role: 'Puce d’intelligence artificielle',
+    period: 'Saison 3 – Saison 7', creditLabel: 'Portée par', credit: 'Les Heda', emoji: '💠' },
+  { u: 'the100', type: 'OBJET', rarity: 'commune', first: 'Le bracelet', last: 'de surveillance',
+    quote: 'Signes vitaux transmis à l’Arche.', role: 'Porté par les 100',
+    period: 'Saison 1', creditLabel: 'Conçu par', credit: 'L’Arche', emoji: '⌚' },
+  { u: 'the100', type: 'SCENE', rarity: 'holo', first: 'Mount Weather', last: 'Le levier',
+    quote: 'Clarke et Bellamy tirent le levier ensemble.', role: 'Fin de la saison 2',
+    period: 'Saison 2 · Épisode 16', creditLabel: 'Épisode', credit: 'Blood Must Have Blood, Part Two', emoji: '⛰️' },
+
+  // ── La La Land ────────────────────────────────────────────────────────────
+  { u: 'lalaland', type: 'CHAR', rarity: 'ultra', first: 'Mia', last: 'Dolan',
+    quote: 'Here\'s to the ones who dream.', role: 'Actrice en devenir',
+    period: '2016', creditLabel: 'Actrice', credit: 'Emma Stone', emoji: '🎭' },
+  { u: 'lalaland', type: 'CHAR', rarity: 'ultra', first: 'Sebastian', last: 'Wilder',
+    quote: 'City of stars, are you shining just for me?', role: 'Pianiste de jazz',
+    period: '2016', creditLabel: 'Acteur', credit: 'Ryan Gosling', emoji: '🎹' },
+  { u: 'lalaland', type: 'CHAR', rarity: 'commune', first: 'Keith', last: 'The Messengers',
+    quote: 'Le jazz doit évoluer.', role: 'Leader du groupe',
+    period: '2016', creditLabel: 'Acteur', credit: 'John Legend', emoji: '🎸' },
+  { u: 'lalaland', type: 'LIEU', rarity: 'holo', first: 'Griffith', last: 'Observatory',
+    quote: 'Une valse parmi les étoiles.', role: 'Los Angeles',
+    period: '2016', creditLabel: 'Tournage', credit: 'Griffith Park', emoji: '🔭' },
+  { u: 'lalaland', type: 'LIEU', rarity: 'peu-commune', first: 'Le club', last: 'Seb’s',
+    quote: 'Le club de jazz dont rêvait Sebastian.', role: 'Los Angeles',
+    period: '2016', creditLabel: 'Propriétaire', credit: 'Sebastian Wilder', emoji: '🎷' },
+  { u: 'lalaland', type: 'OBJET', rarity: 'peu-commune', first: 'La robe', last: 'jaune de Mia',
+    quote: 'Le jaune du coucher de soleil.', role: 'Garde-robe de Mia',
+    period: '2016', creditLabel: 'Portée par', credit: 'Mia Dolan', emoji: '👗' },
+  { u: 'lalaland', type: 'SCENE', rarity: 'rare', first: 'Another Day', last: 'of Sun',
+    quote: 'Un embouteillage qui se met à danser.', role: 'Ouverture du film',
+    period: '2016', creditLabel: 'Chanson', credit: 'Another Day of Sun', emoji: '🚗' },
+  { u: 'lalaland', type: 'SCENE', rarity: 'rare', first: 'A Lovely', last: 'Night',
+    quote: 'Claquettes au coucher du soleil.', role: 'Sur les hauteurs de Los Angeles',
+    period: '2016', creditLabel: 'Chanson', credit: 'A Lovely Night', emoji: '💃' },
+  { u: 'lalaland', type: 'SCENE', rarity: 'secrete', first: 'L\'épilogue', last: 'Et si…',
+    quote: 'Ce qui aurait pu être.', role: 'Fin du film',
+    period: '2016', creditLabel: 'Réalisateur', credit: 'Damien Chazelle', emoji: '🎬' },
+
+  // ── Wicked (Wicked et Wicked : For Good) ──────────────────────────────────
+  { u: 'wicked', type: 'CHAR', rarity: 'ultra', first: 'Elphaba', last: 'Thropp',
+    quote: 'It\'s time to try defying gravity.', role: 'La Méchante Sorcière de l’Ouest',
+    period: 'Wicked 1 & 2', creditLabel: 'Actrice', credit: 'Cynthia Erivo', emoji: '🧙‍♀️' },
+  { u: 'wicked', type: 'CHAR', rarity: 'ultra', first: 'Glinda', last: 'Upland',
+    quote: 'You\'re gonna be popular!', role: 'Glinda la Bonne',
+    period: 'Wicked 1 & 2', creditLabel: 'Actrice', credit: 'Ariana Grande', emoji: '🫧' },
+  { u: 'wicked', type: 'CHAR', rarity: 'rare', first: 'Fiyero', last: 'Tigelaar',
+    quote: 'Dancing through life.', role: 'Prince des Winkies',
+    period: 'Wicked 1 & 2', creditLabel: 'Acteur', credit: 'Jonathan Bailey', emoji: '🤴' },
+  { u: 'wicked', type: 'CHAR', rarity: 'rare', first: 'Le Magicien', last: 'd’Oz',
+    quote: 'Le merveilleux Magicien.', role: 'Souverain de la Cité d’Émeraude',
+    period: 'Wicked 1 & 2', creditLabel: 'Acteur', credit: 'Jeff Goldblum', emoji: '🎈' },
+  { u: 'wicked', type: 'CHAR', rarity: 'peu-commune', first: 'Madame', last: 'Morrible',
+    quote: 'Directrice de Shiz.', role: 'Professeure de sorcellerie',
+    period: 'Wicked 1 & 2', creditLabel: 'Actrice', credit: 'Michelle Yeoh', emoji: '🌪️' },
+  { u: 'wicked', type: 'CHAR', rarity: 'commune', first: 'Nessarose', last: 'Thropp',
+    quote: 'La sœur d’Elphaba.', role: 'Élève de Shiz',
+    period: 'Wicked 1 & 2', creditLabel: 'Actrice', credit: 'Marissa Bode', emoji: '👠' },
+  { u: 'wicked', type: 'CHAR', rarity: 'commune', first: 'Docteur', last: 'Dillamond',
+    quote: 'Professeur d’histoire.', role: 'Professeur à Shiz',
+    period: 'Wicked 1 & 2', creditLabel: 'Voix', credit: 'Peter Dinklage', emoji: '🐐' },
+  { u: 'wicked', type: 'LIEU', rarity: 'holo', first: 'L\'université', last: 'de Shiz',
+    quote: 'Là où tout a commencé.', role: 'Oz',
+    period: 'Wicked (2024)', creditLabel: 'Directrice', credit: 'Madame Morrible', emoji: '🏛️' },
+  { u: 'wicked', type: 'LIEU', rarity: 'rare', first: 'La Cité', last: 'd\'Émeraude',
+    quote: 'One short day in the Emerald City!', role: 'Capitale d’Oz',
+    period: 'Wicked 1 & 2', creditLabel: 'Souverain', credit: 'Le Magicien d’Oz', emoji: '🏙️' },
+  { u: 'wicked', type: 'OBJET', rarity: 'rare', first: 'Le', last: 'Grimmerie',
+    quote: 'Le livre de sorts ancien.', role: 'Livre de magie',
+    period: 'Wicked 1 & 2', creditLabel: 'Lu par', credit: 'Elphaba', emoji: '📖' },
+  { u: 'wicked', type: 'OBJET', rarity: 'peu-commune', first: 'Le balai', last: 'd\'Elphaba',
+    quote: 'De quoi défier la gravité.', role: 'Monture de la sorcière',
+    period: 'Wicked 1 & 2', creditLabel: 'Appartient à', credit: 'Elphaba', emoji: '🧹' },
+  { u: 'wicked', type: 'SCENE', rarity: 'secrete', first: 'Defying', last: 'Gravity',
+    quote: 'Elphaba s’envole.', role: 'Fin du premier film',
+    period: 'Wicked (2024)', creditLabel: 'Chanson', credit: 'Defying Gravity', emoji: '🌙' },
+  { u: 'wicked', type: 'SCENE', rarity: 'holo', first: 'Le duo', last: 'For Good',
+    quote: 'Because I knew you…', role: 'Elphaba et Glinda',
+    period: 'Wicked : For Good (2025)', creditLabel: 'Chanson', credit: 'For Good', emoji: '🤝' },
 ]
 
 // Tri : par univers puis par rareté pour que la numérotation ait du sens,
@@ -400,6 +508,8 @@ export const migrateId = id => id.replace(/^S\d+-\d{3}-/, '')
 
 // Noms de fichier reconnus à l'import : l'identifiant complet, et pour les
 // variantes la forme courte « prenom-full » / « prenom-gold ».
+// titres qui ne suffisent pas à désigner quelqu'un (« docteur », « madame »…)
+const TITLES = new Set(['docteur', 'madame', 'commandante', 'mr', 'agent', 'maitre', 'doc', 'dark'])
 const countBy = key => RAW.reduce((m, c) => (c.variant ? m : m.set(slug(c[key]), (m.get(slug(c[key])) || 0) + 1)), new Map())
 const FIRST_COUNT = countBy('first')
 const LAST_COUNT = countBy('last')
@@ -410,8 +520,8 @@ export function fileKeys(card) {
   if (card.variant) keys.push(`${first}-${card.variant}`)
   else if (card.type === 'CHAR') {
     // prénom seul (« rachel ») ou nom seul (« heckles ») quand il n'y a pas d'ambiguïté
-    if (FIRST_COUNT.get(first) === 1 && first.length > 2 && !first.includes('-')) keys.push(first)
-    if (LAST_COUNT.get(last) === 1) keys.push(last)
+    if (FIRST_COUNT.get(first) === 1 && first.length > 2 && !first.includes('-') && !TITLES.has(first)) keys.push(first)
+    if (LAST_COUNT.get(last) === 1 && last.length > 3 && !/^(d|de|l|le|la)-/.test(last)) keys.push(last)
   }
   return keys
 }
