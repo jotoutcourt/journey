@@ -978,6 +978,12 @@ const RAW = [
 // (Rare), une Full Art (★★) et une Full Art or (Secrète Gold ★★★). Les deux
 // variantes sont générées ici à partir de la carte de base : il suffit
 // d'ajouter l'identifiant d'un personnage ou d'une scène à cette liste.
+// Personnages secondaires qui ont aussi une version Full Art (sans Gold) ;
+// leur carte de base garde sa rareté.
+const FULL_ART_ONLY = [
+  'albus-dumbledore', 'drago-malefoy',
+]
+
 const MAIN_CHARACTERS = [
   // Grey's Anatomy
   'meredith-grey', 'derek-shepherd', 'cristina-yang', 'arizona-robbins',
@@ -1025,16 +1031,20 @@ const MAIN_CHARACTERS = [
 {
   const baseId = c => c.first.concat(' ', c.last).replace(/œ/g, 'oe').replace(/æ/g, 'ae').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-  for (const id of MAIN_CHARACTERS) {
-    const base = RAW.find(c => !c.variant && baseId(c) === id)
-    if (!base) throw new Error(`Personnage principal introuvable : ${id}`)
-    base.rarity = 'rare'
-    for (const [variant, rarity] of [['full', 'ultra'], ['gold', 'secrete']]) {
-      if (!RAW.some(c => c.variant === variant && baseId(c) === id)) {
-        RAW.push({ ...base, rarity, variant })
+  const addVariants = (ids, variants, promote) => {
+    for (const id of ids) {
+      const base = RAW.find(c => !c.variant && baseId(c) === id)
+      if (!base) throw new Error(`Personnage introuvable : ${id}`)
+      if (promote) base.rarity = 'rare'
+      for (const [variant, rarity] of variants) {
+        if (!RAW.some(c => c.variant === variant && baseId(c) === id)) {
+          RAW.push({ ...base, rarity, variant })
+        }
       }
     }
   }
+  addVariants(MAIN_CHARACTERS, [['full', 'ultra'], ['gold', 'secrete']], true)
+  addVariants(FULL_ART_ONLY, [['full', 'ultra']], false)
 }
 
 // Tri : par univers puis par rareté pour que la numérotation ait du sens,
