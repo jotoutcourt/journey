@@ -104,7 +104,7 @@ export default function Card({ card, interactive = true, touch = false, classNam
           <div className="card-content">
             <header className="card-head">
               <span className="type-pill">{card.typeInfo.short}</span>
-              <span className="universe">{card.universe.name}</span>
+              <span className={`universe ${card.universe.name.length > 24 ? 'xlong' : card.universe.name.length > 16 ? 'long' : ''}`}>{card.universe.name}</span>
             </header>
 
             <Name card={card} full={full} />

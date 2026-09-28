@@ -280,6 +280,10 @@
   filter: drop-shadow(0 .3cqw .4cqw rgba(0, 0, 0, .35));
 }
 
+/* noms d'univers longs : police réduite plutôt que texte coupé */
+.universe.long  { font-size: 4.9cqw; }
+.universe.xlong { font-size: 4.1cqw; }
+
 /* ─── Nom ──────────────────────────────────────────────────────────────── */
 .card-name {
   display: flex;
