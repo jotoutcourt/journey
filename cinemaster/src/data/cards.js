@@ -657,6 +657,69 @@ const RAW = [
     period: 'Saison 1 – Saison 8', creditLabel: 'Joueuses', credit: 'Les quatre amies', emoji: '🃏' },
 ]
 
+// ─── Personnages principaux ─────────────────────────────────────────────────
+// Chaque personnage principal existe en trois cartes : sa carte de base
+// (Rare), une Full Art (★★) et une Full Art or (Secrète Gold ★★★). Les deux
+// variantes sont générées ici à partir de la carte de base : il suffit
+// d'ajouter l'identifiant d'un personnage à cette liste.
+const MAIN_CHARACTERS = [
+  // Grey's Anatomy
+  'meredith-grey', 'derek-shepherd', 'cristina-yang', 'arizona-robbins',
+  // Revenge
+  'emily-thorne', 'victoria-grayson',
+  // Harry Potter
+  'harry-potter', 'hermione-granger',
+  // Star Wars
+  'luke-skywalker', 'dark-vador',
+  // Friends (variantes déjà écrites à la main plus haut)
+  'rachel-green', 'monica-geller', 'phoebe-buffay', 'joey-tribbiani', 'chandler-bing', 'ross-geller',
+  // Breaking Bad
+  'walter-white', 'jesse-pinkman',
+  // Game of Thrones
+  'daenerys-targaryen', 'jon-snow',
+  // Le Seigneur des Anneaux
+  'gandalf-le-gris',
+  // Retour vers le futur
+  'marty-mcfly', 'doc-brown',
+  // Stranger Things
+  'jane-hopper-eleven',
+  // Matrix
+  'thomas-anderson-neo',
+  // Titanic
+  'jack-dawson', 'rose-dewitt-bukater',
+  // The 100
+  'clarke-griffin', 'bellamy-blake', 'octavia-blake', 'raven-reyes',
+  // La La Land
+  'mia-dolan', 'sebastian-wilder',
+  // Wicked
+  'elphaba-thropp', 'glinda-upland',
+  // The Summer I Turned Pretty
+  'isabel-belly-conklin', 'conrad-fisher', 'jeremiah-fisher',
+  // Bridgerton
+  'daphne-bridgerton', 'simon-basset-duc-de-hastings', 'anthony-bridgerton', 'kate-sharma',
+  // Euphoria
+  'rue-bennett', 'jules-vaughn', 'maddy-perez', 'cassie-howard',
+  // New Girl
+  'jessica-day', 'nick-miller', 'le-colocataire-schmidt', 'winston-bishop', 'cece-parekh',
+  // Desperate Housewives
+  'susan-mayer', 'lynette-scavo', 'bree-van-de-kamp', 'gabrielle-solis',
+]
+
+{
+  const baseId = c => c.first.concat(' ', c.last).normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+  for (const id of MAIN_CHARACTERS) {
+    const base = RAW.find(c => !c.variant && baseId(c) === id)
+    if (!base) throw new Error(`Personnage principal introuvable : ${id}`)
+    base.rarity = 'rare'
+    for (const [variant, rarity] of [['full', 'ultra'], ['gold', 'secrete']]) {
+      if (!RAW.some(c => c.variant === variant && baseId(c) === id)) {
+        RAW.push({ ...base, rarity, variant })
+      }
+    }
+  }
+}
+
 // Tri : par univers puis par rareté pour que la numérotation ait du sens,
 // les secrètes étant numérotées au-delà du total (ex. 58/52) comme dans le TCG.
 const RARITY_ORDER = ['commune', 'peu-commune', 'rare', 'holo', 'ultra', 'secrete']
@@ -697,15 +760,20 @@ const countBy = key => RAW.reduce((m, c) => (c.variant ? m : m.set(slug(c[key]),
 const FIRST_COUNT = countBy('first')
 const LAST_COUNT = countBy('last')
 export function fileKeys(card) {
-  const keys = [card.id]
-  if (card.alias) keys.push(card.alias)   // nom court choisi à la main
   const first = slug(card.first)
   const last = slug(card.last)
-  if (card.variant) keys.push(`${first}-${card.variant}`)
-  else if (card.type === 'CHAR') {
-    // prénom seul (« rachel ») ou nom seul (« heckles ») quand il n'y a pas d'ambiguïté
-    if (FIRST_COUNT.get(first) === 1 && first.length > 2 && !first.includes('-') && !TITLES.has(first)) keys.push(first)
-    if (LAST_COUNT.get(last) === 1 && last.length > 3 && !/^(d|de|l|le|la)-/.test(last)) keys.push(last)
+  const firstOk = FIRST_COUNT.get(first) === 1 && first.length > 2 && !first.includes('-') && !TITLES.has(first)
+  const lastOk = LAST_COUNT.get(last) === 1 && last.length > 3 && !/^(d|de|l|le|la)-/.test(last)
+  // nom court : alias choisi à la main, sinon le prénom, sinon le nom
+  const short = card.alias || (card.type === 'CHAR' ? (firstOk ? first : lastOk ? last : null) : null)
+  const keys = [card.id]
+  if (card.variant) {
+    if (short) keys.push(`${short}-${card.variant}`)
+    if (firstOk && short !== first) keys.push(`${first}-${card.variant}`)
+  } else if (card.type === 'CHAR') {
+    if (short) keys.push(short)
+    if (firstOk && short !== first) keys.push(first)
+    if (lastOk && short !== last) keys.push(last)
   }
   return keys
 }
