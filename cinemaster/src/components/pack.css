@@ -1,0 +1,426 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Booster : sachet plastique imprimé
+   bandeau à motif + logo · illustration pleine hauteur · grand titre ·
+   soudures striées · brillance du plastique
+   ═══════════════════════════════════════════════════════════════════════════ */
+.pack {
+  --px: 0; --py: 0; --o: 0;
+  --tear: 0;
+  --head: 5.5%;
+  --tooth: 2.6cqw;
+  --band: color-mix(in srgb, var(--c1) 82%, #ffffff);
+  --band-deep: color-mix(in srgb, var(--c1) 70%, var(--c2));
+  --outline: color-mix(in srgb, var(--c2) 55%, #121420);
+  --reels: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cg fill='white' fill-opacity='.42'%3E%3Cpath d='M20 10.5a9.5 9.5 0 1 0 0 19 9.5 9.5 0 0 0 0-19zm0 1.8a7.7 7.7 0 1 1 0 15.4 7.7 7.7 0 0 1 0-15.4z'/%3E%3Ccircle cx='20' cy='20' r='1.8'/%3E%3Ccircle cx='20' cy='15.2' r='1.9'/%3E%3Ccircle cx='20' cy='24.8' r='1.9'/%3E%3Ccircle cx='15.8' cy='17.6' r='1.9'/%3E%3Ccircle cx='24.2' cy='17.6' r='1.9'/%3E%3Ccircle cx='15.8' cy='22.4' r='1.9'/%3E%3Ccircle cx='24.2' cy='22.4' r='1.9'/%3E%3C/g%3E%3C/svg%3E");
+  container-type: inline-size;
+  width: 100%;
+  aspect-ratio: 58 / 100;
+  perspective: 1100px;
+  position: relative;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+  outline: none;
+}
+.pack.is-tearable { touch-action: none; cursor: grab; }
+.pack:focus-visible .pack-body { outline: 3px solid #27c3dc; outline-offset: 4px; }
+.pack.is-disabled { filter: grayscale(.7) opacity(.7); cursor: not-allowed; }
+
+.pack-tilt {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  /* rotation écrite directement par useTilt */
+  transform-style: preserve-3d;
+}
+/* Ombre portée : calque à part, dessiné une seule fois. (Un filtre posé sur
+   le sachet serait redessiné à chaque image dès qu'un reflet bouge.) */
+.pack-shadow {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  top: 10%;
+  bottom: -1%;
+  border-radius: 6cqw;
+  background: rgba(40, 50, 80, .38);
+  filter: blur(4.5cqw);
+  transform: translateY(2.5cqw);
+  pointer-events: none;
+}
+
+
+/* ─── Soudure du haut (la bande à déchirer) ───────────────────────────── */
+.pack-head {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: var(--head);
+  background: linear-gradient(180deg, var(--band), var(--band-deep));
+  -webkit-mask: conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg) 50% / var(--tooth) 100%;
+          mask: conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg) 50% / var(--tooth) 100%;
+}
+.pack-head::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: .5cqw;
+  background: repeating-linear-gradient(90deg, rgba(0, 0, 0, .35) 0 1.2cqw, transparent 1.2cqw 2cqw);
+}
+.pack-head-rest { clip-path: inset(0 0 0 calc(var(--tear) * 100%)); }
+.pack-head-torn {
+  clip-path: inset(-120% calc((1 - var(--tear)) * 100%) 0 -20%);
+  transform-origin: calc(var(--tear) * 100%) 100%;
+  transform: translateY(calc(var(--tear) * -30%)) rotate(calc(var(--tear) * -8deg));
+}
+.is-torn .pack-head-torn {
+  transition: transform .6s cubic-bezier(.45, 0, .8, .4), opacity .6s;
+  transform: translate(-30%, -500%) rotate(-38deg);
+  opacity: 0;
+}
+
+/* stries des soudures */
+.crimp {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .45), transparent 45%, rgba(0, 0, 0, .15)),
+    repeating-linear-gradient(90deg,
+      rgba(255, 255, 255, .55) 0 .3cqw, rgba(0, 0, 0, .18) .3cqw .9cqw, transparent .9cqw 1.2cqw);
+  mix-blend-mode: overlay;
+}
+.crimp-bottom { inset: auto 0 0; height: 4%; z-index: 4; }
+
+/* ─── Corps ───────────────────────────────────────────────────────────── */
+.pack-body {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: var(--head);
+  bottom: 0;
+  overflow: hidden;
+  background: var(--band-deep);
+  -webkit-mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / var(--tooth) 100%;
+          mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / var(--tooth) 100%;
+}
+
+/* Bandeaux à motif de bobines */
+.pack-band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    var(--reels) 0 0 / 8cqw 8cqw,
+    linear-gradient(180deg, var(--band) 0%, var(--band-deep) 100%);
+}
+.pack-band-top {
+  top: 0;
+  height: 16%;
+  box-shadow: 0 .6cqw 1.6cqw rgba(0, 0, 0, .25);
+}
+.pack-band-bottom {
+  bottom: 0;
+  height: 8.5%;
+  padding-bottom: 3%;
+  font: 800 3.3cqw/1 'Bricolage Grotesque', system-ui, sans-serif;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow: 0 .3cqw .8cqw rgba(0, 0, 0, .4);
+}
+
+/* Logo : pastille blanche */
+.pack-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 1.4cqw;
+  padding: 1.6cqw 4cqw 1.6cqw 2.6cqw;
+  border-radius: 99px;
+  background: linear-gradient(180deg, #ffffff, #eef1f6);
+  box-shadow: 0 .8cqw 2cqw rgba(0, 0, 0, .25), inset 0 -.4cqw 0 rgba(0, 0, 0, .06);
+  font: 400 7.6cqw/1 'Lilita One', 'Bricolage Grotesque', system-ui, sans-serif;
+  color: #3d4454;
+  white-space: nowrap;
+}
+.pack-logo b { font-weight: 400; color: var(--outline); }
+.pack-logo .emblem { width: 7cqw; height: 7cqw; color: var(--outline); }
+.pack-code {
+  position: absolute;
+  top: 2.4cqw;
+  right: 3cqw;
+  padding: .9cqw 2.2cqw;
+  border-radius: 1.4cqw;
+  background: #1d1f29;
+  color: #fff;
+  font: 800 3.6cqw/1 'Bricolage Grotesque', system-ui, sans-serif;
+  box-shadow: inset 0 0 0 .35cqw rgba(255, 255, 255, .5);
+}
+
+/* Filet lumineux sous le bandeau */
+.pack-stripe {
+  position: absolute;
+  z-index: 3;
+  left: 0;
+  right: 0;
+  top: 16%;
+  height: 1.5cqw;
+  background: linear-gradient(180deg, #ffffff, color-mix(in srgb, var(--c1) 30%, #bff4ff));
+  box-shadow: 0 0 3cqw rgba(255, 255, 255, .9), 0 .6cqw 0 color-mix(in srgb, var(--c1) 60%, #0aa3d6);
+}
+
+/* ─── Booster complet (image du joueur, de haut en bas) ───────────────
+   L'image est recadrée au format du sachet à l'import : la même taille
+   absolue (en cqw) sur la soudure et le corps la raccorde sans couture. */
+.pack.is-full .pack-head {
+  background: var(--full) 50% 0 / 100cqw calc(100cqw / .58) no-repeat;
+}
+.pack.is-full .pack-body {
+  background: var(--full) 50% 100% / 100cqw calc(100cqw / .58) no-repeat;
+}
+
+/* ─── Illustration ────────────────────────────────────────────────────── */
+.pack-art {
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  right: 0;
+  top: 15%;
+  bottom: 7%;
+  overflow: hidden;
+}
+.pack-art img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 30%;
+}
+.pack-art > span { position: absolute; inset: 0; pointer-events: none; }
+
+.art-sky {
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--c1) 30%, #d3efff) 0%,
+    color-mix(in srgb, var(--c1) 45%, #fff3de) 38%,
+    color-mix(in srgb, var(--c1) 85%, #ffd9b0) 62%,
+    color-mix(in srgb, var(--c2) 65%, #1a0f1c) 100%);
+}
+.pack-art .art-sun {
+  inset: auto;
+  left: 50%;
+  top: 36%;
+  width: 78%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    rgba(255, 255, 255, 1) 0%, rgba(255, 250, 235, .95) 30%,
+    color-mix(in srgb, var(--c1) 30%, rgba(255, 244, 220, .6)) 52%, transparent 72%);
+}
+.pack-art .art-rays {
+  background: repeating-conic-gradient(from 0deg at 50% 36%,
+    rgba(255, 255, 255, .22) 0 5deg, transparent 5deg 15deg);
+  -webkit-mask: radial-gradient(circle at 50% 36%, #000 10%, transparent 70%);
+          mask: radial-gradient(circle at 50% 36%, #000 10%, transparent 70%);
+}
+.pack-art .art-sil {
+  inset: auto;
+  left: 50%;
+  bottom: 10%;
+  transform: translateX(-50%);
+  font-size: 66cqw;
+  line-height: 1;
+  color: transparent;
+  text-shadow: 0 0 0 color-mix(in srgb, var(--c2) 40%, #1a1022);
+  filter: drop-shadow(0 0 3cqw rgba(255, 255, 255, .35));
+}
+.pack-art .art-ground {
+  background: linear-gradient(180deg, transparent 58%, color-mix(in srgb, var(--c2) 55%, rgba(10, 5, 15, .75)) 100%);
+}
+.pack-art .art-sparkles {
+  background:
+    radial-gradient(circle at 18% 22%, #fff 0 .7cqw, transparent 1.4cqw),
+    radial-gradient(circle at 80% 16%, #fff 0 .5cqw, transparent 1.2cqw),
+    radial-gradient(circle at 72% 48%, rgba(255, 255, 255, .9) 0 .4cqw, transparent 1cqw),
+    radial-gradient(circle at 26% 56%, rgba(255, 255, 255, .8) 0 .4cqw, transparent 1cqw),
+    radial-gradient(circle at 88% 70%, rgba(255, 255, 255, .7) 0 .6cqw, transparent 1.3cqw);
+}
+/* rayons de lumière en diagonale (aussi sur les images importées) */
+.pack-art .art-leaks {
+  background:
+    linear-gradient(118deg,
+      transparent 18%, rgba(255, 255, 255, .32) 21%, transparent 27%,
+      transparent 56%, rgba(255, 255, 255, .18) 59%, transparent 64%);
+  mix-blend-mode: screen;
+}
+
+/* ─── Titre ───────────────────────────────────────────────────────────── */
+.pack-titles {
+  position: absolute;
+  z-index: 3;
+  left: 4%;
+  right: 4%;
+  bottom: 9.5%;
+  display: grid;
+  justify-items: center;
+  gap: .8cqw;
+  text-align: center;
+}
+.pack-kicker {
+  font: 800 3.8cqw/1 'Bricolage Grotesque', system-ui, sans-serif;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: #fff;
+  paint-order: stroke fill;
+  -webkit-text-stroke: 1cqw #1b1d2a;
+}
+.pack-title {
+  position: relative;
+  font: 400 14.5cqw/.88 'Lilita One', 'Bricolage Grotesque', system-ui, sans-serif;
+  text-transform: uppercase;
+  text-wrap: balance;
+  /* couche du dessous : contour épais + ombre */
+  color: #1b1d2a;
+  -webkit-text-stroke: 2.6cqw #1b1d2a;
+  text-shadow: 0 1.4cqw 2cqw rgba(0, 0, 0, .45);
+}
+/* couche du dessus : lettres en dégradé */
+.pack-title::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  -webkit-text-stroke: 0;
+  text-shadow: none;
+  color: transparent;
+  background: linear-gradient(180deg,
+    #ffffff 0%, #ffffff 35%,
+    color-mix(in srgb, var(--c1) 45%, #ffffff) 60%,
+    color-mix(in srgb, var(--c1) 90%, #ffffff) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+/* ─── Matière du plastique ────────────────────────────────────────────── */
+.pack-pillow,
+.pack-gloss,
+.pack-holo,
+.pack-glare {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+/* sachet bombé : bords plus sombres */
+.pack-pillow {
+  background:
+    linear-gradient(90deg,
+      rgba(0, 0, 0, .38) 0%, rgba(0, 0, 0, .06) 5%, transparent 12%,
+      transparent 88%, rgba(0, 0, 0, .06) 95%, rgba(0, 0, 0, .42) 100%);
+}
+/* Calques mobiles : feuilles 2× plus grandes déplacées par transform */
+.pack-gloss,
+.pack-holo,
+.pack-glare { overflow: hidden; }
+.pack .sheet {
+  position: absolute;
+  inset: -50%;
+}
+.pack.is-active .sheet { will-change: transform; }
+.pack.is-active .pack-holo,
+.pack.is-active .pack-glare { will-change: opacity; }
+.pack.is-active .pack-tilt { will-change: transform; }
+
+/* reflets verticaux du film plastique, qui glissent quand on incline */
+.pack-gloss { mix-blend-mode: soft-light; opacity: .9; }
+.pack-gloss .sheet {
+  --kx: -24%;
+  --ky: 0%;
+  background: linear-gradient(90deg,
+    transparent 27%, rgba(255, 255, 255, .5) 29%, rgba(255, 255, 255, .12) 30.5%, transparent 32.5%,
+    transparent 58%, rgba(255, 255, 255, .28) 61%, transparent 64%);
+}
+/* bande holographique discrète */
+.pack-holo { mix-blend-mode: color-dodge; opacity: calc(var(--o) * .22); }
+.pack-holo .sheet {
+  --kx: 40%;
+  --ky: 0%;
+  background: repeating-linear-gradient(110deg,
+    hsl(2 100% 73%) 0%, hsl(53 100% 69%) 2%, hsl(93 100% 69%) 4%,
+    hsl(176 100% 76%) 6%, hsl(228 100% 74%) 8%, hsl(283 100% 73%) 10%, hsl(2 100% 73%) 12%);
+  -webkit-mask: linear-gradient(100deg, transparent 35%, #000 50%, transparent 65%);
+          mask: linear-gradient(100deg, transparent 35%, #000 50%, transparent 65%);
+}
+/* reflet de lumière qui suit le pointeur */
+.pack-glare { mix-blend-mode: overlay; opacity: calc(.2 + var(--o) * .6); }
+.pack-glare .sheet {
+  --kx: 50%;
+  --ky: 50%;
+  background: radial-gradient(circle at 50% 50%,
+    rgba(255, 255, 255, .6) 0%, rgba(255, 255, 255, .12) 18%, rgba(0, 0, 0, .12) 50%);
+}
+
+/* ─── Lumière qui jaillit du sachet ouvert ────────────────────────────── */
+.pack-light {
+  position: absolute;
+  left: -40%;
+  right: -40%;
+  bottom: calc(100% - var(--head) - 1%);
+  height: 130%;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    radial-gradient(ellipse 30% 12% at 50% 100%, rgba(255, 255, 255, 1), transparent 70%),
+    conic-gradient(from -22deg at 50% 100%,
+      transparent 0deg, rgba(255, 250, 225, .5) 12deg, rgba(255, 255, 255, .8) 22deg,
+      rgba(255, 250, 225, .5) 32deg, transparent 44deg);
+  -webkit-mask: linear-gradient(to top, #000 10%, transparent 85%);
+          mask: linear-gradient(to top, #000 10%, transparent 85%);
+  filter: blur(2px);
+}
+.is-torn .pack-light { animation: light-burst .6s ease-out forwards; }
+.pack-opened .pack-light { opacity: 1; animation: light-hold 1.8s ease-out forwards; }
+.pack-opened .pack-head { display: none; }
+@keyframes light-burst { from { opacity: 0; transform: scaleX(.3); } to { opacity: 1; transform: scaleX(1); } }
+@keyframes light-hold {
+  0%   { opacity: 1; }
+  60%  { opacity: .9; }
+  100% { opacity: 0; }
+}
+
+/* Indice : une lueur court le long des perforations */
+.tear-hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: var(--head);
+  height: 0;
+  pointer-events: none;
+  z-index: 6;
+}
+.tear-hint span {
+  position: absolute;
+  top: -1.6cqw;
+  width: 3.2cqw;
+  height: 3.2cqw;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 2cqw 1cqw rgba(255, 255, 255, .95), -6cqw 0 5cqw rgba(160, 235, 255, .7);
+  animation: seek 2.4s cubic-bezier(.6, 0, .4, 1) infinite;
+}
+@keyframes seek {
+  0%   { left: 2%;  opacity: 0; }
+  12%  { opacity: 1; }
+  78%  { left: 94%; opacity: 1; }
+  100% { left: 96%; opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pack-tilt { transform: none; }
+}
