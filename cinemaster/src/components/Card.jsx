@@ -90,6 +90,12 @@ export default function Card({ card, interactive = true, touch = false, classNam
     ...style,
   }
 
+  // Couples cultes : pluie de cœurs holographiques (sur l'illustration pour
+  // les Holo, sur toute la carte pour les Full Art)
+  const hearts = card.type === 'COUPLE' && (
+    <div className="hearts" data-o><i className="sheet" /><i className="sheet h2" /></div>
+  )
+
   const handlers = interactive ? {
     onPointerMove: tiltMove,
     onPointerLeave: tiltLeave,
@@ -112,6 +118,7 @@ export default function Card({ card, interactive = true, touch = false, classNam
           <div className="card-art">
             <Art card={card} src={src} />
             <div className="foil-art" data-o><i className="sheet" /></div>
+            {!full && hearts}
           </div>
 
           <div className="card-content">
@@ -147,6 +154,7 @@ export default function Card({ card, interactive = true, touch = false, classNam
 
           <div className="foil-over" data-o><i className="sheet" /></div>
           <div className="glitter" data-o><i className="sheet" /><i className="sheet s2" /></div>
+          {full && hearts}
           <div className="glare" data-o><i className="sheet" /></div>
         </div>
       </div>
