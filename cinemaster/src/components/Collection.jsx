@@ -147,7 +147,7 @@ function SeriesView({ u, owned, onSelect, onBack }) {
             </div>
           ) : (
             <div key={c.id} className="grid-item">
-              <div className="card-slot" style={{ '--c1': c.universe.c1, '--c2': c.universe.c2 }}>
+              <div className={`card-slot slot-${c.type === 'COUPLE' ? 'couple' : c.rarity}`} style={{ '--c1': c.universe.c1, '--c2': c.universe.c2 }}>
                 <span className="slot-num">{String(c.number).padStart(3, '0')}</span>
                 <span className="slot-q">?</span>
                 <span className="slot-meta">{c.typeInfo.short}</span>

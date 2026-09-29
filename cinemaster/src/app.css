@@ -1390,3 +1390,26 @@ img {
 }
 .imdb-poster img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .suggest-title a { color: inherit; text-decoration: none; }
+
+/* Emplacements vides : la couleur annonce la carte qui manque */
+.card-slot.slot-secrete {
+  background: linear-gradient(135deg, #fff1b8 0%, #f3cf62 30%, #fff6d2 50%, #e0b13c 72%, #fbe39a 100%);
+  box-shadow: inset 0 0 0 1.5px rgba(184, 134, 11, .45);
+  color: #9a6d08;
+}
+.card-slot.slot-secrete .slot-q { color: rgba(255, 255, 255, .85); }
+.card-slot.slot-ultra {
+  background:
+    linear-gradient(125deg, rgba(255, 255, 255, .55), rgba(255, 255, 255, 0) 45%, rgba(255, 255, 255, .5) 70%, rgba(255, 255, 255, 0)),
+    linear-gradient(135deg, #ffd0e6 0%, #fff0b8 22%, #c9f5dc 42%, #c3ecff 62%, #dccbff 82%, #ffd0e6 100%);
+  box-shadow: inset 0 0 0 1.5px rgba(170, 150, 230, .4);
+  color: #8a7bb8;
+}
+.card-slot.slot-ultra .slot-q { color: rgba(255, 255, 255, .9); }
+.card-slot.slot-couple {
+  background: linear-gradient(160deg, #ffe0ee 0%, #ffc2dc 55%, #ffd8e8 100%);
+  box-shadow: inset 0 0 0 1.5px rgba(255, 105, 160, .4);
+  color: #d0558a;
+}
+.card-slot.slot-couple .slot-q { color: #fff; }
+.card-slot.slot-couple .slot-q::after { content: ' ♥'; font-size: .5em; vertical-align: middle; color: #ff6fa5; }
