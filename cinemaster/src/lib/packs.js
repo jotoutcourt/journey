@@ -1,7 +1,7 @@
 import { CARDS, UNIVERSES } from '../data/cards.js'
 
-// Un booster à thème par univers : chaque booster contient au moins une
-// carte de sa série (voir openBooster). La carte de couverture sert
+// Un booster à thème par univers : ses 5 cartes viennent toutes de
+// sa série (voir openBooster). La carte de couverture sert
 // d'illustration tant qu'aucune image de booster n'a été ajoutée ; par
 // défaut, le premier personnage principal de la série.
 const COVER_OVERRIDES = {

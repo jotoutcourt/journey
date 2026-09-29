@@ -20,7 +20,7 @@ export default function RarityGuide() {
     <section className="guide">
       <p className="guide-intro">
         Chaque booster contient <strong>5 cartes</strong> : 3 communes (ou peu communes), 1 peu commune
-        (ou rare) et 1 emplacement rare garanti. Tu reçois un booster toutes
+        (ou rare) et 1 emplacement rare garanti, toutes de la série du booster choisi. Tu reçois un booster toutes
         les {REGEN_MS / 3600000} h (max {MAX_BOOSTERS}), ou tu peux en acheter un
         avec {BOOSTER_DUST_COST} pellicules obtenues en recyclant tes doublons.
         Passe la souris (ou le doigt) sur une carte pour faire bouger les reflets.
