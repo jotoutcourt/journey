@@ -1,4 +1,5 @@
 import { CARDS } from '../data/cards.js'
+import { FEATURED_RARE_SLOT } from './featured.js'
 
 // Un booster = 5 cartes :
 //   3 × emplacement « commun »       (commune 80 % · peu commune 20 %)
@@ -29,13 +30,14 @@ function pickWeighted(weights, rand) {
 // - `theme` (clé d'univers) : booster à thème, les 5 cartes viennent de
 //   cette série uniquement.
 // - sinon `universes` : univers du joueur ; toutes les cartes en viennent.
-// Mêmes taux de rareté dans tous les cas. Si une rareté tirée n'existe pas
+// - `featured` : booster vedette du week-end, meilleur emplacement rare.
+// Sinon, mêmes taux de rareté dans tous les cas. Si une rareté tirée n'existe pas
 // dans les cartes possibles, on prend la rareté voisine la plus proche en
 // dessous (puis au-dessus).
 const ORDER = ['commune', 'peu-commune', 'rare', 'holo', 'ultra', 'secrete']
 const groupByRarity = cards => cards.reduce((acc, c) => ((acc[c.rarity] ||= []).push(c), acc), {})
 
-export function openBooster({ theme, universes, rand = Math.random } = {}) {
+export function openBooster({ theme, universes, featured = false, rand = Math.random } = {}) {
   const pulled = new Set()
   const allowed = theme ? new Set([theme]) : universes?.length ? new Set(universes) : null
   const pool = allowed ? groupByRarity(CARDS.filter(c => allowed.has(c.u))) : POOL
@@ -60,5 +62,6 @@ export function openBooster({ theme, universes, rand = Math.random } = {}) {
     return card
   }
 
-  return SLOTS.map(weights => draw(pool, pickWeighted(weights, rand)))
+  const slots = featured ? [...SLOTS.slice(0, -1), FEATURED_RARE_SLOT] : SLOTS
+  return slots.map(weights => draw(pool, pickWeighted(weights, rand)))
 }

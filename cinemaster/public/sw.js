@@ -3,7 +3,7 @@
 // - fichiers de l'appli (/assets, noms uniques à chaque version) : cache d'abord ;
 // - polices Google et images (dont celles des cartes en ligne) : servies du
 //   cache, mises à jour en arrière-plan.
-const VERSION = 'popcard-v2'
+const VERSION = 'popcard-v3'
 const SHELL = ['/', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png', '/favicon.svg']
 
 self.addEventListener('install', event => {
@@ -61,4 +61,29 @@ self.addEventListener('fetch', event => {
       }),
     )
   }
+})
+
+// Notifications (« Tes boosters sont prêts ! »), envoyées par Supabase
+self.addEventListener('push', event => {
+  let msg = {}
+  try { msg = event.data ? event.data.json() : {} } catch { msg = { body: event.data?.text() } }
+  event.waitUntil(self.registration.showNotification(msg.title || 'PopCard', {
+    body: msg.body || '',
+    tag: msg.tag || 'popcard',
+    icon: '/icons/icon-192.png',
+    badge: '/icons/icon-192.png',
+    data: { url: msg.url || '/' },
+  }))
+})
+
+// Toucher la notification : ramène l'appli au premier plan (ou l'ouvre)
+self.addEventListener('notificationclick', event => {
+  event.notification.close()
+  const url = event.notification.data?.url || '/'
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+      const open = list.find(c => new URL(c.url).origin === self.location.origin)
+      return open ? open.focus() : self.clients.openWindow(url)
+    }),
+  )
 })

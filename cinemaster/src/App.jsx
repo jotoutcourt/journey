@@ -14,6 +14,11 @@ import { openBooster } from './lib/booster.js'
 import { claim, refreshMissions, track, withToday } from './lib/missions.js'
 import { recordPull } from './lib/stats.js'
 import Missions from './components/Missions.jsx'
+import Streak from './components/Streak.jsx'
+import Featured from './components/Featured.jsx'
+import { claimStreak } from './lib/streak.js'
+import { featuredFor } from './lib/featured.js'
+import { updatePushDue } from './lib/push.js'
 import Suggestions, { SuggestionsTeaser } from './components/Suggestions.jsx'
 import Profile from './components/Profile.jsx'
 import Account, { RecoveryPrompt, SyncConflict } from './components/Account.jsx'
@@ -103,6 +108,14 @@ export default function App() {
   const need = toChoose(state)
   const chooseUniverses = list => setState(s => refreshMissions({ ...s, universes: [...(s.universes || []), ...list] }))
 
+  // booster vedette du week-end (null en semaine)
+  const featured = featuredFor(state.universes, now)
+  const featuredU = featured?.active ? featured.u : null
+
+  // notification quand la réserve sera pleine
+  const fullAt = state.boosters >= MAX_BOOSTERS ? null : state.regenAt + (MAX_BOOSTERS - state.boosters) * REGEN_MS
+  useEffect(() => { updatePushDue(fullAt) }, [fullAt])
+
   const canOpen = state.boosters > 0 || state.dust >= BOOSTER_DUST_COST
   const nextIn = state.boosters < MAX_BOOSTERS ? state.regenAt + REGEN_MS - now : 0
 
@@ -114,7 +127,7 @@ export default function App() {
   const open = useCallback(cover => {
     if (!canOpen || opening.current || !cover) return
     opening.current = true
-    const cards = openBooster({ theme: cover.u, universes: state.universes })
+    const cards = openBooster({ theme: cover.u, universes: state.universes, featured: cover.u === featuredU })
     const newIds = new Set(cards.filter(c => !state.owned[c.id]).map(c => c.id))
     setState(s => {
       const useFree = s.boosters > 0
@@ -133,7 +146,7 @@ export default function App() {
       return recordPull(track(next, { type: 'open', cards, newIds }), cards, newIds)
     })
     setPull({ cards, newIds, cover, ownedBefore: state.owned, key: Date.now() })
-  }, [canOpen, state.owned, state.universes])
+  }, [canOpen, state.owned, state.universes, featuredU])
 
   const recycle = id => setState(s => {
     const n = s.owned[id] || 0
@@ -215,6 +228,7 @@ export default function App() {
           onChange={setDetail}
           onOpen={() => open(detail)}
           disabled={!canOpen}
+          featuredU={featuredU}
         />
         <p className="detail-note">
           {state.boosters > 0
@@ -255,6 +269,10 @@ export default function App() {
           </div>
           <BoosterMeter boosters={state.boosters} nextIn={nextIn} />
         </div>
+
+        <Streak state={state} now={now} onClaim={() => setState(s => claimStreak(s))} />
+
+        <Featured featured={featured} now={now} onOpen={() => setDetail(packs.find(p => p.u === featured.u))} />
 
         <div className="tiles">
           <button className="panel tile" onClick={() => goTab('collection')}>
@@ -306,6 +324,7 @@ export default function App() {
         onReset={resetCollection}
         confirmReset={confirmReset}
         setConfirmReset={setConfirmReset}
+        fullAt={fullAt}
         account={<Account sync={sync} owned={state.owned} changeOwned={changeOwned} />}
       />
     )

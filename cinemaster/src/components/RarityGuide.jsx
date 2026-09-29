@@ -23,6 +23,7 @@ export default function RarityGuide() {
         (ou rare) et 1 emplacement rare garanti, toutes de la série du booster choisi. Tu reçois un booster toutes
         les {REGEN_MS / 3600000} h (max {MAX_BOOSTERS}), ou tu peux en acheter un
         avec {BOOSTER_DUST_COST} pellicules obtenues en recyclant tes doublons.
+        Le week-end, un de tes univers devient <strong>booster vedette</strong> : son emplacement rare passe à 40 % Rare · 40 % Holo · 15 % Full Art · 5 % Gold.
         Passe la souris (ou le doigt) sur une carte pour faire bouger les reflets.
       </p>
       <div className="guide-grid">

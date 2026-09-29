@@ -33,7 +33,7 @@ function Art({ card }) {
 
 // Sachet de booster. Avec `tearable`, on le déchire en glissant
 // le doigt le long de la bande pointillée (ou d'un simple toucher).
-function Pack({ cover, tearable = false, onTorn, className = '', onClick, disabled }) {
+function Pack({ cover, tearable = false, onTorn, className = '', onClick, disabled, featured = false }) {
   const { attach, move: tiltMove, leave: tiltLeave, up: tiltUp } = useTilt({ maxTilt: 12, scale: 0.025, touch: tearable })
   // Booster complet fourni par le joueur : son image remplace tout le visuel.
   const fullImg = useCardImage(packFullKey(cover.u))
@@ -162,6 +162,8 @@ function Pack({ cover, tearable = false, onTorn, className = '', onClick, disabl
           <div className="pack-holo" data-o><i className="sheet" /></div>
           <div className="pack-glare" data-o><i className="sheet" /></div>
         </div>
+
+        {featured && <span className="pack-featured" aria-label="Booster vedette">★ Vedette</span>}
 
         {tearable && !torn && !started && (
           <div className="tear-hint" aria-hidden="true"><span /></div>

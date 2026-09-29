@@ -108,20 +108,25 @@ export function track(state, event) {
   return { ...s, missions: { ...s.missions, progress } }
 }
 
-// Récompense d'une mission réussie. Un booster offert alors que la réserve
-// est pleine est converti en pellicules (de quoi en ouvrir un).
+// Récompense d'une mission réussie.
 export function claim(state, id) {
   const s = withToday(state)
   const m = s.missions.list.find(x => x.id === id)
   if (!m || s.missions.claimed[id] || (s.missions.progress[id] || 0) < m.goal) return state
   const claimed = { ...s.missions.claimed, [id]: true }
-  let { dust, boosters } = s
-  if (m.reward.dust) dust += m.reward.dust
-  if (m.reward.booster) {
+  return { ...giveReward(s, m.reward), missions: { ...s.missions, claimed } }
+}
+
+// Donne une récompense { dust, booster }. Un booster offert alors que la
+// réserve est pleine est converti en pellicules (de quoi en ouvrir un).
+export function giveReward(state, reward) {
+  let { dust, boosters } = state
+  if (reward.dust) dust += reward.dust
+  for (let i = 0; i < (reward.booster || 0); i++) {
     if (boosters < MAX_BOOSTERS) boosters += 1
     else dust += BOOSTER_DUST_COST
   }
-  return { ...s, dust, boosters, missions: { ...s.missions, claimed } }
+  return { ...state, dust, boosters }
 }
 
-export const rewardLabel = r => (r.booster ? '1 booster' : `${r.dust} pellicules`)
+export const rewardLabel = r => (r.booster ? `${r.booster} booster${r.booster > 1 ? 's' : ''}` : `${r.dust} pellicules`)
