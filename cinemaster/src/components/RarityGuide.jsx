@@ -24,6 +24,7 @@ export default function RarityGuide() {
         les {REGEN_MS / 3600000} h (max {MAX_BOOSTERS}), ou tu peux en acheter un
         avec {BOOSTER_DUST_COST} pellicules obtenues en recyclant tes doublons.
         Le week-end, un de tes univers devient <strong>booster vedette</strong> : son emplacement rare passe à 40 % Rare · 40 % Holo · 15 % Full Art · 5 % Gold.
+        Les boosters <strong>Grey’s Anatomy</strong>, riches en Full Art, en donnent deux fois plus : 20 % dans l’emplacement rare (30 % en vedette).
         Passe la souris (ou le doigt) sur une carte pour faire bouger les reflets.
       </p>
       <div className="guide-grid">

@@ -15,6 +15,15 @@ export const SLOTS = [
 
 export const BOOSTER_SIZE = SLOTS.length
 
+// Univers riches en Full Art : emplacement rare plus généreux pour qu'ils
+// restent possibles à compléter (booster normal / vedette du week-end).
+export const RARE_SLOT_BY_UNIVERSE = {
+  greys: { rare: 55, holo: 22, ultra: 20, secrete: 3 },
+}
+const FEATURED_BY_UNIVERSE = {
+  greys: { rare: 35, holo: 30, ultra: 30, secrete: 5 },
+}
+
 const POOL = CARDS.reduce((acc, c) => ((acc[c.rarity] ||= []).push(c), acc), {})
 
 function pickWeighted(weights, rand) {
@@ -62,6 +71,9 @@ export function openBooster({ theme, universes, featured = false, rand = Math.ra
     return card
   }
 
-  const slots = featured ? [...SLOTS.slice(0, -1), FEATURED_RARE_SLOT] : SLOTS
+  const rareSlot = featured
+    ? FEATURED_BY_UNIVERSE[theme] || FEATURED_RARE_SLOT
+    : RARE_SLOT_BY_UNIVERSE[theme] || SLOTS.at(-1)
+  const slots = [...SLOTS.slice(0, -1), rareSlot]
   return slots.map(weights => draw(pool, pickWeighted(weights, rand)))
 }
