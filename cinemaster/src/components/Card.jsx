@@ -158,7 +158,6 @@ export default function Card({ card, interactive = true, touch = false, classNam
           <div className="glare" data-o><i className="sheet" /></div>
         </div>
       </div>
-      <div className="card-shadow" data-o />
     </div>
   )
 }

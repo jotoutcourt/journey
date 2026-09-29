@@ -34,17 +34,6 @@
   transform-style: preserve-3d;
   box-shadow: 0 1.5cqw 4cqw rgba(0, 0, 0, .4);
 }
-/* ombre portée plus large quand on manipule la carte : on n'anime que son opacité */
-.card-shadow {
-  content: '';
-  position: absolute;
-  inset: 6% 6% -2%;
-  z-index: -1;
-  border-radius: var(--radius);
-  box-shadow: 0 6cqw 12cqw rgba(0, 0, 0, .45);
-  opacity: var(--o);
-  pointer-events: none;
-}
 .card.is-active { z-index: 2; }
 .card.is-active .card-tilt { will-change: transform; }
 
@@ -483,8 +472,7 @@
 .card.is-active .foil-art,
 .card.is-active .foil-over,
 .card.is-active .glitter,
-.card.is-active .glare,
-.card.is-active .card-shadow { will-change: opacity; }
+.card.is-active .glare { will-change: opacity; }
 
 /* Reflet de lumière : une tache lumineuse qui suit le pointeur */
 .glare {
@@ -650,7 +638,6 @@
 .card.is-capture .sheet {
   transform: translate3d(calc(var(--kx) * -.28), calc(var(--ky) * -.22), 0);
 }
-.card.is-capture .card-shadow { display: none; }
 
 /* ♥ Couples cultes : holographique rose et pluie de cœurs qui glisse */
 .card.type-couple {
