@@ -25,8 +25,9 @@ const listeners = new Set()
 const emit = () => listeners.forEach(fn => fn())
 const subscribe = fn => { listeners.add(fn); return () => listeners.delete(fn) }
 
-let snapshot = { ready: !supabase, session, profile }
-const refresh = () => { snapshot = { ready: true, session, profile }; emit() }
+let recovery = false           // arrivé par le lien « mot de passe oublié »
+let snapshot = { ready: !supabase, session, profile, recovery }
+const refresh = () => { snapshot = { ready: true, session, profile, recovery }; emit() }
 
 async function loadProfile() {
   if (!session) { profile = undefined; return refresh() }
@@ -37,7 +38,8 @@ async function loadProfile() {
 
 if (supabase) {
   supabase.auth.getSession().then(({ data }) => { session = data.session; loadProfile() })
-  supabase.auth.onAuthStateChange((_event, s) => {
+  supabase.auth.onAuthStateChange((event, s) => {
+    if (event === 'PASSWORD_RECOVERY') recovery = true
     const changed = s?.user?.id !== session?.user?.id
     session = s
     if (changed) loadProfile()
@@ -61,6 +63,35 @@ export const account = {
   async verifyCode(email, token) {
     const { error } = await supabase.auth.verifyOtp({ email, token, type: 'email' })
     if (error) throw error
+  },
+  // Connexion par e-mail + mot de passe : se fait entièrement dans l'appli
+  // (indispensable pour l'appli installée sur iPhone, où les liens reçus
+  // par e-mail s'ouvrent dans Safari et non dans l'appli).
+  async signIn(email, password) {
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) throw error
+  },
+  // Création de compte ; renvoie true si l'adresse doit d'abord être confirmée
+  async signUp(email, password) {
+    const { data, error } = await supabase.auth.signUp({
+      email, password, options: { emailRedirectTo: window.location.origin },
+    })
+    if (error) throw error
+    return !data.session
+  },
+  async resetPassword(email) {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin })
+    if (error) throw error
+  },
+  async setPassword(password) {
+    const { error } = await supabase.auth.updateUser({ password })
+    if (error) throw error
+    recovery = false
+    refresh()
+  },
+  dismissRecovery() {
+    recovery = false
+    refresh()
   },
   async setPseudo(pseudo) {
     const { error } = await supabase.from('profiles').upsert({ id: session.user.id, pseudo })

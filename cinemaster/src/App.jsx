@@ -15,7 +15,7 @@ import { claim, refreshMissions, track, withToday } from './lib/missions.js'
 import { recordPull } from './lib/stats.js'
 import Missions from './components/Missions.jsx'
 import Profile from './components/Profile.jsx'
-import Account, { SyncConflict } from './components/Account.jsx'
+import Account, { RecoveryPrompt, SyncConflict } from './components/Account.jsx'
 import { useCloudSync } from './lib/sync.js'
 import { connectOnline, connectShared, loadImages } from './lib/images.js'
 import AdminGate from './components/AdminGate.jsx'
@@ -370,6 +370,7 @@ export default function App() {
       )}
 
       <SyncConflict conflict={sync.conflict} resolve={sync.resolve} local={state} />
+      <RecoveryPrompt />
 
       {need > 0 && !pull && !sync.conflict && (
         <UniversePicker key={(state.universes || []).join()} state={state} need={need} onConfirm={chooseUniverses} />

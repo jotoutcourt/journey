@@ -12,51 +12,118 @@ const cardName = id => {
 function fr(e) {
   const m = e?.message || ''
   if (/fetch|network|load failed/i.test(m)) return 'Connexion impossible. Vérifie ta connexion internet.'
+  if (/invalid login credentials/i.test(m)) return 'E-mail ou mot de passe incorrect.'
+  if (/email not confirmed/i.test(m)) return 'Confirme d’abord ton adresse : clique sur le lien reçu par e-mail, puis reviens te connecter.'
+  if (/already registered|already exists/i.test(m)) return 'Un compte existe déjà avec cet e-mail : connecte-toi, ou utilise « Mot de passe oublié ».'
+  if (/password.*(at least|characters)|weak/i.test(m)) return 'Mot de passe trop court : 6 caractères minimum.'
+  if (/same.*password|different from the old/i.test(m)) return 'Choisis un mot de passe différent de l’ancien.'
   if (/expired|invalid.*(otp|token)|token.*invalid/i.test(m)) return 'Code incorrect ou expiré. Redemande un code.'
   if (/rate limit|too many|security purposes/i.test(m)) return 'Trop de demandes : réessaie dans quelques minutes.'
   if (/invalid.*email|email.*invalid/i.test(m)) return 'Adresse e-mail invalide.'
   return m || 'Une erreur est survenue.'
 }
 
-// Connexion par code reçu par e-mail
-function SignIn() {
-  const [email, setEmail] = useState('')
-  const [code, setCode] = useState('')
-  const [step, setStep] = useState('email')   // email | code
+function useAction() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
-
+  const [info, setInfo] = useState('')
   const run = async fn => {
-    setBusy(true); setError('')
-    try { await fn() } catch (e) { setError(fr(e)) }
+    setBusy(true); setError(''); setInfo('')
+    try { const msg = await fn(); if (typeof msg === 'string') setInfo(msg) } catch (e) { setError(fr(e)) }
     setBusy(false)
   }
+  return { busy, error, info, run, setError, setInfo }
+}
+
+// Connexion : e-mail + mot de passe (marche aussi dans l'appli installée),
+// création de compte, mot de passe oublié, ou lien de connexion par e-mail.
+function SignIn() {
+  const [mode, setMode] = useState('login')   // login | signup | forgot | link
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const { busy, error, info, run, setError, setInfo } = useAction()
+  const go = m => { setMode(m); setError(''); setInfo('') }
+  const mail = email.trim()
+
+  const submit = e => {
+    e.preventDefault()
+    if (mode === 'login') run(() => account.signIn(mail, password))
+    if (mode === 'signup') run(async () => {
+      const confirm = await account.signUp(mail, password)
+      if (confirm) {
+        go('login')
+        return `Compte créé ! Clique sur le lien reçu à ${mail} pour confirmer ton adresse (tu peux l’ouvrir n’importe où), puis reviens ici te connecter.`
+      }
+    })
+    if (mode === 'forgot') run(async () => {
+      await account.resetPassword(mail)
+      return 'E-mail envoyé. Clique sur le lien : une page s’ouvre pour choisir un nouveau mot de passe. Ensuite, reviens ici te connecter avec.'
+    })
+    if (mode === 'link') run(async () => {
+      await account.sendCode(mail)
+      return 'E-mail envoyé. Ouvre-le sur cet appareil et clique sur le lien : tu seras connecté(e) dans ce navigateur.'
+    })
+  }
+
+  const titles = { login: 'Connexion', signup: 'Créer un compte', forgot: 'Mot de passe oublié', link: 'Connexion par lien' }
+  const buttons = { login: 'Se connecter', signup: 'Créer mon compte', forgot: 'Recevoir le lien', link: 'Recevoir le lien' }
 
   return (
     <div className="panel stat-block account">
-      <h3>Sauvegarde ta collection</h3>
-      <p className="muted small">
-        Crée ton compte avec ton e-mail : ta collection est sauvegardée en ligne,
-        tu la retrouves sur tous tes appareils et tu peux échanger avec tes amis.
-      </p>
-      {step === 'email'
-        ? (
-          <form className="account-form" onSubmit={e => { e.preventDefault(); run(async () => { await account.sendCode(email.trim()); setStep('code') }) }}>
-            <input type="email" required placeholder="ton@email.fr" value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" />
-            <button className="pill-btn primary" disabled={busy}>{busy ? 'Envoi…' : 'Recevoir le lien de connexion'}</button>
-          </form>
-        )
-        : (
-          <form className="account-form" onSubmit={e => { e.preventDefault(); run(() => account.verifyCode(email.trim(), code.trim())) }}>
-            <p className="small">E-mail envoyé à <b>{email}</b> (regarde aussi les spams).
-              Ouvre-le <b>sur cet appareil</b> et clique sur le lien : tu seras connecté(e) automatiquement.
-              Si l’e-mail contient un code à 6 chiffres, tu peux aussi le taper ici.</p>
-            <input inputMode="numeric" autoComplete="one-time-code" placeholder="Code à 6 chiffres (facultatif)" value={code} onChange={e => setCode(e.target.value)} />
-            <button className="pill-btn primary" disabled={busy || code.trim().length < 6}>{busy ? 'Vérification…' : 'Se connecter'}</button>
-            <button type="button" className="link-btn" onClick={() => setStep('email')}>Changer d’e-mail</button>
-          </form>
+      <h3>{titles[mode]}</h3>
+      {mode === 'login' && (
+        <p className="muted small">Ton compte sauvegarde ta collection en ligne : tu la retrouves sur tous tes appareils et tu peux échanger avec tes amis.</p>
+      )}
+      <form className="account-form" onSubmit={submit}>
+        <input type="email" required placeholder="ton@email.fr" value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" />
+        {(mode === 'login' || mode === 'signup') && (
+          <input type="password" required minLength={6} placeholder={mode === 'signup' ? 'Choisis un mot de passe (6 caractères min.)' : 'Mot de passe'}
+            value={password} onChange={e => setPassword(e.target.value)} autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} />
         )}
+        <button className="pill-btn primary" disabled={busy}>{busy ? 'Un instant…' : buttons[mode]}</button>
+      </form>
+      {info && <p className="account-info">{info}</p>}
       {error && <p className="error">{error}</p>}
+      <div className="account-links">
+        {mode !== 'login' && <button className="link-btn" onClick={() => go('login')}>J’ai déjà un compte</button>}
+        {mode !== 'signup' && <button className="link-btn" onClick={() => go('signup')}>Créer un compte</button>}
+        {mode !== 'forgot' && <button className="link-btn" onClick={() => go('forgot')}>Mot de passe oublié ?</button>}
+        {mode === 'login' && <button className="link-btn" onClick={() => go('link')}>Recevoir un lien de connexion</button>}
+      </div>
+    </div>
+  )
+}
+
+// Choisir / changer son mot de passe (compte créé par lien, ou après
+// « mot de passe oublié »)
+function PasswordForm({ onDone, submitLabel = 'Enregistrer' }) {
+  const [password, setPassword] = useState('')
+  const { busy, error, info, run } = useAction()
+  return (
+    <>
+      <form className="account-form" onSubmit={e => { e.preventDefault(); run(async () => { await account.setPassword(password); setPassword(''); onDone?.(); return 'Mot de passe enregistré. Tu peux maintenant te connecter partout avec ton e-mail et ce mot de passe.' }) }}>
+        <input type="password" required minLength={6} placeholder="Nouveau mot de passe (6 caractères min.)" value={password} onChange={e => setPassword(e.target.value)} autoComplete="new-password" />
+        <button className="pill-btn primary" disabled={busy}>{busy ? 'Un instant…' : submitLabel}</button>
+      </form>
+      {info && <p className="account-info">{info}</p>}
+      {error && <p className="error">{error}</p>}
+    </>
+  )
+}
+
+// Arrivée par le lien « mot de passe oublié » : on propose tout de suite
+// de choisir le nouveau mot de passe, quel que soit l'écran affiché.
+export function RecoveryPrompt() {
+  const { recovery, session } = useAccount()
+  if (!recovery || !session) return null
+  return (
+    <div className="share-sheet">
+      <div className="share-body conflict">
+        <h3>Choisis ton nouveau mot de passe</h3>
+        <p className="muted small">Pour le compte {session.user.email}.</p>
+        <PasswordForm submitLabel="Valider" />
+        <button className="link-btn" onClick={() => account.dismissRecovery()}>Fermer</button>
+      </div>
     </div>
   )
 }
@@ -251,6 +318,11 @@ export default function Account({ sync, owned, changeOwned }) {
           <button className="pill-btn soft" onClick={() => account.signOut()}>Se déconnecter</button>
         </div>
         {STATUS_LABEL[sync.status] && <p className={`sync-status is-${sync.status}`}>{STATUS_LABEL[sync.status]}</p>}
+        <details className="account-password">
+          <summary>Mot de passe</summary>
+          <p className="muted small">Avec un mot de passe, tu peux te connecter directement dans l’appli installée sur ton téléphone (e-mail + mot de passe).</p>
+          <PasswordForm />
+        </details>
       </div>
       <Trades owned={owned} changeOwned={changeOwned} onDelivered={sync.deliver} />
     </>

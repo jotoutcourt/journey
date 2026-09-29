@@ -1285,3 +1285,8 @@ img {
   background: linear-gradient(transparent, var(--bg) 30%);
 }
 .picker-foot .pill-btn { width: 100%; }
+
+.account-links { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.account-info { font-size: 13px; font-weight: 700; color: #1f6f4a; background: #e3f8ee; padding: 10px 12px; border-radius: 12px; }
+.account-password summary { cursor: pointer; font-size: 14px; font-weight: 800; color: var(--muted); padding: 4px 0; }
+.account-password[open] { display: grid; gap: 10px; }
