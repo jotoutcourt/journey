@@ -30,6 +30,10 @@ Tout est dans `src/data/cards.js`. Pour ajouter une vraie illustration, dépose 
 
 ## Déploiement Vercel
 
+Site : **https://popcard-theta.vercel.app** (projet Vercel « popcard », Root Directory `cinemaster`,
+branche `main`).
+
+
 1. Sur vercel.com : **Add New… → Project**, importe le dépôt `jotoutcourt/journey`.
 2. **Root Directory** : `cinemaster` (le reste est lu dans `cinemaster/vercel.json`).
 3. **Production Branch** (Settings → Git) : la branche qui contient PopCard.
