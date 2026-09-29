@@ -1,9 +1,11 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import Card from './Card.jsx'
 import { CARDS, CARDS_BY_ID, UNIVERSES } from '../data/cards.js'
 import { RARITIES, RARITY_KEYS } from '../lib/rarity.js'
 import { setFeedback, useFeedbackSettings } from '../lib/feedback.js'
 import { completionOf, slotsFor } from '../lib/universes.js'
+import { MAX_BOOSTERS } from '../lib/storage.js'
+import { disablePush, enablePush, pushSupport, usePushEnabled } from '../lib/push.js'
 
 function Toggle({ label, hint, checked, onChange }) {
   return (
@@ -18,7 +20,46 @@ function Toggle({ label, hint, checked, onChange }) {
 }
 
 // Profil : statistiques de jeu, réglages et remise à zéro.
-export default function Profile({ state, onReset, confirmReset, setConfirmReset, account }) {
+// Réglage des notifications : demande la permission au premier appui.
+function PushToggle({ fullAt }) {
+  const on = usePushEnabled()
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  if (pushSupport === 'unsupported') return null
+  if (pushSupport === 'install') {
+    return (
+      <div className="setting">
+        <span>
+          <b>Notifications</b>
+          <small>Sur iPhone, installe d’abord PopCard sur l’écran d’accueil (Partager → Sur l’écran d’accueil), puis active-les depuis l’appli.</small>
+        </span>
+      </div>
+    )
+  }
+  const change = async v => {
+    setBusy(true); setError('')
+    try { await (v ? enablePush(fullAt) : disablePush()) } catch (e) {
+      setError(e.message === 'refusé'
+        ? 'Notifications refusées : autorise-les dans les réglages du téléphone pour PopCard.'
+        : 'Impossible d’activer les notifications pour le moment.')
+    }
+    setBusy(false)
+  }
+  return (
+    <>
+      <label className="setting">
+        <span>
+          <b>Notifications</b>
+          <small>Quand tes {MAX_BOOSTERS} boosters sont prêts</small>
+        </span>
+        <input type="checkbox" role="switch" checked={on} disabled={busy} onChange={e => change(e.target.checked)} />
+      </label>
+      {error && <p className="error">{error}</p>}
+    </>
+  )
+}
+
+export default function Profile({ state, onReset, confirmReset, setConfirmReset, account, fullAt }) {
   const fx = useFeedbackSettings()
   const stats = state.stats || {}
   const owned = CARDS.filter(c => state.owned[c.id]).length
@@ -95,6 +136,7 @@ export default function Profile({ state, onReset, confirmReset, setConfirmReset,
         <h3>Réglages</h3>
         <Toggle label="Sons" hint="Déchirure, cartes, carillon des cartes rares" checked={fx.sound} onChange={v => setFeedback({ sound: v })} />
         <Toggle label="Vibrations" hint="Quand une carte rare apparaît" checked={fx.haptics} onChange={v => setFeedback({ haptics: v })} />
+        <PushToggle fullAt={fullAt} />
       </div>
 
       <div className="panel reset-panel">

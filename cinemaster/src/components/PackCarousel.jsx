@@ -84,7 +84,7 @@ function createCarousel(n) {
 // voisins qui dépassent sur les bords.
 // On le fait glisser au doigt ; toucher un côté l'amène au centre, toucher
 // le centre ouvre le booster.
-export default function PackCarousel({ packs: PACK_COVERS, current, onChange, onOpen, disabled }) {
+export default function PackCarousel({ packs: PACK_COVERS, current, onChange, onOpen, disabled, featuredU }) {
   const n = PACK_COVERS.length
   const [engine] = useState(() => createCarousel(n))
   const drag = useRef(null)
@@ -181,7 +181,7 @@ export default function PackCarousel({ packs: PACK_COVERS, current, onChange, on
             else onChange(cover)
           }}
         >
-          <Pack cover={cover} disabled={i === index && disabled} />
+          <Pack cover={cover} featured={cover.u === featuredU} disabled={i === index && disabled} />
         </div>
       ))}
     </div>

@@ -1334,3 +1334,35 @@ img {
 .suggest-admin { grid-column: 2 / -1; display: flex; gap: 14px; }
 .suggest-list.is-done li { opacity: .8; }
 .suggest-list.is-done .suggest-rank { background: #daf5e8; color: var(--good); }
+
+/* ─── Série de connexions ─── */
+.streak { padding: 16px 18px; display: grid; gap: 12px; }
+.streak.is-ready { box-shadow: var(--shadow), 0 0 0 2px #ffcf6e inset; }
+.streak-count { font-size: 14px; font-weight: 900; color: #e8871e; }
+.streak-days { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.streak-days li {
+  display: grid; justify-items: center; gap: 3px; padding: 7px 0 8px;
+  border-radius: 14px; background: var(--surface); border: 1.5px solid var(--line);
+}
+.streak-day { font-size: 11px; font-weight: 800; color: var(--muted); }
+.streak-reward { display: grid; place-items: center; height: 20px; font-size: 14px; font-weight: 900; color: var(--text); }
+.streak-reward .icon { width: 18px; height: 18px; }
+.streak-days li.is-big { background: linear-gradient(160deg, #fff6dc, #ffe6b0); }
+.streak-days li.is-done { background: #e3f7ee; border-color: #bfe9d4; }
+.streak-days li.is-done .streak-reward { color: var(--good); }
+.streak-days li.is-today { border-color: #ffb13d; box-shadow: 0 4px 12px rgba(255, 177, 61, .3); }
+.streak-note { margin: 0; font-size: 13px; color: var(--muted); font-weight: 700; }
+
+/* ─── Booster vedette du week-end ─── */
+.featured {
+  border: 0; display: flex; align-items: center; gap: 14px; width: 100%;
+  padding: 14px 16px; text-align: left; color: var(--text); font: inherit;
+  background: linear-gradient(120deg, color-mix(in srgb, var(--c1) 16%, var(--panel)), var(--panel) 70%);
+}
+.featured.is-on { cursor: pointer; box-shadow: var(--shadow), 0 0 0 2px color-mix(in srgb, var(--c1) 60%, #ffb13d) inset; }
+.featured:disabled { cursor: default; opacity: 1; filter: none; }
+.featured .series-cover { width: 52px; }
+.featured > .icon { flex: none; width: 20px; height: 20px; color: var(--muted); }
+.featured-text { display: grid; gap: 2px; min-width: 0; flex: 1; }
+.featured-text b { font-size: 17px; font-weight: 900; }
+.featured-text small { font-size: 13px; color: var(--muted); }
