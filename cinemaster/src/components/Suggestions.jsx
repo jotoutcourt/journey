@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { suggestions, titleKey } from '../lib/suggestions.js'
+import { imdbUrl, searchImdb, suggestions, titleKey } from '../lib/suggestions.js'
 import { useAccount } from '../lib/cloud.js'
 import { UNIVERSES } from '../data/cards.js'
 import { Icon } from './Icons.jsx'
@@ -11,10 +11,15 @@ function fr(e) {
   const m = e?.message || ''
   if (/fetch|network|load failed/i.test(m)) return 'Connexion impossible. Vérifie ta connexion internet.'
   if (/limite/i.test(m)) return 'Tu as déjà proposé 5 univers aujourd’hui : reviens demain !'
-  if (/trop court|check constraint/i.test(m)) return 'Titre invalide (2 à 60 caractères).'
+  if (/trop court|check constraint/i.test(m)) return 'Titre invalide.'
   if (/connexion requise/i.test(m)) return 'Connecte-toi (onglet Profil) pour proposer ou voter.'
   if (/list_suggestions|does not exist|schema cache/i.test(m)) return 'Les propositions ne sont pas encore activées.'
   return m || 'Une erreur est survenue.'
+}
+
+// Petite affiche IMDb (ou emplacement vide)
+function Poster({ src }) {
+  return <span className="imdb-poster">{src && <img src={src} alt="" loading="lazy" referrerPolicy="no-referrer" onError={e => { e.currentTarget.hidden = true }} />}</span>
 }
 
 // Top 3 pour l'accueil
@@ -52,6 +57,20 @@ export default function Suggestions({ onBack, onLogin }) {
   const [kind, setKind] = useState('Série')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [pick, setPick] = useState(null)        // fiche IMDb choisie
+  const [results, setResults] = useState(null)  // null : pas de recherche
+  const [imdbDown, setImdbDown] = useState(false)
+
+  // recherche IMDb pendant la saisie (petite pause pour ne pas chercher à chaque lettre)
+  useEffect(() => {
+    const q = title.trim()
+    if (pick || q.length < 2 || imdbDown) return
+    const ctrl = new AbortController()
+    const t = setTimeout(() => {
+      searchImdb(q, ctrl.signal).then(setResults).catch(e => { if (e.name !== 'AbortError') setImdbDown(true) })
+    }, 250)
+    return () => { clearTimeout(t); ctrl.abort() }
+  }, [title, pick, imdbDown])
 
   const reload = useCallback(async () => {
     try { setList(await suggestions.list()); setError('') } catch (e) { setError(fr(e)); setList([]) }
@@ -67,9 +86,13 @@ export default function Suggestions({ onBack, onLogin }) {
     return () => { alive = false }
   }, [session])
 
-  const key = titleKey(title)
-  const existing = useMemo(() => key && list?.find(s => titleKey(s.title) === key), [key, list])
+  const key = titleKey(pick ? pick.title : title)
+  const existing = useMemo(() => (pick
+    ? list?.find(s => s.imdb_id === pick.imdb)
+    : key && list?.find(s => !s.imdb_id && titleKey(s.title) === key)), [pick, key, list])
   const inGame = key.length > 1 && IN_GAME.has(key)
+  // sans IMDb (hors service), on garde la saisie libre
+  const canSend = !busy && !inGame && (pick || (imdbDown && title.trim().length >= 2))
 
   const act = async fn => {
     setBusy(true); setError('')
@@ -78,8 +101,12 @@ export default function Suggestions({ onBack, onLogin }) {
   }
   const propose = e => {
     e.preventDefault()
-    if (inGame) return
-    act(async () => { await suggestions.propose(title.trim(), kind); haptic('medium'); setTitle('') })
+    if (!canSend) return
+    act(async () => {
+      if (pick) await suggestions.propose(pick.title.slice(0, 100), pick.kind, pick)
+      else await suggestions.propose(title.trim(), kind)
+      haptic('medium'); setTitle(''); setPick(null); setResults(null)
+    })
   }
 
   const open = list?.filter(s => s.status === 'open') || []
@@ -100,15 +127,53 @@ export default function Suggestions({ onBack, onLogin }) {
         {session
           ? (
             <form className="account-form" onSubmit={propose}>
-              <input maxLength={60} required placeholder="Ex. Gossip Girl, Twilight…" value={title} onChange={e => setTitle(e.target.value)} />
-              <div className="suggest-kind" role="radiogroup" aria-label="Type">
-                {['Série', 'Film'].map(k => (
-                  <button type="button" key={k} role="radio" aria-checked={kind === k} className={kind === k ? 'is-on' : ''} onClick={() => setKind(k)}>{k}</button>
-                ))}
-              </div>
+              {pick
+                ? (
+                  <div className="imdb-pick">
+                    <Poster src={pick.poster} />
+                    <span className="suggest-title"><b>{pick.title}</b><small>{pick.kind}{pick.year ? ` · ${pick.year}` : ''}</small></span>
+                    <button type="button" className="link-btn" onClick={() => { setPick(null); setResults(null) }}>Changer</button>
+                  </div>
+                )
+                : (
+                  <div className="imdb-search">
+                    <input
+                      maxLength={100}
+                      placeholder={imdbDown ? 'Ex. Gossip Girl, Twilight…' : 'Cherche un film ou une série…'}
+                      value={title}
+                      onChange={e => { setTitle(e.target.value); if (e.target.value.trim().length < 2) setResults(null) }}
+                      autoComplete="off"
+                      enterKeyHint="search"
+                    />
+                    {!imdbDown && results && title.trim().length >= 2 && (
+                      <ul className="imdb-results">
+                        {results.map(r => (
+                          <li key={r.imdb}>
+                            <button type="button" onClick={() => { setPick(r); setResults(null) }}>
+                              <Poster src={r.poster} />
+                              <span className="suggest-title">
+                                <b>{r.title}</b>
+                                <small>{r.kind}{r.year ? ` · ${r.year}` : ''}{r.cast ? ` · ${r.cast}` : ''}</small>
+                              </span>
+                            </button>
+                          </li>
+                        ))}
+                        {results.length === 0 && <li className="imdb-none">Aucun film ou série trouvé sur IMDb.</li>}
+                      </ul>
+                    )}
+                  </div>
+                )}
+              {imdbDown && !pick && (
+                <div className="suggest-kind" role="radiogroup" aria-label="Type">
+                  {['Série', 'Film'].map(k => (
+                    <button type="button" key={k} role="radio" aria-checked={kind === k} className={kind === k ? 'is-on' : ''} onClick={() => setKind(k)}>{k}</button>
+                  ))}
+                </div>
+              )}
               {inGame && <p className="muted small">Cet univers est déjà dans le jeu !</p>}
               {!inGame && existing && <p className="muted small">Déjà proposé : ta proposition comptera comme un vote pour « {existing.title} ».</p>}
-              <button className="pill-btn primary" disabled={busy || inGame || title.trim().length < 2}>{existing ? 'Voter pour lui' : 'Proposer'}</button>
+              {!pick && !imdbDown && <p className="muted small">Choisis le bon titre dans la liste IMDb : pas de doublon, même avec une faute.</p>}
+              <button className="pill-btn primary" disabled={!canSend}>{existing ? 'Voter pour lui' : 'Proposer'}</button>
             </form>
           )
           : (
@@ -129,8 +194,8 @@ export default function Suggestions({ onBack, onLogin }) {
             <li key={s.id} className={i === 0 ? 'is-first' : ''}>
               <span className="suggest-rank">{i + 1}</span>
               <span className="suggest-title">
-                <b>{s.title}</b>
-                <small>{s.kind}{s.mine ? ' · proposé par toi' : ''}</small>
+                <b>{s.imdb_id ? <a href={imdbUrl(s.imdb_id)} target="_blank" rel="noreferrer">{s.title}</a> : s.title}</b>
+                <small>{s.kind}{s.year ? ` · ${s.year}` : ''}{s.mine ? ' · proposé par toi' : ''}</small>
               </span>
               <button
                 className={`suggest-vote ${s.voted ? 'is-on' : ''}`}
