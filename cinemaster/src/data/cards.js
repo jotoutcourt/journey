@@ -93,10 +93,10 @@ const RAW = [
     quote: "It's a beautiful day to save lives.", role: 'L’accident sur la route',
     period: 'Saison 11 · Épisode 21', creditLabel: 'Épisode', credit: 'How to Save a Life', emoji: '🚗' },
   // Personnages, lieux et objets du quotidien de l'hôpital
-  { u: 'greys', type: 'CHAR', rarity: 'holo', first: 'Miranda', last: 'Bailey',
+  { u: 'greys', type: 'CHAR', rarity: 'ultra', first: 'Miranda', last: 'Bailey',
     quote: "Don't bother sucking up. I already hate you.", role: 'Résidente en chef · « Le Nazi »',
     period: 'Saison 1 – …', creditLabel: 'Actrice', credit: 'Chandra Wilson', emoji: '🩻' },
-  { u: 'greys', type: 'CHAR', rarity: 'holo', first: 'Mark', last: 'Sloan',
+  { u: 'greys', type: 'CHAR', rarity: 'ultra', first: 'Mark', last: 'Sloan',
     role: 'Chirurgien plasticien · McSteamy',
     period: 'Saison 2 – Saison 9', creditLabel: 'Acteur', credit: 'Eric Dane', emoji: '😏' },
   { u: 'greys', type: 'CHAR', rarity: 'peu-commune', first: 'Alex', last: 'Karev',
@@ -126,7 +126,7 @@ const RAW = [
   { u: 'greys', type: 'CHAR', rarity: 'commune', first: 'Jackson', last: 'Avery',
     role: 'Chirurgien plasticien',
     period: 'Saison 6 – Saison 17', creditLabel: 'Acteur', credit: 'Jesse Williams', emoji: '👁️' },
-  { u: 'greys', type: 'CHAR', rarity: 'holo', first: 'Jo', last: 'Wilson',
+  { u: 'greys', type: 'CHAR', rarity: 'ultra', first: 'Jo', last: 'Wilson',
     role: 'Chirurgienne · Ancienne interne',
     period: 'Saison 9 – …', creditLabel: 'Actrice', credit: 'Camilla Luddington', emoji: '🔧' },
   { u: 'greys', type: 'CHAR', rarity: 'commune', first: 'April', last: 'Kepner',
@@ -1205,8 +1205,9 @@ const FULL_ART_ONLY = [
   'albus-dumbledore', 'drago-malefoy',
 ]
 
-// Personnages secondaires qui ont aussi une version Holo, et/ou une version
-// Gold (sans Full Art) ; leur carte de base garde sa rareté.
+// Personnages secondaires qui ont aussi une version Full Art (identifiant
+// « -holo » conservé : les images déjà déposées restent), et/ou une version
+// Gold ; leur carte de base garde sa rareté.
 const HOLO_TOO = [
   // Grey's Anatomy
   'alex-karev', 'richard-webber', 'callie-torres', 'amelia-shepherd', 'izzie-stevens',
@@ -1214,7 +1215,7 @@ const HOLO_TOO = [
 ]
 const GOLD_TOO = [
   // Grey's Anatomy
-  'alex-karev', 'callie-torres', 'richard-webber', 'amelia-shepherd', 'jo-wilson',
+  'alex-karev', 'callie-torres', 'amelia-shepherd', 'jo-wilson',
 ]
 
 const MAIN_CHARACTERS = [
@@ -1278,7 +1279,7 @@ const MAIN_CHARACTERS = [
   }
   addVariants(MAIN_CHARACTERS, [['full', 'ultra'], ['gold', 'secrete']], true)
   addVariants(FULL_ART_ONLY, [['full', 'ultra']], false)
-  addVariants(HOLO_TOO, [['holo', 'holo']], false)
+  addVariants(HOLO_TOO, [['holo', 'ultra']], false)
   addVariants(GOLD_TOO, [['gold', 'secrete']], false)
 }
 
