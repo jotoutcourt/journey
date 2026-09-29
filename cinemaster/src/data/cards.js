@@ -125,6 +125,9 @@ const RAW = [
   { u: 'greys', type: 'CHAR', rarity: 'commune', first: 'Jackson', last: 'Avery',
     role: 'Chirurgien plasticien',
     period: 'Saison 6 – Saison 17', creditLabel: 'Acteur', credit: 'Jesse Williams', emoji: '👁️' },
+  { u: 'greys', type: 'CHAR', rarity: 'holo', first: 'Jo', last: 'Wilson',
+    role: 'Chirurgienne · Ancienne interne',
+    period: 'Saison 9 – …', creditLabel: 'Actrice', credit: 'Camilla Luddington', emoji: '🔧' },
   { u: 'greys', type: 'CHAR', rarity: 'commune', first: 'April', last: 'Kepner',
     role: 'Chirurgienne traumatologue',
     period: 'Saison 6 – Saison 14', creditLabel: 'Actrice', credit: 'Sarah Drew', emoji: '🌷' },
@@ -1033,6 +1036,18 @@ const FULL_ART_ONLY = [
   'albus-dumbledore', 'drago-malefoy',
 ]
 
+// Personnages secondaires qui ont aussi une version Holo, et/ou une version
+// Gold (sans Full Art) ; leur carte de base garde sa rareté.
+const HOLO_TOO = [
+  // Grey's Anatomy
+  'alex-karev', 'richard-webber', 'callie-torres', 'amelia-shepherd', 'izzie-stevens',
+  'lexie-grey', 'owen-hunt', 'jackson-avery', 'april-kepner',
+]
+const GOLD_TOO = [
+  // Grey's Anatomy
+  'alex-karev', 'callie-torres', 'richard-webber', 'amelia-shepherd', 'jo-wilson',
+]
+
 const MAIN_CHARACTERS = [
   // Grey's Anatomy
   'meredith-grey', 'derek-shepherd', 'cristina-yang', 'arizona-robbins',
@@ -1094,6 +1109,8 @@ const MAIN_CHARACTERS = [
   }
   addVariants(MAIN_CHARACTERS, [['full', 'ultra'], ['gold', 'secrete']], true)
   addVariants(FULL_ART_ONLY, [['full', 'ultra']], false)
+  addVariants(HOLO_TOO, [['holo', 'holo']], false)
+  addVariants(GOLD_TOO, [['gold', 'secrete']], false)
 }
 
 // Tri : par univers puis par rareté pour que la numérotation ait du sens,
