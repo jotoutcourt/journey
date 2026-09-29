@@ -90,8 +90,8 @@ export default function Card({ card, interactive = true, touch = false, classNam
     ...style,
   }
 
-  // Couples cultes : pluie de cœurs holographiques (sur l'illustration pour
-  // les Holo, sur toute la carte pour les Full Art)
+  // Couples cultes : pluie de cœurs holographiques (sur toute la carte pour
+  // les Full Art, sur l'illustration sinon)
   const hearts = card.type === 'COUPLE' && (
     <div className="hearts" data-o><i className="sheet" /><i className="sheet h2" /></div>
   )
