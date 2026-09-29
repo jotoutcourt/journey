@@ -14,6 +14,7 @@ import { openBooster } from './lib/booster.js'
 import { claim, refreshMissions, track, withToday } from './lib/missions.js'
 import { recordPull } from './lib/stats.js'
 import Missions from './components/Missions.jsx'
+import Suggestions, { SuggestionsTeaser } from './components/Suggestions.jsx'
 import Profile from './components/Profile.jsx'
 import Account, { RecoveryPrompt, SyncConflict } from './components/Account.jsx'
 import { useCloudSync } from './lib/sync.js'
@@ -271,6 +272,8 @@ export default function App() {
 
         <Missions missions={state.missions} now={now} onClaim={id => setState(s => claim(s, id))} />
 
+        <SuggestionsTeaser onOpen={() => goTab('suggest')} />
+
         <div className="panel dust-panel">
           <span className="dust-icon"><Icon name="film" /></span>
           <div>
@@ -294,6 +297,8 @@ export default function App() {
     )
   } else if (tab === 'guide') {
     screen = <section className="screen"><RarityGuide /></section>
+  } else if (tab === 'suggest') {
+    screen = <Suggestions onBack={() => goTab('home')} onLogin={() => goTab('profile')} />
   } else if (tab === 'profile') {
     screen = (
       <Profile
