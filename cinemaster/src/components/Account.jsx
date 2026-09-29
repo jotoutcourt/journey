@@ -43,13 +43,15 @@ function SignIn() {
         ? (
           <form className="account-form" onSubmit={e => { e.preventDefault(); run(async () => { await account.sendCode(email.trim()); setStep('code') }) }}>
             <input type="email" required placeholder="ton@email.fr" value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" />
-            <button className="pill-btn primary" disabled={busy}>{busy ? 'Envoi…' : 'Recevoir un code'}</button>
+            <button className="pill-btn primary" disabled={busy}>{busy ? 'Envoi…' : 'Recevoir le lien de connexion'}</button>
           </form>
         )
         : (
           <form className="account-form" onSubmit={e => { e.preventDefault(); run(() => account.verifyCode(email.trim(), code.trim())) }}>
-            <p className="small">Code envoyé à <b>{email}</b>. Regarde tes e-mails (et les spams).</p>
-            <input inputMode="numeric" autoComplete="one-time-code" placeholder="Code à 6 chiffres" value={code} onChange={e => setCode(e.target.value)} />
+            <p className="small">E-mail envoyé à <b>{email}</b> (regarde aussi les spams).
+              Ouvre-le <b>sur cet appareil</b> et clique sur le lien : tu seras connecté(e) automatiquement.
+              Si l’e-mail contient un code à 6 chiffres, tu peux aussi le taper ici.</p>
+            <input inputMode="numeric" autoComplete="one-time-code" placeholder="Code à 6 chiffres (facultatif)" value={code} onChange={e => setCode(e.target.value)} />
             <button className="pill-btn primary" disabled={busy || code.trim().length < 6}>{busy ? 'Vérification…' : 'Se connecter'}</button>
             <button type="button" className="link-btn" onClick={() => setStep('email')}>Changer d’e-mail</button>
           </form>
