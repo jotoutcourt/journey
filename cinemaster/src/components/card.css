@@ -195,6 +195,12 @@
   background: repeating-radial-gradient(circle at 50% 45%,
     rgba(255, 255, 255, .14) 0 1.2cqw, transparent 1.2cqw 5cqw);
 }
+/* Couple : halo rose et petits cœurs */
+.art-couple .art-rays {
+  background:
+    radial-gradient(circle at 50% 42%, rgba(255, 150, 190, .35), transparent 55%),
+    repeating-conic-gradient(from 0deg at 50% 50%, rgba(255, 220, 235, .14) 0deg 7deg, transparent 7deg 18deg);
+}
 /* Scène : bandes de pellicule perforées en haut et en bas */
 .art-scene .art-rays {
   inset: 0;
@@ -268,6 +274,7 @@
 .type-lieu .type-pill  { background: #e3f6ea; }
 .type-objet .type-pill { background: #fbefdc; }
 .type-scene .type-pill { background: #ece4ff; }
+.type-couple .type-pill { background: #ffe3ee; }
 
 .universe {
   font: 900 6cqw/1.05 'Rubik', sans-serif;
