@@ -54,12 +54,29 @@ function start() {
   started = true
   const ask = DeviceOrientationEvent.requestPermission
   if (typeof ask !== 'function') { listen(); return }
-  // iOS : la demande doit partir d'un geste de l'utilisateur
-  const onTap = () => {
+  // iOS : la demande doit partir d'un vrai toucher (pas de la fin d'un
+  // défilement, que l'iPhone refuse). Tant qu'elle n'a pas abouti, on la
+  // refait au toucher suivant.
+  let asking = false
+  let done = false
+  const stop = () => {
+    done = true
     window.removeEventListener('touchend', onTap, true)
-    ask.call(DeviceOrientationEvent).then(r => { if (r === 'granted') listen() }).catch(() => {})
+    window.removeEventListener('click', onTap, true)
+  }
+  const onTap = () => {
+    if (asking || done) return
+    asking = true
+    ask.call(DeviceOrientationEvent)
+      .then(r => {
+        if (r === 'granted') listen()
+        stop()                    // accordé ou refusé : c'est tranché
+      })
+      .catch(() => {})            // geste non retenu : on réessaiera
+      .finally(() => { asking = false })
   }
   window.addEventListener('touchend', onTap, true)
+  window.addEventListener('click', onTap, true)
 }
 
 export function subscribeMotion(fn) {
