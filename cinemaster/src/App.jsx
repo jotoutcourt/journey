@@ -33,9 +33,9 @@ import { BOOSTER_DUST_COST, MAX_BOOSTERS, REGEN_MS, initialState, load, regen, s
 const TABS = [
   { id: 'home', label: 'Accueil', icon: 'home' },
   { id: 'collection', label: 'Collection', icon: 'cards' },
-  { id: 'guide', label: 'Raretés', icon: 'star' },
   { id: 'profile', label: 'Profil', icon: 'user' },
 ]
+// Raretés et Prochain univers s'ouvrent depuis l'accueil (onglet Accueil allumé).
 // L'Atelier (espace admin) n'est pas dans la barre d'onglets : lien discret en bas de page.
 
 
@@ -372,7 +372,7 @@ export default function App() {
           {TABS.map(t => (
             <button
               key={t.id}
-              className={tab === t.id ? 'active' : ''}
+              className={tab === t.id || (t.id === 'home' && (tab === 'guide' || tab === 'suggest')) ? 'active' : ''}
               onClick={() => goTab(t.id)}
               aria-label={t.label}
             >
