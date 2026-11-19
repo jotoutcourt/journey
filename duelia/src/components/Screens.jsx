@@ -138,7 +138,8 @@ export function Topics({ topics, go, importTopic }) {
   const norm = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
   const match = (t) => (cat === 'Tous' || t.category === cat) && (!q || norm(t.name + ' ' + t.category).includes(norm(q)))
   const official = topics.filter(t => t.official && match(t))
-  const community = topics.filter(t => !t.official && match(t))
+  const mine = topics.filter(t => t.own && match(t))
+  const community = topics.filter(t => !t.official && !t.own && match(t))
 
   function doImport() {
     const raw = code.trim()
@@ -167,13 +168,18 @@ export function Topics({ topics, go, importTopic }) {
         </div>
       </>}
 
-      <h3 className="sec-title">Créés par les joueurs</h3>
+      <h3 className="sec-title">Mes créations</h3>
       <div className="grid">
         <button className="topic-tile create-tile" onClick={() => go({ name: 'create' })}>
           <span className="topic-icon plus" style={{ width: 76, height: 76 }}>+</span>
           <b>Créer un thème</b>
           <small>Tes questions, tes règles</small>
         </button>
+        {mine.map(t => <TopicTile key={t.id} topic={t} onClick={() => go({ name: 'topic', id: t.id })} sub={`${t.questions.length} questions`} />)}
+      </div>
+
+      {community.length > 0 && <h3 className="sec-title">Créés par les joueurs</h3>}
+      <div className="grid">
         {community.map(t => <TopicTile key={t.id} topic={t} onClick={() => go({ name: 'topic', id: t.id })} sub={`par ${t.by}`} />)}
       </div>
 

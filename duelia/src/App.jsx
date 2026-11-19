@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { OFFICIAL_TOPICS, COMMUNITY_SEED } from './data/topics.js'
+import { OFFICIAL_TOPICS, COMMUNITY_SEED, STARTER_CREATION } from './data/topics.js'
 import { POKEMON_TOPIC } from './data/pokemon.js'
 import { loadState, saveState, emptyState, encodeTopic, decodeTopic } from './lib/store.js'
 import { findOpponent, getCommunity, leaderboard } from './lib/bots.js'
@@ -24,6 +24,13 @@ const SHARED = (() => {
 function initialState() {
   const s = loadState()
   if (SHARED && !s.custom.some(t => t.id === SHARED.id)) s.custom = [SHARED, ...s.custom]
+  // Une seule fois : le thème Callie & Arizona rejoint les créations du joueur.
+  // S'il le supprime ensuite, il ne revient pas.
+  if (!s.starterAdded) {
+    if (!s.custom.some(t => t.id === STARTER_CREATION.id)) s.custom = [STARTER_CREATION, ...s.custom]
+    if (!s.follows.includes(STARTER_CREATION.id)) s.follows = [...s.follows, STARTER_CREATION.id]
+    s.starterAdded = true
+  }
   return s
 }
 
@@ -43,7 +50,12 @@ export default function App() {
   useEffect(() => { setSound(st.settings.sound) }, [st.settings.sound])
 
   const update = useCallback((fn) => setSt(s => fn(s) ?? emptyState()), [])
-  const topics = useMemo(() => [...OFFICIAL_TOPICS, POKEMON_TOPIC, ...COMMUNITY_SEED, ...st.custom], [st.custom])
+  // Les thèmes du joueur sont signés de son pseudo actuel
+  const myName = st.profile?.name
+  const topics = useMemo(() => [
+    ...OFFICIAL_TOPICS, POKEMON_TOPIC, ...COMMUNITY_SEED,
+    ...st.custom.map(t => (t.own && myName ? { ...t, by: myName } : t)),
+  ], [st.custom, myName])
   const byId = useCallback((id) => topics.find(t => t.id === id), [topics])
 
   const go = useCallback((r) => {

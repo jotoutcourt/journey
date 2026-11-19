@@ -259,7 +259,7 @@ export const OFFICIAL_TOPICS = [
 ]
 
 // Thèmes « créés par la communauté » livrés avec l'appli pour montrer le concept.
-export const COMMUNITY_SEED = [
+const SEED = [
   {
     id: 'c-series-cultes', name: 'Séries cultes', icon: '📺', color: '#e85dff', category: 'Cinéma & TV',
     tagline: 'Pour celles et ceux qui enchaînent les épisodes', by: 'Chloé_binge', followers: 3412, community: true,
@@ -328,3 +328,9 @@ export const COMMUNITY_SEED = [
     ],
   },
 ].map(t => ({ ...t, questions: merge(t.id, t.questions) }))
+
+// Thèmes communautaires livrés avec l'appli
+export const COMMUNITY_SEED = SEED.filter(t => t.id !== 'c-calzona')
+
+// Thème « Callie & Arizona » : placé dans les créations du joueur, modifiable comme s'il l'avait écrit
+export const STARTER_CREATION = { ...SEED.find(t => t.id === 'c-calzona'), own: true, community: true, followers: 0 }
