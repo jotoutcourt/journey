@@ -296,8 +296,6 @@ const SEED = [
     tagline: 'Le couple Calzona de Grey\'s Anatomy', by: 'Jo', followers: 1287, community: true,
     questions: [
       ['Quel surnom les fans donnent-ils au couple Callie et Arizona ?', 'Calzona', 'Arizallie', 'Robbtorres', 'Callizona'],
-      ['Quelle actrice joue Callie Torres ?', 'Sara Ramírez', 'Jessica Capshaw', 'Chandra Wilson', 'Kim Raver'],
-      ['Quelle actrice joue Arizona Robbins ?', 'Jessica Capshaw', 'Sara Ramírez', 'Ellen Pompeo', 'Camilla Luddington'],
       ['Quelle est la spécialité de Callie Torres ?', 'La chirurgie orthopédique', 'La neurochirurgie', 'La chirurgie cardiaque', 'La chirurgie plastique'],
       ['Quelle est la spécialité d\'Arizona Robbins ?', 'La chirurgie pédiatrique', 'La chirurgie générale', 'L\'obstétrique', 'La traumatologie'],
       ['Quel est le vrai prénom complet de Callie ?', 'Calliope', 'Caroline', 'Callista', 'Camilla'],
@@ -323,8 +321,6 @@ const SEED = [
       ['Pour qui Callie part-elle vivre à New York à la fin de la saison 12 ?', 'Penny Blake', 'Arizona Robbins', 'Erica Hahn', 'Leah Murphy'],
       ['Avec quelle consultante Arizona sort-elle en saison 13 ?', 'Eliza Minnick', 'Penny Blake', 'Carina DeLuca', 'Lauren Boswell'],
       ['Dans quelle ville Arizona part-elle à la fin de la saison 14 ?', 'New York', 'Los Angeles', 'Boston', 'Chicago'],
-      ['Quelle est la dernière saison de Jessica Capshaw dans la série ?', 'La saison 14', 'La saison 12', 'La saison 10', 'La saison 16'],
-      ['Quelle est la dernière saison de Sara Ramírez dans la série ?', 'La saison 12', 'La saison 14', 'La saison 9', 'La saison 15'],
     ],
   },
 ].map(t => ({ ...t, questions: merge(t.id, t.questions) }))

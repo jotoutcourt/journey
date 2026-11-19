@@ -54,27 +54,32 @@ export default [
   ['De quel médecin Carina DeLuca est-elle la sœur ?', 'Andrew DeLuca', 'Jackson Avery', 'Owen Hunt', 'Nathan Riggs'],
   ['Pourquoi Arizona part-elle à New York à la fin de la saison 14 ?', 'Pour que Sofia vive près de ses deux mères', 'Pour suivre Carina', 'Pour diriger un hôpital militaire', 'Pour rejoindre son père'],
 
-  // La série autour d'elles
-  ['Qui a créé « Grey\'s Anatomy » ?', 'Shonda Rhimes', 'Ryan Murphy', 'J. J. Abrams', 'Dick Wolf'],
+  // Leur entourage à l'hôpital
   ['Dans quelle ville se déroule « Grey\'s Anatomy » ?', 'Seattle', 'Boston', 'Chicago', 'Los Angeles'],
   ['Avec quel hôpital Seattle Grace fusionne-t-il en saison 6 ?', 'Mercy West', 'Seattle Presbyterian', 'Saint Ambrose', 'Pac North'],
   ['Comment s\'appelle le bar en face de l\'hôpital, tenu par Joe ?', "L'Emerald City Bar", 'Le MacLaren\'s', 'Le Central Perk', 'Le Paddy\'s Pub'],
   ['Qui est le chef de chirurgie quand Callie arrive dans la série ?', 'Richard Webber', 'Owen Hunt', 'Derek Shepherd', 'Miranda Bailey'],
   ['Quel surnom les internes donnent-ils à Miranda Bailey ?', 'Le Nazi', 'La Reine', 'Le Dragon', 'Le Général'],
-  ['Quelle actrice joue Meredith Grey ?', 'Ellen Pompeo', 'Sandra Oh', 'Chandra Wilson', 'Katherine Heigl'],
-  ['Quel acteur joue Mark Sloan ?', 'Eric Dane', 'Patrick Dempsey', 'Justin Chambers', 'Kevin McKidd'],
-  ['Quel acteur joue George O\'Malley ?', 'T. R. Knight', 'Justin Chambers', 'Jesse Williams', 'Eric Dane'],
-  ['Quel acteur joue Alex Karev, l\'ami et élève d\'Arizona ?', 'Justin Chambers', 'Jesse Williams', 'Kevin McKidd', 'Giacomo Gianniotti'],
 
-  // Les actrices
-  ['Dans quel pays est née Sara Ramírez ?', 'Au Mexique', 'Aux États-Unis', "En Espagne", 'À Porto Rico'],
-  ['Pour quelle comédie musicale Sara Ramírez a-t-elle remporté un Tony Award ?', 'Spamalot', 'Wicked', 'Rent', 'Chicago'],
-  ['Dans quelle série politique Sara Ramírez joue-t-elle Kat Sandoval après Grey\'s Anatomy ?', 'Madam Secretary', 'Scandal', 'The West Wing', 'House of Cards'],
-  ['Dans quelle suite de « Sex and the City » Sara Ramírez joue-t-elle Che Diaz ?', 'And Just Like That…', 'The Carrie Diaries', 'Girls', 'Emily in Paris'],
-  ['Quel célèbre réalisateur est le beau-père de Jessica Capshaw ?', 'Steven Spielberg', 'George Lucas', 'Ron Howard', 'James Cameron'],
-  ['Dans quelle série judiciaire Jessica Capshaw jouait-elle avant Grey\'s Anatomy ?', 'The Practice', 'Ally McBeal', 'Boston Legal', 'Suits'],
-  ['Pendant combien de saisons environ Sara Ramírez a-t-elle joué Callie ?', '11 saisons (de la 2 à la 12)', '5 saisons', '8 saisons', '15 saisons'],
-  ['Pendant combien de saisons Jessica Capshaw a-t-elle joué Arizona de façon régulière ?', '10 saisons (de la 5 à la 14)', '6 saisons', '12 saisons', '4 saisons'],
   ['Quel instrument de mobilité Arizona utilise-t-elle après son amputation ?', 'Une prothèse de jambe', 'Un fauteuil roulant en permanence', 'Des béquilles en permanence', 'Un exosquelette'],
   ['Que se passe-t-il pour Arizona dans la forêt après le crash ?', 'Elle attend les secours plusieurs jours avec une jambe gravement blessée', 'Elle opère Mark seule', 'Elle pilote l\'avion', 'Elle n\'est pas blessée'],
+
+  // Leurs proches à l'hôpital
+  ['Quel est le nom de famille de Callie ?', 'Torres', 'Robbins', 'Sloan', 'Grey'],
+  ['Comment Arizona appelle-t-elle souvent Callie, par son prénom complet ?', 'Calliope', 'Callista', 'Caroline', 'Cally'],
+  ['Laquelle des deux a porté Sofia ?', 'Callie', 'Arizona', 'Aucune, Sofia est adoptée', 'Une mère porteuse'],
+  ['Quelle est la spécialité de Mark Sloan, le père de Sofia ?', 'La chirurgie plastique', "L'orthopédie", 'La neurochirurgie', 'La pédiatrie'],
+  ['De quel chirurgien Mark Sloan est-il le meilleur ami d\'enfance ?', 'Derek Shepherd', 'Owen Hunt', 'Richard Webber', 'Alex Karev'],
+  ['Avec quelle interne Mark Sloan vit-il une histoire avant le crash ?', 'Lexie Grey', 'April Kepner', 'Jo Wilson', 'Izzie Stevens'],
+  ['Quel lien unit Lexie Grey et Meredith Grey ?', 'Ce sont des demi-sœurs', 'Ce sont des cousines', 'Ce sont des jumelles', 'Aucun, elles portent le même nom par hasard'],
+  ['Qui est chef de chirurgie au moment du crash d\'avion ?', 'Owen Hunt', 'Richard Webber', 'Miranda Bailey', 'Derek Shepherd'],
+  ['Quelle est la spécialité d\'Owen Hunt ?', 'La traumatologie', 'La pédiatrie', 'La chirurgie plastique', 'La gynécologie'],
+  ['Qui épouse Owen Hunt, l\'ancienne colocataire de Callie ?', 'Cristina Yang', 'Lexie Grey', 'Arizona Robbins', 'April Kepner'],
+  ['Quelle est la spécialité de Cristina Yang ?', 'La chirurgie cardiothoracique', "L'orthopédie", 'La pédiatrie', 'La neurochirurgie'],
+  ['Quelle était la spécialité d\'Erica Hahn, l\'ex de Callie ?', 'La chirurgie cardiothoracique', 'La chirurgie plastique', 'La pédiatrie', 'Les urgences'],
+  ['Quelle est la spécialité de Derek Shepherd ?', 'La neurochirurgie', 'La chirurgie cardiaque', "L'orthopédie", 'La pédiatrie'],
+  ['Qui est l\'épouse de Derek Shepherd ?', 'Meredith Grey', 'Cristina Yang', 'Lexie Grey', 'Addison Montgomery seulement'],
+  ['Quel poste occupe Penny Blake quand elle arrive à l\'hôpital ?', 'Résidente en chirurgie', 'Cheffe de chirurgie', 'Infirmière', 'Anesthésiste'],
+  ['Qui épouse Alex Karev, l\'élève d\'Arizona ?', 'Jo Wilson', 'Izzie Stevens', 'Lexie Grey', 'April Kepner'],
+  ['En quoi consiste la chirurgie fœtale qu\'apprend Arizona ?', 'Opérer un bébé avant sa naissance', 'Opérer les femmes enceintes du cœur', 'Opérer les nouveau-nés seulement', 'Faire des échographies'],
 ]

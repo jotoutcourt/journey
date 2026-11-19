@@ -30,6 +30,22 @@ function initialState() {
     if (!s.custom.some(t => t.id === STARTER_CREATION.id)) s.custom = [STARTER_CREATION, ...s.custom]
     if (!s.follows.includes(STARTER_CREATION.id)) s.follows = [...s.follows, STARTER_CREATION.id]
     s.starterAdded = true
+    s.starterVersion = 2
+  }
+  // Mise à jour unique (v2) : questions sur les acteurs remplacées par des questions sur les personnages,
+  // sans toucher aux autres modifications du joueur.
+  if ((s.starterVersion || 1) < 2) {
+    const ACTORS = /actrice|acteur|Ramírez|Capshaw|Shonda Rhimes|Spielberg|Tony Award|« Grey's Anatomy » \?/
+    const fresh = STARTER_CREATION.questions
+    s.custom = s.custom.map(t => {
+      if (t.id !== STARTER_CREATION.id) return t
+      const kept = t.questions.filter(q => !ACTORS.test(q.q))
+      const have = new Set(kept.map(q => q.q))
+      const removed = t.questions.length - kept.length
+      const added = fresh.filter(q => !have.has(q.q)).slice(-Math.max(removed, 0))
+      return { ...t, questions: [...kept, ...added] }
+    })
+    s.starterVersion = 2
   }
   return s
 }
