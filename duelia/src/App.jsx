@@ -114,17 +114,24 @@ export default function App() {
   }
 
   const deleteTopic = (t) => {
-    if (!confirm(`Supprimer « ${t.name} » ?`)) return
     update(s => ({ ...s, custom: s.custom.filter(x => x.id !== t.id), follows: s.follows.filter(x => x !== t.id) }))
     go({ name: 'topics' })
   }
 
+  const [toast, setToast] = useState(null)
+  useEffect(() => {
+    if (!toast) return
+    const id = setTimeout(() => setToast(null), 2600)
+    return () => clearTimeout(id)
+  }, [toast])
+
   const shareText = async (text, url) => {
-    try {
-      if (navigator.share) { await navigator.share({ title: 'Duelia', text, url }); return }
-      await navigator.clipboard.writeText(url ? `${text} ${url}` : text)
-      alert('Copié dans le presse-papier !')
-    } catch { /* partage annulé */ }
+    const full = url ? `${text} ${url}` : text
+    // Copie d'abord (dans le geste de l'utilisateur), puis feuille de partage si elle existe.
+    let copied = false
+    try { await navigator.clipboard.writeText(full); copied = true } catch { /* refusé */ }
+    try { if (navigator.share) { await navigator.share({ title: 'Duelia', text, url }); return } } catch { /* refusé ou annulé */ }
+    setToast(copied ? 'Lien copié, colle-le à tes amis' : "Impossible de copier sur cet appareil")
   }
 
   const shareTopic = (t) => {
@@ -167,6 +174,7 @@ export default function App() {
   return (
     <div className={`app ${fullscreen ? 'full' : ''}`}>
       <main key={route.name + (route.id || '')} className="view">{view}</main>
+      {toast && <div className="toast" role="status">{toast}</div>}
       {!fullscreen && (
         <nav className="tabbar">
           {TABS.map(t => (

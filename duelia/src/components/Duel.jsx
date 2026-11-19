@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Avatar from './Avatar.jsx'
 import TopicIcon from './TopicIcon.jsx'
+import ConfirmButton from './ConfirmButton.jsx'
 import { botAnswer } from '../lib/bots.js'
 import { levelInfo } from '../lib/levels.js'
 import { TIME, pointsFor } from '../lib/duel.js'
@@ -111,10 +112,6 @@ export default function Duel({ topic, me, opponent, questions, onFinish, onQuit 
     else { sfx.bad(); navigator.vibrate?.(120) }
   }
 
-  function quit() {
-    if (confirm('Abandonner le duel ? La partie sera perdue.')) onQuit()
-  }
-
   const myLvl = levelInfo(me.topicXp)
   const oppLvl = levelInfo(opponent.xp)
 
@@ -147,7 +144,7 @@ export default function Duel({ topic, me, opponent, questions, onFinish, onQuit 
   return (
     <div className="duel">
       <div className="duel-top">
-        <button className="icon-btn quit" onClick={quit} aria-label="Abandonner">✕</button>
+        <ConfirmButton className="icon-btn quit" onConfirm={onQuit} confirmLabel="Abandonner ?" aria-label="Abandonner">✕</ConfirmButton>
         <div className="pl pl-me">
           <Avatar seed={me.avatar} size={46} ring="var(--me)" />
           <div className="pl-txt">

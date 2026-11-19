@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import Avatar from './Avatar.jsx'
 import TopicIcon from './TopicIcon.jsx'
+import ConfirmButton from './ConfirmButton.jsx'
 import { CATEGORIES } from '../data/topics.js'
 import { levelInfo } from '../lib/levels.js'
 import { getCommunity, leaderboard } from '../lib/bots.js'
@@ -131,6 +132,7 @@ export function Topics({ topics, go, importTopic }) {
   const [q, setQ] = useState('')
   const [cat, setCat] = useState('Tous')
   const [code, setCode] = useState('')
+  const [importErr, setImportErr] = useState(false)
   const norm = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
   const match = (t) => (cat === 'Tous' || t.category === cat) && (!q || norm(t.name + ' ' + t.category).includes(norm(q)))
   const official = topics.filter(t => t.official && match(t))
@@ -140,7 +142,8 @@ export function Topics({ topics, go, importTopic }) {
     const raw = code.trim()
     const m = raw.match(/#t=([\w-]+)/)
     const t = decodeTopic(m ? m[1] : raw)
-    if (!t) { alert("Ce lien de thème n'est pas valide."); return }
+    if (!t) { setImportErr(true); return }
+    setImportErr(false)
     importTopic(t)
     setCode('')
   }
@@ -175,9 +178,10 @@ export function Topics({ topics, go, importTopic }) {
       <div className="import-box">
         <p>Un ami t'a envoyé un thème ? Colle le lien ici :</p>
         <div className="import-row">
-          <input value={code} onChange={e => setCode(e.target.value)} placeholder="https://…#t=…" />
+          <input value={code} onChange={e => { setCode(e.target.value); setImportErr(false) }} placeholder="https://…#t=…" />
           <button className="btn btn-small btn-primary" onClick={doImport} disabled={!code.trim()}>Ajouter</button>
         </div>
+        {importErr && <p className="import-err">Ce lien ne contient pas de thème valide. Vérifie que tu l'as copié en entier.</p>}
       </div>
     </div>
   )
@@ -240,7 +244,7 @@ export function TopicPage({ st, topic, go, toggleFollow, shareTopic, deleteTopic
         <div className="tp-owner">
           <button className="btn btn-ghost" onClick={() => shareTopic(topic)}>🔗 Partager ce thème</button>
           {topic.own && <button className="btn btn-ghost" onClick={() => go({ name: 'create', id: topic.id })}>✏️ Modifier</button>}
-          {(topic.own || topic.imported) && <button className="btn btn-ghost danger" onClick={() => deleteTopic(topic)}>Supprimer</button>}
+          {(topic.own || topic.imported) && <ConfirmButton className="btn btn-ghost danger" onConfirm={() => deleteTopic(topic)} confirmLabel="Supprimer pour de bon ?">Supprimer</ConfirmButton>}
         </div>
       )}
     </div>
@@ -451,9 +455,8 @@ export function Profile({ st, topics, update, go }) {
         <input type="checkbox" checked={st.settings.sound} onChange={e => update(s => ({ ...s, settings: { ...s.settings, sound: e.target.checked } }))} />
         <span>Effets sonores</span>
       </label>
-      <button className="btn btn-ghost danger wide" onClick={() => {
-        if (confirm('Effacer toute ta progression et tes thèmes ?')) update(() => null)
-      }}>Réinitialiser ma progression</button>
+      <ConfirmButton className="btn btn-ghost danger wide" onConfirm={() => update(() => null)}
+        confirmLabel="Tout effacer ? Appuie encore pour confirmer">Réinitialiser ma progression</ConfirmButton>
     </div>
   )
 }

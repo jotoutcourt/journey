@@ -399,3 +399,9 @@ h1, h2, h3 { font-family: var(--display); margin: 0; letter-spacing: -0.01em; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
+
+/* ---------- confirmations & toasts ---------- */
+.armed { background: var(--ko) !important; color: #fff !important; border-color: var(--ko) !important; }
+.quit.armed { width: auto; padding: 0 12px; font-size: 13px; font-weight: 700; z-index: 2; }
+.import-err { color: var(--ko) !important; margin: 8px 0 0 !important; }
+.toast { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 84px); transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 12px; font-weight: 700; font-size: 14px; z-index: 20; animation: fadeUp 0.25s both; max-width: calc(100% - 32px); }
