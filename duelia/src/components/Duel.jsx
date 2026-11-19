@@ -7,6 +7,19 @@ import { levelInfo } from '../lib/levels.js'
 import { TIME, pointsFor } from '../lib/duel.js'
 import { sfx } from '../lib/sound.js'
 
+// Question à image (silhouette noire jusqu'au dévoilement). Si l'image ne charge pas,
+// on bascule sur une question écrite qui garde la même réponse.
+function PictureQuestion({ q, revealed }) {
+  const [failed, setFailed] = useState(false)
+  if (failed) return <h2 className="question">Quel Pokémon porte le n° {q.dex} du Pokédex national ?</h2>
+  return (
+    <div className="pic-q">
+      <h2 className="question small">{q.q}</h2>
+      <img src={q.img} alt="" className={revealed ? 'shown' : 'silhouette'} onError={() => setFailed(true)} draggable="false" />
+    </div>
+  )
+}
+
 export default function Duel({ topic, me, opponent, questions, onFinish, onQuit }) {
   const [phase, setPhase] = useState('vs') // vs → banner → play → reveal → … → done
   const [round, setRound] = useState(0)
@@ -188,7 +201,7 @@ export default function Duel({ topic, me, opponent, questions, onFinish, onQuit 
         </div>
       ) : (
         <div className="qa" key={'q' + round}>
-          <h2 className="question">{q.q}</h2>
+          {q.img ? <PictureQuestion q={q} revealed={reveal} /> : <h2 className="question">{q.q}</h2>}
           <div className="options">
             {q.options.map((opt, i) => {
               let cls = 'opt'

@@ -1,3 +1,18 @@
+import x_culture_g from './extra/culture-g.js'
+import x_capitales from './extra/capitales.js'
+import x_cinema from './extra/cinema.js'
+import x_sciences from './extra/sciences.js'
+import x_histoire from './extra/histoire.js'
+import x_musique from './extra/musique.js'
+import x_foot from './extra/foot.js'
+import x_jeux_video from './extra/jeux-video.js'
+import x_animaux from './extra/animaux.js'
+import x_gastronomie from './extra/gastronomie.js'
+import x_expressions from './extra/expressions.js'
+import x_mythologie from './extra/mythologie.js'
+import x_c_series_cultes from './extra/c-series-cultes.js'
+import x_c_espace from './extra/c-espace.js'
+
 // Banque de thèmes officiels. Chaque question : [énoncé, bonne réponse, leurre, leurre, leurre].
 // Les réponses sont mélangées au moment du duel.
 
@@ -6,9 +21,32 @@ export const CATEGORIES = [
   'Musique', 'Sport', 'Jeux vidéo', 'Nature', 'Cuisine', 'Langue',
 ]
 
+const EXTRA = {
+  'culture-g': x_culture_g,
+  'capitales': x_capitales,
+  'cinema': x_cinema,
+  'sciences': x_sciences,
+  'histoire': x_histoire,
+  'musique': x_musique,
+  'foot': x_foot,
+  'jeux-video': x_jeux_video,
+  'animaux': x_animaux,
+  'gastronomie': x_gastronomie,
+  'expressions': x_expressions,
+  'mythologie': x_mythologie,
+  'c-series-cultes': x_c_series_cultes,
+  'c-espace': x_c_espace,
+}
+
+// Fusionne les questions de base et les supplémentaires, sans doublon d'énoncé.
+const merge = (id, base) => {
+  const seen = new Set()
+  return [...base, ...(EXTRA[id] || [])].filter(([q]) => !seen.has(q) && seen.add(q)).map(([q, ...a]) => ({ q, a }))
+}
+
 const T = (id, name, icon, color, category, tagline, followers, questions) => ({
   id, name, icon, color, category, tagline, followers, by: 'Duelia', official: true,
-  questions: questions.map(([q, ...a]) => ({ q, a })),
+  questions: merge(id, questions),
 })
 
 export const OFFICIAL_TOPICS = [
@@ -251,4 +289,4 @@ export const COMMUNITY_SEED = [
       ['Comment s\'appelle l\'agence spatiale européenne ?', "L'ESA", 'La NASA', 'Le CNES', 'La JAXA'],
     ],
   },
-].map(t => ({ ...t, questions: t.questions.map(([q, ...a]) => ({ q, a })) }))
+].map(t => ({ ...t, questions: merge(t.id, t.questions) }))

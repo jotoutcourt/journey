@@ -11,7 +11,8 @@ export function buildQuestions(topic, seen = []) {
   const chosen = [...fresh, ...old].slice(0, ROUNDS)
   return chosen.map(q => {
     const order = shuffle([0, 1, 2, 3])
-    return { q: q.q, idx: q.idx, options: order.map(i => q.a[i]), correct: order.indexOf(0) }
+    if (q.img) new Image().src = q.img // préchargement pendant l'écran face-à-face
+    return { q: q.q, img: q.img, dex: q.dex, idx: q.idx, options: order.map(i => q.a[i]), correct: order.indexOf(0) }
   })
 }
 

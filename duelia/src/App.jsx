@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { OFFICIAL_TOPICS, COMMUNITY_SEED } from './data/topics.js'
+import { POKEMON_TOPIC } from './data/pokemon.js'
 import { loadState, saveState, emptyState, encodeTopic, decodeTopic } from './lib/store.js'
 import { findOpponent, getCommunity, leaderboard } from './lib/bots.js'
 import { myPeriodXp } from './lib/periods.js'
@@ -39,7 +40,7 @@ export default function App() {
   useEffect(() => { setSound(st.settings.sound) }, [st.settings.sound])
 
   const update = useCallback((fn) => setSt(s => fn(s) ?? emptyState()), [])
-  const topics = useMemo(() => [...OFFICIAL_TOPICS, ...COMMUNITY_SEED, ...st.custom], [st.custom])
+  const topics = useMemo(() => [...OFFICIAL_TOPICS, POKEMON_TOPIC, ...COMMUNITY_SEED, ...st.custom], [st.custom])
   const byId = useCallback((id) => topics.find(t => t.id === id), [topics])
 
   const go = useCallback((r) => {
