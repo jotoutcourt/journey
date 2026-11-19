@@ -25,6 +25,7 @@ export function shuffle(arr, rand = Math.random) {
 
 export function share(text) {
   const full = `${text}\n\n— appris sur Culto`
-  if (navigator.share) return navigator.share({ text: full }).catch(() => {})
-  return navigator.clipboard?.writeText(full)
+  const copy = () => navigator.clipboard?.writeText(full).catch(() => {})
+  if (navigator.share) return navigator.share({ text: full }).catch(e => { if (e?.name !== 'AbortError') copy() })
+  return copy()
 }
