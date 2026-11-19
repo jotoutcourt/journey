@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { OFFICIAL_TOPICS, COMMUNITY_SEED } from './data/topics.js'
 import { POKEMON_TOPIC } from './data/pokemon.js'
 import { loadState, saveState, emptyState, encodeTopic, decodeTopic } from './lib/store.js'
@@ -34,6 +34,7 @@ const TABS = [
 
 export default function App() {
   const [st, setSt] = useState(initialState)
+  const viewRef = useRef(null)
   const [route, setRoute] = useState(() => (SHARED ? { name: 'topic', id: SHARED.id } : { name: 'home' }))
 
   useEffect(() => { saveState(st) }, [st])
@@ -57,7 +58,7 @@ export default function App() {
       r = { ...r, opponent }
     }
     setRoute(r)
-    window.scrollTo(0, 0)
+    viewRef.current?.scrollTo(0, 0)
   }, [byId, st.topicStats])
 
   const quickDuel = () => {
@@ -184,7 +185,7 @@ export default function App() {
 
   return (
     <div className={`app ${fullscreen ? 'full' : ''}`}>
-      <main key={route.name + (route.id || '')} className="view">{view}</main>
+      <main ref={viewRef} className="view"><div key={route.name + (route.id || '')}>{view}</div></main>
       {toast && <div className="toast" role="status">{toast}</div>}
       {!fullscreen && (
         <nav className="tabbar">
