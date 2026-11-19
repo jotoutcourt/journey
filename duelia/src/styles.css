@@ -12,6 +12,8 @@
   --violet: #8f7bff;
   --ok: #3ddc84;
   --ko: #ff5d73;
+  /* palette catégorielle des graphiques, validée sur --card (#1c1d38) */
+  --c1: #3987e5; --c2: #d95926; --c3: #199e70; --c4: #c98500; --c5: #d55181; --c6: #9085e9;
   --radius: 18px;
   --display: 'Bricolage Grotesque', system-ui, sans-serif;
   --body: 'DM Sans', system-ui, sans-serif;
@@ -441,3 +443,79 @@ h1, h2, h3 { font-family: var(--display); margin: 0; letter-spacing: -0.01em; }
 .app.full .view { overscroll-behavior: none; }
 .duel, .vs-screen, .matchmaking { touch-action: manipulation; }
 img { -webkit-user-drag: none; }
+
+.avatar-photo { display: block; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+
+/* ---------- profil ---------- */
+.pf-cover {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  margin: calc(-12px - env(safe-area-inset-top)) -16px 0; padding: calc(env(safe-area-inset-top) + 52px) 16px 20px;
+  background: radial-gradient(120% 90% at 50% 0%, #8f7bff55, transparent 70%), linear-gradient(180deg, #2a2456, var(--bg));
+  background-size: cover; background-position: center; text-align: center;
+}
+.pf-cover[style] { box-shadow: inset 0 -120px 80px -40px var(--bg), inset 0 80px 60px -40px #0009; }
+.pf-cover .avatar { box-shadow: 0 0 0 4px var(--ring), 0 8px 30px #0008; }
+.pf-edit-btn { position: absolute; top: calc(env(safe-area-inset-top) + 12px); right: 16px; background: #0007; backdrop-filter: blur(8px); }
+.pf-name { font-size: 28px; margin-top: 10px; text-shadow: 0 2px 10px #0008; }
+.pf-level { font-family: var(--body); font-weight: 500; color: var(--muted); font-size: 22px; margin-left: 6px; }
+.pf-title { color: #ffffffc0; font-size: 15px; }
+.pf-country { font-weight: 700; font-size: 15px; text-shadow: 0 1px 6px #0009; }
+.pf-ribbon { margin: 14px auto 0; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 18px; background: var(--gold); color: #2a1d00; border-radius: 6px; clip-path: polygon(0 0, 100% 0, 96% 50%, 100% 100%, 0 100%, 4% 50%); width: fit-content; max-width: 100%; text-align: center; }
+.pf-ribbon b { font-size: 15px; }
+.pf-ribbon span { font-size: 12.5px; font-weight: 700; opacity: 0.75; }
+.pf-bio { margin: 16px 0 0; text-align: center; color: var(--text); font-size: 15px; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
+.pf-bio.empty { display: block; width: 100%; color: var(--muted); border: 1px dashed var(--line); border-radius: 12px; padding: 10px; font-size: 14px; }
+.pf-counts { margin-top: 16px; }
+.c-red { color: #ff6f7f; } .c-green { color: var(--ok); } .c-blue { color: #4cc3ff; }
+.pf-xp { margin-top: 14px; display: flex; flex-direction: column; gap: 6px; }
+.pf-xp span { font-weight: 700; font-size: 14px; }
+.pf-xp small { color: var(--muted); font-size: 12px; }
+.pf-xp .xpbar-track { height: 10px; background: var(--card2); }
+.pf-empty, .pf-note { color: var(--muted); font-size: 14px; margin: 0; }
+.pf-note { margin-top: 10px; font-size: 12.5px; }
+.pf-card { background: var(--card); border-radius: 16px; padding: 14px; margin-bottom: 10px; }
+.pf-card h4 { margin: 0 0 10px; font-family: var(--display); font-size: 15px; }
+
+.outcome-bar { display: flex; gap: 2px; height: 14px; border-radius: 7px; overflow: hidden; background: var(--card2); }
+.outcome-bar i { display: block; min-width: 4px; }
+.ob-win { background: var(--ok); } .ob-draw { background: var(--muted); } .ob-lose { background: var(--ko); }
+.outcome-legend { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+.ol { display: grid; grid-template-columns: auto 1fr; align-items: center; column-gap: 6px; }
+.ol-dot { width: 10px; height: 10px; border-radius: 3px; grid-row: span 1; }
+.ol-win .ol-dot { background: var(--ok); } .ol-draw .ol-dot { background: var(--muted); } .ol-lose .ol-dot { background: var(--ko); }
+.ol small { color: var(--muted); font-size: 12px; font-weight: 700; }
+.ol b { grid-column: 1 / -1; font-family: var(--display); font-size: 24px; font-variant-numeric: tabular-nums; }
+.ol .ol-n { grid-column: 1 / -1; font-weight: 500; }
+
+.donut-wrap { display: grid; grid-template-columns: 150px 1fr; gap: 14px; align-items: center; }
+.donut { width: 150px; height: 150px; overflow: visible; }
+.donut-seg { cursor: pointer; transition: stroke-width 0.15s, opacity 0.15s; }
+.donut-big { fill: var(--text); font-family: var(--display); font-weight: 800; font-size: 22px; font-variant-numeric: tabular-nums; }
+.donut-small { fill: var(--muted); font-size: 10.5px; font-weight: 700; }
+.donut-legend { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.donut-legend li { display: flex; align-items: center; gap: 8px; padding: 5px 6px; border-radius: 8px; cursor: pointer; font-size: 13.5px; }
+.donut-legend li.on { background: var(--card2); }
+.donut-legend .sw { width: 12px; height: 12px; border-radius: 4px; flex: none; }
+.dl-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.donut-legend b { font-variant-numeric: tabular-nums; font-size: 13.5px; }
+@media (max-width: 360px) { .donut-wrap { grid-template-columns: 1fr; justify-items: center; } .donut-legend { width: 100%; } }
+
+.pf-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.pf-tiles > div { background: var(--card); border-radius: 14px; padding: 12px 8px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 2px; }
+.pf-tiles small { color: var(--muted); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+.pf-tiles b { font-family: var(--display); font-size: 24px; font-variant-numeric: tabular-nums; }
+.pf-tiles span { color: var(--muted); font-size: 11.5px; }
+
+.pf-edit { display: flex; flex-direction: column; gap: 4px; }
+.pf-edit-cover { height: 130px; border-radius: 16px; background: linear-gradient(135deg, #2a2456, #1c1d38); background-size: cover; background-position: center; display: flex; align-items: flex-end; justify-content: flex-end; gap: 8px; padding: 10px; border: 1px dashed var(--line); }
+.pf-edit-cover .btn { background: #000a; }
+.pf-edit-photo { display: flex; align-items: center; gap: 16px; margin-top: -36px; padding-left: 12px; }
+.pf-edit-photo .avatar { box-shadow: 0 0 0 4px var(--bg), 0 0 0 7px var(--ring); }
+.pf-edit-photo-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 36px; }
+.pf-edit label.btn { cursor: pointer; }
+.pf-hint { color: var(--muted); font-size: 12.5px; margin: 10px 0 0; }
+.pf-err { color: var(--ko); font-size: 13.5px; margin: 6px 0 0; font-weight: 700; }
+.field textarea { width: 100%; border: 1px solid var(--line); background: var(--card); border-radius: 12px; padding: 11px 12px; outline: none; resize: vertical; }
+.field textarea:focus { border-color: var(--violet); }
+.field label small { text-transform: none; letter-spacing: 0; font-weight: 500; }
+.pf-edit-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }

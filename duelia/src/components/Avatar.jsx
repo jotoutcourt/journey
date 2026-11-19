@@ -67,7 +67,14 @@ function avatarParts(seed) {
   }
 }
 
-export default function Avatar({ seed = 'x', size = 56, ring, className = '' }) {
+export default function Avatar({ seed = 'x', size = 56, ring, className = '', photo }) {
+  if (photo) {
+    return (
+      <span className={`avatar ${className}`} style={{ width: size, height: size, '--ring': ring || 'transparent' }}>
+        <img src={photo} alt="" width={size} height={size} className="avatar-photo" draggable="false" />
+      </span>
+    )
+  }
   const p = avatarParts(seed)
   return (
     <span className={`avatar ${className}`} style={{ width: size, height: size, '--ring': ring || 'transparent' }}>

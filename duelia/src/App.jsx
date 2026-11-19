@@ -4,12 +4,14 @@ import { POKEMON_TOPIC } from './data/pokemon.js'
 import { loadState, saveState, emptyState, encodeTopic, decodeTopic } from './lib/store.js'
 import { findOpponent, getCommunity, leaderboard } from './lib/bots.js'
 import { myPeriodXp } from './lib/periods.js'
+import { meEntry } from './lib/profile.js'
 import { setSound } from './lib/sound.js'
 import { pick } from './lib/rng.js'
 import Duel from './components/Duel.jsx'
 import { buildQuestions } from './lib/duel.js'
 import Results from './components/Results.jsx'
-import { Home, Topics, TopicPage, Ranking, Matchmaking, CreateTopic, Profile, Onboarding } from './components/Screens.jsx'
+import { Home, Topics, TopicPage, Ranking, Matchmaking, CreateTopic, Onboarding } from './components/Screens.jsx'
+import Profile from './components/Profile.jsx'
 
 // Un thème partagé par lien (#t=…) est importé au chargement.
 const SHARED = (() => {
@@ -84,8 +86,17 @@ export default function App() {
     // Journal des gains (40 derniers jours) pour les classements de la semaine et du mois
     const now = Date.now()
     const xpLog = [...(prev.log || []).filter(e => now - e.at < 40 * 86400000), { at: now, xp: total }]
-    const next = { xp: prev.xp + total, played: prev.played + 1, wins: prev.wins + (outcome === 'win' ? 1 : 0), seen, log: xpLog }
-    const meRow = { name: me.name, avatar: me.avatar, allXp: next.xp }
+    const mineLog = log.me.filter(Boolean)
+    const answered = mineLog.filter(m => m.choice >= 0)
+    const next = {
+      ...prev, xp: prev.xp + total, played: prev.played + 1, seen, log: xpLog,
+      wins: prev.wins + (outcome === 'win' ? 1 : 0), draws: (prev.draws || 0) + (outcome === 'draw' ? 1 : 0),
+      // statistiques du profil
+      tracked: (prev.tracked || 0) + 1, scoreSum: (prev.scoreSum || 0) + myScore,
+      asked: (prev.asked || 0) + questions.length, correct: (prev.correct || 0) + mineLog.filter(m => m.pts > 0).length,
+      answered: (prev.answered || 0) + answered.length, timeSum: (prev.timeSum || 0) + answered.reduce((t, m) => t + m.t, 0),
+    }
+    const meRow = { ...meEntry(me), allXp: next.xp }
     const ranks = Object.fromEntries(['week', 'month', 'all'].map(k => {
       const rows = leaderboard(t, meRow, myPeriodXp(next, k), k)
       return [k, rows.find(x => x.isMe).rank]

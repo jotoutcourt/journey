@@ -6,6 +6,7 @@ import { CATEGORIES } from '../data/topics.js'
 import { levelInfo } from '../lib/levels.js'
 import { getCommunity, leaderboard } from '../lib/bots.js'
 import { PERIODS, myPeriodXp, resetIn } from '../lib/periods.js'
+import { meEntry } from '../lib/profile.js'
 import { decodeTopic } from '../lib/store.js'
 import { sfx } from '../lib/sound.js'
 
@@ -49,7 +50,7 @@ export function Home({ st, topics, go, quickDuel }) {
       </header>
 
       <section className="me-card" onClick={() => go({ name: 'profile' })}>
-        <Avatar seed={me.avatar} size={64} ring="var(--me)" />
+        <Avatar seed={me.avatar} photo={me.photo} size={64} ring="var(--me)" />
         <div className="me-info">
           <b>{me.name}</b>
           <span>Niveau {lvl.level} · {lvl.title}</span>
@@ -193,7 +194,7 @@ export function TopicPage({ st, topic, go, toggleFollow, shareTopic, deleteTopic
   const stats = st.topicStats[topic.id] || { xp: 0, played: 0, wins: 0, seen: [] }
   const lvl = levelInfo(stats.xp)
   const following = st.follows.includes(topic.id)
-  const meRow = { name: st.profile.name, avatar: st.profile.avatar, allXp: stats.xp }
+  const meRow = { ...meEntry(st.profile), allXp: stats.xp }
   const board = leaderboard(topic, meRow, stats.xp)
   const ranks = PERIODS.map(p => ({ ...p, rank: leaderboard(topic, meRow, myPeriodXp(stats, p.id), p.id).find(r => r.isMe).rank }))
   const champ = board[0]
@@ -231,7 +232,7 @@ export function TopicPage({ st, topic, go, toggleFollow, shareTopic, deleteTopic
       </button>
 
       <div className={`champ-card ${champ.isMe ? 'mine' : ''}`}>
-        <Avatar seed={champ.avatar} size={56} ring="var(--gold)" />
+        <Avatar seed={champ.avatar} photo={champ.photo} size={56} ring="var(--gold)" />
         <div className="champ-info">
           <small>👑 Champion du thème</small>
           <b>{champ.isMe ? 'C\'est toi !' : `${champ.flag} ${champ.name}`}</b>
@@ -256,7 +257,7 @@ export function Ranking({ st, topic, go }) {
   const stats = st.topicStats[topic.id] || { xp: 0 }
   const [kind, setKind] = useState('week')
   const period = PERIODS.find(p => p.id === kind)
-  const rows = leaderboard(topic, { name: st.profile.name, avatar: st.profile.avatar, allXp: stats.xp }, myPeriodXp(stats, kind), kind)
+  const rows = leaderboard(topic, { ...meEntry(st.profile), allXp: stats.xp }, myPeriodXp(stats, kind), kind)
   const reset = resetIn(kind)
   useEffect(() => {
     document.querySelector('.rank-row.me')?.scrollIntoView({ block: 'center', behavior: 'smooth' })
@@ -281,7 +282,7 @@ export function Ranking({ st, topic, go }) {
           return (
             <li key={r.id} className={`rank-row ${r.isMe ? 'me' : ''} ${r.champion ? 'champ' : ''}`}>
               <span className="rk">{r.champion ? '👑' : r.rank}</span>
-              <Avatar seed={r.avatar} size={40} ring={r.champion ? 'var(--gold)' : undefined} />
+              <Avatar seed={r.avatar} photo={r.photo} size={40} ring={r.champion ? 'var(--gold)' : undefined} />
               <div className="rk-info">
                 <b>{r.flag} {r.isMe ? `${r.name} (toi)` : r.name}</b>
                 <small>{r.champion ? period.champ : `Niv. ${l.level} · ${l.title}`}</small>
@@ -411,63 +412,6 @@ export function CreateTopic({ st, existing, onSave, go }) {
           {ok ? 'Publier le thème' : `Encore ${Math.max(0, MIN_Q - complete.length)} question(s) complète(s)${name.trim() ? '' : ' et un nom'}`}
         </button>
       </div>
-    </div>
-  )
-}
-
-/* ---------------- Profil ---------------- */
-export function Profile({ st, topics, update, go }) {
-  const me = st.profile
-  const lvl = levelInfo(st.xp)
-  const played = Object.values(st.topicStats).reduce((s, t) => s + (t.played || 0), 0)
-  const wins = Object.values(st.topicStats).reduce((s, t) => s + (t.wins || 0), 0)
-  const mine = topics.filter(t => st.topicStats[t.id]?.played)
-    .sort((a, b) => (st.topicStats[b.id].xp || 0) - (st.topicStats[a.id].xp || 0))
-  const [name, setName] = useState(me.name)
-
-  return (
-    <div className="screen profile">
-      <header className="top"><h1>Profil</h1></header>
-      <div className="pf-head">
-        <Avatar seed={me.avatar} size={112} ring="var(--me)" />
-        <button className="btn btn-small btn-ghost" onClick={() => update(s => ({ ...s, profile: { ...s.profile, avatar: Math.random().toString(36).slice(2) } }))}>🎲 Nouvelle créature</button>
-        <div className="name-row">
-          <input value={name} maxLength={18} onChange={e => setName(e.target.value)}
-            onBlur={() => name.trim() && update(s => ({ ...s, profile: { ...s.profile, name: name.trim() } }))} />
-        </div>
-        <span className="pf-title">Niveau {lvl.level} · {lvl.title}</span>
-        <XpBar xp={st.xp} />
-      </div>
-
-      <div className="tp-stats">
-        <div><small>Parties</small><b>{played}</b></div>
-        <div><small>Victoires</small><b>{wins}</b></div>
-        <div><small>Ratio</small><b>{played ? Math.round((wins / played) * 100) : 0} %</b></div>
-      </div>
-
-      {mine.length > 0 && <>
-        <h3 className="sec-title">Mes niveaux par thème</h3>
-        <ul className="pf-topics">
-          {mine.map(t => {
-            const l = levelInfo(st.topicStats[t.id].xp)
-            return (
-              <li key={t.id} onClick={() => go({ name: 'topic', id: t.id })}>
-                <TopicIcon topic={t} size={40} />
-                <div><b>{t.name}</b><small>Niveau {l.level} · {l.title}</small></div>
-                <span>{fmt(st.topicStats[t.id].xp)} XP</span>
-              </li>
-            )
-          })}
-        </ul>
-      </>}
-
-      <h3 className="sec-title">Réglages</h3>
-      <label className="toggle">
-        <input type="checkbox" checked={st.settings.sound} onChange={e => update(s => ({ ...s, settings: { ...s.settings, sound: e.target.checked } }))} />
-        <span>Effets sonores</span>
-      </label>
-      <ConfirmButton className="btn btn-ghost danger wide" onConfirm={() => update(() => null)}
-        confirmLabel="Tout effacer ? Appuie encore pour confirmer">Réinitialiser ma progression</ConfirmButton>
     </div>
   )
 }

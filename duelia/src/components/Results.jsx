@@ -78,7 +78,7 @@ export default function Results({ data, me, onRematch, onAnother, onTopic, onSha
 
       <div className="faceoff">
         <div className={`fo ${outcome === 'win' ? 'winner' : ''}`}>
-          <Avatar seed={me.avatar} size={84} ring="var(--me)" />
+          <Avatar seed={me.avatar} photo={me.photo} size={84} ring="var(--me)" />
           <b>{me.name}</b>
           <span className="fo-score me">{myScore}</span>
         </div>

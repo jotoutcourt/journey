@@ -132,7 +132,7 @@ export default function Duel({ topic, me, opponent, questions, onFinish, onQuit 
     return (
       <div className="vs-screen">
         <div className="vs-side vs-left">
-          <Avatar seed={me.avatar} size={128} ring="var(--me)" className="vs-av" />
+          <Avatar seed={me.avatar} photo={me.photo} size={128} ring="var(--me)" className="vs-av" />
           <b>{me.name}</b>
           <span>Niv. {myLvl.level} · {myLvl.title}</span>
         </div>
@@ -159,7 +159,7 @@ export default function Duel({ topic, me, opponent, questions, onFinish, onQuit 
       <div className="duel-top">
         <ConfirmButton className="icon-btn quit" onConfirm={onQuit} confirmLabel="Abandonner ?" aria-label="Abandonner">✕</ConfirmButton>
         <div className="pl pl-me">
-          <Avatar seed={me.avatar} size={46} ring="var(--me)" />
+          <Avatar seed={me.avatar} photo={me.photo} size={46} ring="var(--me)" />
           <div className="pl-txt">
             <small>{me.name}</small>
             <strong className="score">{myScore}</strong>
@@ -211,7 +211,7 @@ export default function Duel({ topic, me, opponent, questions, onFinish, onQuit 
               return (
                 <button key={i} className={cls} onClick={(e) => answer(i, e.timeStamp)} disabled={!!mine || phase !== 'play'}
                   style={{ animationDelay: `${120 + i * 70}ms` }}>
-                  {mine?.choice === i && <span className="mark mark-me"><Avatar seed={me.avatar} size={22} /></span>}
+                  {mine?.choice === i && <span className="mark mark-me"><Avatar seed={me.avatar} photo={me.photo} size={22} /></span>}
                   <span className="opt-txt">{opt}</span>
                   {reveal && theirs?.choice === i && <span className="mark mark-opp"><Avatar seed={opponent.avatar} size={22} /></span>}
                 </button>

@@ -73,7 +73,7 @@ export function leaderboard(topic, me, myXp, kind = 'all') {
       .map(b => ({ ...b, allXp: b.xp, xp: botPeriodXp(b, topic, kind, key, frac, community[0].xp) }))
       .filter(b => b.xp > 0)
   }
-  rows.push({ id: 'me', name: me.name, avatar: me.avatar, flag: me.flag || '🇫🇷', xp: myXp, allXp: me.allXp ?? myXp, isMe: true })
+  rows.push({ id: 'me', name: me.name, avatar: me.avatar, photo: me.photo, flag: me.flag || '🇫🇷', xp: myXp, allXp: me.allXp ?? myXp, isMe: true })
   rows.sort((a, b) => b.xp - a.xp || (a.isMe ? -1 : 1))
   rows.forEach((r, i) => { r.rank = i + 1; r.champion = i === 0 && r.xp > 0 })
   return rows
