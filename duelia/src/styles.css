@@ -405,3 +405,16 @@ h1, h2, h3 { font-family: var(--display); margin: 0; letter-spacing: -0.01em; }
 .quit.armed { width: auto; padding: 0 12px; font-size: 13px; font-weight: 700; z-index: 2; }
 .import-err { color: var(--ko) !important; margin: 8px 0 0 !important; }
 .toast { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 84px); transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 12px; font-weight: 700; font-size: 14px; z-index: 20; animation: fadeUp 0.25s both; max-width: calc(100% - 32px); }
+
+/* ---------- classements par période ---------- */
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; background: var(--card); border-radius: 14px; }
+.seg button { height: 38px; border-radius: 10px; font-weight: 700; font-size: 14px; color: var(--muted); }
+.seg button.on { background: var(--violet); color: #fff; }
+.rank-note { color: var(--muted); font-size: 13px; margin: 10px 2px 12px; }
+.rank-note b { color: var(--text); }
+.tp-ranks { width: 100%; text-align: inherit; }
+.result-ranks { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--card); border-radius: 14px; margin-top: 18px; }
+.result-ranks > div { display: flex; flex-direction: column; padding: 10px 4px; }
+.result-ranks > div + div { border-left: 1px solid var(--line); }
+.result-ranks small { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; }
+.result-ranks b { font-family: var(--display); font-size: 24px; }

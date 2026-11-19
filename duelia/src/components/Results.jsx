@@ -100,6 +100,14 @@ export default function Results({ data, me, onRematch, onAnother, onTopic, onSha
 
       <LevelRing before={before} after={after} />
 
+      {data.ranks && (
+        <div className="result-ranks">
+          <div><small>Semaine</small><b>#{data.ranks.week}</b></div>
+          <div><small>Mois</small><b>#{data.ranks.month}</b></div>
+          <div><small>Toujours</small><b>#{data.ranks.all}</b></div>
+        </div>
+      )}
+
       <div className="results-actions">
         <button className="btn btn-primary" onClick={onRematch}>Revanche</button>
         <button className="btn btn-secondary" onClick={onAnother}>Nouvel adversaire</button>

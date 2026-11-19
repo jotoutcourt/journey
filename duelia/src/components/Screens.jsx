@@ -5,6 +5,7 @@ import ConfirmButton from './ConfirmButton.jsx'
 import { CATEGORIES } from '../data/topics.js'
 import { levelInfo } from '../lib/levels.js'
 import { getCommunity, leaderboard } from '../lib/bots.js'
+import { PERIODS, myPeriodXp, resetIn } from '../lib/periods.js'
 import { decodeTopic } from '../lib/store.js'
 import { sfx } from '../lib/sound.js'
 
@@ -192,8 +193,9 @@ export function TopicPage({ st, topic, go, toggleFollow, shareTopic, deleteTopic
   const stats = st.topicStats[topic.id] || { xp: 0, played: 0, wins: 0, seen: [] }
   const lvl = levelInfo(stats.xp)
   const following = st.follows.includes(topic.id)
-  const board = leaderboard(topic, { name: st.profile.name, avatar: st.profile.avatar }, stats.xp)
-  const myRank = board.find(r => r.isMe).rank
+  const meRow = { name: st.profile.name, avatar: st.profile.avatar, allXp: stats.xp }
+  const board = leaderboard(topic, meRow, stats.xp)
+  const ranks = PERIODS.map(p => ({ ...p, rank: leaderboard(topic, meRow, myPeriodXp(stats, p.id), p.id).find(r => r.isMe).rank }))
   const champ = board[0]
   const followers = (topic.followers || 0) + (following ? 1 : 0)
   const seenPct = Math.round(((stats.seen?.length || 0) / topic.questions.length) * 100)
@@ -224,11 +226,9 @@ export function TopicPage({ st, topic, go, toggleFollow, shareTopic, deleteTopic
         <div><small>Abonnés</small><b>{fmt(followers)}</b></div>
         <div><small>Questions</small><b>{topic.questions.length}</b></div>
       </div>
-      <div className="tp-stats">
-        <div><small>Ton rang</small><b>#{myRank}</b></div>
-        <div><small>Parties</small><b>{stats.played}</b></div>
-        <div><small>Victoires</small><b>{stats.wins}</b></div>
-      </div>
+      <button className="tp-stats tp-ranks" onClick={() => go({ name: 'ranking', id: topic.id })}>
+        {ranks.map(r => <div key={r.id}><small>{r.id === 'all' ? 'Toujours' : r.label}</small><b>#{r.rank}</b></div>)}
+      </button>
 
       <div className={`champ-card ${champ.isMe ? 'mine' : ''}`}>
         <Avatar seed={champ.avatar} size={56} ring="var(--gold)" />
@@ -254,26 +254,37 @@ export function TopicPage({ st, topic, go, toggleFollow, shareTopic, deleteTopic
 /* ---------------- Classement ---------------- */
 export function Ranking({ st, topic, go }) {
   const stats = st.topicStats[topic.id] || { xp: 0 }
-  const rows = leaderboard(topic, { name: st.profile.name, avatar: st.profile.avatar }, stats.xp)
+  const [kind, setKind] = useState('week')
+  const period = PERIODS.find(p => p.id === kind)
+  const rows = leaderboard(topic, { name: st.profile.name, avatar: st.profile.avatar, allXp: stats.xp }, myPeriodXp(stats, kind), kind)
+  const reset = resetIn(kind)
   useEffect(() => {
     document.querySelector('.rank-row.me')?.scrollIntoView({ block: 'center', behavior: 'smooth' })
-  }, [])
+  }, [kind])
   return (
     <div className="screen">
       <header className="top">
         <button className="icon-btn" onClick={() => go({ name: 'topic', id: topic.id })} aria-label="Retour">←</button>
         <h1 className="ellipsis">Classement · {topic.name}</h1>
       </header>
+      <div className="seg" role="tablist">
+        {PERIODS.map(p => (
+          <button key={p.id} role="tab" aria-selected={p.id === kind} className={p.id === kind ? 'on' : ''} onClick={() => setKind(p.id)}>{p.label}</button>
+        ))}
+      </div>
+      <p className="rank-note">
+        {reset ? <>XP gagné depuis le début {kind === 'week' ? 'de la semaine' : 'du mois'} · remise à zéro dans <b>{reset}</b></> : <>Tout l'XP gagné dans ce thème</>}
+      </p>
       <ol className="ranking">
         {rows.map(r => {
-          const l = levelInfo(r.xp)
+          const l = levelInfo(r.allXp ?? r.xp)
           return (
             <li key={r.id} className={`rank-row ${r.isMe ? 'me' : ''} ${r.champion ? 'champ' : ''}`}>
               <span className="rk">{r.champion ? '👑' : r.rank}</span>
               <Avatar seed={r.avatar} size={40} ring={r.champion ? 'var(--gold)' : undefined} />
               <div className="rk-info">
                 <b>{r.flag} {r.isMe ? `${r.name} (toi)` : r.name}</b>
-                <small>Niv. {l.level} · {l.title}</small>
+                <small>{r.champion ? period.champ : `Niv. ${l.level} · ${l.title}`}</small>
               </div>
               <span className="rk-xp">{fmt(r.xp)}<small> XP</small></span>
               {!r.isMe && <button className="btn btn-small btn-secondary" onClick={() => go({ name: 'match', id: topic.id, opponentId: r.id })}>Défier</button>}

@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { OFFICIAL_TOPICS, COMMUNITY_SEED } from './data/topics.js'
 import { loadState, saveState, emptyState, encodeTopic, decodeTopic } from './lib/store.js'
-import { findOpponent, getCommunity } from './lib/bots.js'
+import { findOpponent, getCommunity, leaderboard } from './lib/bots.js'
+import { myPeriodXp } from './lib/periods.js'
 import { setSound } from './lib/sound.js'
 import { pick } from './lib/rng.js'
 import Duel from './components/Duel.jsx'
@@ -78,17 +79,26 @@ export default function App() {
     const total = myScore + bonuses.finish + bonuses.victory + bonuses.perfect
     const prev = st.topicStats[r.id] || { xp: 0, played: 0, wins: 0, seen: [] }
     const seen = [...new Set([...(prev.seen || []), ...questions.map(q => q.idx)])]
+    // Journal des gains (40 derniers jours) pour les classements de la semaine et du mois
+    const now = Date.now()
+    const xpLog = [...(prev.log || []).filter(e => now - e.at < 40 * 86400000), { at: now, xp: total }]
+    const next = { xp: prev.xp + total, played: prev.played + 1, wins: prev.wins + (outcome === 'win' ? 1 : 0), seen, log: xpLog }
+    const meRow = { name: me.name, avatar: me.avatar, allXp: next.xp }
+    const ranks = Object.fromEntries(['week', 'month', 'all'].map(k => {
+      const rows = leaderboard(t, meRow, myPeriodXp(next, k), k)
+      return [k, rows.find(x => x.isMe).rank]
+    }))
     setSt(s => ({
       ...s,
       xp: s.xp + total,
-      topicStats: { ...s.topicStats, [r.id]: { xp: prev.xp + total, played: prev.played + 1, wins: prev.wins + (outcome === 'win' ? 1 : 0), seen } },
+      topicStats: { ...s.topicStats, [r.id]: next },
       history: [{ topicId: t.id, topicName: t.name, oppName: r.opponent.name, oppAvatar: r.opponent.avatar, champion: r.opponent.champion, myScore, oppScore, outcome, at: Date.now() }, ...s.history].slice(0, 30),
     }))
     setRoute({
       ...r, name: 'results',
-      data: { outcome, myScore, oppScore, opponent: r.opponent, topic: t, bonuses, total, before: prev.xp, after: prev.xp + total, log, questions },
+      data: { outcome, myScore, oppScore, opponent: r.opponent, topic: t, bonuses, total, before: prev.xp, after: prev.xp + total, log, questions, ranks },
     })
-  }, [route, byId, st.topicStats])
+  }, [route, byId, st.topicStats, me])
 
   const quitDuel = useCallback(() => {
     setRoute(r => ({ name: 'topic', id: r.id }))
