@@ -12,6 +12,7 @@ import x_expressions from './extra/expressions.js'
 import x_mythologie from './extra/mythologie.js'
 import x_c_series_cultes from './extra/c-series-cultes.js'
 import x_c_espace from './extra/c-espace.js'
+import x_c_calzona from './extra/c-calzona.js'
 
 // Banque de thèmes officiels. Chaque question : [énoncé, bonne réponse, leurre, leurre, leurre].
 // Les réponses sont mélangées au moment du duel.
@@ -36,6 +37,7 @@ const EXTRA = {
   'mythologie': x_mythologie,
   'c-series-cultes': x_c_series_cultes,
   'c-espace': x_c_espace,
+  'c-calzona': x_c_calzona,
 }
 
 // Fusionne les questions de base et les supplémentaires, sans doublon d'énoncé.
