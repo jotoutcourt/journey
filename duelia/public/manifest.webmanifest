@@ -1,0 +1,12 @@
+{
+  "name": "Duelia",
+  "short_name": "Duelia",
+  "description": "Duels de quiz en temps réel sur des milliers de thèmes.",
+  "lang": "fr",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0e0f1f",
+  "theme_color": "#0e0f1f",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}
