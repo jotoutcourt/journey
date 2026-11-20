@@ -340,7 +340,7 @@ h1, h2, h3 { font-family: var(--display); margin: 0; letter-spacing: -0.01em; }
 .ring-txt small { color: var(--muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.1em; font-size: 12px; }
 .ring-txt b { font-family: var(--display); font-size: 54px; line-height: 1; }
 .level-ring.up .ring-txt b { animation: pop 0.5s; color: var(--gold); }
-.ring-sub { color: var(--muted); font-size: 14px; margin: 8px -40px 0; }
+.ring-sub { color: var(--muted); font-size: 14px; margin: 4px -40px 0; text-align: center; }
 .lvl-up { color: var(--gold); font-weight: 800; font-size: 17px; animation: pop 0.4s both; display: inline-block; }
 
 .results-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 26px; }
@@ -666,7 +666,7 @@ img { -webkit-user-drag: none; }
 .tp-title-badge { font-family: var(--display); font-weight: 800; font-size: 18px; padding: 6px 16px; border-radius: 20px; background: color-mix(in srgb, var(--c, var(--violet)) 25%, var(--card)); border: 1px solid color-mix(in srgb, var(--c, var(--violet)) 60%, transparent); }
 .tp-title small { color: var(--muted); font-size: 13px; }
 .tp-title small b { color: var(--text); }
-.ring-title { font-style: normal; font-size: 11.5px; font-weight: 700; color: var(--muted); max-width: 120px; text-align: center; line-height: 1.2; margin-top: 2px; }
+.ring-name { margin: 8px -40px 0; text-align: center; font-weight: 700; font-size: 15px; color: var(--text); }
 
 /* ---------- éditeur : titres de niveau ---------- */
 .ladder-hint { color: var(--muted); font-size: 13.5px; margin: -4px 0 10px; }

@@ -56,8 +56,9 @@ function LevelRing({ before, after, topic }) {
       <div className="ring-txt">
         <small>Niveau</small>
         <b>{shown.level}</b>
-        <em className="ring-title">{topicTitle(topic, shown.level)}</em>
       </div>
+      {/* le titre est affiché sous l'anneau : les titres longs débordaient du cercle */}
+      {shown.level <= a.level && <p className="ring-name">{topicTitle(topic, shown.level)}</p>}
       <p className="ring-sub">
         {shown.level > a.level ? <span className="lvl-up">Niveau {shown.level} : {topicTitle(topic, shown.level)}</span>
           : <>Encore <b>{b.need - b.into} XP</b> pour le niveau {b.level + 1}</>}
