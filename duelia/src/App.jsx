@@ -76,6 +76,15 @@ function initialState() {
     }
     s.starterVersion = 3
   }
+  // Mise à jour unique (v4) : le thème La Villa des cœurs brisés rejoint les créations du joueur.
+  if (s.starterVersion < 4) {
+    for (const { topic, since } of STARTER_CREATIONS) {
+      if (since !== 4 || s.custom.some(t => t.id === topic.id)) continue
+      s.custom = [...s.custom, topic]
+      if (!s.follows.includes(topic.id)) s.follows = [...s.follows, topic.id]
+    }
+    s.starterVersion = 4
+  }
   return s
 }
 

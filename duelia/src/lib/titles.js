@@ -19,6 +19,7 @@ const LADDERS = {
   pokemon: ['Dresseur débutant', 'Dresseur', 'Éleveur', 'Collectionneur', 'Expert du Pokédex', 'Professeur', 'Champion', 'Maître des dresseurs'],
   'c-series-cultes': ['Téléspectateur', 'Binge-watcheur', 'Sériephile', 'Critique', 'Scénariste', 'Producteur', 'Showrunner', 'Légende du petit écran'],
   'c-desperate': ['Nouvelle arrivante', 'Voisine', 'Commère du quartier', 'Reine du barbecue', 'Joueuse de poker', 'Pilier de Wisteria Lane', 'Gardienne des secrets', 'Reine de Wisteria Lane'],
+  'c-villa': ['Cœur brisé', 'Célibataire', 'Prétendant', 'Séducteur', 'Expert en séduction', 'Love coach stagiaire', 'Love coach', 'Légende de la Villa'],
   'c-disney': ['Visiteur du parc', 'Fan de dessins animés', 'Collectionneur', 'Animateur stagiaire', 'Animateur', 'Réalisateur', 'Imagineer', 'Légende du royaume enchanté'],
   'c-espace': ['Observateur du ciel', 'Astronome amateur', 'Cadet de l\'espace', 'Astronaute', 'Commandant de bord', 'Directeur de vol', 'Explorateur stellaire', 'Seigneur des galaxies'],
 }

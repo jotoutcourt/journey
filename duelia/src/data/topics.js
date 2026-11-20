@@ -15,6 +15,7 @@ import x_c_espace from './extra/c-espace.js'
 import x_c_calzona from './extra/c-calzona.js'
 import x_c_desperate from './extra/c-desperate.js'
 import x_c_disney from './extra/c-disney.js'
+import x_c_villa from './extra/c-villa.js'
 
 // Banque de thèmes officiels. Chaque question : [énoncé, bonne réponse, leurre, leurre, leurre].
 // Les réponses sont mélangées au moment du duel.
@@ -42,6 +43,7 @@ const EXTRA = {
   'c-calzona': x_c_calzona,
   'c-desperate': x_c_desperate,
   'c-disney': x_c_disney,
+  'c-villa': x_c_villa,
 }
 
 // Fusionne les questions de base et les supplémentaires, sans doublon d'énoncé.
@@ -332,16 +334,21 @@ const SEED = [
     tagline: 'Les secrets de Wisteria Lane', by: 'Jo', followers: 0, community: true, questions: [],
   },
   {
+    id: 'c-villa', name: 'La Villa des cœurs brisés', icon: '💔', color: '#ff5d8f', category: 'Cinéma & TV',
+    tagline: 'Love coach, prétendants et villas de rêve', by: 'Jo', followers: 0, community: true, questions: [],
+  },
+  {
     id: 'c-disney', name: 'Disney', icon: '🏰', color: '#4f7bff', category: 'Cinéma & TV',
     tagline: 'Un siècle de films, de personnages et de parcs', by: 'Jo', followers: 0, community: true, questions: [],
   },
 ].map(t => ({ ...t, questions: merge(t.id, t.questions) }))
 
 // Thèmes communautaires livrés avec l'appli
-const MINE = ['c-calzona', 'c-desperate', 'c-disney']
+const MINE = ['c-calzona', 'c-desperate', 'c-disney', 'c-villa']
 export const COMMUNITY_SEED = SEED.filter(t => !MINE.includes(t.id))
 
 // Thème « Callie & Arizona » : placé dans les créations du joueur, modifiable comme s'il l'avait écrit
 export const STARTER_CREATION = { ...SEED.find(t => t.id === 'c-calzona'), own: true, community: true, followers: 0 }
 // Tous les thèmes rangés dans les créations du joueur, avec la version de l'appli qui les a ajoutés
-export const STARTER_CREATIONS = MINE.map((id, i) => ({ topic: { ...SEED.find(t => t.id === id), own: true, community: true, followers: 0 }, since: i === 0 ? 1 : 3 }))
+const SINCE = { 'c-calzona': 1, 'c-desperate': 3, 'c-disney': 3, 'c-villa': 4 }
+export const STARTER_CREATIONS = MINE.map(id => ({ topic: { ...SEED.find(t => t.id === id), own: true, community: true, followers: 0 }, since: SINCE[id] }))
