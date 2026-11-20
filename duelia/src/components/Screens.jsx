@@ -244,6 +244,7 @@ export function TopicPage({ st, topic, go, toggleFollow, shareTopic, deleteTopic
           <button className="btn btn-ghost" onClick={() => go({ name: 'ranking', id: topic.id })}>Classement</button>
         </div>
       </div>
+      <button className="btn btn-gold wide tp-friend" onClick={() => go({ name: 'linkcreate', id: topic.id })}>🔗 Défier un ami par lien</button>
       <p className="tp-tagline">{topic.tagline || `Un thème créé par ${topic.by}`}{!topic.official && <> · par <b>{topic.by}</b></>}</p>
 
       <div className="progress-label"><small>Questions découvertes</small><small>{seenPct} %</small></div>

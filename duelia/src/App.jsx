@@ -17,6 +17,9 @@ import { settleDuel, ranksFor } from './lib/rewards.js'
 import { presence, createOutgoing, tickChallenges, pendingCount, markPlayed } from './lib/challenges.js'
 import { Inbox, ChallengeSheet, NotifyBanner, SentScreen } from './components/Challenges.jsx'
 import RankShift from './components/RankShift.jsx'
+import { readLinkFromHash, challengeUrl, replyUrl } from './lib/linkduel.js'
+import { LinkReady, LinkIntro, LinkReplyIntro } from './components/LinkDuel.jsx'
+import { TIME, pointsFor } from './lib/duel.js'
 
 // Un thème partagé par lien (#t=…) est importé au chargement.
 const SHARED = (() => {
@@ -25,6 +28,15 @@ const SHARED = (() => {
   history.replaceState(null, '', location.pathname + location.search)
   return decodeTopic(m[1])
 })()
+
+// Un défi par lien (#d=…) ou la réponse d'un ami (#r=…) ouvert au chargement
+const LINK = readLinkFromHash()
+
+// Adversaire fictif quand on crée un défi par lien : l'ami jouera plus tard
+const FRIEND = { id: 'ami', name: 'Ton ami', avatar: 'ami-mystere', flag: '❔', xp: 0 }
+
+const toLog = (answers, qs) => answers.map((a, i) => ({ ...a, pts: a.choice === qs[i].correct ? pointsFor(a.t, i === qs.length - 1 ? 2 : 1) : 0 }))
+const plain = (logMe, n) => Array.from({ length: n }, (_, i) => (logMe[i] ? { choice: logMe[i].choice, t: logMe[i].t } : { choice: -1, t: TIME }))
 
 function initialState() {
   const s = loadState()
@@ -78,7 +90,11 @@ const TABS = [
 export default function App() {
   const [st, setSt] = useState(initialState)
   const viewRef = useRef(null)
-  const [route, setRoute] = useState(() => (SHARED ? { name: 'topic', id: SHARED.id } : { name: 'home' }))
+  const [route, setRoute] = useState(() => (
+    LINK?.kind === 'challenge' ? { name: 'linkintro' }
+      : LINK?.kind === 'reply' ? { name: 'linkreply' }
+        : SHARED ? { name: 'topic', id: SHARED.id } : { name: 'home' }))
+  const [link, setLink] = useState(LINK?.kind === 'challenge' || LINK?.kind === 'reply' ? LINK : null)
 
   useEffect(() => { saveState(st) }, [st])
   useEffect(() => { setSound(st.settings.sound) }, [st.settings.sound])
@@ -100,6 +116,11 @@ export default function App() {
   const [notes, setNotes] = useState([])
 
   const go = useCallback((r) => {
+    // Défi par lien : on joue d'abord ses 7 questions, sans adversaire
+    if (r.name === 'linkcreate') {
+      const t = byId(r.id)
+      r = { name: 'duel', id: t.id, opponent: FRIEND, mode: 'blind', linkCreate: true, questions: buildQuestions(t, st.topicStats[t.id]?.seen) }
+    }
     // Défier un joueur précis : s'il n'est pas en ligne, on propose un défi différé
     if (r.name === 'match' && !r.live && !r.opponent && (r.opponentId || r.forceChampion)) {
       const topic = byId(r.id)
@@ -164,7 +185,7 @@ export default function App() {
     go({ name: 'match', id: pick(pool) })
   }
 
-  const topic = route.id ? byId(route.id) : null
+  const topic = route.topicObj || (route.id ? byId(route.id) : null)
   const me = st.profile
 
   const startDuel = useCallback(() => {
@@ -172,7 +193,31 @@ export default function App() {
   }, [topics, st.topicStats])
 
   const finishDuel = useCallback(({ myScore, oppScore, log, questions }) => {
-    const r = route, t = byId(r.id)
+    const r = route, t = r.topicObj || byId(r.id)
+    // Défi par lien créé : on enregistre ses réponses et on fabrique le lien à envoyer
+    if (r.linkCreate) {
+      const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
+      const answers = plain(log.me, questions.length)
+      setSt(s => ({ ...s, linkChallenges: [{ id, topicId: t.id, questions, answers, score: myScore, at: Date.now(), replies: [] }, ...(s.linkChallenges || [])].slice(0, 30) }))
+      setRoute({ name: 'linkready', id: t.id, url: challengeUrl({ id, from: meEntry(st.profile), topic: t, questions, answers }), score: myScore })
+      return
+    }
+    // L'ami a joué un défi reçu par lien : résultat tout de suite, et lien de réponse pour le challenger
+    if (r.linkPlay) {
+      const ch = r.linkPlay
+      const reply = { url: replyUrl({ id: ch.id, from: meEntry(st.profile), answers: plain(log.me, questions.length), questions }), to: ch.from.name }
+      const known = byId(ch.topic.id)
+      if (known) {
+        const { state, data } = settleDuel(st, { topic: known, opponent: r.opponent, myScore, oppScore, log, questions })
+        setSt(state)
+        setRoute({ ...r, name: 'results', id: known.id, topicObj: null, data: { ...data, topic: known, link: reply } })
+      } else {
+        const outcome = myScore > oppScore ? 'win' : myScore < oppScore ? 'lose' : 'draw'
+        setRoute({ ...r, name: 'results', data: { outcome, myScore, oppScore, opponent: r.opponent, topic: t, bonuses: {}, total: 0, before: 0, after: 0, log, questions, noXp: true, link: reply } })
+      }
+      setLink(null)
+      return
+    }
     const ch = r.challengeId ? (st.challenges || []).find(c => c.id === r.challengeId) : null
     // Défi reçu : on a joué sans voir l'adversaire, le résultat viendra plus tard
     if (ch && ch.dir === 'in') {
@@ -229,6 +274,28 @@ export default function App() {
     onDismiss: (c) => update(s => ({ ...s, challenges: s.challenges.filter(x => x.id !== c.id) })),
   }
 
+  // Le challenger ouvre la réponse de son ami : on rejoue le résultat à partir des deux séries de réponses
+  const openReply = () => {
+    const rep = link
+    const rec = (st.linkChallenges || []).find(c => c.id === rep.id)
+    const t = rec ? byId(rec.topicId) : null
+    const questions = rec ? rec.questions : rep.questions
+    const opponent = { id: 'lien:' + rep.from.name, ...rep.from, xp: 0 }
+    const log = { me: rec ? toLog(rec.answers, questions) : [], opp: toLog(rep.answers, questions) }
+    const myScore = rec ? rec.score : 0, oppScore = rep.score
+    const already = rec?.replies?.includes(rep.from.name)
+    setLink(null)
+    if (rec && t && !already) {
+      const { state, data } = settleDuel(st, { topic: t, opponent, myScore, oppScore, log, questions })
+      setSt({ ...state, linkChallenges: state.linkChallenges.map(c => (c.id === rec.id ? { ...c, replies: [...(c.replies || []), rep.from.name] } : c)) })
+      setRoute({ name: 'results', id: t.id, opponent, data: { ...data, topic: t, fromLink: true } })
+      return
+    }
+    const outcome = myScore > oppScore ? 'win' : myScore < oppScore ? 'lose' : 'draw'
+    const pseudo = t || { id: 'lien', name: 'Défi par lien', icon: '🔗', color: '#7c5cff', category: 'Culture', questions: [] }
+    setRoute({ name: 'results', topicObj: pseudo, opponent, data: { outcome, myScore, oppScore, opponent, topic: pseudo, bonuses: {}, total: 0, before: 0, after: 0, log, questions, noXp: true, fromLink: true, alreadyCounted: already, unknownMine: !rec } })
+  }
+
   const quitDuel = useCallback(() => {
     setRoute(r => ({ name: 'topic', id: r.id }))
   }, [])
@@ -257,7 +324,19 @@ export default function App() {
     go({ name: 'topics' })
   }
 
-  const [toast, setToast] = useState(null)
+  const [toast, setToast] = useState(LINK?.kind === 'invalid' ? 'Ce lien de défi est incomplet ou abîmé. Demande à ton ami de te le renvoyer.' : null)
+  // Un lien de défi ouvert alors que l'appli est déjà ouverte (même onglet) : on le prend en compte aussi
+  useEffect(() => {
+    const onHash = () => {
+      const l = readLinkFromHash()
+      if (!l) return
+      if (l.kind === 'invalid') { setToast('Ce lien de défi est incomplet ou abîmé. Demande à ton ami de te le renvoyer.'); return }
+      setLink(l)
+      setRoute({ name: l.kind === 'challenge' ? 'linkintro' : 'linkreply' })
+    }
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [])
   useEffect(() => {
     if (!toast) return
     const id = setTimeout(() => setToast(null), 2600)
@@ -289,7 +368,7 @@ export default function App() {
   }
 
   const meForDuel = { ...me, topicXp: st.topicStats[route.id]?.xp || 0 }
-  const fullscreen = ['match', 'duel', 'results', 'tower', 'sent'].includes(route.name)
+  const fullscreen = ['match', 'duel', 'results', 'tower', 'sent', 'linkready', 'linkintro', 'linkreply'].includes(route.name)
   const badge = pendingCount(st)
   let view
   switch (route.name) {
@@ -303,6 +382,21 @@ export default function App() {
     case 'match': view = <Matchmaking topic={topic} opponent={route.opponent} onReady={startDuel} onCancel={() => go({ name: 'topic', id: topic.id })} />; break
     case 'duel': view = <Duel key={route.questions.map(q => q.idx).join() + (route.challengeId || '')} topic={topic} me={meForDuel} opponent={route.opponent} ranks={route.ranks} questions={route.questions}
       mode={route.mode} ghost={route.ghost} onFinish={finishDuel} onQuit={route.challengeId ? () => go({ name: 'inbox' }) : quitDuel} />; break
+    case 'linkready': view = <LinkReady url={route.url} score={route.score} topic={topic} onHome={() => go({ name: 'home' })} onTopic={() => go({ name: 'topic', id: topic.id })} />; break
+    case 'linkintro': view = link?.kind === 'challenge' ? (
+      <LinkIntro challenge={link} onLater={() => { setLink(null); go({ name: 'home' }) }}
+        onAccept={() => {
+          const known = byId(link.topic.id)
+          setRoute({
+            name: 'duel', id: known?.id, topicObj: known ? null : { ...link.topic, questions: [] },
+            opponent: { id: 'lien:' + link.from.name, ...link.from, xp: 0 }, questions: link.questions,
+            mode: 'ghost', ghost: link.answers, linkPlay: link,
+          })
+        }} />
+    ) : null; break
+    case 'linkreply': view = link?.kind === 'reply'
+      ? <LinkReplyIntro reply={link} known={(st.linkChallenges || []).some(c => c.id === link.id)} onSee={openReply} onHome={() => { setLink(null); go({ name: 'home' }) }} />
+      : null; break
     case 'inbox': view = <Inbox st={st} topics={topics} now={clock} {...inboxHandlers} />; break
     case 'sent': {
       const ch = (st.challenges || []).find(c => c.id === route.challengeId)
@@ -311,9 +405,14 @@ export default function App() {
     }
     case 'results': view = (
       <Results data={route.data} me={me}
-        onRematch={() => go({ name: 'match', id: topic.id, opponent: route.opponent, live: true })}
-        onAnother={() => go({ name: 'match', id: topic.id })}
-        onTopic={() => go({ name: 'topic', id: topic.id })}
+        onRematch={() => {
+          const linkish = route.data.link || route.data.fromLink
+          if (!linkish) return go({ name: 'match', id: topic.id, opponent: route.opponent, live: true })
+          // revanche par lien : nouvelles questions du même thème si on l'a, sinon choix d'un thème
+          return byId(topic.id) ? go({ name: 'linkcreate', id: topic.id }) : go({ name: 'topics' })
+        }}
+        onAnother={() => (route.data.link || route.data.fromLink ? go({ name: 'home' }) : go({ name: 'match', id: topic.id }))}
+        onTopic={() => (byId(topic.id) ? go({ name: 'topic', id: topic.id }) : go({ name: 'topics' }))}
         onShare={() => shareText(`${route.data.outcome === 'win' ? 'Victoire' : 'Duel'} ${route.data.myScore}–${route.data.oppScore} contre ${route.opponent.name} sur « ${topic.name} » dans Duelia !`)} />
     ); break
     default: view = <Home st={st} topics={topics} go={go} quickDuel={quickDuel} />

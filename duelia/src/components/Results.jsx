@@ -68,6 +68,14 @@ function LevelRing({ before, after, topic }) {
 export default function Results({ data, me, onRematch, onAnother, onTopic, onShare }) {
   const { outcome, myScore, oppScore, opponent, topic, bonuses, total, before, after, log, questions } = data
   const [showRecap, setShowRecap] = useState(false)
+  const [sent, setSent] = useState(null)
+  const linkish = data.link || data.fromLink
+  // L'ami renvoie son résultat au challenger (partage, sinon copie du lien)
+  async function sendReply() {
+    const text = `J'ai relevé ton défi sur « ${topic.name} » dans Duelia : ${myScore} à ${oppScore} ! Ouvre ce lien pour voir le résultat :`
+    try { await navigator.share({ title: 'Duelia', text, url: data.link.url }); setSent('shared'); return } catch { /* refusé : on copie */ }
+    try { await navigator.clipboard.writeText(`${text} ${data.link.url}`); setSent('copied') } catch { setSent('manual') }
+  }
   useEffect(() => { if (outcome === 'win') sfx.win(); else if (outcome === 'lose') sfx.lose() }, [outcome])
   const title = { win: 'Victoire !', lose: 'Défaite', draw: 'Égalité' }[outcome]
 
@@ -92,7 +100,14 @@ export default function Results({ data, me, onRematch, onAnother, onTopic, onSha
         </div>
       </div>
 
-      <div className="stat-row">
+      {data.noXp && (
+        <p className="bonus-note muted">
+          {data.unknownMine ? 'Ce défi a été lancé depuis un autre appareil : seul le score de ton ami est connu ici.'
+            : data.alreadyCounted ? 'Ce résultat a déjà été compté : pas d\'XP en double.'
+              : 'Ce thème n\'existe pas sur ton appareil : le duel ne rapporte pas d\'XP.'}
+        </p>
+      )}
+      {!data.noXp && <div className="stat-row">
         <Stat label="Score" value={myScore} tone="t-cyan" delay={300} />
         <Stat label="Arrivée" value={bonuses.finish} prefix="+" tone="t-amber" delay={500} />
         <Stat label="Victoire" value={bonuses.victory} prefix="+" tone="t-green" delay={700} />
@@ -100,11 +115,11 @@ export default function Results({ data, me, onRematch, onAnother, onTopic, onSha
         {bonuses.exploit > 0 && <Stat label="Exploit" value={bonuses.exploit} prefix="+" tone="t-gold" delay={1000} />}
         {bonuses.defense > 0 && <Stat label="Défense" value={bonuses.defense} prefix="+" tone="t-gold" delay={1050} />}
         <Stat label="XP total" value={total} tone="t-violet" delay={1100} />
-      </div>
+      </div>}
       {bonuses.exploit > 0 && <p className="bonus-note">🏆 Prime d'exploit : tu as battu le top {data.ranksBefore?.opp} mondial du thème.</p>}
       {data.exploitMissed && <p className="bonus-note muted">Tu as déjà touché la prime d'exploit contre {data.opponent.name} aujourd'hui. Reviens demain pour la regagner.</p>}
 
-      <LevelRing before={before} after={after} topic={topic} />
+      {!data.noXp && <LevelRing before={before} after={after} topic={topic} />}
 
       {data.ranks && (
         <div className="result-ranks">
@@ -114,9 +129,18 @@ export default function Results({ data, me, onRematch, onAnother, onTopic, onSha
         </div>
       )}
 
+      {data.link && (
+        <div className="link-reply">
+          <button className="btn btn-gold wide" onClick={sendReply}>📤 Envoyer mon résultat à {data.link.to}</button>
+          {sent === 'copied' && <p className="link-ok" role="status">Lien copié : colle-le dans un message à {data.link.to}.</p>}
+          {sent === 'manual' && <textarea className="link-manual" readOnly rows={3} value={data.link.url} onFocus={e => e.target.select()} />}
+          {!sent && <small>Sans ce lien, {data.link.to} ne saura pas qui a gagné.</small>}
+        </div>
+      )}
+
       <div className="results-actions">
-        <button className="btn btn-primary" onClick={onRematch}>Revanche</button>
-        <button className="btn btn-secondary" onClick={onAnother}>Nouvel adversaire</button>
+        <button className="btn btn-primary" onClick={onRematch}>{linkish ? 'Défier en retour' : 'Revanche'}</button>
+        <button className="btn btn-secondary" onClick={onAnother}>{linkish ? 'Accueil' : 'Nouvel adversaire'}</button>
         <button className="btn btn-ghost" onClick={() => setShowRecap(s => !s)}>{showRecap ? 'Masquer' : 'Voir'} les réponses</button>
         <button className="btn btn-ghost" onClick={onShare}>Partager</button>
         <button className="btn btn-ghost wide" onClick={onTopic}>Retour au thème</button>

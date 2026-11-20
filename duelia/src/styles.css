@@ -747,3 +747,17 @@ img { -webkit-user-drag: none; }
 .t-gold { --tone: var(--gold); }
 .bonus-note { margin: 10px 0 0; font-weight: 700; color: var(--gold); font-size: 14px; }
 .bonus-note.muted { color: var(--muted); font-weight: 500; }
+
+/* ---------- défi par lien ---------- */
+.tp-friend { margin-top: 12px; }
+.link-screen { display: flex; flex-direction: column; gap: 12px; justify-content: center; }
+.link-card { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; padding: 22px 16px; background: var(--card); border-radius: var(--radius); }
+.link-card h1 { font-size: 26px; text-wrap: balance; }
+.link-card p { margin: 0; color: var(--muted); line-height: 1.45; }
+.link-card p b { color: var(--text); }
+.link-ok { margin: 0; text-align: center; color: var(--ok); font-weight: 700; font-size: 14px; }
+.link-field { display: flex; flex-direction: column; gap: 6px; }
+.link-field small { color: var(--muted); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+.link-field textarea, .link-manual { width: 100%; border: 1px solid var(--line); background: var(--bg2); border-radius: 12px; padding: 10px; font-size: 12px; color: var(--muted); resize: none; word-break: break-all; }
+.link-reply { display: flex; flex-direction: column; gap: 8px; margin-top: 22px; text-align: center; }
+.link-reply small { color: var(--muted); }
