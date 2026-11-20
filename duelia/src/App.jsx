@@ -12,6 +12,8 @@ import { buildQuestions } from './lib/duel.js'
 import Results from './components/Results.jsx'
 import { Home, Topics, TopicPage, Ranking, Matchmaking, CreateTopic, Onboarding } from './components/Screens.jsx'
 import Profile from './components/Profile.jsx'
+import Tower from './components/Tower.jsx'
+import { dayKey } from './lib/tower.js'
 
 // Un thème partagé par lien (#t=…) est importé au chargement.
 const SHARED = (() => {
@@ -90,6 +92,21 @@ export default function App() {
     setRoute(r)
     viewRef.current?.scrollTo(0, 0)
   }, [byId, st.topicStats])
+
+  // Fin d'une ascension : record personnel et tentative du jour (seule la première compte).
+  const finishTower = (result, daily) => update(s => {
+    const t = s.tower || { runs: 0 }
+    const best = !t.best || result.floor > t.best.floor || (result.floor === t.best.floor && result.score > t.best.score)
+    const firstToday = daily && t.daily?.day !== dayKey()
+    return {
+      ...s,
+      tower: {
+        ...t, runs: (t.runs || 0) + 1,
+        best: !daily && best ? { floor: result.floor, score: result.score } : t.best,
+        daily: firstToday ? { day: dayKey(), floor: result.floor, score: result.score } : t.daily,
+      },
+    }
+  })
 
   const quickDuel = () => {
     const pool = st.follows.length ? st.follows : topics.filter(t => t.official).map(t => t.id)
@@ -201,7 +218,7 @@ export default function App() {
   }
 
   const meForDuel = { ...me, topicXp: st.topicStats[route.id]?.xp || 0 }
-  const fullscreen = ['match', 'duel', 'results'].includes(route.name)
+  const fullscreen = ['match', 'duel', 'results', 'tower'].includes(route.name)
   let view
   switch (route.name) {
     case 'topics': view = <Topics topics={topics} go={go} importTopic={importTopic} />; break
@@ -209,6 +226,8 @@ export default function App() {
     case 'ranking': view = <Ranking st={st} topic={topic} go={go} />; break
     case 'create': view = <CreateTopic key={route.id || 'new'} st={st} existing={route.id ? topic : null} onSave={saveTopic} go={go} />; break
     case 'profile': view = <Profile st={st} topics={topics} update={update} go={go} />; break
+    case 'tower': view = <Tower key={route.daily ? 'daily' : 'free'} topics={topics} profile={me} daily={!!route.daily} towerState={st.tower}
+      onFinish={finishTower} onExit={() => go({ name: 'home' })} />; break
     case 'match': view = <Matchmaking topic={topic} opponent={route.opponent} onReady={startDuel} onCancel={() => go({ name: 'topic', id: topic.id })} />; break
     case 'duel': view = <Duel key={route.questions.map(q => q.idx).join()} topic={topic} me={meForDuel} opponent={route.opponent} questions={route.questions} onFinish={finishDuel} onQuit={quitDuel} />; break
     case 'results': view = (

@@ -7,6 +7,7 @@ import { levelInfo } from '../lib/levels.js'
 import { getCommunity, leaderboard } from '../lib/bots.js'
 import { PERIODS, myPeriodXp, resetIn } from '../lib/periods.js'
 import { meEntry } from '../lib/profile.js'
+import { dayKey } from '../lib/tower.js'
 import { decodeTopic } from '../lib/store.js'
 import { sfx } from '../lib/sound.js'
 
@@ -62,6 +63,24 @@ export function Home({ st, topics, go, quickDuel }) {
         <span className="qd-glyph" aria-hidden="true"><Chevrons /></span>
         <span className="qd-txt"><b>Duel rapide</b><small>Un thème au hasard parmi les tiens, un adversaire à ta taille</small></span>
       </button>
+
+      <section className="tower-card">
+        <div className="tc-head">
+          <span className="tc-art" aria-hidden="true"><i /><i /><i /><i /></span>
+          <div>
+            <b>L'Ascension</b>
+            <small>Mode solo · 3 cœurs, des portes à choisir, un boss tous les 10 étages</small>
+          </div>
+        </div>
+        <div className="tc-actions">
+          <button className="btn btn-secondary" onClick={() => go({ name: 'tower' })}>
+            Grimper{st.tower?.best ? ` · record étage ${st.tower.best.floor}` : ''}
+          </button>
+          <button className="btn btn-gold" onClick={() => go({ name: 'tower', daily: true })}>
+            {st.tower?.daily?.day === dayKey() ? `Tour du jour · étage ${st.tower.daily.floor}` : 'Tour du jour'}
+          </button>
+        </div>
+      </section>
 
       {followed.length > 0 && (
         <section>
