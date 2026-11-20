@@ -105,6 +105,15 @@ function initialState() {
     })
     s.starterVersion = 6
   }
+  // Mise à jour unique (v7) : le thème The Eras Tour rejoint les créations du joueur.
+  if (s.starterVersion < 7) {
+    for (const { topic, since } of STARTER_CREATIONS) {
+      if (since !== 7 || s.custom.some(t => t.id === topic.id)) continue
+      s.custom = [...s.custom, topic]
+      if (!s.follows.includes(topic.id)) s.follows = [...s.follows, topic.id]
+    }
+    s.starterVersion = 7
+  }
   return s
 }
 
