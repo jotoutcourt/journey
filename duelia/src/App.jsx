@@ -87,11 +87,14 @@ export default function App() {
         opponent = { ...b, champion: b === bots[0] }
       }
       opponent ??= findOpponent(topic, xp, { forceChampion: r.forceChampion })
-      r = { ...r, opponent }
+      // Rang mondial (classement « depuis toujours » du thème) des deux joueurs, pour l'intro du duel
+      const rows = leaderboard(topic, { ...meEntry(st.profile), allXp: xp }, xp, 'all')
+      const ranks = { me: rows.find(x => x.isMe)?.rank, opp: rows.find(x => x.id === opponent.id)?.rank }
+      r = { ...r, opponent, ranks }
     }
     setRoute(r)
     viewRef.current?.scrollTo(0, 0)
-  }, [byId, st.topicStats])
+  }, [byId, st.topicStats, st.profile])
 
   // Fin d'une ascension : record personnel et tentative du jour (seule la première compte).
   const finishTower = (result, daily) => update(s => {
@@ -229,7 +232,7 @@ export default function App() {
     case 'tower': view = <Tower key={route.daily ? 'daily' : 'free'} topics={topics} profile={me} daily={!!route.daily} towerState={st.tower}
       onFinish={finishTower} onExit={() => go({ name: 'home' })} />; break
     case 'match': view = <Matchmaking topic={topic} opponent={route.opponent} onReady={startDuel} onCancel={() => go({ name: 'topic', id: topic.id })} />; break
-    case 'duel': view = <Duel key={route.questions.map(q => q.idx).join()} topic={topic} me={meForDuel} opponent={route.opponent} questions={route.questions} onFinish={finishDuel} onQuit={quitDuel} />; break
+    case 'duel': view = <Duel key={route.questions.map(q => q.idx).join()} topic={topic} me={meForDuel} opponent={route.opponent} ranks={route.ranks} questions={route.questions} onFinish={finishDuel} onQuit={quitDuel} />; break
     case 'results': view = (
       <Results data={route.data} me={me}
         onRematch={() => go({ name: 'match', id: topic.id, opponent: route.opponent })}

@@ -602,3 +602,59 @@ img { -webkit-user-drag: none; }
 .t-final small { color: var(--muted); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
 .t-final b { font-family: var(--display); font-size: 30px; font-variant-numeric: tabular-nums; }
 .t-board { text-align: left; }
+
+/* ---------- intro des duels importants (top 10 mondial en jeu) ---------- */
+.vs-rank {
+  display: inline-block; margin-top: 4px; padding: 5px 12px; border-radius: 8px;
+  background: linear-gradient(100deg, #b8862b, var(--gold) 45%, #fff3c4 50%, var(--gold) 55%, #b8862b);
+  background-size: 250% 100%; color: #2a1d00 !important; font-weight: 900; font-size: 14px !important;
+  text-transform: uppercase; letter-spacing: 0.06em; box-shadow: 0 4px 18px #ffc94055;
+  animation: plateIn 0.45s cubic-bezier(.2,1.6,.4,1) both, shimmer 2.2s 1.4s linear infinite;
+}
+.vs-left .vs-rank { animation-delay: 1.15s, 1.6s; }
+.vs-right .vs-rank { animation-delay: 1.35s, 1.8s; }
+.vs-rank.first { font-size: 15px !important; box-shadow: 0 0 26px #ffc940aa; }
+@keyframes plateIn { from { opacity: 0; transform: scale(2.2) rotate(-6deg); } to { opacity: 1; transform: none; } }
+@keyframes shimmer { from { background-position: 120% 0; } to { background-position: -120% 0; } }
+
+.vs-screen.big { background: linear-gradient(160deg, #0b2a29 0%, #0b2a29 49.6%, #2b0a20 50.4%, #2b0a20 100%); animation: bigShake 0.5s 0.72s both; }
+.vs-screen.big::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 50% 50%, transparent 30%, #000a 85%); pointer-events: none; z-index: 1; }
+.vs-screen.big > * { position: relative; z-index: 2; }
+.vs-screen.big .vs-topic { position: absolute; }
+.vs-rays {
+  position: absolute !important; left: 50%; top: 50%; width: 160vmax; height: 160vmax; margin: -80vmax 0 0 -80vmax; z-index: 0 !important;
+  background: repeating-conic-gradient(from 0deg, #ffc94022 0deg 7deg, transparent 7deg 20deg);
+  animation: raysIn 0.6s 0.7s both, raysSpin 18s 0.7s linear infinite; pointer-events: none;
+}
+@keyframes raysIn { from { opacity: 0; transform: scale(0.3); } to { opacity: 1; transform: scale(1); } }
+@keyframes raysSpin { to { transform: rotate(360deg); } }
+@keyframes bigShake { 0%, 100% { transform: none; } 20% { transform: translate(-8px, 4px); } 40% { transform: translate(7px, -5px); } 60% { transform: translate(-5px, 3px); } 80% { transform: translate(3px, -2px); } }
+.vs-screen.big .vs-mark span { font-size: 96px; background: linear-gradient(90deg, var(--me), var(--gold), var(--opp)); -webkit-background-clip: text; background-clip: text; filter: drop-shadow(0 0 24px #ffc94099); }
+.vs-headline {
+  position: absolute !important; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 28px); transform: translateX(-50%);
+  width: calc(100% - 32px); max-width: 420px; text-align: center; display: flex; flex-direction: column; gap: 2px;
+  padding: 12px 16px; border-radius: 14px; background: #000c; border: 2px solid var(--gold); box-shadow: 0 0 30px #ffc94055;
+  animation: headlineIn 0.5s 1.7s cubic-bezier(.2,1.5,.4,1) both;
+}
+.vs-headline small { color: var(--gold); font-weight: 900; text-transform: uppercase; letter-spacing: 0.18em; font-size: 12px; }
+.vs-headline b { font-family: var(--display); font-size: 22px; line-height: 1.15; text-wrap: balance; }
+@keyframes headlineIn { from { opacity: 0; transform: translate(-50%, 30px) scale(0.9); } to { opacity: 1; transform: translate(-50%, 0); } }
+@media (prefers-reduced-motion: reduce) { .vs-rays { animation: none; } }
+
+/* place réservée au bandeau du bas pour qu'il ne recouvre pas le joueur de droite */
+.vs-screen.big { padding-top: calc(env(safe-area-inset-top) + 64px); padding-bottom: calc(env(safe-area-inset-bottom) + 130px); }
+.vs-screen.big .vs-av { width: 104px !important; height: 104px !important; }
+.vs-screen.big .vs-side b { font-size: 22px; }
+.vs-screen.big .vs-mark span { font-size: 80px; }
+
+@media (max-height: 720px) {
+  .vs-screen.big { padding-top: calc(env(safe-area-inset-top) + 54px); padding-bottom: calc(env(safe-area-inset-bottom) + 104px); }
+  .vs-screen.big .vs-av { width: 76px !important; height: 76px !important; }
+  .vs-screen.big .vs-side { gap: 3px; }
+  .vs-screen.big .vs-side b { font-size: 19px; }
+  .vs-screen.big .vs-side span { font-size: 13px; }
+  .vs-screen.big .vs-mark span { font-size: 60px; }
+  .vs-screen.big .vs-rank { font-size: 12px !important; padding: 4px 10px; }
+  .vs-headline { bottom: calc(env(safe-area-inset-bottom) + 16px); padding: 9px 12px; }
+  .vs-headline b { font-size: 18px; }
+}

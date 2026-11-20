@@ -27,6 +27,11 @@ export const sfx = {
   good: () => { tone(740, 0.1, 'triangle'); tone(1110, 0.16, 'triangle', 0.1, 0.08) },
   bad: () => { tone(220, 0.18, 'sawtooth', 0.06); tone(180, 0.22, 'sawtooth', 0.05, 0.1) },
   oppScore: () => tone(420, 0.06, 'sine', 0.05),
+  // Roulement puis impact : pour les duels contre (ou entre) membres du top 10
+  bigVs: () => {
+    for (let i = 0; i < 10; i++) tone(90 + i * 6, 0.08, 'triangle', 0.05 + i * 0.006, i * 0.07)
+    tone(65, 0.6, 'sawtooth', 0.09, 0.75); tone(130, 0.5, 'square', 0.05, 0.75); tone(523, 0.4, 'triangle', 0.07, 0.8)
+  },
   vs: () => { tone(196, 0.25, 'sawtooth', 0.05); tone(392, 0.3, 'triangle', 0.08, 0.15) },
   win: () => [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.2, 'triangle', 0.1, i * 0.11)),
   lose: () => [392, 330, 262].forEach((f, i) => tone(f, 0.25, 'sine', 0.08, i * 0.14)),

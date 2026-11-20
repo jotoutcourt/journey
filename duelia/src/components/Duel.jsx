@@ -20,7 +20,22 @@ function PictureQuestion({ q, revealed }) {
   )
 }
 
-export default function Duel({ topic, me, opponent, questions, onFinish, onQuit }) {
+// Intitulé du duel quand un joueur du top 10 mondial est en jeu
+function bigMatch(ranks) {
+  if (!ranks) return null
+  const me = ranks.me <= 10 ? ranks.me : null, opp = ranks.opp <= 10 ? ranks.opp : null
+  if (me && opp) return { title: 'Choc au sommet', line: `Top ${me} contre top ${opp} mondial` }
+  if (opp) return { title: opp === 1 ? 'Face au n° 1' : 'Duel au sommet', line: `Tu affrontes le top ${opp} mondial` }
+  if (me) return { title: 'Défense de ta place', line: `Tu défends ta place de top ${me} mondial` }
+  return null
+}
+
+function RankPlate({ rank }) {
+  if (!rank || rank > 10) return null
+  return <span className={`vs-rank ${rank === 1 ? 'first' : ''}`}>{rank === 1 ? '👑 ' : ''}Top {rank} mondial</span>
+}
+
+export default function Duel({ topic, me, opponent, ranks, questions, onFinish, onQuit }) {
   const [phase, setPhase] = useState('vs') // vs → banner → play → reveal → … → done
   const [round, setRound] = useState(0)
   const [myScore, setMyScore] = useState(0)
@@ -41,10 +56,11 @@ export default function Duel({ topic, me, opponent, questions, onFinish, onQuit 
   // Écran face-à-face
   useEffect(() => {
     if (phase !== 'vs') return
-    sfx.vs()
-    const id = setTimeout(() => setPhase('banner'), 2900)
+    const big = !!bigMatch(ranks)
+    if (big) sfx.bigVs(); else sfx.vs()
+    const id = setTimeout(() => setPhase('banner'), big ? 4800 : 2900)
     return () => clearTimeout(id)
-  }, [phase])
+  }, [phase, ranks])
 
   // Annonce de la question
   useEffect(() => {
@@ -129,21 +145,32 @@ export default function Duel({ topic, me, opponent, questions, onFinish, onQuit 
   const oppLvl = levelInfo(opponent.xp)
 
   if (phase === 'vs') {
+    const big = bigMatch(ranks)
     return (
-      <div className="vs-screen">
+      <div className={`vs-screen ${big ? 'big' : ''}`}>
+        {big && <div className="vs-rays" aria-hidden="true" />}
         <div className="vs-side vs-left">
-          <Avatar seed={me.avatar} photo={me.photo} size={128} ring="var(--me)" className="vs-av" />
+          {ranks?.me === 1 && <div className="champ-badge">👑 Champion du thème</div>}
+          <Avatar seed={me.avatar} photo={me.photo} size={128} ring={ranks?.me <= 10 ? 'var(--gold)' : 'var(--me)'} className="vs-av" />
           <b>{me.name}</b>
           <span>Niv. {myLvl.level} · {myLvl.title}</span>
+          <RankPlate rank={ranks?.me} />
         </div>
         <div className="vs-mark"><span>VS</span></div>
         <div className="vs-side vs-right">
           {opponent.champion && <div className="champ-badge">👑 Champion du thème</div>}
-          <Avatar seed={opponent.avatar} size={128} ring="var(--opp)" className="vs-av" />
+          <Avatar seed={opponent.avatar} size={128} ring={ranks?.opp <= 10 ? 'var(--gold)' : 'var(--opp)'} className="vs-av" />
           <b>{opponent.flag} {opponent.name}</b>
           <span>Niv. {oppLvl.level} · {oppLvl.title}</span>
+          <RankPlate rank={ranks?.opp} />
         </div>
         <div className="vs-topic"><TopicIcon topic={topic} size={30} /> {topic.name}</div>
+        {big && (
+          <div className="vs-headline" role="status">
+            <small>{big.title}</small>
+            <b>{big.line}</b>
+          </div>
+        )}
       </div>
     )
   }
