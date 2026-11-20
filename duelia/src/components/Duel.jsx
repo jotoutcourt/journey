@@ -200,9 +200,22 @@ export default function Duel({ topic, me, opponent, ranks, questions, onFinish, 
 
   useEffect(() => {
     if (phase !== 'done') return
-    const id = setTimeout(() => onFinish({ myScore, oppScore, log, questions }), 500)
+    const local = { myScore, oppScore, log, questions }
+    // Duel en direct : le score officiel est recalculé par le serveur à partir des réponses enregistrées
+    if (remote && link?.result) {
+      let alive = true
+      const id = setTimeout(() => {
+        const timeout = new Promise(res => setTimeout(() => res(null), 4000))
+        Promise.race([link.result().catch(() => null), timeout]).then(res => {
+          if (!alive) return
+          onFinish(res ? { ...local, myScore: res.me, oppScore: res.opp, verified: true } : local)
+        })
+      }, 500)
+      return () => { alive = false; clearTimeout(id) }
+    }
+    const id = setTimeout(() => onFinish(local), 500)
     return () => clearTimeout(id)
-  }, [phase, myScore, oppScore, log, questions, onFinish])
+  }, [phase, myScore, oppScore, log, questions, onFinish, remote, link])
 
   function answer(i, at) {
     if (phase !== 'play' || mine) return

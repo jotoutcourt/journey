@@ -95,3 +95,5 @@ export const findLiveMatch = (topicId, questions) => rpc('find_live_match', { p_
 export const leaveLiveQueue = () => rpc('leave_live_queue')
 export const sendLiveAnswer = (matchId, round, choice, t) => rpc('send_live_answer', { p_match: matchId, p_round: round, p_choice: choice, p_t: Math.round(t) })
 export const getLiveAnswers = (matchId) => rpc('get_live_answers', { p_match: matchId })
+// Score officiel calculé par le serveur : { me, opp, complete }
+export const liveResult = (matchId) => rpc('live_result', { p_match: matchId })

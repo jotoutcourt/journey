@@ -21,7 +21,7 @@ import { readLinkFromHash, challengeUrl, replyUrl, LINK_TTL } from './lib/linkdu
 import { LinkReady, LinkIntro, LinkReplyIntro } from './components/LinkDuel.jsx'
 import { applyLinkReply, rowToReply } from './lib/linkresults.js'
 import { submitLinkResult, fetchLinkResults } from './lib/server.js'
-import { connect, pushProfile, saveRemoteState, pushXp, fetchBoard, makeRecoveryCode, recoverWith, findLiveMatch, leaveLiveQueue, sendLiveAnswer, getLiveAnswers } from './lib/account.js'
+import { connect, pushProfile, saveRemoteState, pushXp, fetchBoard, makeRecoveryCode, recoverWith, findLiveMatch, leaveLiveQueue, sendLiveAnswer, getLiveAnswers, liveResult } from './lib/account.js'
 import { setRealRows } from './lib/bots.js'
 import { TIME } from './lib/duel.js'
 
@@ -236,6 +236,7 @@ export default function App() {
   const liveLink = useMemo(() => (route.matchId ? {
     send: (round, choice, t) => sendLiveAnswer(route.matchId, round, choice, t),
     poll: () => getLiveAnswers(route.matchId),
+    result: () => liveResult(route.matchId),
   } : null), [route.matchId])
 
   const finishDuel = useCallback(({ myScore, oppScore, log, questions }) => {
