@@ -213,6 +213,8 @@ h1, h2, h3 { font-family: var(--display); margin: 0; letter-spacing: -0.01em; }
 .found-av { animation: pop 0.4s both; }
 .mm-status { color: var(--muted); min-height: 24px; }
 .mm-status b { color: var(--text); }
+.mm-hint { color: var(--muted); font-size: 13px; max-width: 300px; text-align: center; margin: -4px 0 6px; }
+.radar.live span { border-color: var(--good, #3ddc84); }
 
 /* ---------- face-à-face ---------- */
 .vs-screen {

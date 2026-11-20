@@ -86,3 +86,12 @@ export async function recoverWith(code) {
   const [me, state] = await Promise.all([rpc('get_me'), rpc('load_state')])
   return { me, state }
 }
+
+// ===== Duel en direct entre deux vrais joueurs (échanges par le serveur toutes les fractions de seconde) =====
+const slimQuestion = (q) => ({ q: q.q, options: q.options, correct: q.correct, idx: q.idx })
+
+// Cherche un adversaire sur le thème : renvoie le duel trouvé, ou null (on reste dans la salle d'attente)
+export const findLiveMatch = (topicId, questions) => rpc('find_live_match', { p_topic: topicId, p_questions: questions.map(slimQuestion) })
+export const leaveLiveQueue = () => rpc('leave_live_queue')
+export const sendLiveAnswer = (matchId, round, choice, t) => rpc('send_live_answer', { p_match: matchId, p_round: round, p_choice: choice, p_t: Math.round(t) })
+export const getLiveAnswers = (matchId) => rpc('get_live_answers', { p_match: matchId })

@@ -39,9 +39,14 @@ function RankPlate({ rank }) {
 }
 
 // mode : 'live' (adversaire en direct), 'blind' (défi reçu : on joue sans voir l'adversaire),
-// 'ghost' (défi envoyé : l'adversaire a déjà joué, ses réponses enregistrées s'affichent au fil des questions)
-export default function Duel({ topic, me, opponent, ranks, questions, onFinish, onQuit, mode = 'live', ghost }) {
+// 'ghost' (défi envoyé : l'adversaire a déjà joué, ses réponses enregistrées s'affichent au fil des questions),
+// 'remote' (vrai joueur en direct : les réponses passent par le serveur, link = { send, poll })
+const GRACE = 3000 // délai accordé à un vrai adversaire après la fin du chrono (réseau)
+
+export default function Duel({ topic, me, opponent, ranks, questions, onFinish, onQuit, mode = 'live', ghost, link }) {
   const blind = mode === 'blind'
+  const remote = mode === 'remote'
+  const remoteRef = useRef({ got: new Map(), sent: new Set(), misses: 0 })
   const [phase, setPhase] = useState('vs') // vs → banner → play → reveal → … → done
   const [round, setRound] = useState(0)
   const [myScore, setMyScore] = useState(0)
@@ -58,6 +63,32 @@ export default function Duel({ topic, me, opponent, ranks, questions, onFinish, 
   const q = questions[round]
   const last = round === rounds - 1
   const mult = last ? 2 : 1
+
+  // Duel en direct : on relève les réponses de l'adversaire toutes les 0,4 s
+  useEffect(() => {
+    if (!remote || !link || phase === 'done') return
+    let busy = false
+    const iv = setInterval(async () => {
+      if (busy) return
+      busy = true
+      try {
+        const list = await link.poll()
+        for (const a of list || []) remoteRef.current.got.set(a.round, a)
+      } catch { /* réseau : on réessaie */ }
+      busy = false
+    }, 400)
+    return () => clearInterval(iv)
+  }, [remote, link, phase])
+
+  // … et on envoie la sienne dès qu'on a répondu (ou que le temps est écoulé)
+  useEffect(() => {
+    if (!remote || !link || !mine || phase !== 'play') return
+    const sent = remoteRef.current.sent
+    if (sent.has(round)) return
+    sent.add(round)
+    const push = (tries) => link.send(round, mine.choice, mine.t).catch(() => { if (tries > 0) setTimeout(() => push(tries - 1), 700) })
+    push(5)
+  }, [remote, link, mine, phase, round])
 
   // Écran face-à-face
   useEffect(() => {
@@ -90,12 +121,28 @@ export default function Duel({ topic, me, opponent, ranks, questions, onFinish, 
     if (phase !== 'play') return
     startRef.current = performance.now()
     const plan = mode === 'ghost' ? (ghost?.[round] || { choice: -1, t: Infinity })
-      : mode === 'blind' ? { choice: -1, t: Infinity }
+      : mode === 'blind' || remote ? { choice: -1, t: Infinity }
       : botAnswer(opponent, q, TIME)
     const timers = []
     let lastSec = 10
+    let applied = false
+    const showTheirs = (a) => {
+      remoteRef.current.misses = 0
+      if (a.choice < 0) { setTheirs(o => o ?? { choice: -1, t: TIME, pts: 0 }); return }
+      const ok = a.choice === q.correct
+      const pts = ok ? pointsFor(a.t, mult) : 0
+      setTheirs({ choice: a.choice, t: a.t, pts })
+      if (ok) { setOppScore(s => s + pts); setOppPop(pts); sfx.oppScore() }
+    }
     const iv = setInterval(() => {
-      const l = Math.max(0, TIME - (performance.now() - startRef.current))
+      const elapsed = performance.now() - startRef.current
+      // réponse du vrai adversaire reçue : affichée au moment où il a répondu
+      if (remote && !applied && remoteRef.current.got.has(round)) {
+        applied = true
+        const a = remoteRef.current.got.get(round)
+        timers.push(setTimeout(() => showTheirs(a), Math.max(0, a.t - elapsed)))
+      }
+      const l = Math.max(0, TIME - elapsed)
       setLeft(l)
       const s = Math.ceil(l / 1000)
       if (s < lastSec) { lastSec = s; if (s <= 3 && s > 0) sfx.tick() }
@@ -111,10 +158,20 @@ export default function Duel({ topic, me, opponent, ranks, questions, onFinish, 
     timers.push(setTimeout(() => {
       setLeft(0)
       setMine(m => m ?? { choice: -1, t: TIME, pts: 0 })
-      if (mode !== 'blind') setTheirs(o => o ?? { choice: -1, t: TIME, pts: 0 })
+      if (mode !== 'blind' && !remote) setTheirs(o => o ?? { choice: -1, t: TIME, pts: 0 })
     }, TIME))
+    // vrai adversaire silencieux : après un délai de grâce (supprimé s'il semble parti), on passe
+    if (remote) {
+      const grace = remoteRef.current.misses >= 2 ? 0 : GRACE
+      timers.push(setTimeout(() => {
+        if (applied) return
+        applied = true
+        remoteRef.current.misses++
+        setTheirs(o => o ?? { choice: -1, t: TIME, pts: 0 })
+      }, TIME + grace))
+    }
     return () => { clearInterval(iv); timers.forEach(clearTimeout) }
-  }, [phase, opponent, q, mult, mode, ghost, round])
+  }, [phase, opponent, q, mult, mode, ghost, round, remote])
 
   // Les deux ont répondu → on dévoile
   useEffect(() => {
@@ -157,6 +214,14 @@ export default function Duel({ topic, me, opponent, ranks, questions, onFinish, 
     else { sfx.bad(); navigator.vibrate?.(120) }
   }
 
+  // Abandon d'un duel en direct : on prévient l'adversaire (questions restantes sans réponse)
+  function quit() {
+    if (remote && link) {
+      for (let r = 0; r < rounds; r++) if (!remoteRef.current.sent.has(r)) link.send(r, -1, TIME).catch(() => {})
+    }
+    onQuit()
+  }
+
   const myLvl = levelInfo(me.topicXp)
   const oppLvl = levelInfo(opponent.xp)
 
@@ -175,7 +240,7 @@ export default function Duel({ topic, me, opponent, ranks, questions, onFinish, 
         <div className="vs-mark"><span>VS</span></div>
         <div className="vs-side vs-right">
           {opponent.champion && <div className="champ-badge">👑 Champion du thème</div>}
-          <Avatar seed={opponent.avatar} size={128} ring={ranks?.opp <= 10 ? 'var(--gold)' : 'var(--opp)'} className="vs-av" />
+          <Avatar seed={opponent.avatar} photo={opponent.photo} size={128} ring={ranks?.opp <= 10 ? 'var(--gold)' : 'var(--opp)'} className="vs-av" />
           <b>{opponent.flag} {opponent.name}<AiTag on={opponent.ai} /></b>
           <span>{opponent.id === 'ami' ? 'Jouera après toi' : `Niv. ${oppLvl.level} · ${topicTitle(topic, oppLvl.level)}`}</span>
           <RankPlate rank={ranks?.opp} />
@@ -183,7 +248,9 @@ export default function Duel({ topic, me, opponent, ranks, questions, onFinish, 
         <div className="vs-topic"><TopicIcon topic={topic} size={30} /> {topic.name}</div>
         {mode !== 'live' && !big && (
           <div className="vs-async" role="status">
-            {blind
+            {remote
+              ? <><b>Duel en direct</b><span>{opponent.name} est un vrai joueur, en ligne en ce moment. Que le plus rapide gagne !</span></>
+              : blind
               ? <><b>Défi différé</b><span>{opponent.name} jouera ces questions de son côté. Tu ne verras son score qu'à la fin.</span></>
               : <><b>{opponent.name} a déjà joué</b><span>Ses réponses vont apparaître au fil des questions. Le résultat tombe à la fin.</span></>}
           </div>
@@ -207,7 +274,7 @@ export default function Duel({ topic, me, opponent, ranks, questions, onFinish, 
   return (
     <div className="duel">
       <div className="duel-top">
-        <ConfirmButton className="icon-btn quit" onConfirm={onQuit} confirmLabel="Abandonner ?" aria-label="Abandonner">✕</ConfirmButton>
+        <ConfirmButton className="icon-btn quit" onConfirm={quit} confirmLabel="Abandonner ?" aria-label="Abandonner">✕</ConfirmButton>
         <div className="pl pl-me">
           <Avatar seed={me.avatar} photo={me.photo} size={46} ring="var(--me)" />
           <div className="pl-txt">
@@ -229,7 +296,7 @@ export default function Duel({ topic, me, opponent, ranks, questions, onFinish, 
             <small>{opponent.name}{opponent.champion ? ' 👑' : ''}<AiTag on={opponent.ai} /></small>
             <strong className="score">{blind ? '?' : oppScore}</strong>
           </div>
-          <Avatar seed={opponent.avatar} size={46} ring="var(--opp)" className={theirs && phase === 'play' ? 'answered' : ''} />
+          <Avatar seed={opponent.avatar} photo={opponent.photo} size={46} ring="var(--opp)" className={theirs && phase === 'play' ? 'answered' : ''} />
           {oppPop != null && <span key={'o' + round} className="pts-pop opp">+{oppPop}</span>}
         </div>
       </div>
@@ -263,7 +330,7 @@ export default function Duel({ topic, me, opponent, ranks, questions, onFinish, 
                   style={{ animationDelay: `${120 + i * 70}ms` }}>
                   {mine?.choice === i && <span className="mark mark-me"><Avatar seed={me.avatar} photo={me.photo} size={22} /></span>}
                   <span className="opt-txt">{opt}</span>
-                  {reveal && !blind && theirs?.choice === i && <span className="mark mark-opp"><Avatar seed={opponent.avatar} size={22} /></span>}
+                  {reveal && !blind && theirs?.choice === i && <span className="mark mark-opp"><Avatar seed={opponent.avatar} photo={opponent.photo} size={22} /></span>}
                 </button>
               )
             })}

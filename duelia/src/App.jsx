@@ -21,7 +21,7 @@ import { readLinkFromHash, challengeUrl, replyUrl, LINK_TTL } from './lib/linkdu
 import { LinkReady, LinkIntro, LinkReplyIntro } from './components/LinkDuel.jsx'
 import { applyLinkReply, rowToReply } from './lib/linkresults.js'
 import { submitLinkResult, fetchLinkResults } from './lib/server.js'
-import { connect, pushProfile, saveRemoteState, pushXp, fetchBoard, makeRecoveryCode, recoverWith } from './lib/account.js'
+import { connect, pushProfile, saveRemoteState, pushXp, fetchBoard, makeRecoveryCode, recoverWith, findLiveMatch, leaveLiveQueue, sendLiveAnswer, getLiveAnswers } from './lib/account.js'
 import { setRealRows } from './lib/bots.js'
 import { TIME } from './lib/duel.js'
 
@@ -174,6 +174,8 @@ export default function App() {
       const topic = byId(r.id)
       const xp = st.topicStats[r.id]?.xp || 0
       let opponent = r.opponent
+      // Partie rapide : on cherche d'abord un vrai joueur en ligne
+      const searchLive = !opponent && !r.opponentId && !r.forceChampion
       if (!opponent && r.opponentId) {
         const bots = getCommunity(topic)
         const b = bots.find(x => x.id === r.opponentId)
@@ -183,7 +185,7 @@ export default function App() {
       // Rang mondial (classement « depuis toujours » du thème) des deux joueurs, pour l'intro du duel
       const rows = leaderboard(topic, { ...meEntry(st.profile), allXp: xp }, xp, 'all')
       const ranks = { me: rows.find(x => x.isMe)?.rank, opp: rows.find(x => x.id === opponent.id)?.rank }
-      r = { ...r, opponent, ranks }
+      r = { ...r, opponent, ranks, searchLive }
     }
     setRoute(r)
     viewRef.current?.scrollTo(0, 0)
@@ -215,6 +217,26 @@ export default function App() {
   const startDuel = useCallback(() => {
     setRoute(r => ({ ...r, name: 'duel', questions: buildQuestions(topics.find(x => x.id === r.id), st.topicStats[r.id]?.seen) }))
   }, [topics, st.topicStats])
+
+  // Duel en direct : un vrai joueur a été trouvé
+  const matchTopicId = route.name === 'match' ? route.id : null
+  const liveSearch = useMemo(() => (matchTopicId ? { find: (qs) => findLiveMatch(matchTopicId, qs), leave: leaveLiveQueue } : null), [matchTopicId])
+  const makeMatchQuestions = useCallback(() => buildQuestions(topics.find(x => x.id === route.id), st.topicStats[route.id]?.seen), [topics, route.id, st.topicStats])
+  const startLive = useCallback((m) => {
+    setRoute(r => {
+      const t = topics.find(x => x.id === r.id)
+      const pid = m.opponent.player_id
+      const xp = st.topicStats[r.id]?.xp || 0
+      const rows = leaderboard(t, { ...meEntry(st.profile), allXp: xp }, xp, 'all')
+      const real = rows.find(x => x.playerId === pid)
+      const opponent = { id: 'p:' + pid, playerId: pid, name: m.opponent.name, avatar: m.opponent.avatar, flag: m.opponent.flag || '🏳️', photo: m.opponent.photo, xp: real?.xp || 0, champion: real?.rank === 1, ai: false }
+      return { ...r, name: 'duel', mode: 'remote', matchId: m.id, opponent, questions: m.questions, ranks: { me: rows.find(x => x.isMe)?.rank, opp: real?.rank } }
+    })
+  }, [topics, st.topicStats, st.profile])
+  const liveLink = useMemo(() => (route.matchId ? {
+    send: (round, choice, t) => sendLiveAnswer(route.matchId, round, choice, t),
+    poll: () => getLiveAnswers(route.matchId),
+  } : null), [route.matchId])
 
   const finishDuel = useCallback(({ myScore, oppScore, log, questions }) => {
     const r = route, t = r.topicObj || byId(r.id)
@@ -531,9 +553,10 @@ export default function App() {
     case 'profile': view = <Profile st={st} topics={topics} update={update} go={go} account={account} onMakeCode={getRecoveryCode} onRecover={recoverAccount} />; break
     case 'tower': view = <Tower key={route.daily ? 'daily' : 'free'} topics={topics} profile={me} daily={!!route.daily} towerState={st.tower}
       onFinish={finishTower} onExit={() => go({ name: 'home' })} />; break
-    case 'match': view = <Matchmaking topic={topic} opponent={route.opponent} onReady={startDuel} onCancel={() => go({ name: 'topic', id: topic.id })} />; break
+    case 'match': view = <Matchmaking key={route.id} topic={topic} opponent={route.opponent} onReady={startDuel} onCancel={() => go({ name: 'topic', id: topic.id })}
+      live={route.searchLive && account.status === 'online' ? liveSearch : null} makeQuestions={makeMatchQuestions} onLive={startLive} />; break
     case 'duel': view = <Duel key={route.questions.map(q => q.idx).join() + (route.challengeId || '')} topic={topic} me={meForDuel} opponent={route.opponent} ranks={route.ranks} questions={route.questions}
-      mode={route.mode} ghost={route.ghost} onFinish={finishDuel} onQuit={route.challengeId ? () => go({ name: 'inbox' }) : quitDuel} />; break
+      mode={route.mode} ghost={route.ghost} link={liveLink} onFinish={finishDuel} onQuit={route.challengeId ? () => go({ name: 'inbox' }) : quitDuel} />; break
     case 'linkready': view = <LinkReady url={route.url} score={route.score} topic={topic} onHome={() => go({ name: 'home' })} onTopic={() => go({ name: 'topic', id: topic.id })} />; break
     case 'linkintro': view = link?.kind === 'challenge' ? (
       <LinkIntro challenge={link} onLater={() => { setLink(null); go({ name: 'home' }) }}
@@ -559,6 +582,7 @@ export default function App() {
       <Results data={route.data} me={me}
         onRematch={() => {
           const linkish = route.data.link || route.data.fromLink
+          if (route.mode === 'remote') return go({ name: 'match', id: topic.id }) // on recherche un joueur en ligne
           if (!linkish) return go({ name: 'match', id: topic.id, opponent: route.opponent, live: true })
           // revanche par lien : nouvelles questions du même thème si on l'a, sinon choix d'un thème
           return byId(topic.id) ? go({ name: 'linkcreate', id: topic.id }) : go({ name: 'topics' })

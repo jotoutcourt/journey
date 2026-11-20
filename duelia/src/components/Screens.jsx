@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Avatar from './Avatar.jsx'
 import TopicIcon from './TopicIcon.jsx'
 import AiTag from './AiTag.jsx'
@@ -336,17 +336,73 @@ export function Ranking({ st, topic, go }) {
 }
 
 /* ---------------- Recherche d'adversaire ---------------- */
-export function Matchmaking({ topic, opponent, onReady, onCancel }) {
+const SEARCH_MS = 20000
+
+// Recherche d'un vrai joueur sur le thème pendant 20 s ; sinon (ou sur demande) adversaire IA.
+export function Matchmaking({ topic, opponent, live, makeQuestions, onLive, onReady, onCancel }) {
+  const [searching, setSearching] = useState(!!live)
+  const [secs, setSecs] = useState(0)
   const [found, setFound] = useState(false)
+  const stopRef = useRef(null)
+
   useEffect(() => {
+    if (!searching) return
+    let alive = true, busy = false
+    const questions = makeQuestions()
+    const t0 = Date.now()
+    const stop = async (toAi) => {
+      if (!alive) return
+      alive = false
+      clearInterval(iv)
+      // dernier coup d'œil : quelqu'un nous a peut-être trouvé entre-temps
+      try {
+        const m = toAi ? await live.find(questions) : null
+        if (m) { onLive(m); return }
+        await live.leave()
+      } catch { /* hors ligne : on joue contre l'IA */ }
+      if (toAi) setSearching(false)
+    }
+    stopRef.current = stop
+    const poll = async () => {
+      if (!alive || busy) return
+      setSecs(Math.floor((Date.now() - t0) / 1000))
+      if (Date.now() - t0 > SEARCH_MS) return stop(true)
+      busy = true
+      try {
+        const m = await live.find(questions)
+        if (m && alive) { alive = false; clearInterval(iv); sfx.tap(); onLive(m) }
+      } catch { if (alive) { alive = false; clearInterval(iv); setSearching(false) } }
+      busy = false
+    }
+    const iv = setInterval(poll, 1500)
+    poll()
+    return () => { if (alive) { alive = false; clearInterval(iv); live.leave().catch(() => {}) } }
+  }, [searching, live, makeQuestions, onLive])
+
+  useEffect(() => {
+    if (searching) return
     const t1 = setTimeout(() => { setFound(true); sfx.tap() }, 1400 + Math.random() * 1200)
     return () => clearTimeout(t1)
-  }, [])
+  }, [searching])
   useEffect(() => {
     if (!found) return
     const t2 = setTimeout(onReady, 900)
     return () => clearTimeout(t2)
   }, [found, onReady])
+
+  if (searching) {
+    return (
+      <div className="matchmaking">
+        <TopicIcon topic={topic} size={96} />
+        <h2>{topic.name}</h2>
+        <div className="radar live"><span /><span /><span /></div>
+        <p className="mm-status">Recherche d'un vrai joueur en ligne… <b>{secs} s</b></p>
+        <p className="mm-hint">Si personne n'arrive d'ici 20 secondes, tu joues contre un adversaire IA.</p>
+        <button className="btn btn-primary" onClick={() => stopRef.current?.(true)}>Jouer contre l'IA maintenant</button>
+        <button className="btn btn-ghost" onClick={() => { stopRef.current?.(false); onCancel() }}>Annuler</button>
+      </div>
+    )
+  }
   return (
     <div className="matchmaking">
       <TopicIcon topic={topic} size={96} />
