@@ -5,6 +5,9 @@ import { TIME, pointsFor } from './duel.js'
 
 const PUBLIC_URL = 'https://duelia.vercel.app/'
 
+// Un défi par lien expire au bout de 7 jours
+export const LINK_TTL = 7 * 86400000
+
 // Adresse de base des liens : le site public, sauf si on y est déjà (ou en local pour les tests)
 export function baseUrl() {
   const { hostname, origin, pathname } = location
@@ -32,9 +35,9 @@ export function scoreOf(questions, answers) {
 }
 
 // ---- Défi ----
-export function encodeChallenge({ id, from, topic, questions, answers }) {
+export function encodeChallenge({ id, from, topic, questions, answers, expiresAt }) {
   return b64encode({
-    v: 1, id,
+    v: 1, id, x: expiresAt,
     f: { n: from.name, a: from.avatar, fl: from.flag },
     t: { id: topic.id, n: topic.name, i: topic.icon, c: topic.color, k: topic.category },
     q: questions.map(q => [q.q, ...q.options, q.correct, q.idx ?? -1]),
@@ -80,6 +83,7 @@ export function decodeChallenge(code) {
         color: /^#[0-9a-f]{6}$/i.test(d.t.c) ? d.t.c : '#7c5cff', category: str(d.t.k, 30) || 'Culture',
       },
       questions, answers, score: scoreOf(questions, answers),
+      expiresAt: Number.isFinite(d.x) ? d.x : null,
     }
   } catch {
     return null

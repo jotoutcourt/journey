@@ -52,7 +52,9 @@ export function LinkReady({ url, score, topic, onHome, onTopic }) {
 
 /* ---------- L'ami ouvre le lien ---------- */
 export function LinkIntro({ challenge, onAccept, onLater }) {
-  const { from, topic, questions } = challenge
+  const { from, topic, questions, expiresAt } = challenge
+  // calculé une fois à l'ouverture de l'écran
+  const [expired] = useState(() => !!expiresAt && Date.now() > expiresAt)
   return (
     <div className="screen link-screen">
       <div className="link-card">
@@ -61,8 +63,9 @@ export function LinkIntro({ challenge, onAccept, onLater }) {
         <div className="sheet-topic"><TopicIcon topic={topic} size={28} /> {topic.name}</div>
         <p>{questions.length} questions. {from.name} a déjà joué : ses réponses apparaîtront au fil des tiennes, et son score reste caché jusqu'à la fin.</p>
       </div>
-      <button className="btn btn-primary wide" onClick={onAccept}>Relever le défi</button>
-      <button className="btn btn-ghost wide" onClick={onLater}>Plus tard</button>
+      {expired && <p className="link-fail" role="alert">Ce défi a expiré (il était valable 7 jours). Demande à {from.name} de t'en envoyer un nouveau.</p>}
+      {!expired && <button className="btn btn-primary wide" onClick={onAccept}>Relever le défi</button>}
+      <button className="btn btn-ghost wide" onClick={onLater}>{expired ? 'Accueil' : 'Plus tard'}</button>
     </div>
   )
 }

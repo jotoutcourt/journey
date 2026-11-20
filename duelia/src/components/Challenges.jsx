@@ -2,6 +2,8 @@ import Avatar from './Avatar.jsx'
 import TopicIcon from './TopicIcon.jsx'
 import AiTag from './AiTag.jsx'
 import { lastSeenLabel } from '../lib/challenges.js'
+import { LINK_TTL } from '../lib/linkduel.js'
+import ConfirmButton from './ConfirmButton.jsx'
 
 function ago(ts, now) {
   const m = Math.max(0, Math.round((now - ts) / 60000))
@@ -66,7 +68,7 @@ export function SentScreen({ challenge, topic, onInbox, onHome }) {
 }
 
 /* ---------- Onglet Défis ---------- */
-export function Inbox({ st, topics, now, onAccept, onReject, onPlay, onResult, onDismiss, onResend }) {
+export function Inbox({ st, topics, now, onAccept, onReject, onPlay, onResult, onDismiss, onResend, onCancel }) {
   const list = st.challenges || []
   const byId = (id) => topics.find(t => t.id === id)
   const groups = [
@@ -75,6 +77,7 @@ export function Inbox({ st, topics, now, onAccept, onReject, onPlay, onResult, o
     { key: 'results', title: 'Résultats', items: list.filter(c => c.status === 'done') },
     { key: 'wait', title: 'En attente', items: list.filter(c => (['pending', 'accepted'].includes(c.status) && c.dir === 'out') || c.status === 'waiting' || c.status === 'waiting-link') },
     { key: 'rejected', title: 'Refusés', items: list.filter(c => c.status === 'rejected') },
+    { key: 'expired', title: 'Expirés', items: list.filter(c => c.status === 'expired') },
   ].filter(g => g.items.length)
 
   const statusLine = (c) => {
@@ -84,7 +87,12 @@ export function Inbox({ st, topics, now, onAccept, onReject, onPlay, onResult, o
     if (c.dir === 'in' && c.status === 'pending') return 'Te défie. Accepte pour jouer sans voir son score'
     if (c.status === 'waiting') return `Tu as joué (${c.myScore} pts). En attente de sa partie`
     if (c.status === 'rejected') return 'A refusé ton défi'
-    if (c.status === 'waiting-link') return `Défi par lien envoyé (${c.myScore} pts). Le résultat arrive quand ton ami te renvoie son lien`
+    if (c.status === 'waiting-link') {
+      const left = Math.max(0, c.createdAt + LINK_TTL - now)
+      const d = Math.floor(left / 86400000), h = Math.ceil((left % 86400000) / 3600000)
+      return `Défi par lien envoyé (${c.myScore} pts) · expire dans ${d > 0 ? `${d} j` : `${h} h`}`
+    }
+    if (c.status === 'expired') return 'Personne n\'a relevé ce défi en 7 jours'
     if (c.status === 'done') {
       const r = c.result
       return `${r.outcome === 'win' ? 'Victoire' : r.outcome === 'lose' ? 'Défaite' : 'Égalité'} ${r.myScore}–${r.oppScore} · +${r.total} XP`
@@ -123,7 +131,11 @@ export function Inbox({ st, topics, now, onAccept, onReject, onPlay, onResult, o
                     </>}
                     {g.key === 'results' && <button className="btn btn-small btn-secondary" onClick={() => onResult(c)}>Voir</button>}
                     {g.key === 'rejected' && <button className="btn btn-small btn-ghost" onClick={() => onDismiss(c)}>OK</button>}
-                    {c.status === 'waiting-link' && <button className="btn btn-small btn-ghost" onClick={() => onResend(c)}>Renvoyer</button>}
+                    {c.status === 'waiting-link' && <>
+                      <button className="btn btn-small btn-ghost" onClick={() => onResend(c)}>Renvoyer</button>
+                      <ConfirmButton className="btn btn-small btn-ghost danger" onConfirm={() => onCancel(c)} confirmLabel="Sûr ?">Annuler</ConfirmButton>
+                    </>}
+                    {g.key === 'expired' && <button className="btn btn-small btn-ghost" onClick={() => onDismiss(c)}>OK</button>}
                   </div>
                 </li>
               )

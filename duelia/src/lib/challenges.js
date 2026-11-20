@@ -5,6 +5,7 @@ import { getCommunity, leaderboard, botAnswer } from './bots.js'
 import { buildQuestions, TIME, pointsFor } from './duel.js'
 import { meEntry } from './profile.js'
 import { settleDuel } from './rewards.js'
+import { LINK_TTL } from './linkduel.js'
 
 const SEC = 1000, MIN = 60 * SEC
 const between = (a, b) => a + Math.random() * (b - a)
@@ -79,6 +80,12 @@ export function tickChallenges(st, topics, now = Date.now()) {
   const list = (st.challenges || []).map(c => {
     const topic = topics.find(t => t.id === c.topicId)
     if (!topic) return c
+    // Défi par lien sans réponse depuis 7 jours : il expire
+    if (c.dir === 'link-out' && c.status === 'waiting-link' && now - c.createdAt > LINK_TTL) {
+      changed = true
+      events.push({ text: `Ton défi par lien sur « ${topic.name} » a expiré sans réponse`, kind: 'rejected' })
+      return { ...c, status: 'expired', unseen: true }
+    }
     // Défi envoyé : l'adversaire accepte ou refuse
     if (c.dir === 'out' && c.status === 'pending' && now >= c.respondAt) {
       changed = true

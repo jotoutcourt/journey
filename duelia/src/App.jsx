@@ -17,7 +17,7 @@ import { settleDuel, ranksFor } from './lib/rewards.js'
 import { createOutgoing, tickChallenges, pendingCount, markPlayed } from './lib/challenges.js'
 import { Inbox, ChallengeSheet, NotifyBanner, SentScreen } from './components/Challenges.jsx'
 import RankShift from './components/RankShift.jsx'
-import { readLinkFromHash, challengeUrl, replyUrl } from './lib/linkduel.js'
+import { readLinkFromHash, challengeUrl, replyUrl, LINK_TTL } from './lib/linkduel.js'
 import { LinkReady, LinkIntro, LinkReplyIntro } from './components/LinkDuel.jsx'
 import { applyLinkReply, rowToReply } from './lib/linkresults.js'
 import { submitLinkResult, fetchLinkResults } from './lib/server.js'
@@ -222,7 +222,7 @@ export default function App() {
     if (r.linkCreate) {
       const id = Date.now().toString(36) + '-' + Array.from(crypto.getRandomValues(new Uint8Array(9)), b => b.toString(36).padStart(2, '0')).join('')
       const answers = plain(log.me, questions.length)
-      const url = challengeUrl({ id, from: meEntry(st.profile), topic: t, questions, answers })
+      const url = challengeUrl({ id, from: meEntry(st.profile), topic: t, questions, answers, expiresAt: Date.now() + LINK_TTL })
       const entry = { id: 'lk-' + id, dir: 'link-out', linkId: id, topicId: t.id, opponent: FRIEND, createdAt: Date.now(), status: 'waiting-link', url, myScore, unseen: false }
       setSt(s => ({
         ...s,
@@ -372,7 +372,9 @@ export default function App() {
       const base = stRef.current
       if (!base.profile) return
       const weekAgo = Date.now() - 14 * 86400000
-      const ids = (base.linkChallenges || []).filter(c => c.at > weekAgo).map(c => c.id)
+      // seulement les défis encore ouverts ou déjà répondus (pas les annulés ni les expirés)
+      const open = new Set((base.challenges || []).filter(c => c.dir === 'link-out' && ['waiting-link', 'done'].includes(c.status)).map(c => c.linkId))
+      const ids = (base.linkChallenges || []).filter(c => c.at > weekAgo && open.has(c.id)).map(c => c.id)
       if (!ids.length) return
       let rows
       try { rows = await fetchLinkResults(ids) } catch { return } // hors ligne : on réessaiera
@@ -426,6 +428,15 @@ export default function App() {
       try { await navigator.clipboard.writeText(`${text} ${c.url}`); setToast('Lien du défi copié : colle-le dans un message à ton ami.') } catch { setToast('Copie impossible sur cet appareil.') }
     },
     onDismiss: (c) => update(s => ({ ...s, challenges: s.challenges.filter(x => x.id !== c.id) })),
+    // Annuler un défi par lien : il disparaît, et un résultat qui arriverait plus tard est ignoré
+    onCancel: (c) => {
+      update(s => ({
+        ...s,
+        challenges: s.challenges.filter(x => x.id !== c.id),
+        linkChallenges: (s.linkChallenges || []).filter(x => x.id !== c.linkId),
+      }))
+      setToast('Défi annulé.')
+    },
   }
 
   // Le challenger ouvre la réponse de son ami : on rejoue le résultat à partir des deux séries de réponses
