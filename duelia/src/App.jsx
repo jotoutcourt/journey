@@ -19,7 +19,9 @@ import { Inbox, ChallengeSheet, NotifyBanner, SentScreen } from './components/Ch
 import RankShift from './components/RankShift.jsx'
 import { readLinkFromHash, challengeUrl, replyUrl } from './lib/linkduel.js'
 import { LinkReady, LinkIntro, LinkReplyIntro } from './components/LinkDuel.jsx'
-import { TIME, pointsFor } from './lib/duel.js'
+import { applyLinkReply, rowToReply } from './lib/linkresults.js'
+import { submitLinkResult, fetchLinkResults } from './lib/server.js'
+import { TIME } from './lib/duel.js'
 
 // Un thème partagé par lien (#t=…) est importé au chargement.
 const SHARED = (() => {
@@ -35,7 +37,6 @@ const LINK = readLinkFromHash()
 // Adversaire fictif quand on crée un défi par lien : l'ami jouera plus tard
 const FRIEND = { id: 'ami', name: 'Ton ami', avatar: 'ami-mystere', flag: '❔', xp: 0 }
 
-const toLog = (answers, qs) => answers.map((a, i) => ({ ...a, pts: a.choice === qs[i].correct ? pointsFor(a.t, i === qs.length - 1 ? 2 : 1) : 0 }))
 const plain = (logMe, n) => Array.from({ length: n }, (_, i) => (logMe[i] ? { choice: logMe[i].choice, t: logMe[i].t } : { choice: -1, t: TIME }))
 
 function initialState() {
@@ -196,7 +197,7 @@ export default function App() {
     const r = route, t = r.topicObj || byId(r.id)
     // Défi par lien créé : on enregistre ses réponses et on fabrique le lien à envoyer
     if (r.linkCreate) {
-      const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
+      const id = Date.now().toString(36) + '-' + Array.from(crypto.getRandomValues(new Uint8Array(9)), b => b.toString(36).padStart(2, '0')).join('')
       const answers = plain(log.me, questions.length)
       const url = challengeUrl({ id, from: meEntry(st.profile), topic: t, questions, answers })
       const entry = { id: 'lk-' + id, dir: 'link-out', linkId: id, topicId: t.id, opponent: FRIEND, createdAt: Date.now(), status: 'waiting-link', url, myScore, unseen: false }
@@ -213,17 +214,22 @@ export default function App() {
       const ch = r.linkPlay
       const reply = { url: replyUrl({ id: ch.id, from: meEntry(st.profile), answers: plain(log.me, questions.length), questions }), to: ch.from.name }
       const known = byId(ch.topic.id)
+      // Envoi automatique au serveur : le challenger le recevra sans lien de réponse
+      const answersPlain = plain(log.me, questions.length)
+      submitLinkResult(ch.id, meEntry(st.profile), answersPlain)
+        .then(() => setRoute(cur => (cur.name === 'results' && cur.data?.link?.url === reply.url ? { ...cur, data: { ...cur.data, autoSent: 'ok' } } : cur)))
+        .catch(() => setRoute(cur => (cur.name === 'results' && cur.data?.link?.url === reply.url ? { ...cur, data: { ...cur.data, autoSent: 'failed' } } : cur)))
       const keep = (data) => ({ id: 'lk-in-' + ch.id + Date.now().toString(36), dir: 'link-in', linkId: ch.id, topicId: ch.topic.id, topicMeta: ch.topic, opponent: r.opponent, createdAt: Date.now(), status: 'done', result: data, unseen: false })
       if (known) {
         const { state, data } = settleDuel(st, { topic: known, opponent: r.opponent, myScore, oppScore, log, questions })
         const full = { ...data, link: reply }
         setSt({ ...state, challenges: [keep(full), ...(state.challenges || [])].slice(0, 40) })
-        setRoute({ ...r, name: 'results', id: known.id, topicObj: null, data: { ...full, topic: known } })
+        setRoute({ ...r, name: 'results', id: known.id, topicObj: null, data: { ...full, topic: known, autoSent: 'sending' } })
       } else {
         const outcome = myScore > oppScore ? 'win' : myScore < oppScore ? 'lose' : 'draw'
         const full = { outcome, myScore, oppScore, opponent: r.opponent, bonuses: {}, total: 0, before: 0, after: 0, log, questions, noXp: true, link: reply }
         setSt(s => ({ ...s, challenges: [keep(full), ...(s.challenges || [])].slice(0, 40) }))
-        setRoute({ ...r, name: 'results', data: { ...full, topic: t } })
+        setRoute({ ...r, name: 'results', data: { ...full, topic: t, autoSent: 'sending' } })
       }
       setLink(null)
       return
@@ -265,6 +271,42 @@ export default function App() {
   // stable : l'appli se rafraîchit toutes les 3 s et ne doit pas relancer le minuteur de fermeture
   const closeShift = useCallback(() => setShift(null), [])
 
+  // Défis par lien envoyés : les résultats des amis arrivent tout seuls depuis le serveur
+  const byIdRef = useRef(byId)
+  useEffect(() => { byIdRef.current = byId }, [byId])
+  useEffect(() => {
+    let alive = true
+    const poll = async () => {
+      const base = stRef.current
+      if (!base.profile) return
+      const weekAgo = Date.now() - 14 * 86400000
+      const ids = (base.linkChallenges || []).filter(c => c.at > weekAgo).map(c => c.id)
+      if (!ids.length) return
+      let rows
+      try { rows = await fetchLinkResults(ids) } catch { return } // hors ligne : on réessaiera
+      if (!alive) return
+      const fresh = rows
+        .map(row => rowToReply(row, (base.linkChallenges || []).find(c => c.id === row.challenge_id)))
+        .filter(rep => rep && !(base.linkChallenges.find(c => c.id === rep.id)?.replies || []).includes(rep.from.name))
+      if (!fresh.length) return
+      let next = stRef.current
+      const notes = []
+      for (const rep of fresh) {
+        const res = applyLinkReply(next, rep, byIdRef.current)
+        if (!res.state) continue
+        next = res.state
+        const r = res.data
+        notes.push({ text: `${rep.from.name} a relevé ton défi : ${r.outcome === 'win' ? 'victoire' : r.outcome === 'lose' ? 'défaite' : 'égalité'} ${r.myScore}–${r.oppScore}`, kind: 'result' })
+      }
+      const applied = next
+      setSt(s => (s === stRef.current ? applied : s))
+      if (notes.length) setNotes(n => [...n, ...notes].slice(-5))
+    }
+    const first = setTimeout(poll, 2500)
+    const iv = setInterval(poll, 20000)
+    return () => { alive = false; clearTimeout(first); clearInterval(iv) }
+  }, [])
+
   const sendChallenge = () => {
     const c = createOutgoing(st, sheet.topic, sheet.opponent)
     update(s => ({ ...s, challenges: [c, ...(s.challenges || [])] }))
@@ -296,36 +338,11 @@ export default function App() {
 
   // Le challenger ouvre la réponse de son ami : on rejoue le résultat à partir des deux séries de réponses
   const openReply = () => {
-    const rep = link
-    const rec = (st.linkChallenges || []).find(c => c.id === rep.id)
-    const t = rec ? byId(rec.topicId) : null
-    const questions = rec ? rec.questions : rep.questions
-    const opponent = { id: 'lien:' + rep.from.name, ...rep.from, xp: 0 }
-    const log = { me: rec ? toLog(rec.answers, questions) : [], opp: toLog(rep.answers, questions) }
-    const myScore = rec ? rec.score : 0, oppScore = rep.score
-    const already = rec?.replies?.includes(rep.from.name)
+    const res = applyLinkReply(st, link, byId)
     setLink(null)
-    // Range le résultat dans l'onglet Défis : le défi en attente passe en « Résultats »
-    const file = (s, data) => {
-      const list = s.challenges || []
-      const waiting = list.find(c => c.dir === 'link-out' && c.linkId === rep.id && c.status === 'waiting-link')
-      const done = { dir: 'link-out', linkId: rep.id, topicId: rec?.topicId || 'lien', opponent, status: 'done', result: data, unseen: false, createdAt: Date.now() }
-      const already2 = list.some(c => c.dir === 'link-out' && c.linkId === rep.id && c.status === 'done' && c.opponent.name === rep.from.name)
-      if (already2) return list
-      return waiting ? list.map(c => (c === waiting ? { ...c, ...done } : c)) : [{ id: 'lk-' + rep.id + rep.from.name, ...done }, ...list].slice(0, 40)
-    }
-    if (rec && t && !already) {
-      const { state, data } = settleDuel(st, { topic: t, opponent, myScore, oppScore, log, questions })
-      const full = { ...data, fromLink: true }
-      setSt({ ...state, challenges: file(state, full), linkChallenges: state.linkChallenges.map(c => (c.id === rec.id ? { ...c, replies: [...(c.replies || []), rep.from.name] } : c)) })
-      setRoute({ name: 'results', id: t.id, opponent, data: { ...full, topic: t } })
-      return
-    }
-    const outcome = myScore > oppScore ? 'win' : myScore < oppScore ? 'lose' : 'draw'
-    const pseudo = t || { id: 'lien', name: 'Défi par lien', icon: '🔗', color: '#7c5cff', category: 'Culture', questions: [] }
-    const full = { outcome, myScore, oppScore, opponent, bonuses: {}, total: 0, before: 0, after: 0, log, questions, noXp: true, fromLink: true, alreadyCounted: already, unknownMine: !rec }
-    if (rec && !already) setSt(s => ({ ...s, challenges: file(s, full) }))
-    setRoute({ name: 'results', topicObj: pseudo, opponent, data: { ...full, topic: pseudo } })
+    if (res.state) setSt(res.state)
+    const known = byId(res.topic.id)
+    setRoute({ name: 'results', id: known ? known.id : undefined, topicObj: known ? null : res.topic, opponent: res.data.opponent, data: { ...res.data, topic: res.topic } })
   }
 
   const quitDuel = useCallback(() => {

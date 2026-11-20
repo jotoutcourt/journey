@@ -131,10 +131,15 @@ export default function Results({ data, me, onRematch, onAnother, onTopic, onSha
 
       {data.link && (
         <div className="link-reply">
-          <button className="btn btn-gold wide" onClick={sendReply}>📤 Envoyer mon résultat à {data.link.to}</button>
+          {data.autoSent === 'ok' && <p className="link-ok" role="status">✓ Résultat envoyé automatiquement à {data.link.to}</p>}
+          {data.autoSent === 'sending' && <p className="link-sending" role="status">Envoi du résultat à {data.link.to}…</p>}
+          {data.autoSent === 'failed' && <p className="link-fail" role="status">Envoi automatique impossible (pas de connexion ?). Envoie-lui le lien :</p>}
+          <button className={`btn ${data.autoSent === 'ok' ? 'btn-ghost' : 'btn-gold'} wide`} onClick={sendReply}>
+            📤 {data.autoSent === 'ok' ? `Lui envoyer aussi un message` : `Envoyer mon résultat à ${data.link.to}`}
+          </button>
           {sent === 'copied' && <p className="link-ok" role="status">Lien copié : colle-le dans un message à {data.link.to}.</p>}
           {sent === 'manual' && <textarea className="link-manual" readOnly rows={3} value={data.link.url} onFocus={e => e.target.select()} />}
-          {!sent && <small>Sans ce lien, {data.link.to} ne saura pas qui a gagné.</small>}
+          {!sent && data.autoSent !== 'ok' && <small>Si l'envoi automatique échoue, ce lien permet à {data.link.to} de voir qui a gagné.</small>}
         </div>
       )}
 

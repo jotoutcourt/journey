@@ -763,3 +763,6 @@ img { -webkit-user-drag: none; }
 .link-reply small { color: var(--muted); }
 
 .ch-link { font-family: var(--body); font-size: 11.5px; font-weight: 700; color: var(--gold); }
+
+.link-sending { margin: 0; text-align: center; color: var(--muted); font-size: 14px; }
+.link-fail { margin: 0; text-align: center; color: var(--ko); font-weight: 700; font-size: 14px; }
