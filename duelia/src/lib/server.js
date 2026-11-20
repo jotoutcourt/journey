@@ -2,7 +2,7 @@
 // La clé ci-dessous est la clé PUBLIQUE (« publishable ») du projet : elle est faite pour être dans le site.
 // Elle ne donne accès qu'aux deux fonctions autorisées (voir supabase/link_results.sql).
 export const SUPABASE_URL = 'https://smghiqolqdviyxxisdie.supabase.co'
-const PUBLIC_KEY = 'sb_publishable_7MZtPO9jkhzhLVYSFaKLFA_dqK3drPi'
+export const PUBLIC_KEY = 'sb_publishable_7MZtPO9jkhzhLVYSFaKLFA_dqK3drPi'
 
 async function rpc(fn, args, timeoutMs = 8000) {
   const ctrl = new AbortController()

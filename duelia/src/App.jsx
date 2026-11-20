@@ -21,6 +21,8 @@ import { readLinkFromHash, challengeUrl, replyUrl } from './lib/linkduel.js'
 import { LinkReady, LinkIntro, LinkReplyIntro } from './components/LinkDuel.jsx'
 import { applyLinkReply, rowToReply } from './lib/linkresults.js'
 import { submitLinkResult, fetchLinkResults } from './lib/server.js'
+import { connect, pushProfile, saveRemoteState, pushXp, fetchBoard, makeRecoveryCode, recoverWith } from './lib/account.js'
+import { setRealRows } from './lib/bots.js'
 import { TIME } from './lib/duel.js'
 
 // Un thème partagé par lien (#t=…) est importé au chargement.
@@ -263,6 +265,75 @@ export default function App() {
   // stable : l'appli se rafraîchit toutes les 3 s et ne doit pas relancer le minuteur de fermeture
   const closeShift = useCallback(() => setShift(null), [])
 
+  // ===== Compte joueur : connexion automatique, sauvegarde, XP et classements réels =====
+  const [account, setAccount] = useState({ status: 'idle' }) // idle | online | offline
+  const [accountEpoch, setAccountEpoch] = useState(0)
+  const [, setBoardTick] = useState(0)
+  const lastProfile = useRef(null)
+  const hasProfile = !!st.profile
+  useEffect(() => {
+    if (!hasProfile) return
+    let alive = true
+    connect(stRef.current.profile)
+      .then(me => {
+        if (!alive) return
+        setAccount({ status: 'online', playerId: me.id, hasRecovery: me.has_recovery })
+        update(s => (s.profile && s.profile.playerId !== me.id ? { ...s, profile: { ...s.profile, playerId: me.id } } : s))
+      })
+      .catch(() => { if (alive) setAccount({ status: 'offline' }) })
+    return () => { alive = false }
+  }, [hasProfile, accountEpoch, update])
+
+  // Sauvegarde 3 s après chaque changement : profil, XP gagnée, puis toute la progression
+  useEffect(() => {
+    if (account.status !== 'online') return
+    const id = setTimeout(async () => {
+      const s = stRef.current
+      if (!s.profile) return
+      try {
+        const key = JSON.stringify([s.profile.name, s.profile.avatar, s.profile.flag, s.profile.bio, s.profile.photo?.length])
+        if (key !== lastProfile.current) { await pushProfile(s.profile); lastProfile.current = key }
+        const synced = s.sync?.xp || {}
+        const next = await pushXp(s.topicStats, synced)
+        if (JSON.stringify(next) !== JSON.stringify(synced)) update(x => ({ ...x, sync: { ...(x.sync || {}), xp: next } }))
+        await saveRemoteState({ ...stRef.current, sync: { ...(stRef.current.sync || {}), xp: next } })
+      } catch { /* hors ligne : on réessaiera au prochain changement */ }
+    }, 3000)
+    return () => clearTimeout(id)
+  }, [st, account.status, update])
+
+  // Classements réels du thème affiché (semaine, mois, depuis toujours)
+  const boardTopic = ['topic', 'ranking', 'results', 'duel', 'match'].includes(route.name) ? route.id : null
+  const syncedXp = boardTopic ? st.sync?.xp?.[boardTopic] : undefined
+  useEffect(() => {
+    if (account.status !== 'online' || !boardTopic) return
+    let alive = true
+    Promise.all(['week', 'month', 'all'].map(k => fetchBoard(boardTopic, k).then(rows => setRealRows(boardTopic, k, rows))))
+      .then(() => { if (alive) setBoardTick(t => t + 1) })
+      .catch(() => {})
+    return () => { alive = false }
+  }, [account.status, boardTopic, syncedXp])
+
+  const getRecoveryCode = async () => {
+    const code = await makeRecoveryCode()
+    setAccount(a => ({ ...a, hasRecovery: true }))
+    return code
+  }
+  // Retrouver son compte avec un code (nouvel appareil ou changement de compte)
+  const recoverAccount = async (code) => {
+    let res
+    try { res = await recoverWith(code) } catch { return 'offline' }
+    if (!res) return 'bad'
+    const base = res.state ? { ...emptyState(), ...res.state } : { ...emptyState(), ...stRef.current }
+    const profile = { ...(base.profile || {}), id: base.profile?.id || res.me.id, name: res.me.name, avatar: res.me.avatar, flag: res.me.flag, bio: res.me.bio, playerId: res.me.id }
+    lastProfile.current = null
+    setSt({ ...base, profile })
+    setAccount({ status: 'online', playerId: res.me.id, hasRecovery: true })
+    setAccountEpoch(e => e + 1)
+    setRoute({ name: 'home' })
+    return 'ok'
+  }
+
   // Défis par lien envoyés : les résultats des amis arrivent tout seuls depuis le serveur
   const byIdRef = useRef(byId)
   useEffect(() => { byIdRef.current = byId }, [byId])
@@ -401,7 +472,7 @@ export default function App() {
   if (!me) {
     return (
       <div className="app">
-        <Onboarding topics={topics} onDone={({ name, avatar, follows }) => {
+        <Onboarding topics={topics} onRecover={recoverAccount} onDone={({ name, avatar, follows }) => {
           update(s => ({ ...s, profile: { id: Math.random().toString(36).slice(2), name, avatar, createdAt: Date.now() }, follows: [...new Set([...s.follows, ...follows, ...(SHARED ? [SHARED.id] : [])])] }))
         }} />
       </div>
@@ -417,7 +488,7 @@ export default function App() {
     case 'topic': view = topic ? <TopicPage st={st} topic={topic} go={go} toggleFollow={toggleFollow} shareTopic={shareTopic} deleteTopic={deleteTopic} /> : null; break
     case 'ranking': view = <Ranking st={st} topic={topic} go={go} />; break
     case 'create': view = <CreateTopic key={route.id || 'new'} st={st} existing={route.id ? topic : null} onSave={saveTopic} go={go} />; break
-    case 'profile': view = <Profile st={st} topics={topics} update={update} go={go} />; break
+    case 'profile': view = <Profile st={st} topics={topics} update={update} go={go} account={account} onMakeCode={getRecoveryCode} onRecover={recoverAccount} />; break
     case 'tower': view = <Tower key={route.daily ? 'daily' : 'free'} topics={topics} profile={me} daily={!!route.daily} towerState={st.tower}
       onFinish={finishTower} onExit={() => go({ name: 'home' })} />; break
     case 'match': view = <Matchmaking topic={topic} opponent={route.opponent} onReady={startDuel} onCancel={() => go({ name: 'topic', id: topic.id })} />; break

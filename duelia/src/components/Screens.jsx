@@ -9,6 +9,7 @@ import { getCommunity, leaderboard } from '../lib/bots.js'
 import { PERIODS, myPeriodXp, resetIn } from '../lib/periods.js'
 import { meEntry } from '../lib/profile.js'
 import { topicTitle, nextTitle, ladderFor, TITLE_LEVELS } from '../lib/titles.js'
+import { RecoverForm } from './AccountCard.jsx'
 import { dayKey } from '../lib/tower.js'
 import { decodeTopic } from '../lib/store.js'
 import { sfx } from '../lib/sound.js'
@@ -478,8 +479,9 @@ export function CreateTopic({ st, existing, onSave, go }) {
 }
 
 /* ---------------- Premier lancement ---------------- */
-export function Onboarding({ topics, onDone }) {
+export function Onboarding({ topics, onDone, onRecover }) {
   const [step, setStep] = useState(0)
+  const [recovering, setRecovering] = useState(false)
   const [name, setName] = useState('')
   const [seed, setSeed] = useState(() => Math.random().toString(36).slice(2))
   const [picked, setPicked] = useState([])
@@ -498,6 +500,9 @@ export function Onboarding({ topics, onDone }) {
         </div>
         <input className="ob-name" value={name} maxLength={18} onChange={e => setName(e.target.value)} placeholder="Ton pseudo" autoFocus />
         <button className="btn btn-primary wide" disabled={!name.trim()} onClick={() => setStep(1)}>Continuer</button>
+        {!recovering
+          ? <button className="btn btn-ghost wide" onClick={() => setRecovering(true)}>J'ai déjà un compte</button>
+          : <RecoverForm onRecover={onRecover} />}
       </div>
     )
   }

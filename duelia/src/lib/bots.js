@@ -59,6 +59,11 @@ function botPeriodXp(bot, topic, kind, key, frac, champXp) {
   return Math.round(perWeek * weeks * frac)
 }
 
+// Vrais joueurs (comptes) récupérés sur le serveur, par thème et par période.
+const realRows = new Map()
+export function setRealRows(topicId, kind, rows) { realRows.set(`${topicId}:${kind}`, rows) }
+export const getRealRows = (topicId, kind) => realRows.get(`${topicId}:${kind}`) || []
+
 // Classement complet avec le joueur inséré à sa place.
 // kind : 'all' (depuis toujours), 'week' ou 'month'.
 export function leaderboard(topic, me, myXp, kind = 'all') {
@@ -72,6 +77,11 @@ export function leaderboard(topic, me, myXp, kind = 'all') {
     rows = community
       .map(b => ({ ...b, allXp: b.xp, xp: botPeriodXp(b, topic, kind, key, frac, community[0].xp) }))
       .filter(b => b.xp > 0)
+  }
+  // Vrais joueurs (sans badge IA) ; le joueur lui-même est ajouté à part avec sa progression locale
+  for (const r of getRealRows(topic.id, kind)) {
+    if (me.playerId && r.playerId === me.playerId) continue
+    rows.push({ ...r, allXp: kind === 'all' ? r.xp : (getRealRows(topic.id, 'all').find(x => x.playerId === r.playerId)?.xp ?? r.xp), ai: false })
   }
   rows.push({ id: 'me', name: me.name, avatar: me.avatar, photo: me.photo, flag: me.flag || '🇫🇷', xp: myXp, allXp: me.allXp ?? myXp, isMe: true })
   rows.sort((a, b) => b.xp - a.xp || (a.isMe ? -1 : 1))

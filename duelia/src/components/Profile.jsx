@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import Avatar from './Avatar.jsx'
 import TopicIcon from './TopicIcon.jsx'
 import ConfirmButton from './ConfirmButton.jsx'
+import AccountCard from './AccountCard.jsx'
 import { levelInfo } from '../lib/levels.js'
 import { topicTitle } from '../lib/titles.js'
 import { COUNTRIES, computeStats, bestBadge, resizeImage } from '../lib/profile.js'
@@ -159,7 +160,7 @@ function ProfileEditor({ profile, onSave, onCancel }) {
 }
 
 /* ---------- Page profil ---------- */
-export default function Profile({ st, topics, update, go }) {
+export default function Profile({ st, topics, update, go, account, onMakeCode, onRecover }) {
   const me = st.profile
   const lvl = levelInfo(st.xp)
   const [editing, setEditingRaw] = useState(false)
@@ -257,6 +258,9 @@ export default function Profile({ st, topics, update, go }) {
           })}
         </ul>
       </>}
+
+      <h3 className="sec-title">Compte</h3>
+      <AccountCard account={account} onMakeCode={onMakeCode} onRecover={onRecover} />
 
       <h3 className="sec-title">Réglages</h3>
       <label className="toggle">

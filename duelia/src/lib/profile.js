@@ -12,7 +12,7 @@ export const COUNTRIES = [
 ]
 
 // Ce que le classement et le duel savent du joueur.
-export const meEntry = (p) => ({ name: p.name, avatar: p.avatar, photo: p.photo, flag: p.flag || '🇫🇷' })
+export const meEntry = (p) => ({ name: p.name, avatar: p.avatar, photo: p.photo, flag: p.flag || '🇫🇷', playerId: p.playerId })
 
 // Recadre une photo de l'appareil au centre et la réduit (JPEG léger, stocké dans le navigateur).
 export function resizeImage(file, w, h, quality = 0.82) {
