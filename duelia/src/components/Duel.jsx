@@ -36,7 +36,10 @@ function RankPlate({ rank }) {
   return <span className={`vs-rank ${rank === 1 ? 'first' : ''}`}>{rank === 1 ? '👑 ' : ''}Top {rank} mondial</span>
 }
 
-export default function Duel({ topic, me, opponent, ranks, questions, onFinish, onQuit }) {
+// mode : 'live' (adversaire en direct), 'blind' (défi reçu : on joue sans voir l'adversaire),
+// 'ghost' (défi envoyé : l'adversaire a déjà joué, ses réponses enregistrées s'affichent au fil des questions)
+export default function Duel({ topic, me, opponent, ranks, questions, onFinish, onQuit, mode = 'live', ghost }) {
+  const blind = mode === 'blind'
   const [phase, setPhase] = useState('vs') // vs → banner → play → reveal → … → done
   const [round, setRound] = useState(0)
   const [myScore, setMyScore] = useState(0)
@@ -77,7 +80,9 @@ export default function Duel({ topic, me, opponent, ranks, questions, onFinish, 
   useEffect(() => {
     if (phase !== 'play') return
     startRef.current = performance.now()
-    const plan = botAnswer(opponent, q, TIME)
+    const plan = mode === 'ghost' ? (ghost?.[round] || { choice: -1, t: Infinity })
+      : mode === 'blind' ? { choice: -1, t: Infinity }
+      : botAnswer(opponent, q, TIME)
     const timers = []
     let lastSec = 10
     const iv = setInterval(() => {
@@ -86,7 +91,7 @@ export default function Duel({ topic, me, opponent, ranks, questions, onFinish, 
       const s = Math.ceil(l / 1000)
       if (s < lastSec) { lastSec = s; if (s <= 3 && s > 0) sfx.tick() }
     }, 100)
-    if (Number.isFinite(plan.t)) {
+    if (Number.isFinite(plan.t) && plan.t < TIME && plan.choice >= 0) {
       timers.push(setTimeout(() => {
         const ok = plan.choice === q.correct
         const pts = ok ? pointsFor(plan.t, mult) : 0
@@ -97,24 +102,25 @@ export default function Duel({ topic, me, opponent, ranks, questions, onFinish, 
     timers.push(setTimeout(() => {
       setLeft(0)
       setMine(m => m ?? { choice: -1, t: TIME, pts: 0 })
-      setTheirs(o => o ?? { choice: -1, t: TIME, pts: 0 })
+      if (mode !== 'blind') setTheirs(o => o ?? { choice: -1, t: TIME, pts: 0 })
     }, TIME))
     return () => { clearInterval(iv); timers.forEach(clearTimeout) }
-  }, [phase, opponent, q, mult])
+  }, [phase, opponent, q, mult, mode, ghost, round])
 
   // Les deux ont répondu → on dévoile
   useEffect(() => {
-    if (phase !== 'play' || !mine || !theirs) return
+    if (phase !== 'play' || !mine || (!blind && !theirs)) return
     const id = setTimeout(() => {
       setLog(l => {
         const me = [...l.me], opp = [...l.opp]
-        me[round] = mine; opp[round] = theirs
+        me[round] = mine
+        if (!blind) opp[round] = theirs
         return { me, opp }
       })
       setPhase('reveal')
     }, 450)
     return () => clearTimeout(id)
-  }, [phase, mine, theirs, round])
+  }, [phase, mine, theirs, round, blind])
 
   // Dévoilement puis question suivante
   useEffect(() => {
@@ -166,6 +172,13 @@ export default function Duel({ topic, me, opponent, ranks, questions, onFinish, 
           <RankPlate rank={ranks?.opp} />
         </div>
         <div className="vs-topic"><TopicIcon topic={topic} size={30} /> {topic.name}</div>
+        {mode !== 'live' && !big && (
+          <div className="vs-async" role="status">
+            {blind
+              ? <><b>Défi différé</b><span>{opponent.name} jouera ces questions de son côté. Tu ne verras son score qu'à la fin.</span></>
+              : <><b>{opponent.name} a déjà joué</b><span>Ses réponses vont apparaître au fil des questions. Le résultat tombe à la fin.</span></>}
+          </div>
+        )}
         {big && (
           <div className="vs-headline" role="status">
             <small>{big.title}</small>
@@ -205,14 +218,14 @@ export default function Duel({ topic, me, opponent, ranks, questions, onFinish, 
         <div className="pl pl-opp">
           <div className="pl-txt right">
             <small>{opponent.name}{opponent.champion ? ' 👑' : ''}</small>
-            <strong className="score">{oppScore}</strong>
+            <strong className="score">{blind ? '?' : oppScore}</strong>
           </div>
           <Avatar seed={opponent.avatar} size={46} ring="var(--opp)" className={theirs && phase === 'play' ? 'answered' : ''} />
           {oppPop != null && <span key={'o' + round} className="pts-pop opp">+{oppPop}</span>}
         </div>
       </div>
 
-      <div className="tug"><i style={{ width: `${share}%` }} /></div>
+      <div className={`tug ${blind ? 'tug-blind' : ''}`}><i style={{ width: `${blind ? 100 : share}%` }} /></div>
 
       <div className="round-dots">
         {questions.map((_, i) => {
@@ -241,7 +254,7 @@ export default function Duel({ topic, me, opponent, ranks, questions, onFinish, 
                   style={{ animationDelay: `${120 + i * 70}ms` }}>
                   {mine?.choice === i && <span className="mark mark-me"><Avatar seed={me.avatar} photo={me.photo} size={22} /></span>}
                   <span className="opt-txt">{opt}</span>
-                  {reveal && theirs?.choice === i && <span className="mark mark-opp"><Avatar seed={opponent.avatar} size={22} /></span>}
+                  {reveal && !blind && theirs?.choice === i && <span className="mark mark-opp"><Avatar seed={opponent.avatar} size={22} /></span>}
                 </button>
               )
             })}

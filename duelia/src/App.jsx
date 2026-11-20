@@ -3,7 +3,6 @@ import { OFFICIAL_TOPICS, COMMUNITY_SEED, STARTER_CREATION, STARTER_CREATIONS } 
 import { POKEMON_TOPIC } from './data/pokemon.js'
 import { loadState, saveState, emptyState, encodeTopic, decodeTopic } from './lib/store.js'
 import { findOpponent, getCommunity, leaderboard } from './lib/bots.js'
-import { myPeriodXp } from './lib/periods.js'
 import { meEntry } from './lib/profile.js'
 import { setSound } from './lib/sound.js'
 import { pick } from './lib/rng.js'
@@ -14,6 +13,10 @@ import { Home, Topics, TopicPage, Ranking, Matchmaking, CreateTopic, Onboarding 
 import Profile from './components/Profile.jsx'
 import Tower from './components/Tower.jsx'
 import { dayKey } from './lib/tower.js'
+import { settleDuel, ranksFor } from './lib/rewards.js'
+import { presence, createOutgoing, tickChallenges, pendingCount, markPlayed } from './lib/challenges.js'
+import { Inbox, ChallengeSheet, NotifyBanner, SentScreen } from './components/Challenges.jsx'
+import RankShift from './components/RankShift.jsx'
 
 // Un thème partagé par lien (#t=…) est importé au chargement.
 const SHARED = (() => {
@@ -61,9 +64,13 @@ function initialState() {
   return s
 }
 
+// Écrans qui font partie de la visite d'un thème (on n'anime le classement qu'en les quittant)
+const FLOW = ['topic', 'ranking', 'match', 'duel', 'results', 'create']
+
 const TABS = [
   { name: 'home', label: 'Accueil', icon: <path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z" /> },
   { name: 'topics', label: 'Thèmes', icon: <><rect x="4" y="4" width="7" height="7" rx="2" /><rect x="13" y="4" width="7" height="7" rx="2" /><rect x="4" y="13" width="7" height="7" rx="2" /><rect x="13" y="13" width="7" height="7" rx="2" /></> },
+  { name: 'inbox', label: 'Défis', icon: <><path d="M6 4l6 6M18 4l-6 6M4 20l6-6M20 20l-6-6" /><circle cx="12" cy="12" r="2.5" /></> },
   { name: 'create', label: 'Créer', icon: <path d="M12 4v16M4 12h16" strokeWidth="2.6" /> },
   { name: 'profile', label: 'Profil', icon: <><circle cx="12" cy="8" r="4" /><path d="M4 20c1-4 4-6 8-6s7 2 8 6" /></> },
 ]
@@ -85,7 +92,38 @@ export default function App() {
   ], [st.custom, myName])
   const byId = useCallback((id) => topics.find(t => t.id === id), [topics])
 
+  // Animation du classement quand on quitte un thème : rangs au moment où l'on y entre
+  const [session, setSession] = useState(null) // { topicId, before, played }
+  const [shift, setShift] = useState(null)
+  const [sheet, setSheet] = useState(null)
+  const [notes, setNotes] = useState([])
+
   const go = useCallback((r) => {
+    // Défier un joueur précis : s'il n'est pas en ligne, on propose un défi différé
+    if (r.name === 'match' && !r.live && !r.opponent && (r.opponentId || r.forceChampion)) {
+      const topic = byId(r.id)
+      const bots = getCommunity(topic)
+      const bot = r.opponentId ? bots.find(x => x.id === r.opponentId) : bots[0]
+      const p = presence(bot)
+      if (!p.online) { setSheet({ topic, opponent: { ...bot, champion: bot === bots[0] }, lastSeenMin: p.lastSeenMin }); return }
+    }
+    // On quitte le thème en cours : si l'on a joué, on montre l'évolution du classement
+    const inFlow = (x, id) => FLOW.includes(x.name) && x.id === id
+    if (session && !inFlow(r, session.topicId)) {
+      const t = byId(session.topicId)
+      const stats = st.topicStats[session.topicId]
+      if (t && stats && (stats.played || 0) > session.played) {
+        setShift({ topic: t, before: session.before, after: ranksFor(st.profile, t, stats), stats })
+      }
+      setSession(null)
+    }
+    if (FLOW.includes(r.name) && r.id && (!session || session.topicId !== r.id || !inFlow(r, session.topicId))) {
+      const t = byId(r.id)
+      if (t && st.profile && (!session || session.topicId !== r.id)) {
+        const stats = st.topicStats[r.id]
+        setSession({ topicId: r.id, before: ranksFor(st.profile, t, stats), played: stats?.played || 0 })
+      }
+    }
     if (r.name === 'match') {
       const topic = byId(r.id)
       const xp = st.topicStats[r.id]?.xp || 0
@@ -103,7 +141,7 @@ export default function App() {
     }
     setRoute(r)
     viewRef.current?.scrollTo(0, 0)
-  }, [byId, st.topicStats, st.profile])
+  }, [byId, st.topicStats, st.profile, session])
 
   // Fin d'une ascension : record personnel et tentative du jour (seule la première compte).
   const finishTower = (result, daily) => update(s => {
@@ -134,41 +172,61 @@ export default function App() {
 
   const finishDuel = useCallback(({ myScore, oppScore, log, questions }) => {
     const r = route, t = byId(r.id)
-    const outcome = myScore > oppScore ? 'win' : myScore < oppScore ? 'lose' : 'draw'
-    const allRight = log.me.every(m => m && m.pts > 0)
-    const bonuses = { finish: 40, victory: outcome === 'win' ? 100 : outcome === 'draw' ? 50 : 0, perfect: allRight ? 30 : 0 }
-    const total = myScore + bonuses.finish + bonuses.victory + bonuses.perfect
-    const prev = st.topicStats[r.id] || { xp: 0, played: 0, wins: 0, seen: [] }
-    const seen = [...new Set([...(prev.seen || []), ...questions.map(q => q.idx)])]
-    // Journal des gains (40 derniers jours) pour les classements de la semaine et du mois
-    const now = Date.now()
-    const xpLog = [...(prev.log || []).filter(e => now - e.at < 40 * 86400000), { at: now, xp: total }]
-    const mineLog = log.me.filter(Boolean)
-    const answered = mineLog.filter(m => m.choice >= 0)
-    const next = {
-      ...prev, xp: prev.xp + total, played: prev.played + 1, seen, log: xpLog,
-      wins: prev.wins + (outcome === 'win' ? 1 : 0), draws: (prev.draws || 0) + (outcome === 'draw' ? 1 : 0),
-      // statistiques du profil
-      tracked: (prev.tracked || 0) + 1, scoreSum: (prev.scoreSum || 0) + myScore,
-      asked: (prev.asked || 0) + questions.length, correct: (prev.correct || 0) + mineLog.filter(m => m.pts > 0).length,
-      answered: (prev.answered || 0) + answered.length, timeSum: (prev.timeSum || 0) + answered.reduce((t, m) => t + m.t, 0),
+    const ch = r.challengeId ? (st.challenges || []).find(c => c.id === r.challengeId) : null
+    // Défi reçu : on a joué sans voir l'adversaire, le résultat viendra plus tard
+    if (ch && ch.dir === 'in') {
+      const played = markPlayed(ch, log.me, myScore)
+      setSt(s => ({ ...s, challenges: s.challenges.map(c => (c.id === ch.id ? played : c)) }))
+      setRoute({ name: 'sent', id: t.id, challengeId: ch.id })
+      return
     }
-    const meRow = { ...meEntry(me), allXp: next.xp }
-    const ranks = Object.fromEntries(['week', 'month', 'all'].map(k => {
-      const rows = leaderboard(t, meRow, myPeriodXp(next, k), k)
-      return [k, rows.find(x => x.isMe).rank]
-    }))
-    setSt(s => ({
-      ...s,
-      xp: s.xp + total,
-      topicStats: { ...s.topicStats, [r.id]: next },
-      history: [{ topicId: t.id, topicName: t.name, oppName: r.opponent.name, oppAvatar: r.opponent.avatar, champion: r.opponent.champion, myScore, oppScore, outcome, at: Date.now() }, ...s.history].slice(0, 30),
-    }))
-    setRoute({
-      ...r, name: 'results',
-      data: { outcome, myScore, oppScore, opponent: r.opponent, topic: t, bonuses, total, before: prev.xp, after: prev.xp + total, log, questions, ranks },
-    })
-  }, [route, byId, st.topicStats, me])
+    const { state, data } = settleDuel(st, { topic: t, opponent: r.opponent, myScore, oppScore, log, questions, ranks: r.ranks })
+    const challenges = ch
+      ? state.challenges.map(c => (c.id === ch.id ? { ...c, status: 'done', myScore, result: data, unseen: false } : c))
+      : state.challenges
+    setSt({ ...state, challenges })
+    setRoute({ ...r, name: 'results', data: { ...data, topic: t } })
+  }, [route, byId, st])
+
+  // Les défis avancent dans le temps (réponses, parties jouées, nouveaux défis reçus).
+  const stRef = useRef(st)
+  const topicsRef = useRef(topics)
+  useEffect(() => { stRef.current = st; topicsRef.current = topics }, [st, topics])
+  const [clock, setClock] = useState(() => Date.now())
+  useEffect(() => {
+    const run = () => {
+      const base = stRef.current
+      const { state, events } = tickChallenges(base, topicsRef.current)
+      if (state) setSt(s => (s === base ? state : s)) // si l'état a bougé entre-temps, on réessaie au prochain passage
+      if (state && events.length) setNotes(n => [...n, ...events].slice(-5))
+      setClock(Date.now())
+    }
+    const first = setTimeout(run, 1500)
+    const iv = setInterval(run, 3000)
+    return () => { clearTimeout(first); clearInterval(iv) }
+  }, [])
+
+  // stable : l'appli se rafraîchit toutes les 3 s et ne doit pas relancer le minuteur de fermeture
+  const closeShift = useCallback(() => setShift(null), [])
+
+  const sendChallenge = () => {
+    const c = createOutgoing(st, sheet.topic, sheet.opponent)
+    update(s => ({ ...s, challenges: [c, ...(s.challenges || [])] }))
+    setToast(`Défi envoyé à ${sheet.opponent.name}. Tu seras prévenu de sa réponse.`)
+    setSheet(null)
+  }
+  const patchChallenge = (id, patch) => update(s => ({ ...s, challenges: (s.challenges || []).map(c => (c.id === id ? { ...c, ...patch } : c)) }))
+  const playChallenge = (c, mode) => go({
+    name: 'duel', id: c.topicId, opponent: c.opponent, ranks: c.ranks, questions: c.questions,
+    challengeId: c.id, mode, ghost: mode === 'ghost' ? c.oppAnswers : undefined,
+  })
+  const inboxHandlers = {
+    onAccept: (c) => { patchChallenge(c.id, { status: 'accepted-by-me', unseen: false }); playChallenge(c, 'blind') },
+    onReject: (c) => update(s => ({ ...s, challenges: s.challenges.filter(x => x.id !== c.id) })),
+    onPlay: (c) => playChallenge(c, 'ghost'),
+    onResult: (c) => { patchChallenge(c.id, { unseen: false }); go({ name: 'results', id: c.topicId, opponent: c.opponent, data: { ...c.result, topic: byId(c.topicId) } }) },
+    onDismiss: (c) => update(s => ({ ...s, challenges: s.challenges.filter(x => x.id !== c.id) })),
+  }
 
   const quitDuel = useCallback(() => {
     setRoute(r => ({ name: 'topic', id: r.id }))
@@ -230,7 +288,8 @@ export default function App() {
   }
 
   const meForDuel = { ...me, topicXp: st.topicStats[route.id]?.xp || 0 }
-  const fullscreen = ['match', 'duel', 'results', 'tower'].includes(route.name)
+  const fullscreen = ['match', 'duel', 'results', 'tower', 'sent'].includes(route.name)
+  const badge = pendingCount(st)
   let view
   switch (route.name) {
     case 'topics': view = <Topics topics={topics} go={go} importTopic={importTopic} />; break
@@ -241,10 +300,17 @@ export default function App() {
     case 'tower': view = <Tower key={route.daily ? 'daily' : 'free'} topics={topics} profile={me} daily={!!route.daily} towerState={st.tower}
       onFinish={finishTower} onExit={() => go({ name: 'home' })} />; break
     case 'match': view = <Matchmaking topic={topic} opponent={route.opponent} onReady={startDuel} onCancel={() => go({ name: 'topic', id: topic.id })} />; break
-    case 'duel': view = <Duel key={route.questions.map(q => q.idx).join()} topic={topic} me={meForDuel} opponent={route.opponent} ranks={route.ranks} questions={route.questions} onFinish={finishDuel} onQuit={quitDuel} />; break
+    case 'duel': view = <Duel key={route.questions.map(q => q.idx).join() + (route.challengeId || '')} topic={topic} me={meForDuel} opponent={route.opponent} ranks={route.ranks} questions={route.questions}
+      mode={route.mode} ghost={route.ghost} onFinish={finishDuel} onQuit={route.challengeId ? () => go({ name: 'inbox' }) : quitDuel} />; break
+    case 'inbox': view = <Inbox st={st} topics={topics} now={clock} {...inboxHandlers} />; break
+    case 'sent': {
+      const ch = (st.challenges || []).find(c => c.id === route.challengeId)
+      view = ch && topic ? <SentScreen challenge={ch} topic={topic} onInbox={() => go({ name: 'inbox' })} onHome={() => go({ name: 'home' })} /> : null
+      break
+    }
     case 'results': view = (
       <Results data={route.data} me={me}
-        onRematch={() => go({ name: 'match', id: topic.id, opponent: route.opponent })}
+        onRematch={() => go({ name: 'match', id: topic.id, opponent: route.opponent, live: true })}
         onAnother={() => go({ name: 'match', id: topic.id })}
         onTopic={() => go({ name: 'topic', id: topic.id })}
         onShare={() => shareText(`${route.data.outcome === 'win' ? 'Victoire' : 'Duel'} ${route.data.myScore}–${route.data.oppScore} contre ${route.opponent.name} sur « ${topic.name} » dans Duelia !`)} />
@@ -257,6 +323,13 @@ export default function App() {
     <div className={`app ${fullscreen ? 'full' : ''}`}>
       <main ref={viewRef} className="view"><div key={route.name + (route.id || '')}>{view}</div></main>
       {toast && <div className="toast" role="status">{toast}</div>}
+      {notes.length > 0 && !['duel', 'match', 'tower'].includes(route.name) && (
+        <NotifyBanner key={notes[0].text} note={notes[0]}
+          onOpen={() => { setNotes(n => n.slice(1)); go({ name: 'inbox' }) }}
+          onClose={() => setNotes(n => n.slice(1))} />
+      )}
+      {sheet && <ChallengeSheet sheet={sheet} onSend={sendChallenge} onCancel={() => setSheet(null)} />}
+      {shift && <RankShift shift={shift} profile={me} onClose={closeShift} />}
       {!fullscreen && (
         <nav className="tabbar">
           {TABS.map(t => (
@@ -264,6 +337,7 @@ export default function App() {
               onClick={() => go({ name: t.name })}>
               <svg viewBox="0 0 24 24">{t.icon}</svg>
               <span>{t.label}</span>
+              {t.name === 'inbox' && badge > 0 && <i className="tab-badge">{badge}</i>}
             </button>
           ))}
         </nav>

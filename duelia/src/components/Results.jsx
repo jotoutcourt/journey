@@ -97,8 +97,12 @@ export default function Results({ data, me, onRematch, onAnother, onTopic, onSha
         <Stat label="Arrivée" value={bonuses.finish} prefix="+" tone="t-amber" delay={500} />
         <Stat label="Victoire" value={bonuses.victory} prefix="+" tone="t-green" delay={700} />
         <Stat label="Parfait" value={bonuses.perfect} prefix="+" tone="t-pink" delay={900} />
+        {bonuses.exploit > 0 && <Stat label="Exploit" value={bonuses.exploit} prefix="+" tone="t-gold" delay={1000} />}
+        {bonuses.defense > 0 && <Stat label="Défense" value={bonuses.defense} prefix="+" tone="t-gold" delay={1050} />}
         <Stat label="XP total" value={total} tone="t-violet" delay={1100} />
       </div>
+      {bonuses.exploit > 0 && <p className="bonus-note">🏆 Prime d'exploit : tu as battu le top {data.ranksBefore?.opp} mondial du thème.</p>}
+      {data.exploitMissed && <p className="bonus-note muted">Tu as déjà touché la prime d'exploit contre {data.opponent.name} aujourd'hui. Reviens demain pour la regagner.</p>}
 
       <LevelRing before={before} after={after} topic={topic} />
 

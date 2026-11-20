@@ -9,6 +9,7 @@ import { PERIODS, myPeriodXp, resetIn } from '../lib/periods.js'
 import { meEntry } from '../lib/profile.js'
 import { topicTitle, nextTitle, ladderFor, TITLE_LEVELS } from '../lib/titles.js'
 import { dayKey } from '../lib/tower.js'
+import { presence, lastSeenLabel } from '../lib/challenges.js'
 import { decodeTopic } from '../lib/store.js'
 import { sfx } from '../lib/sound.js'
 
@@ -320,6 +321,10 @@ export function Ranking({ st, topic, go }) {
               <div className="rk-info">
                 <b>{r.flag} {r.isMe ? `${r.name} (toi)` : r.name}</b>
                 <small>{r.champion ? period.champ : `Niv. ${l.level} · ${topicTitle(topic, l.level)}`}</small>
+                {!r.isMe && (() => {
+                  const p = presence(r)
+                  return <small className="presence"><span className={`dot ${p.online ? 'on' : 'off'}`} aria-hidden="true" />{p.online ? 'En ligne' : lastSeenLabel(p.lastSeenMin)}</small>
+                })()}
               </div>
               <span className="rk-xp">{fmt(r.xp)}<small> XP</small></span>
               {!r.isMe && <button className="btn btn-small btn-secondary" onClick={() => go({ name: 'match', id: topic.id, opponentId: r.id })}>Défier</button>}
