@@ -65,14 +65,14 @@ export function SentScreen({ challenge, topic, onInbox, onHome }) {
 }
 
 /* ---------- Onglet Défis ---------- */
-export function Inbox({ st, topics, now, onAccept, onReject, onPlay, onResult, onDismiss }) {
+export function Inbox({ st, topics, now, onAccept, onReject, onPlay, onResult, onDismiss, onResend }) {
   const list = st.challenges || []
   const byId = (id) => topics.find(t => t.id === id)
   const groups = [
     { key: 'turn', title: 'À toi de jouer', items: list.filter(c => c.dir === 'out' && c.status === 'your_turn') },
     { key: 'in', title: 'On te défie', items: list.filter(c => c.dir === 'in' && c.status === 'pending') },
     { key: 'results', title: 'Résultats', items: list.filter(c => c.status === 'done') },
-    { key: 'wait', title: 'En attente', items: list.filter(c => ['pending', 'accepted'].includes(c.status) && c.dir === 'out' || c.status === 'waiting') },
+    { key: 'wait', title: 'En attente', items: list.filter(c => (['pending', 'accepted'].includes(c.status) && c.dir === 'out') || c.status === 'waiting' || c.status === 'waiting-link') },
     { key: 'rejected', title: 'Refusés', items: list.filter(c => c.status === 'rejected') },
   ].filter(g => g.items.length)
 
@@ -83,6 +83,7 @@ export function Inbox({ st, topics, now, onAccept, onReject, onPlay, onResult, o
     if (c.dir === 'in' && c.status === 'pending') return 'Te défie. Accepte pour jouer sans voir son score'
     if (c.status === 'waiting') return `Tu as joué (${c.myScore} pts). En attente de sa partie`
     if (c.status === 'rejected') return 'A refusé ton défi'
+    if (c.status === 'waiting-link') return `Défi par lien envoyé (${c.myScore} pts). Le résultat arrive quand ton ami te renvoie son lien`
     if (c.status === 'done') {
       const r = c.result
       return `${r.outcome === 'win' ? 'Victoire' : r.outcome === 'lose' ? 'Défaite' : 'Égalité'} ${r.myScore}–${r.oppScore} · +${r.total} XP`
@@ -104,13 +105,12 @@ export function Inbox({ st, topics, now, onAccept, onReject, onPlay, onResult, o
           <h3 className="sec-title">{g.title} <small>({g.items.length})</small></h3>
           <ul className="ch-list">
             {g.items.map(c => {
-              const topic = byId(c.topicId)
-              if (!topic) return null
+              const topic = byId(c.topicId) || (c.topicMeta && { ...c.topicMeta, questions: [] }) || { id: 'lien', name: 'Défi par lien', icon: '🔗', color: '#7c5cff' }
               return (
                 <li key={c.id} className={`ch-item ${c.unseen ? 'unseen' : ''} st-${c.status}`}>
                   <Avatar seed={c.opponent.avatar} size={44} ring={c.opponent.champion ? 'var(--gold)' : undefined} />
                   <div className="ch-info">
-                    <b>{c.opponent.flag} {c.opponent.name}{c.opponent.champion ? ' 👑' : ''}</b>
+                    <b>{c.opponent.flag} {c.opponent.name}{c.opponent.champion ? ' 👑' : ''}{c.dir?.startsWith('link') && <span className="ch-link"> 🔗 lien</span>}</b>
                     <small className="ch-topic"><TopicIcon topic={topic} size={16} /> {topic.name} · {ago(c.playedAt || c.createdAt, now)}</small>
                     <small>{statusLine(c)}</small>
                   </div>
@@ -122,6 +122,7 @@ export function Inbox({ st, topics, now, onAccept, onReject, onPlay, onResult, o
                     </>}
                     {g.key === 'results' && <button className="btn btn-small btn-secondary" onClick={() => onResult(c)}>Voir</button>}
                     {g.key === 'rejected' && <button className="btn btn-small btn-ghost" onClick={() => onDismiss(c)}>OK</button>}
+                    {c.status === 'waiting-link' && <button className="btn btn-small btn-ghost" onClick={() => onResend(c)}>Renvoyer</button>}
                   </div>
                 </li>
               )

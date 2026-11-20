@@ -198,8 +198,14 @@ export default function App() {
     if (r.linkCreate) {
       const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
       const answers = plain(log.me, questions.length)
-      setSt(s => ({ ...s, linkChallenges: [{ id, topicId: t.id, questions, answers, score: myScore, at: Date.now(), replies: [] }, ...(s.linkChallenges || [])].slice(0, 30) }))
-      setRoute({ name: 'linkready', id: t.id, url: challengeUrl({ id, from: meEntry(st.profile), topic: t, questions, answers }), score: myScore })
+      const url = challengeUrl({ id, from: meEntry(st.profile), topic: t, questions, answers })
+      const entry = { id: 'lk-' + id, dir: 'link-out', linkId: id, topicId: t.id, opponent: FRIEND, createdAt: Date.now(), status: 'waiting-link', url, myScore, unseen: false }
+      setSt(s => ({
+        ...s,
+        linkChallenges: [{ id, topicId: t.id, questions, answers, score: myScore, at: Date.now(), replies: [] }, ...(s.linkChallenges || [])].slice(0, 30),
+        challenges: [entry, ...(s.challenges || [])].slice(0, 40),
+      }))
+      setRoute({ name: 'linkready', id: t.id, url, score: myScore })
       return
     }
     // L'ami a joué un défi reçu par lien : résultat tout de suite, et lien de réponse pour le challenger
@@ -207,13 +213,17 @@ export default function App() {
       const ch = r.linkPlay
       const reply = { url: replyUrl({ id: ch.id, from: meEntry(st.profile), answers: plain(log.me, questions.length), questions }), to: ch.from.name }
       const known = byId(ch.topic.id)
+      const keep = (data) => ({ id: 'lk-in-' + ch.id + Date.now().toString(36), dir: 'link-in', linkId: ch.id, topicId: ch.topic.id, topicMeta: ch.topic, opponent: r.opponent, createdAt: Date.now(), status: 'done', result: data, unseen: false })
       if (known) {
         const { state, data } = settleDuel(st, { topic: known, opponent: r.opponent, myScore, oppScore, log, questions })
-        setSt(state)
-        setRoute({ ...r, name: 'results', id: known.id, topicObj: null, data: { ...data, topic: known, link: reply } })
+        const full = { ...data, link: reply }
+        setSt({ ...state, challenges: [keep(full), ...(state.challenges || [])].slice(0, 40) })
+        setRoute({ ...r, name: 'results', id: known.id, topicObj: null, data: { ...full, topic: known } })
       } else {
         const outcome = myScore > oppScore ? 'win' : myScore < oppScore ? 'lose' : 'draw'
-        setRoute({ ...r, name: 'results', data: { outcome, myScore, oppScore, opponent: r.opponent, topic: t, bonuses: {}, total: 0, before: 0, after: 0, log, questions, noXp: true, link: reply } })
+        const full = { outcome, myScore, oppScore, opponent: r.opponent, bonuses: {}, total: 0, before: 0, after: 0, log, questions, noXp: true, link: reply }
+        setSt(s => ({ ...s, challenges: [keep(full), ...(s.challenges || [])].slice(0, 40) }))
+        setRoute({ ...r, name: 'results', data: { ...full, topic: t } })
       }
       setLink(null)
       return
@@ -270,7 +280,17 @@ export default function App() {
     onAccept: (c) => { patchChallenge(c.id, { status: 'accepted-by-me', unseen: false }); playChallenge(c, 'blind') },
     onReject: (c) => update(s => ({ ...s, challenges: s.challenges.filter(x => x.id !== c.id) })),
     onPlay: (c) => playChallenge(c, 'ghost'),
-    onResult: (c) => { patchChallenge(c.id, { unseen: false }); go({ name: 'results', id: c.topicId, opponent: c.opponent, data: { ...c.result, topic: byId(c.topicId) } }) },
+    onResult: (c) => {
+      patchChallenge(c.id, { unseen: false })
+      const t = byId(c.topicId) || { id: c.topicId, icon: '🔗', color: '#7c5cff', category: 'Culture', name: 'Défi par lien', ...(c.topicMeta || {}), questions: [] }
+      setRoute({ name: 'results', id: byId(c.topicId) ? c.topicId : undefined, topicObj: byId(c.topicId) ? null : t, opponent: c.opponent, data: { ...c.result, topic: t } })
+    },
+    onResend: async (c) => {
+      const t = byId(c.topicId)
+      const text = `Je te défie sur « ${t?.name || 'Duelia'} » dans Duelia ! 7 questions, tu peux me battre ?`
+      try { await navigator.share({ title: 'Duelia', text, url: c.url }); return } catch { /* refusé : on copie */ }
+      try { await navigator.clipboard.writeText(`${text} ${c.url}`); setToast('Lien du défi copié : colle-le dans un message à ton ami.') } catch { setToast('Copie impossible sur cet appareil.') }
+    },
     onDismiss: (c) => update(s => ({ ...s, challenges: s.challenges.filter(x => x.id !== c.id) })),
   }
 
@@ -285,15 +305,27 @@ export default function App() {
     const myScore = rec ? rec.score : 0, oppScore = rep.score
     const already = rec?.replies?.includes(rep.from.name)
     setLink(null)
+    // Range le résultat dans l'onglet Défis : le défi en attente passe en « Résultats »
+    const file = (s, data) => {
+      const list = s.challenges || []
+      const waiting = list.find(c => c.dir === 'link-out' && c.linkId === rep.id && c.status === 'waiting-link')
+      const done = { dir: 'link-out', linkId: rep.id, topicId: rec?.topicId || 'lien', opponent, status: 'done', result: data, unseen: false, createdAt: Date.now() }
+      const already2 = list.some(c => c.dir === 'link-out' && c.linkId === rep.id && c.status === 'done' && c.opponent.name === rep.from.name)
+      if (already2) return list
+      return waiting ? list.map(c => (c === waiting ? { ...c, ...done } : c)) : [{ id: 'lk-' + rep.id + rep.from.name, ...done }, ...list].slice(0, 40)
+    }
     if (rec && t && !already) {
       const { state, data } = settleDuel(st, { topic: t, opponent, myScore, oppScore, log, questions })
-      setSt({ ...state, linkChallenges: state.linkChallenges.map(c => (c.id === rec.id ? { ...c, replies: [...(c.replies || []), rep.from.name] } : c)) })
-      setRoute({ name: 'results', id: t.id, opponent, data: { ...data, topic: t, fromLink: true } })
+      const full = { ...data, fromLink: true }
+      setSt({ ...state, challenges: file(state, full), linkChallenges: state.linkChallenges.map(c => (c.id === rec.id ? { ...c, replies: [...(c.replies || []), rep.from.name] } : c)) })
+      setRoute({ name: 'results', id: t.id, opponent, data: { ...full, topic: t } })
       return
     }
     const outcome = myScore > oppScore ? 'win' : myScore < oppScore ? 'lose' : 'draw'
     const pseudo = t || { id: 'lien', name: 'Défi par lien', icon: '🔗', color: '#7c5cff', category: 'Culture', questions: [] }
-    setRoute({ name: 'results', topicObj: pseudo, opponent, data: { outcome, myScore, oppScore, opponent, topic: pseudo, bonuses: {}, total: 0, before: 0, after: 0, log, questions, noXp: true, fromLink: true, alreadyCounted: already, unknownMine: !rec } })
+    const full = { outcome, myScore, oppScore, opponent, bonuses: {}, total: 0, before: 0, after: 0, log, questions, noXp: true, fromLink: true, alreadyCounted: already, unknownMine: !rec }
+    if (rec && !already) setSt(s => ({ ...s, challenges: file(s, full) }))
+    setRoute({ name: 'results', topicObj: pseudo, opponent, data: { ...full, topic: pseudo } })
   }
 
   const quitDuel = useCallback(() => {
