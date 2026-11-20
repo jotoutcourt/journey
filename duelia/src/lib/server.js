@@ -36,3 +36,7 @@ export async function fetchLinkResults(challengeIds) {
   const rows = await rpc('get_link_results', { p_ids: challengeIds.slice(0, 50) })
   return Array.isArray(rows) ? rows : []
 }
+
+// Liens courts : le contenu du défi est gardé 30 jours sur le serveur, le lien ne porte qu'un code.
+export const putShortLink = (payload) => rpc('put_short_link', { p_payload: payload }, 6000)
+export const getShortLink = (id) => rpc('get_short_link', { p_id: id })

@@ -2,6 +2,7 @@
 // #d=… : un défi (les 7 questions + les réponses et temps du challenger, score caché)
 // #r=… : la réponse de l'ami (ses réponses et son score) pour que le challenger voie le résultat
 import { TIME, pointsFor } from './duel.js'
+import { putShortLink, getShortLink } from './server.js'
 
 const PUBLIC_URL = 'https://duelia.vercel.app/'
 
@@ -120,11 +121,34 @@ export function decodeReply(code) {
 export const challengeUrl = (payload) => `${baseUrl()}#d=${encodeChallenge(payload)}`
 export const replyUrl = (payload) => `${baseUrl()}#r=${encodeReply(payload)}`
 
-// Lit l'adresse au chargement (une seule fois) et la nettoie
+// Version courte d'un lien long (#d=… ou #r=…) : https://duelia.vercel.app/#s=XXXXXXXXXX
+// Les longs liens (près de 2 000 caractères) étaient souvent coupés par les applis de messagerie.
+export async function shortenUrl(longUrl) {
+  const m = longUrl.match(/#([dr])=([\w-]+)$/)
+  if (!m) return longUrl
+  const id = await putShortLink(`${m[1]}.${m[2]}`)
+  return typeof id === 'string' && /^[A-Za-z0-9]{10}$/.test(id) ? `${baseUrl()}#s=${id}` : longUrl
+}
+
+function decodeKind(kind, code) {
+  if (kind === 'd') { const c = decodeChallenge(code); return c ? { kind: 'challenge', ...c } : { kind: 'invalid' } }
+  const r = decodeReply(code); return r ? { kind: 'reply', ...r } : { kind: 'invalid' }
+}
+
+// Lit l'adresse (au chargement ou quand elle change) et la nettoie.
+// Un lien court renvoie { kind: 'short', id } : il faut ensuite appeler resolveShort.
 export function readLinkFromHash() {
-  const m = location.hash.match(/#([dr])=([\w-]+)/)
+  const m = location.hash.match(/#([drs])=([\w-]+)/)
   if (!m) return null
   history.replaceState(null, '', location.pathname + location.search)
-  if (m[1] === 'd') { const c = decodeChallenge(m[2]); return c ? { kind: 'challenge', ...c } : { kind: 'invalid' } }
-  const r = decodeReply(m[2]); return r ? { kind: 'reply', ...r } : { kind: 'invalid' }
+  if (m[1] === 's') return { kind: 'short', id: m[2].slice(0, 10) }
+  return decodeKind(m[1], m[2])
+}
+
+// Récupère le défi d'un lien court : { kind: 'challenge' | 'reply' | 'invalid' | 'missing' | 'offline' }
+export async function resolveShort(id) {
+  let payload
+  try { payload = await getShortLink(id) } catch { return { kind: 'offline' } }
+  if (typeof payload !== 'string') return { kind: 'missing' }
+  return decodeKind(payload[0], payload.slice(2))
 }

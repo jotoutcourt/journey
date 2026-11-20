@@ -11,7 +11,7 @@ async function copyText(text, fallbackEl) {
 }
 
 /* ---------- Le défi est prêt : on l'envoie ---------- */
-export function LinkReady({ url, score, topic, onHome, onTopic }) {
+export function LinkReady({ url, shortening, score, topic, onHome, onTopic }) {
   const [copied, setCopied] = useState(null)
   const [area, setArea] = useState(null)
   const text = `Je te défie sur « ${topic.name} » dans Duelia ! 7 questions, tu peux me battre ?`
@@ -29,13 +29,13 @@ export function LinkReady({ url, score, topic, onHome, onTopic }) {
         <h1>Ton défi est prêt</h1>
         <p>Tu as marqué <b>{score} points</b>. Ton score reste caché : ton ami le découvrira à la fin de sa partie.</p>
       </div>
-      <button className="btn btn-primary wide" onClick={share}>{canShare ? '📤 Envoyer le défi' : '📋 Copier le lien du défi'}</button>
-      {canShare && <button className="btn btn-ghost wide" onClick={async () => setCopied(await copyText(`${text} ${url}`, area))}>📋 Copier le lien</button>}
+      <button className="btn btn-primary wide" onClick={share} disabled={shortening}>{shortening ? 'Préparation du lien…' : canShare ? '📤 Envoyer le défi' : '📋 Copier le lien du défi'}</button>
+      {canShare && <button className="btn btn-ghost wide" disabled={shortening} onClick={async () => setCopied(await copyText(`${text} ${url}`, area))}>📋 Copier le lien</button>}
       {copied === true && <p className="link-ok" role="status">Lien copié. Colle-le dans un message à ton ami.</p>}
       {copied === false && <p className="link-ok" role="status">Copie automatique impossible : le lien est sélectionné ci-dessous, copie-le à la main.</p>}
       <label className="link-field">
         <small>Le lien du défi</small>
-        <textarea id="link-url" ref={setArea} readOnly value={url} rows={3} onFocus={e => e.target.select()} />
+        <textarea id="link-url" ref={setArea} readOnly value={url} rows={url.length > 80 ? 3 : 1} onFocus={e => e.target.select()} />
       </label>
       <ol className="sheet-steps">
         <li>Ton ami ouvre le lien et joue les mêmes 7 questions.</li>

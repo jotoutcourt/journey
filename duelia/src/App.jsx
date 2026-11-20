@@ -17,7 +17,7 @@ import { settleDuel, ranksFor } from './lib/rewards.js'
 import { createOutgoing, tickChallenges, pendingCount, markPlayed } from './lib/challenges.js'
 import { Inbox, ChallengeSheet, NotifyBanner, SentScreen } from './components/Challenges.jsx'
 import RankShift from './components/RankShift.jsx'
-import { readLinkFromHash, challengeUrl, replyUrl, LINK_TTL } from './lib/linkduel.js'
+import { readLinkFromHash, challengeUrl, replyUrl, LINK_TTL, shortenUrl, resolveShort } from './lib/linkduel.js'
 import { LinkReady, LinkIntro, LinkReplyIntro } from './components/LinkDuel.jsx'
 import { applyLinkReply, rowToReply } from './lib/linkresults.js'
 import { submitLinkResult, fetchLinkResults } from './lib/server.js'
@@ -132,7 +132,8 @@ export default function App() {
   const [st, setSt] = useState(initialState)
   const viewRef = useRef(null)
   const [route, setRoute] = useState(() => (
-    LINK?.kind === 'challenge' ? { name: 'linkintro' }
+    LINK?.kind === 'short' ? { name: 'linkload' }
+      : LINK?.kind === 'challenge' ? { name: 'linkintro' }
       : LINK?.kind === 'reply' ? { name: 'linkreply' }
         : SHARED ? { name: 'topic', id: SHARED.id } : { name: 'home' }))
   const [link, setLink] = useState(LINK?.kind === 'challenge' || LINK?.kind === 'reply' ? LINK : null)
@@ -261,19 +262,27 @@ export default function App() {
         linkChallenges: [{ id, topicId: t.id, questions, answers, score: myScore, at: Date.now(), replies: [] }, ...(s.linkChallenges || [])].slice(0, 30),
         challenges: [entry, ...(s.challenges || [])].slice(0, 40),
       }))
-      setRoute({ name: 'linkready', id: t.id, url, score: myScore })
+      setRoute({ name: 'linkready', id: t.id, url, score: myScore, shortening: true })
+      // lien court (les longs liens sont coupés par certaines messageries) ; en cas d'échec on garde le long
+      shortenUrl(url).catch(() => url).then(short => {
+        setRoute(cur => (cur.name === 'linkready' && cur.url === url ? { ...cur, url: short, shortening: false } : cur))
+        if (short !== url) setSt(s => ({ ...s, challenges: (s.challenges || []).map(c => (c.id === entry.id ? { ...c, url: short } : c)) }))
+      })
       return
     }
     // L'ami a joué un défi reçu par lien : résultat tout de suite, et lien de réponse pour le challenger
     if (r.linkPlay) {
       const ch = r.linkPlay
-      const reply = { url: replyUrl({ id: ch.id, from: meEntry(st.profile), answers: plain(log.me, questions.length), questions }), to: ch.from.name }
+      const reply = { url: replyUrl({ id: ch.id, from: meEntry(st.profile), answers: plain(log.me, questions.length), questions }), to: ch.from.name, key: ch.id + ':' + Date.now() }
+      shortenUrl(reply.url).then(short => {
+        if (short !== reply.url) setRoute(cur => (cur.name === 'results' && cur.data?.link?.key === reply.key ? { ...cur, data: { ...cur.data, link: { ...cur.data.link, url: short } } } : cur))
+      }).catch(() => {})
       const known = byId(ch.topic.id)
       // Envoi automatique au serveur : le challenger le recevra sans lien de réponse
       const answersPlain = plain(log.me, questions.length)
       submitLinkResult(ch.id, meEntry(st.profile), answersPlain)
-        .then(() => setRoute(cur => (cur.name === 'results' && cur.data?.link?.url === reply.url ? { ...cur, data: { ...cur.data, autoSent: 'ok' } } : cur)))
-        .catch(() => setRoute(cur => (cur.name === 'results' && cur.data?.link?.url === reply.url ? { ...cur, data: { ...cur.data, autoSent: 'failed' } } : cur)))
+        .then(() => setRoute(cur => (cur.name === 'results' && cur.data?.link?.key === reply.key ? { ...cur, data: { ...cur.data, autoSent: 'ok' } } : cur)))
+        .catch(() => setRoute(cur => (cur.name === 'results' && cur.data?.link?.key === reply.key ? { ...cur, data: { ...cur.data, autoSent: 'failed' } } : cur)))
       const keep = (data) => ({ id: 'lk-in-' + ch.id + Date.now().toString(36), dir: 'link-in', linkId: ch.id, topicId: ch.topic.id, topicMeta: ch.topic, opponent: r.opponent, createdAt: Date.now(), status: 'done', result: data, unseen: false })
       if (known) {
         const { state, data } = settleDuel(st, { topic: known, opponent: r.opponent, myScore, oppScore, log, questions })
@@ -511,15 +520,28 @@ export default function App() {
   const [toast, setToast] = useState(LINK?.kind === 'invalid' ? 'Ce lien de défi est incomplet ou abîmé. Demande à ton ami de te le renvoyer.' : null)
   // Un lien de défi ouvert alors que l'appli est déjà ouverte (même onglet) : on le prend en compte aussi
   useEffect(() => {
-    const onHash = () => {
-      const l = readLinkFromHash()
-      if (!l) return
-      if (l.kind === 'invalid') { setToast('Ce lien de défi est incomplet ou abîmé. Demande à ton ami de te le renvoyer.'); return }
+    let alive = true
+    const show = (l) => {
+      if (!alive) return
+      const fail = {
+        invalid: 'Ce lien de défi est incomplet ou abîmé. Demande à ton ami de te le renvoyer.',
+        missing: 'Ce défi n\'existe plus (les liens durent 30 jours). Demande à ton ami d\'en envoyer un nouveau.',
+        offline: 'Pas de connexion : impossible d\'ouvrir le défi. Réessaie dans un instant.',
+      }[l.kind]
+      if (fail) { setToast(fail); setRoute(r => (r.name === 'linkload' ? { name: 'home' } : r)); return }
       setLink(l)
       setRoute({ name: l.kind === 'challenge' ? 'linkintro' : 'linkreply' })
     }
+    const open = (l) => {
+      if (!l) return
+      if (l.kind !== 'short') return show(l)
+      setRoute({ name: 'linkload' })
+      resolveShort(l.id).then(show)
+    }
+    if (LINK?.kind === 'short') resolveShort(LINK.id).then(show)
+    const onHash = () => open(readLinkFromHash())
     window.addEventListener('hashchange', onHash)
-    return () => window.removeEventListener('hashchange', onHash)
+    return () => { alive = false; window.removeEventListener('hashchange', onHash) }
   }, [])
   useEffect(() => {
     if (!toast) return
@@ -552,7 +574,7 @@ export default function App() {
   }
 
   const meForDuel = { ...me, topicXp: st.topicStats[route.id]?.xp || 0 }
-  const fullscreen = ['match', 'duel', 'results', 'tower', 'sent', 'linkready', 'linkintro', 'linkreply'].includes(route.name)
+  const fullscreen = ['match', 'duel', 'results', 'tower', 'sent', 'linkload', 'linkready', 'linkintro', 'linkreply'].includes(route.name)
   const badge = pendingCount(st)
   let view
   switch (route.name) {
@@ -567,7 +589,8 @@ export default function App() {
       live={route.searchLive && account.status === 'online' ? liveSearch : null} makeQuestions={makeMatchQuestions} onLive={startLive} />; break
     case 'duel': view = <Duel key={route.questions.map(q => q.idx).join() + (route.challengeId || '')} topic={topic} me={meForDuel} opponent={route.opponent} ranks={route.ranks} questions={route.questions}
       mode={route.mode} ghost={route.ghost} link={liveLink} onFinish={finishDuel} onQuit={route.challengeId ? () => go({ name: 'inbox' }) : quitDuel} />; break
-    case 'linkready': view = <LinkReady url={route.url} score={route.score} topic={topic} onHome={() => go({ name: 'home' })} onTopic={() => go({ name: 'topic', id: topic.id })} />; break
+    case 'linkload': view = <div className="screen link-screen"><div className="link-card"><div className="spinner" aria-hidden="true" /><h1>Ouverture du défi…</h1></div></div>; break
+    case 'linkready': view = <LinkReady url={route.url} shortening={route.shortening} score={route.score} topic={topic} onHome={() => go({ name: 'home' })} onTopic={() => go({ name: 'topic', id: topic.id })} />; break
     case 'linkintro': view = link?.kind === 'challenge' ? (
       <LinkIntro challenge={link} onLater={() => { setLink(null); go({ name: 'home' }) }}
         onAccept={() => {
