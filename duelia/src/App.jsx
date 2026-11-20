@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { OFFICIAL_TOPICS, COMMUNITY_SEED, STARTER_CREATION } from './data/topics.js'
+import { OFFICIAL_TOPICS, COMMUNITY_SEED, STARTER_CREATION, STARTER_CREATIONS } from './data/topics.js'
 import { POKEMON_TOPIC } from './data/pokemon.js'
 import { loadState, saveState, emptyState, encodeTopic, decodeTopic } from './lib/store.js'
 import { findOpponent, getCommunity, leaderboard } from './lib/bots.js'
@@ -48,6 +48,15 @@ function initialState() {
       return { ...t, questions: [...kept, ...added] }
     })
     s.starterVersion = 2
+  }
+  // Mise à jour unique (v3) : les thèmes Desperate Housewives et Disney rejoignent les créations du joueur.
+  if (s.starterVersion < 3) {
+    for (const { topic, since } of STARTER_CREATIONS) {
+      if (since < 3 || s.custom.some(t => t.id === topic.id)) continue
+      s.custom = [...s.custom, topic]
+      if (!s.follows.includes(topic.id)) s.follows = [...s.follows, topic.id]
+    }
+    s.starterVersion = 3
   }
   return s
 }
