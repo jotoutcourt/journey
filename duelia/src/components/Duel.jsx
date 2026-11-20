@@ -163,7 +163,7 @@ export default function Duel({ topic, me, opponent, ranks, questions, onFinish, 
   if (phase === 'vs') {
     const big = bigMatch(ranks)
     return (
-      <div className={`vs-screen ${big ? 'big' : ''}`}>
+      <div className={`vs-screen ${big ? 'big' : ''} ${mode !== 'live' && !big ? 'has-async' : ''}`}>
         {big && <div className="vs-rays" aria-hidden="true" />}
         <div className="vs-side vs-left">
           {ranks?.me === 1 && <div className="champ-badge">👑 Champion du thème</div>}
@@ -177,7 +177,7 @@ export default function Duel({ topic, me, opponent, ranks, questions, onFinish, 
           {opponent.champion && <div className="champ-badge">👑 Champion du thème</div>}
           <Avatar seed={opponent.avatar} size={128} ring={ranks?.opp <= 10 ? 'var(--gold)' : 'var(--opp)'} className="vs-av" />
           <b>{opponent.flag} {opponent.name}<AiTag on={opponent.ai} /></b>
-          <span>Niv. {oppLvl.level} · {topicTitle(topic, oppLvl.level)}</span>
+          <span>{opponent.id === 'ami' ? 'Jouera après toi' : `Niv. ${oppLvl.level} · ${topicTitle(topic, oppLvl.level)}`}</span>
           <RankPlate rank={ranks?.opp} />
         </div>
         <div className="vs-topic"><TopicIcon topic={topic} size={30} /> {topic.name}</div>
