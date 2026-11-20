@@ -665,3 +665,11 @@ img { -webkit-user-drag: none; }
 .tp-title small { color: var(--muted); font-size: 13px; }
 .tp-title small b { color: var(--text); }
 .ring-title { font-style: normal; font-size: 11.5px; font-weight: 700; color: var(--muted); max-width: 120px; text-align: center; line-height: 1.2; margin-top: 2px; }
+
+/* ---------- éditeur : titres de niveau ---------- */
+.ladder-hint { color: var(--muted); font-size: 13.5px; margin: -4px 0 10px; }
+.ladder-editor { display: grid; grid-template-columns: 1fr; gap: 6px; margin-bottom: 10px; }
+.ladder-row { display: grid; grid-template-columns: 64px 1fr; align-items: center; gap: 8px; }
+.ladder-row span { color: var(--muted); font-size: 12.5px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.ladder-row input { width: 100%; min-width: 0; border: 1px solid var(--line); background: var(--card); border-radius: 10px; padding: 9px 10px; outline: none; }
+.ladder-row input:focus { border-color: var(--violet); }

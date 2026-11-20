@@ -7,7 +7,7 @@ import { levelInfo } from '../lib/levels.js'
 import { getCommunity, leaderboard } from '../lib/bots.js'
 import { PERIODS, myPeriodXp, resetIn } from '../lib/periods.js'
 import { meEntry } from '../lib/profile.js'
-import { topicTitle, nextTitle } from '../lib/titles.js'
+import { topicTitle, nextTitle, ladderFor, TITLE_LEVELS } from '../lib/titles.js'
 import { dayKey } from '../lib/tower.js'
 import { decodeTopic } from '../lib/store.js'
 import { sfx } from '../lib/sound.js'
@@ -370,6 +370,16 @@ export function CreateTopic({ st, existing, onSave, go }) {
   const [category, setCategory] = useState(existing?.category || 'Culture')
   const [tagline, setTagline] = useState(existing?.tagline || '')
   const [qs, setQs] = useState(existing?.questions?.map(q => ({ q: q.q, a: [...q.a] })) || [emptyQ()])
+  // Les 8 titres de niveau : pré-remplis avec ceux du thème (ou de sa catégorie), modifiables un par un
+  const defaultsFor = (cat) => ladderFor({ id: existing?.id, category: cat })
+  const [ladder, setLadder] = useState(() => [...ladderFor(existing || { category: 'Culture' })])
+  const [ladderTouched, setLadderTouched] = useState(!!existing?.ladder)
+  const changeCategory = (cat) => {
+    setCategory(cat)
+    if (!ladderTouched) setLadder([...defaultsFor(cat)])
+  }
+  const setTitle = (i, v) => { setLadderTouched(true); setLadder(l => l.map((t, k) => (k === i ? v : t))) }
+  const resetLadder = () => { setLadderTouched(false); setLadder([...defaultsFor(category)]) }
 
   const complete = qs.filter(q => q.q.trim() && q.a.every(a => a.trim()))
   const ok = name.trim() && complete.length >= MIN_Q
@@ -383,6 +393,8 @@ export function CreateTopic({ st, existing, onSave, go }) {
       name: name.trim(), icon, color, category, tagline: tagline.trim(),
       by: st.profile.name, own: true, community: true, followers: 0,
       questions: complete.map(q => ({ q: q.q.trim(), a: q.a.map(a => a.trim()) })),
+      // titres personnalisés seulement si on y a touché ; une case vide reprend le titre par défaut
+      ...(ladderTouched ? { ladder: ladder.map((t, i) => t.trim() || defaultsFor(category)[i]) } : {}),
     })
   }
 
@@ -419,10 +431,22 @@ export function CreateTopic({ st, existing, onSave, go }) {
       </div>
       <div className="field">
         <label>Catégorie</label>
-        <select value={category} onChange={e => setCategory(e.target.value)}>
+        <select value={category} onChange={e => changeCategory(e.target.value)}>
           {CATEGORIES.map(c => <option key={c}>{c}</option>)}
         </select>
       </div>
+
+      <h3 className="sec-title">Titres de niveau</h3>
+      <p className="ladder-hint">Le titre que portent les joueurs selon leur niveau dans ce thème, du premier au plus prestigieux.</p>
+      <div className="ladder-editor">
+        {ladder.map((t, i) => (
+          <label key={i} className="ladder-row">
+            <span>Niv. {TITLE_LEVELS[i]}{i === ladder.length - 1 ? '+' : ''}</span>
+            <input id={`ladder-${i}`} value={t} maxLength={32} onChange={e => setTitle(i, e.target.value)} placeholder={defaultsFor(category)[i]} />
+          </label>
+        ))}
+      </div>
+      {ladderTouched && <button className="btn btn-small btn-ghost" onClick={resetLadder}>Revenir aux titres par défaut</button>}
 
       <h3 className="sec-title">Questions <small>({complete.length}/{MIN_Q} minimum)</small></h3>
       {qs.map((q, i) => (

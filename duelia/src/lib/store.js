@@ -25,8 +25,8 @@ export function saveState(state) {
 
 // Partage d'un thème par lien : le thème est encodé dans l'URL (#t=...).
 export function encodeTopic(topic) {
-  const { id, name, icon, color, category, tagline, by, questions } = topic
-  const json = JSON.stringify({ id, name, icon, color, category, tagline, by, questions: questions.map(q => [q.q, ...q.a]) })
+  const { id, name, icon, color, category, tagline, by, questions, ladder } = topic
+  const json = JSON.stringify({ id, name, icon, color, category, tagline, by, ladder, questions: questions.map(q => [q.q, ...q.a]) })
   const bytes = new TextEncoder().encode(json)
   let bin = ''
   bytes.forEach(b => { bin += String.fromCharCode(b) })
@@ -53,6 +53,8 @@ export function decodeTopic(code) {
       tagline: String(t.tagline || '').slice(0, 80),
       by: String(t.by || 'Anonyme').slice(0, 24),
       questions, community: true, imported: true,
+      ...(Array.isArray(t.ladder) && t.ladder.length === 8 && t.ladder.every(x => typeof x === 'string' && x.trim())
+        ? { ladder: t.ladder.map(x => x.slice(0, 32)) } : {}),
     }
   } catch {
     return null
