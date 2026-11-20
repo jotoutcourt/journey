@@ -113,7 +113,7 @@ export function dailyBoard(topics, me, myResult, day = dayKey()) {
     if (r() > frac) continue // n'a pas encore joué aujourd'hui
     const floor = Math.max(1, Math.round(2 + Math.pow(r(), 1.6) * 34 * b.skill))
     const score = Math.round(floor * (28 + r() * 14))
-    rows.push({ id: b.id, name: b.name, avatar: b.avatar, flag: b.flag, floor, score })
+    rows.push({ id: b.id, name: b.name, avatar: b.avatar, flag: b.flag, floor, score, ai: true })
     if (rows.length >= 40) break
   }
   if (myResult) rows.push({ id: 'me', ...me, floor: myResult.floor, score: myResult.score, isMe: true })

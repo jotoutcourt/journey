@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Avatar from './Avatar.jsx'
 import TopicIcon from './TopicIcon.jsx'
+import AiTag from './AiTag.jsx'
 import ConfirmButton from './ConfirmButton.jsx'
 import { botAnswer } from '../lib/bots.js'
 import { levelInfo } from '../lib/levels.js'
@@ -175,7 +176,7 @@ export default function Duel({ topic, me, opponent, ranks, questions, onFinish, 
         <div className="vs-side vs-right">
           {opponent.champion && <div className="champ-badge">👑 Champion du thème</div>}
           <Avatar seed={opponent.avatar} size={128} ring={ranks?.opp <= 10 ? 'var(--gold)' : 'var(--opp)'} className="vs-av" />
-          <b>{opponent.flag} {opponent.name}</b>
+          <b>{opponent.flag} {opponent.name}<AiTag on={opponent.ai} /></b>
           <span>Niv. {oppLvl.level} · {topicTitle(topic, oppLvl.level)}</span>
           <RankPlate rank={ranks?.opp} />
         </div>
@@ -225,7 +226,7 @@ export default function Duel({ topic, me, opponent, ranks, questions, onFinish, 
         </div>
         <div className="pl pl-opp">
           <div className="pl-txt right">
-            <small>{opponent.name}{opponent.champion ? ' 👑' : ''}</small>
+            <small>{opponent.name}{opponent.champion ? ' 👑' : ''}<AiTag on={opponent.ai} /></small>
             <strong className="score">{blind ? '?' : oppScore}</strong>
           </div>
           <Avatar seed={opponent.avatar} size={46} ring="var(--opp)" className={theirs && phase === 'play' ? 'answered' : ''} />

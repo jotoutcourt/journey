@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import Avatar from './Avatar.jsx'
 import TopicIcon from './TopicIcon.jsx'
+import AiTag from './AiTag.jsx'
 import ConfirmButton from './ConfirmButton.jsx'
 import { CATEGORIES } from '../data/topics.js'
 import { levelInfo } from '../lib/levels.js'
@@ -9,7 +10,6 @@ import { PERIODS, myPeriodXp, resetIn } from '../lib/periods.js'
 import { meEntry } from '../lib/profile.js'
 import { topicTitle, nextTitle, ladderFor, TITLE_LEVELS } from '../lib/titles.js'
 import { dayKey } from '../lib/tower.js'
-import { presence, lastSeenLabel } from '../lib/challenges.js'
 import { decodeTopic } from '../lib/store.js'
 import { sfx } from '../lib/sound.js'
 
@@ -63,7 +63,7 @@ export function Home({ st, topics, go, quickDuel }) {
 
       <button className="quick-duel" onClick={quickDuel}>
         <span className="qd-glyph" aria-hidden="true"><Chevrons /></span>
-        <span className="qd-txt"><b>Duel rapide</b><small>Un thème au hasard parmi les tiens, un adversaire à ta taille</small></span>
+        <span className="qd-txt"><b>Entraînement contre l'IA</b><small>Un thème au hasard parmi les tiens, un adversaire IA à ta taille. Pour un vrai duel : « Défier un ami » depuis un thème</small></span>
       </button>
 
       <section className="tower-card">
@@ -103,7 +103,7 @@ export function Home({ st, topics, go, quickDuel }) {
             <div key={topic.id} className="champ-row">
               <Avatar seed={champ.avatar} size={44} ring="var(--gold)" />
               <div className="champ-info">
-                <b>{champ.flag} {champ.name}</b>
+                <b>{champ.flag} {champ.name}<AiTag on={champ.ai} /></b>
                 <small>👑 Champion · {topic.name}</small>
               </div>
               <button className="btn btn-small btn-gold" onClick={() => go({ name: 'match', id: topic.id, forceChampion: true })}>Défier</button>
@@ -126,7 +126,7 @@ export function Home({ st, topics, go, quickDuel }) {
             {st.history.slice(0, 8).map((h, i) => (
               <li key={i} className={h.outcome}>
                 <Avatar seed={h.oppAvatar} size={36} />
-                <div><b>{h.oppName}{h.champion ? ' 👑' : ''}</b><small>{h.topicName}</small></div>
+                <div><b>{h.oppName}{h.champion ? ' 👑' : ''}<AiTag on={h.ai} /></b><small>{h.topicName}</small></div>
                 <span className="h-score">{h.myScore}–{h.oppScore}</span>
                 <span className="h-tag">{{ win: 'V', lose: 'D', draw: 'N' }[h.outcome]}</span>
               </li>
@@ -271,7 +271,7 @@ export function TopicPage({ st, topic, go, toggleFollow, shareTopic, deleteTopic
         <Avatar seed={champ.avatar} photo={champ.photo} size={56} ring="var(--gold)" />
         <div className="champ-info">
           <small>👑 Champion du thème</small>
-          <b>{champ.isMe ? 'C\'est toi !' : `${champ.flag} ${champ.name}`}</b>
+          <b>{champ.isMe ? 'C\'est toi !' : `${champ.flag} ${champ.name}`}<AiTag on={!champ.isMe && champ.ai} /></b>
           <small>{fmt(champ.xp)} XP · niveau {levelInfo(champ.xp).level}</small>
         </div>
         {!champ.isMe && <button className="btn btn-small btn-gold" onClick={() => go({ name: 'match', id: topic.id, forceChampion: true })}>Défier</button>}
@@ -320,12 +320,9 @@ export function Ranking({ st, topic, go }) {
               <span className="rk">{r.champion ? '👑' : r.rank}</span>
               <Avatar seed={r.avatar} photo={r.photo} size={40} ring={r.champion ? 'var(--gold)' : undefined} />
               <div className="rk-info">
-                <b>{r.flag} {r.isMe ? `${r.name} (toi)` : r.name}</b>
+                <b>{r.flag} {r.isMe ? `${r.name} (toi)` : r.name}<AiTag on={r.ai} /></b>
                 <small>{r.champion ? period.champ : `Niv. ${l.level} · ${topicTitle(topic, l.level)}`}</small>
-                {!r.isMe && (() => {
-                  const p = presence(r)
-                  return <small className="presence"><span className={`dot ${p.online ? 'on' : 'off'}`} aria-hidden="true" />{p.online ? 'En ligne' : lastSeenLabel(p.lastSeenMin)}</small>
-                })()}
+
               </div>
               <span className="rk-xp">{fmt(r.xp)}<small> XP</small></span>
               {!r.isMe && <button className="btn btn-small btn-secondary" onClick={() => go({ name: 'match', id: topic.id, opponentId: r.id })}>Défier</button>}
@@ -357,7 +354,7 @@ export function Matchmaking({ topic, opponent, onReady, onCancel }) {
         <span /><span /><span />
         {found && <Avatar seed={opponent.avatar} size={96} ring={opponent.champion ? 'var(--gold)' : 'var(--opp)'} className="found-av" />}
       </div>
-      <p className="mm-status">{found ? <>Adversaire trouvé : <b>{opponent.name}</b>{opponent.champion ? ' 👑' : ''}</> : 'Recherche d\'un adversaire…'}</p>
+      <p className="mm-status">{found ? <>Adversaire IA : <b>{opponent.name}</b>{opponent.champion ? ' 👑' : ''}<AiTag on={opponent.ai} /></> : 'Préparation de ton adversaire IA…'}</p>
       {!found && <button className="btn btn-ghost" onClick={onCancel}>Annuler</button>}
     </div>
   )

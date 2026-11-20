@@ -29,7 +29,7 @@ function ranksAt(st, topic, opponent) {
   return { me: rows.find(x => x.isMe)?.rank, opp: rows.find(x => x.id === opponent.id)?.rank }
 }
 
-const slimBot = (b) => ({ id: b.id, name: b.name, avatar: b.avatar, flag: b.flag, xp: b.xp, skill: b.skill, champion: !!b.champion })
+const slimBot = (b) => ({ id: b.id, name: b.name, avatar: b.avatar, flag: b.flag, xp: b.xp, skill: b.skill, champion: !!b.champion, ai: true })
 
 // Réponses de l'adversaire simulé sur les questions du défi, comme s'il avait joué en direct.
 function botPlay(bot, questions) {
@@ -56,7 +56,7 @@ export function createOutgoing(st, topic, bot, now = Date.now()) {
 }
 
 // Un joueur simulé défie le joueur.
-function createIncoming(st, topics, now) {
+export function createIncoming(st, topics, now) {
   const pool = topics.filter(t => st.follows.includes(t.id) && t.questions.length >= 7)
   const topic = pick(pool.length ? pool : topics.filter(t => t.official))
   const xp = st.topicStats[topic.id]?.xp || 0
@@ -110,21 +110,10 @@ export function tickChallenges(st, topics, now = Date.now()) {
     return c
   })
 
-  // De temps en temps, un joueur défie le joueur (au plus 2 défis reçus en attente).
-  let nextIncomingAt = st.nextIncomingAt ?? now + 45 * SEC
-  const openIncoming = list.filter(c => c.dir === 'in' && c.status === 'pending').length
-  if (now >= nextIncomingAt) {
-    if (openIncoming < 2) {
-      const c = createIncoming(state, topics, now)
-      list.unshift(c)
-      events.push({ text: `${c.opponent.name} te défie sur « ${topics.find(t => t.id === c.topicId).name} »`, kind: 'incoming' })
-    }
-    nextIncomingAt = now + between(3 * MIN, 7 * MIN)
-    changed = true
-  } else if (st.nextIncomingAt == null) changed = true
-
+  // Les adversaires simulés n'envoient plus de défis : seuls de vrais joueurs pourront te défier.
+  // (createIncoming est conservé pour les tests et un éventuel mode entraînement.)
   if (!changed) return { state: null, events }
-  return { state: { ...state, challenges: list.slice(0, 40), nextIncomingAt }, events }
+  return { state: { ...state, challenges: list.slice(0, 40) }, events }
 }
 
 // Nombre d'éléments qui attendent une action ou un coup d'œil du joueur (badge de l'onglet Défis).

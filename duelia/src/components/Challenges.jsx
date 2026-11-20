@@ -1,5 +1,6 @@
 import Avatar from './Avatar.jsx'
 import TopicIcon from './TopicIcon.jsx'
+import AiTag from './AiTag.jsx'
 import { lastSeenLabel } from '../lib/challenges.js'
 
 function ago(ts, now) {
@@ -110,7 +111,7 @@ export function Inbox({ st, topics, now, onAccept, onReject, onPlay, onResult, o
                 <li key={c.id} className={`ch-item ${c.unseen ? 'unseen' : ''} st-${c.status}`}>
                   <Avatar seed={c.opponent.avatar} size={44} ring={c.opponent.champion ? 'var(--gold)' : undefined} />
                   <div className="ch-info">
-                    <b>{c.opponent.flag} {c.opponent.name}{c.opponent.champion ? ' 👑' : ''}{c.dir?.startsWith('link') && <span className="ch-link"> 🔗 lien</span>}</b>
+                    <b>{c.opponent.flag} {c.opponent.name}{c.opponent.champion ? ' 👑' : ''}<AiTag on={c.opponent.ai || /^[\w-]+:\d+$/.test(c.opponent.id || '')} />{c.dir?.startsWith('link') && <span className="ch-link"> 🔗 lien</span>}</b>
                     <small className="ch-topic"><TopicIcon topic={topic} size={16} /> {topic.name} · {ago(c.playedAt || c.createdAt, now)}</small>
                     <small>{statusLine(c)}</small>
                   </div>

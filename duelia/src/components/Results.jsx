@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import Avatar from './Avatar.jsx'
+import AiTag from './AiTag.jsx'
 import { levelInfo } from '../lib/levels.js'
 import { topicTitle } from '../lib/titles.js'
 import { sfx } from '../lib/sound.js'
@@ -95,7 +96,7 @@ export default function Results({ data, me, onRematch, onAnother, onTopic, onSha
         <span className="fo-vs">vs</span>
         <div className={`fo ${outcome === 'lose' ? 'winner' : ''}`}>
           <Avatar seed={opponent.avatar} size={84} ring="var(--opp)" />
-          <b>{opponent.name}</b>
+          <b>{opponent.name}<AiTag on={opponent.ai} /></b>
           <span className="fo-score opp">{oppScore}</span>
         </div>
       </div>

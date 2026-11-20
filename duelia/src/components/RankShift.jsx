@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import Avatar from './Avatar.jsx'
+import AiTag from './AiTag.jsx'
 import TopicIcon from './TopicIcon.jsx'
 import { leaderboard } from '../lib/bots.js'
 import { myPeriodXp, PERIODS } from '../lib/periods.js'
@@ -49,7 +50,7 @@ function ShiftCard({ label, before, after, rows, delay }) {
             style={r.isMe ? { transform: moved ? 'translateY(0)' : `translateY(${offset}px)` } : undefined}>
             <span className="rk">{r.isMe ? shown : r.rank}</span>
             <Avatar seed={r.avatar} photo={r.photo} size={30} />
-            <span className="sr-name">{r.flag} {r.isMe ? 'Toi' : r.name}</span>
+            <span className="sr-name">{r.flag} {r.isMe ? 'Toi' : r.name}<AiTag on={r.ai} /></span>
             <span className="sr-xp">{fmt(r.xp)}</span>
           </li>
         ))}

@@ -54,7 +54,7 @@ export function settleDuel(st, { topic, opponent, myScore, oppScore, log, questi
     xp: st.xp + total,
     topicStats: { ...st.topicStats, [topic.id]: next },
     exploits: bonuses.exploit ? { ...(st.exploits || {}), [exploitKey]: today } : st.exploits,
-    history: [{ topicId: topic.id, topicName: topic.name, oppName: opponent.name, oppAvatar: opponent.avatar, champion: opponent.champion, myScore, oppScore, outcome, at: now }, ...st.history].slice(0, 30),
+    history: [{ topicId: topic.id, topicName: topic.name, oppName: opponent.name, oppAvatar: opponent.avatar, champion: opponent.champion, ai: !!opponent.ai, myScore, oppScore, outcome, at: now }, ...st.history].slice(0, 30),
   }
   const data = {
     outcome, myScore, oppScore, opponent, topicId: topic.id, bonuses, total,

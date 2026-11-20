@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import Avatar from './Avatar.jsx'
+import AiTag from './AiTag.jsx'
 import TopicIcon from './TopicIcon.jsx'
 import {
   MAX_HEARTS, BOSS_EVERY, BOSS_ROUNDS, BONUSES, DOORS,
@@ -394,7 +395,7 @@ export default function Tower({ topics, profile, daily, towerState, onFinish, on
             <span className="t-boss-score">{boss.mine} – {boss.theirs}</span>
             <Avatar seed={boss.foe.avatar} size={84} ring="var(--gold)" />
           </div>
-          <b>{boss.foe.flag} {boss.foe.name}</b>
+          <b>{boss.foe.flag} {boss.foe.name}<AiTag on={boss.foe.ai} /></b>
           <small>Champion · {t.name}</small>
           <p>Question {boss.round + 1} sur {BOSS_ROUNDS}. Le meilleur total l'emporte.</p>
           <button className="btn btn-gold wide" onClick={bossRound}>{boss.round === 0 ? 'Affronter le champion' : 'Question suivante'}</button>
@@ -453,7 +454,7 @@ export default function Tower({ topics, profile, daily, towerState, onFinish, on
                 <li key={r.id} className={`rank-row ${r.isMe ? 'me' : ''}`}>
                   <span className="rk">{r.rank === 1 ? '👑' : r.rank}</span>
                   <Avatar seed={r.avatar} photo={r.photo} size={36} />
-                  <div className="rk-info"><b>{r.flag} {r.isMe ? `${r.name} (toi)` : r.name}</b><small>{fmt(r.score)} points</small></div>
+                  <div className="rk-info"><b>{r.flag} {r.isMe ? `${r.name} (toi)` : r.name}<AiTag on={r.ai} /></b><small>{fmt(r.score)} points</small></div>
                   <span className="rk-xp">Étage {r.floor}</span>
                 </li>
               ))}

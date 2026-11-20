@@ -766,3 +766,11 @@ img { -webkit-user-drag: none; }
 
 .link-sending { margin: 0; text-align: center; color: var(--muted); font-size: 14px; }
 .link-fail { margin: 0; text-align: center; color: var(--ko); font-weight: 700; font-size: 14px; }
+
+/* ---------- badge des adversaires simulés ---------- */
+.ai-tag {
+  display: inline-block; margin-left: 6px; padding: 1px 6px; border-radius: 6px; vertical-align: 2px;
+  font-family: var(--body); font-size: 10.5px; font-weight: 800; letter-spacing: 0.06em; line-height: 1.5;
+  color: var(--bg); background: var(--muted); text-shadow: none;
+}
+.vs-side .ai-tag { font-size: 12px; vertical-align: 4px; }

@@ -14,7 +14,7 @@ import Profile from './components/Profile.jsx'
 import Tower from './components/Tower.jsx'
 import { dayKey } from './lib/tower.js'
 import { settleDuel, ranksFor } from './lib/rewards.js'
-import { presence, createOutgoing, tickChallenges, pendingCount, markPlayed } from './lib/challenges.js'
+import { createOutgoing, tickChallenges, pendingCount, markPlayed } from './lib/challenges.js'
 import { Inbox, ChallengeSheet, NotifyBanner, SentScreen } from './components/Challenges.jsx'
 import RankShift from './components/RankShift.jsx'
 import { readLinkFromHash, challengeUrl, replyUrl } from './lib/linkduel.js'
@@ -121,14 +121,6 @@ export default function App() {
     if (r.name === 'linkcreate') {
       const t = byId(r.id)
       r = { name: 'duel', id: t.id, opponent: FRIEND, mode: 'blind', linkCreate: true, questions: buildQuestions(t, st.topicStats[t.id]?.seen) }
-    }
-    // Défier un joueur précis : s'il n'est pas en ligne, on propose un défi différé
-    if (r.name === 'match' && !r.live && !r.opponent && (r.opponentId || r.forceChampion)) {
-      const topic = byId(r.id)
-      const bots = getCommunity(topic)
-      const bot = r.opponentId ? bots.find(x => x.id === r.opponentId) : bots[0]
-      const p = presence(bot)
-      if (!p.online) { setSheet({ topic, opponent: { ...bot, champion: bot === bots[0] }, lastSeenMin: p.lastSeenMin }); return }
     }
     // On quitte le thème en cours : si l'on a joué, on montre l'évolution du classement
     const inFlow = (x, id) => FLOW.includes(x.name) && x.id === id

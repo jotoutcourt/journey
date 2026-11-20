@@ -27,7 +27,7 @@ function community(topic) {
     } while (used.has(name))
     used.add(name)
     const xp = Math.round((40 + 5200 * Math.pow(rnd(), 2.4)) * pop)
-    bots.push({ id: `${topic.id}:${i}`, name, avatar: name + topic.id, flag: pick(FLAGS, rnd), xp })
+    bots.push({ id: `${topic.id}:${i}`, name, avatar: name + topic.id, flag: pick(FLAGS, rnd), xp, ai: true })
   }
   bots.sort((a, b) => b.xp - a.xp)
   bots[0].xp = Math.round(bots[1].xp * 1.35 + 400 * pop) // le champion creuse l'écart
