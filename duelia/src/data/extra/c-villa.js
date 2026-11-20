@@ -77,6 +77,61 @@ export default [
   ['En saison 8, entre quels candidats les tensions montent-elles ?', 'Arthur et Rosanna', 'Vivian et Beverly', 'Gian Marco et Mélanie', 'Maëva et Gabriel'],
   ['Quel couple s\'était formé lors de la saison 3 ?', 'Vivian et Beverly', 'Arthur et Rosanna', 'Gian Marco et Mélanie', 'Gabriel et Cynthia'],
 
+  // Saison 10 : casting et histoires
+  ['Quelle candidate de la saison 10 est devenue co-présentatrice de la saison 11 ?', 'Maïssane', 'Maëva', 'Marwa', 'Mélanie'],
+  ['En saison 10, quelle ex de Gabriel intègre l\'aventure ?', 'Cynthia', 'Marwa', 'Lisa-Marie', 'Clarysse'],
+  ['Où Gabriel retrouve-t-il son ex Cynthia en saison 10 ?', 'Lors de son premier patio', 'Au dîner de bienvenue', 'À l\'aéroport', 'Au bord de la piscine'],
+  ['Que Lucie offre-t-elle à Maëva en saison 10 ?', 'Un bracelet argenté', 'Une bague', 'Un collier en or', 'Une montre'],
+  ['Après l\'annonce d\'un dîner, avec qui Gian Marco essaie-t-il de mettre les choses au clair ?', 'Mélanie', 'Maëva', 'Clarysse', 'Lisa-Marie'],
+  ['Entre quelles candidates le ton monte-t-il brutalement une nuit, brisant la cohésion du groupe ?', 'Cynthia et Marwa', 'Maëva et Mélanie', 'Lisa-Marie et Clarysse', 'Carla et Éloïse'],
+  ['Selon la presse people, quelle candidate de la saison 10 aurait été écartée un temps du tournage après une altercation ?', 'Marwa', 'Maëva', 'Mélanie', 'Clarysse'],
+  ['Lequel de ces candidats faisait partie de la saison 10 ?', 'Giovanni', 'Nicolo', 'Arthur', 'Vivian'],
+
+  // Saison 11
+  ['Quelle star de la téléréalité, ex de Kevin Guedj, participe à la saison 11 ?', 'Carla Moreau', 'Shanna Kress', 'Sarah Fraisou', 'Marie Garet'],
+  ['Quel candidat de la saison 11 est célibataire depuis plus de 34 ans ?', 'Clément', 'Nicolo', 'Raphaël', 'Gabriel'],
+  ['En saison 11, que dévoile Lucie, provoquant une confrontation entre Cynthia et Gabriel ?', 'Les images de la soirée tentation des garçons', 'Leurs messages privés', 'Le résultat d\'un vote', 'Une lettre anonyme'],
+  ['En saison 11, quel candidat tente de rendre Carla jalouse lors d\'une soirée avec deux prétendantes ?', 'Raphaël', 'Clément', 'Nicolo', 'Gabriel'],
+  ['Comment s\'appelle le jeu de la saison 11 dont le nom joue avec le mot « crush » ?', 'Crush or Crash', 'Love or Leave', 'Kiss or Miss', 'Date or Hate'],
+  ['Lequel de ces candidats participe à la saison 11 ?', 'Nicolo', 'Giovanni', 'Géronimo', 'Dylan'],
+
+  // Saison 9
+  ['À Bali, quels candidats décident de prolonger leur séjour ?', 'Patrick et Louana', 'Arthur et Rosanna', 'Lucas et Laura', 'Vivian et Beverly'],
+  ['À Bali, contre qui Marwa est-elle énervée ?', 'Vince', 'Gabriel', 'Antoine', 'Patrick'],
+  ['D\'après les résumés d\'épisodes, qui s\'embrassent en secret, provoquant la colère d\'Antoine ?', 'Solène et Antho', 'Lucas et Laura', 'Shanna et Ayoub', 'Patrick et Louana'],
+
+  // Saison 8 : Arthur et Rosanna
+  ['Quel est le nom de famille d\'Arthur, candidat de la saison 8 ?', 'Bachot', 'Grimigni', 'Queijo', 'Matéo'],
+  ['Quel est le nom de famille de Rosanna, candidate de la saison 8 ?', 'Jegorel', 'Bello', 'Jullia', 'Kress'],
+  ['En saison 8, qu\'a vu Rosanna qui a semé le doute sur Arthur ?', 'Arthur déshabiller Solène', 'Arthur embrasser une prétendante', 'Arthur lire son journal intime', 'Arthur partir en rendez-vous secret'],
+  ['Selon la presse people, comment Rosanna aurait-elle découvert qu\'Arthur l\'avait trompée après la Villa ?', 'Sur les réseaux sociaux', 'Dans un magazine', 'Grâce à Lucie', 'Pendant une émission en direct'],
+  ['Selon la presse people, où Arthur aurait-il trompé Rosanna après la Villa ?', 'En boîte de nuit', 'En vacances à l\'étranger', 'Sur un autre tournage', 'À un mariage'],
+  ['Quel couple Lucie valide-t-elle à la fin de la saison 8 ?', 'Lucas et Laura', 'Arthur et Rosanna', 'Shanna et Ayoub', 'Patrick et Louana'],
+  ['Quel candidat de la saison 8 souhaite quitter l\'aventure en fin de saison ?', 'Géronimo', 'Lucas', 'Arthur', 'Vince'],
+  ['Quelle candidate de la saison 8 embrasse sa prétendante ?', 'Anouchka', 'Rosanna', 'Laura', 'Solène'],
+  ['En saison 8, quel candidat pleure pour la première fois dans l\'aventure ?', 'Arthur', 'Géronimo', 'Lucas', 'Antoine'],
+
+  // Saison 6 : d'où venaient les candidats
+  ['De quelle émission venait Inès, candidate de la saison 6 ?', 'Koh-Lanta', 'Les Anges', '10 couples parfaits', 'Les Princes de l\'amour'],
+  ['De quelle émission venait Jonathan, candidat de la saison 6 ?', 'Les Anges', 'Koh-Lanta', '10 couples parfaits', 'Les Marseillais'],
+  ['De quelle émission venait Dylan, candidat de la saison 6 ?', 'Les Princes de l\'amour', 'Les Anges', 'Koh-Lanta', 'Secret Story'],
+  ['Quels candidats de la saison 5 reviennent dans la saison 6 ?', 'Théo et Cassandra', 'Vivian et Beverly', 'Shanna et Ayoub', 'Arthur et Rosanna'],
+  ['La saison 6 a d\'abord été déprogrammée : en quel mois devait-elle commencer ?', 'Novembre', 'Mars', 'Juin', 'Septembre'],
+
+  // Saison 5 : Shanna et Ayoub
+  ['En saison 5, quelle candidate retrouve Ayoub, rencontré quelques mois plus tôt ?', 'Shanna', 'Sarah', 'Marie', 'Anaïs'],
+  ['En saison 5, que font croire Shanna et Ayoub aux autres candidats ?', 'Qu\'ils se sont embrassés', 'Qu\'ils vont se marier', 'Qu\'ils quittent la villa', 'Qu\'ils sont cousins'],
+  ['Selon un blogueur, avec quelle candidate Ayoub serait-il sorti de la villa en couple ?', 'Shanna Kress', 'Sarah Fraisou', 'Marie Garet', 'Anaïs Camizuli'],
+  ['Selon un blogueur, avec qui Sarah Fraisou serait-elle repartie de la saison 5 ?', 'Ahmed, un garçon venu de l\'extérieur', 'Ayoub', 'Vincent', 'Un prétendant choisi par Lucie'],
+  ['Laquelle de ces candidates a participé à la saison 5 ?', 'Marie Garet', 'Rosanna Jegorel', 'Carla Moreau', 'Maïssane'],
+
+  // Saisons 2 à 4
+  ['Quel « couple en crise », venu de la saison 3, participe à la saison 4 ?', 'Vivian et Beverly', 'Arthur et Rosanna', 'Lucas et Laura', 'Théo et Cassandra'],
+  ['Quel est le nom de famille de Vivian ?', 'Grimigni', 'Bachot', 'Queijo', 'Moreau'],
+  ['En saison 4, qu\'est-ce qui agace les autres candidats ?', 'Le comportement de Vivian et Beverly', 'Les règles de Lucie', 'La chaleur de la villa', 'Le départ d\'un candidat'],
+  ['Laquelle de ces candidates a participé à la saison 2 ?', 'Fidji Ruiz', 'Carla Moreau', 'Rosanna Jegorel', 'Maëva'],
+  ['Selon la presse people, pourquoi Vivian et Beverly se seraient-ils séparés avant la saison 4 ?', 'Pour le buzz, afin de participer comme « couple en crise »', 'À cause d\'une tromperie avérée', 'Pour une autre émission', 'Pour raisons professionnelles'],
+
   // Toutes saisons
   ['Quel pays a accueilli le plus de saisons de l\'émission ?', 'Le Mexique', 'La République dominicaine', 'L\'Indonésie', 'La France'],
   ['Quelle saison a été tournée en France métropolitaine ?', 'La saison 6', 'La saison 3', 'La saison 9', 'La saison 1'],

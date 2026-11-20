@@ -95,6 +95,16 @@ function initialState() {
     })
     s.starterVersion = 5
   }
+  // Mise à jour unique (v6) : La Villa passe à 100 questions dans la copie enregistrée
+  if (s.starterVersion < 6) {
+    const fresh = STARTER_CREATIONS.find(x => x.topic.id === 'c-villa')?.topic.questions || []
+    s.custom = s.custom.map(t => {
+      if (t.id !== 'c-villa') return t
+      const have = new Set(t.questions.map(q => q.q))
+      return { ...t, questions: [...t.questions, ...fresh.filter(q => !have.has(q.q))] }
+    })
+    s.starterVersion = 6
+  }
   return s
 }
 
