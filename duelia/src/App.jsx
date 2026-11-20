@@ -85,6 +85,16 @@ function initialState() {
     }
     s.starterVersion = 4
   }
+  // Mise à jour unique (v5) : nouvelles questions « drama » ajoutées à la copie enregistrée de La Villa
+  if (s.starterVersion < 5) {
+    const fresh = STARTER_CREATIONS.find(x => x.topic.id === 'c-villa')?.topic.questions || []
+    s.custom = s.custom.map(t => {
+      if (t.id !== 'c-villa') return t
+      const have = new Set(t.questions.map(q => q.q))
+      return { ...t, questions: [...t.questions, ...fresh.filter(q => !have.has(q.q))] }
+    })
+    s.starterVersion = 5
+  }
   return s
 }
 

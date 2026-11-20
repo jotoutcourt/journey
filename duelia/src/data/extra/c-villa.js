@@ -69,6 +69,14 @@ export default [
   ['Qui présente la saison 11 aux côtés de Lucie Mariotti ?', 'Maïssane Aghioul', 'Stéphanie Clerbois', 'Jesta Hillmann', 'Yann Piette'],
   ['À partir de quel mois la saison 11 est-elle diffusée sur TFX ?', 'Août 2026', 'Janvier 2026', 'Mai 2026', 'Novembre 2026'],
 
+  // Drama à l'écran (uniquement des scènes diffusées, rapportées par des résumés d'épisodes ou des médias télé)
+  ['En saison 10, quelle candidate révèle qu\'un candidat a menti sur un flirt avec une prétendante ?', 'Maëva', 'Marwa', 'Cynthia', 'Mélanie'],
+  ['En saison 10, quel candidat avoue ne plus rien vouloir avec Mélanie ?', 'Gian Marco', 'Gabriel', 'Arthur', 'Vivian'],
+  ['En saison 10, l\'arrivée de quelle candidate déclenche le premier gros clash de la villa ?', 'Marwa', 'Maëva', 'Jane', 'Rosanna'],
+  ['En saison 9, quelle candidate s\'emporte contre les autres cœurs brisés ?', 'Jane', 'Marwa', 'Solène', 'Maëva'],
+  ['En saison 8, entre quels candidats les tensions montent-elles ?', 'Arthur et Rosanna', 'Vivian et Beverly', 'Gian Marco et Mélanie', 'Maëva et Gabriel'],
+  ['Quel couple s\'était formé lors de la saison 3 ?', 'Vivian et Beverly', 'Arthur et Rosanna', 'Gian Marco et Mélanie', 'Gabriel et Cynthia'],
+
   // Toutes saisons
   ['Quel pays a accueilli le plus de saisons de l\'émission ?', 'Le Mexique', 'La République dominicaine', 'L\'Indonésie', 'La France'],
   ['Quelle saison a été tournée en France métropolitaine ?', 'La saison 6', 'La saison 3', 'La saison 9', 'La saison 1'],
