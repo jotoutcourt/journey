@@ -7,7 +7,7 @@ import { CATEGORIES } from '../data/topics.js'
 import { levelInfo } from '../lib/levels.js'
 import { getCommunity, leaderboard } from '../lib/bots.js'
 import { PERIODS, myPeriodXp, resetIn } from '../lib/periods.js'
-import { meEntry } from '../lib/profile.js'
+import { meEntry, resizeImage } from '../lib/profile.js'
 import { topicTitle, nextTitle, ladderFor, TITLE_LEVELS } from '../lib/titles.js'
 import { RecoverForm } from './AccountCard.jsx'
 import { dayKey } from '../lib/tower.js'
@@ -483,8 +483,22 @@ export function Onboarding({ topics, onDone, onRecover }) {
   const [step, setStep] = useState(0)
   const [recovering, setRecovering] = useState(false)
   const [name, setName] = useState('')
-  const [seed, setSeed] = useState(() => Math.random().toString(36).slice(2))
+  // Choix de l'avatar : une sélection de monstres, ou une photo de l'appareil
+  const newSeeds = () => Array.from({ length: 8 }, () => Math.random().toString(36).slice(2))
+  const [seeds, setSeeds] = useState(newSeeds)
+  const [seed, setSeed] = useState(() => seeds[0])
+  const [photo, setPhoto] = useState(null)
+  const [photoErr, setPhotoErr] = useState(null)
   const [picked, setPicked] = useState([])
+  const shuffleSeeds = () => { const s = newSeeds(); setSeeds(s); setSeed(s[0]); setPhoto(null) }
+  async function pickPhoto(e) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    if (!file.type.startsWith('image/')) { setPhotoErr('Ce fichier n\'est pas une image.'); return }
+    try { setPhoto(await resizeImage(file, 256, 256)); setPhotoErr(null) }
+    catch { setPhotoErr('Impossible de lire cette image. Essaie une photo JPEG ou PNG.') }
+  }
   const official = topics.filter(t => t.official || t.community)
   const toggle = (id) => setPicked(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id])
 
@@ -495,8 +509,25 @@ export function Onboarding({ topics, onDone, onRecover }) {
         <h1 className="ob-title">Des duels de quiz,<br />sur tous les sujets.</h1>
         <p className="ob-sub">Réponds juste, réponds vite : chaque seconde gagnée te donne des points d'avance.</p>
         <div className="ob-av">
-          <Avatar seed={seed} size={140} ring="var(--me)" />
-          <button className="btn btn-small btn-ghost" onClick={() => setSeed(Math.random().toString(36).slice(2))}>🎲 Une autre créature</button>
+          <Avatar key={photo ? 'photo' : seed} seed={seed} photo={photo} size={132} ring="var(--me)" />
+          <p className="ob-av-label">{photo ? 'Ta photo' : 'Choisis ton monstre'}</p>
+          <div className="ob-monsters" role="radiogroup" aria-label="Monstres">
+            {seeds.map(s => (
+              <button key={s} role="radio" aria-checked={!photo && s === seed} className={`ob-monster ${!photo && s === seed ? 'on' : ''}`}
+                onClick={() => { setSeed(s); setPhoto(null) }} aria-label="Choisir ce monstre">
+                <Avatar seed={s} size={52} />
+              </button>
+            ))}
+          </div>
+          <div className="ob-av-actions">
+            <button className="btn btn-small btn-ghost" onClick={shuffleSeeds}>🎲 D'autres monstres</button>
+            <label className="btn btn-small btn-ghost">
+              📷 {photo ? 'Changer la photo' : 'Mettre une photo'}
+              <input id="ob-photo" type="file" accept="image/*" hidden onChange={pickPhoto} />
+            </label>
+          </div>
+          {photo && <button className="btn btn-small btn-ghost" onClick={() => setPhoto(null)}>Reprendre un monstre</button>}
+          {photoErr && <p className="recover-err" role="alert">{photoErr}</p>}
         </div>
         <input className="ob-name" value={name} maxLength={18} onChange={e => setName(e.target.value)} placeholder="Ton pseudo" autoFocus />
         <button className="btn btn-primary wide" disabled={!name.trim()} onClick={() => setStep(1)}>Continuer</button>
@@ -523,7 +554,7 @@ export function Onboarding({ topics, onDone, onRecover }) {
         ))}
       </div>
       <div className="sticky-save">
-        <button className="btn btn-primary wide" onClick={() => onDone({ name: name.trim(), avatar: seed, follows: picked })}>
+        <button className="btn btn-primary wide" onClick={() => onDone({ name: name.trim(), avatar: seed, photo, follows: picked })}>
           {picked.length ? `C'est parti (${picked.length})` : 'Passer'}
         </button>
       </div>

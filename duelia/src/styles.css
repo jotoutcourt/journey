@@ -800,3 +800,12 @@ img { -webkit-user-drag: none; }
 .recover { display: flex; flex-direction: column; gap: 8px; }
 .recover label { color: var(--muted); font-size: 12.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
 .recover-err { margin: 0; color: var(--ko); font-weight: 700; font-size: 13.5px; }
+
+/* ---------- premier lancement : choix du monstre ou d'une photo ---------- */
+.ob-av-label { margin: 0; color: var(--muted); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
+.ob-monsters { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; width: 100%; max-width: 320px; }
+.ob-monster { display: grid; place-items: center; padding: 6px; border-radius: 16px; background: var(--card); border: 2px solid transparent; transition: transform 0.12s, border-color 0.12s; }
+.ob-monster:active { transform: scale(0.94); }
+.ob-monster.on { border-color: var(--me); box-shadow: 0 0 0 3px #2ee6c533; }
+.ob-av-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.ob-av-actions label.btn { cursor: pointer; }

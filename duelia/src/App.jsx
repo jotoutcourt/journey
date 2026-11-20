@@ -472,8 +472,8 @@ export default function App() {
   if (!me) {
     return (
       <div className="app">
-        <Onboarding topics={topics} onRecover={recoverAccount} onDone={({ name, avatar, follows }) => {
-          update(s => ({ ...s, profile: { id: Math.random().toString(36).slice(2), name, avatar, createdAt: Date.now() }, follows: [...new Set([...s.follows, ...follows, ...(SHARED ? [SHARED.id] : [])])] }))
+        <Onboarding topics={topics} onRecover={recoverAccount} onDone={({ name, avatar, photo, follows }) => {
+          update(s => ({ ...s, profile: { id: Math.random().toString(36).slice(2), name, avatar, ...(photo ? { photo } : {}), createdAt: Date.now() }, follows: [...new Set([...s.follows, ...follows, ...(SHARED ? [SHARED.id] : [])])] }))
         }} />
       </div>
     )
