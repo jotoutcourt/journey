@@ -8,6 +8,7 @@ import {
 } from '../lib/tower.js'
 import { meEntry } from '../lib/profile.js'
 import { sfx } from '../lib/sound.js'
+import { thinking } from '../lib/music.js'
 
 const fmt = (n) => n.toLocaleString('fr-FR')
 
@@ -72,6 +73,12 @@ function TowerQuestion({ q, time, opponent, plan, bonus, onUseBonus, onDone, me 
     }, 80)
     return () => clearInterval(iv)
   }, [time, plan])
+
+  // Musique de réflexion jusqu'à la réponse (elle ne connaît pas le gel : elle s'arrête simplement à la réponse)
+  useEffect(() => {
+    if (mine) return
+    return thinking(time)
+  }, [mine, time])
 
   // Tout le monde a répondu → on dévoile, puis on passe la main.
   useEffect(() => {

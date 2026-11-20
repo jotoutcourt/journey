@@ -1,7 +1,19 @@
 // Petits effets sonores synthétisés (aucun fichier audio).
 let ctx = null
 let enabled = true
+let musicOn = true
 export const setSound = (on) => { enabled = on }
+export const setMusic = (on) => { musicOn = on }
+
+// Contexte audio partagé avec la musique (créé au premier son, après un geste du joueur).
+export function audioFor(kind = 'sfx') {
+  if (!enabled || (kind === 'music' && !musicOn)) return null
+  try {
+    ctx = ctx || new (window.AudioContext || window.webkitAudioContext)()
+    if (ctx.state === 'suspended') ctx.resume()
+    return ctx
+  } catch { return null }
+}
 
 function tone(freq, dur = 0.12, type = 'sine', gain = 0.12, delay = 0) {
   if (!enabled) return

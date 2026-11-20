@@ -7,6 +7,7 @@ import { levelInfo } from '../lib/levels.js'
 import { topicTitle } from '../lib/titles.js'
 import { TIME, pointsFor } from '../lib/duel.js'
 import { sfx } from '../lib/sound.js'
+import { intro as introMusic, thinking } from '../lib/music.js'
 
 // Question à image (silhouette noire jusqu'au dévoilement). Si l'image ne charge pas,
 // on bascule sur une question écrite qui garde la même réponse.
@@ -61,10 +62,17 @@ export default function Duel({ topic, me, opponent, ranks, questions, onFinish, 
   useEffect(() => {
     if (phase !== 'vs') return
     const big = !!bigMatch(ranks)
-    if (big) sfx.bigVs(); else sfx.vs()
+    if (big) sfx.bigVs()
+    const stopMusic = introMusic(big ? 4.8 : 2.9, big)
     const id = setTimeout(() => setPhase('banner'), big ? 4800 : 2900)
-    return () => clearTimeout(id)
+    return () => { clearTimeout(id); stopMusic() }
   }, [phase, ranks])
+
+  // Musique de réflexion tant qu'on n'a pas répondu
+  useEffect(() => {
+    if (phase !== 'play' || mine) return
+    return thinking(TIME)
+  }, [phase, mine])
 
   // Annonce de la question
   useEffect(() => {

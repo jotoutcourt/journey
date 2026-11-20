@@ -4,7 +4,7 @@ import { POKEMON_TOPIC } from './data/pokemon.js'
 import { loadState, saveState, emptyState, encodeTopic, decodeTopic } from './lib/store.js'
 import { findOpponent, getCommunity, leaderboard } from './lib/bots.js'
 import { meEntry } from './lib/profile.js'
-import { setSound } from './lib/sound.js'
+import { setSound, setMusic } from './lib/sound.js'
 import { pick } from './lib/rng.js'
 import Duel from './components/Duel.jsx'
 import { buildQuestions } from './lib/duel.js'
@@ -82,6 +82,7 @@ export default function App() {
 
   useEffect(() => { saveState(st) }, [st])
   useEffect(() => { setSound(st.settings.sound) }, [st.settings.sound])
+  useEffect(() => { setMusic(st.settings.music !== false) }, [st.settings.music])
 
   const update = useCallback((fn) => setSt(s => fn(s) ?? emptyState()), [])
   // Les thèmes du joueur sont signés de son pseudo actuel
