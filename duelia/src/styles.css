@@ -658,3 +658,10 @@ img { -webkit-user-drag: none; }
   .vs-headline { bottom: calc(env(safe-area-inset-bottom) + 16px); padding: 9px 12px; }
   .vs-headline b { font-size: 18px; }
 }
+
+/* ---------- titres propres à chaque thème ---------- */
+.tp-title { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 16px; text-align: center; }
+.tp-title-badge { font-family: var(--display); font-weight: 800; font-size: 18px; padding: 6px 16px; border-radius: 20px; background: color-mix(in srgb, var(--c, var(--violet)) 25%, var(--card)); border: 1px solid color-mix(in srgb, var(--c, var(--violet)) 60%, transparent); }
+.tp-title small { color: var(--muted); font-size: 13px; }
+.tp-title small b { color: var(--text); }
+.ring-title { font-style: normal; font-size: 11.5px; font-weight: 700; color: var(--muted); max-width: 120px; text-align: center; line-height: 1.2; margin-top: 2px; }

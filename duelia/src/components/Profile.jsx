@@ -3,6 +3,7 @@ import Avatar from './Avatar.jsx'
 import TopicIcon from './TopicIcon.jsx'
 import ConfirmButton from './ConfirmButton.jsx'
 import { levelInfo } from '../lib/levels.js'
+import { topicTitle } from '../lib/titles.js'
 import { COUNTRIES, computeStats, bestBadge, resizeImage } from '../lib/profile.js'
 
 const fmt = (n) => n.toLocaleString('fr-FR')
@@ -249,7 +250,7 @@ export default function Profile({ st, topics, update, go }) {
             return (
               <li key={t.id} onClick={() => go({ name: 'topic', id: t.id })}>
                 <TopicIcon topic={t} size={40} />
-                <div><b>{t.name}</b><small>Niveau {l.level} · {l.title}</small></div>
+                <div><b>{t.name}</b><small>Niveau {l.level} · {topicTitle(t, l.level)}</small></div>
                 <span>{fmt(st.topicStats[t.id].xp)} XP</span>
               </li>
             )

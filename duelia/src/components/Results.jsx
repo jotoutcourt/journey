@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import Avatar from './Avatar.jsx'
 import { levelInfo } from '../lib/levels.js'
+import { topicTitle } from '../lib/titles.js'
 import { sfx } from '../lib/sound.js'
 
 function useCountUp(target, delay = 0, dur = 700) {
@@ -31,7 +32,7 @@ function Stat({ label, value, prefix = '', tone, delay }) {
   )
 }
 
-function LevelRing({ before, after }) {
+function LevelRing({ before, after, topic }) {
   const a = levelInfo(before), b = levelInfo(after)
   const [k, setK] = useState(a.into / a.need)
   const [shown, setShown] = useState(a)
@@ -54,9 +55,10 @@ function LevelRing({ before, after }) {
       <div className="ring-txt">
         <small>Niveau</small>
         <b>{shown.level}</b>
+        <em className="ring-title">{topicTitle(topic, shown.level)}</em>
       </div>
       <p className="ring-sub">
-        {shown.level > a.level ? <span className="lvl-up">Niveau {shown.level} atteint !</span>
+        {shown.level > a.level ? <span className="lvl-up">Niveau {shown.level} : {topicTitle(topic, shown.level)}</span>
           : <>Encore <b>{b.need - b.into} XP</b> pour le niveau {b.level + 1}</>}
       </p>
     </div>
@@ -98,7 +100,7 @@ export default function Results({ data, me, onRematch, onAnother, onTopic, onSha
         <Stat label="XP total" value={total} tone="t-violet" delay={1100} />
       </div>
 
-      <LevelRing before={before} after={after} />
+      <LevelRing before={before} after={after} topic={topic} />
 
       {data.ranks && (
         <div className="result-ranks">

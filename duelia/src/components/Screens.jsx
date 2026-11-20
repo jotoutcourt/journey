@@ -7,6 +7,7 @@ import { levelInfo } from '../lib/levels.js'
 import { getCommunity, leaderboard } from '../lib/bots.js'
 import { PERIODS, myPeriodXp, resetIn } from '../lib/periods.js'
 import { meEntry } from '../lib/profile.js'
+import { topicTitle, nextTitle } from '../lib/titles.js'
 import { dayKey } from '../lib/tower.js'
 import { decodeTopic } from '../lib/store.js'
 import { sfx } from '../lib/sound.js'
@@ -88,7 +89,7 @@ export function Home({ st, topics, go, quickDuel }) {
           <div className="hscroll">
             {followed.map(t => (
               <TopicTile key={t.id} topic={t} onClick={() => go({ name: 'topic', id: t.id })}
-                sub={`Niveau ${levelInfo(st.topicStats[t.id]?.xp).level}`} />
+                sub={topicTitle(t, levelInfo(st.topicStats[t.id]?.xp).level)} />
             ))}
           </div>
         </section>
@@ -247,6 +248,14 @@ export function TopicPage({ st, topic, go, toggleFollow, shareTopic, deleteTopic
       <div className="progress-label"><small>Questions découvertes</small><small>{seenPct} %</small></div>
       <div className="progress"><i style={{ width: `${seenPct}%` }} /></div>
 
+      <div className="tp-title">
+        <span className="tp-title-badge">{topicTitle(topic, lvl.level)}</span>
+        {(() => {
+          const nx = nextTitle(topic, lvl.level)
+          return <small>{nx ? <>Prochain titre : <b>{nx.title}</b> au niveau {nx.level}</> : 'Tu as atteint le titre le plus haut de ce thème.'}</small>
+        })()}
+      </div>
+
       <div className="tp-stats">
         <div><small>Ton niveau</small><b>{lvl.level}</b></div>
         <div><small>Abonnés</small><b>{fmt(followers)}</b></div>
@@ -310,7 +319,7 @@ export function Ranking({ st, topic, go }) {
               <Avatar seed={r.avatar} photo={r.photo} size={40} ring={r.champion ? 'var(--gold)' : undefined} />
               <div className="rk-info">
                 <b>{r.flag} {r.isMe ? `${r.name} (toi)` : r.name}</b>
-                <small>{r.champion ? period.champ : `Niv. ${l.level} · ${l.title}`}</small>
+                <small>{r.champion ? period.champ : `Niv. ${l.level} · ${topicTitle(topic, l.level)}`}</small>
               </div>
               <span className="rk-xp">{fmt(r.xp)}<small> XP</small></span>
               {!r.isMe && <button className="btn btn-small btn-secondary" onClick={() => go({ name: 'match', id: topic.id, opponentId: r.id })}>Défier</button>}

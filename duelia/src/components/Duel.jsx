@@ -4,6 +4,7 @@ import TopicIcon from './TopicIcon.jsx'
 import ConfirmButton from './ConfirmButton.jsx'
 import { botAnswer } from '../lib/bots.js'
 import { levelInfo } from '../lib/levels.js'
+import { topicTitle } from '../lib/titles.js'
 import { TIME, pointsFor } from '../lib/duel.js'
 import { sfx } from '../lib/sound.js'
 
@@ -153,7 +154,7 @@ export default function Duel({ topic, me, opponent, ranks, questions, onFinish, 
           {ranks?.me === 1 && <div className="champ-badge">👑 Champion du thème</div>}
           <Avatar seed={me.avatar} photo={me.photo} size={128} ring={ranks?.me <= 10 ? 'var(--gold)' : 'var(--me)'} className="vs-av" />
           <b>{me.name}</b>
-          <span>Niv. {myLvl.level} · {myLvl.title}</span>
+          <span>Niv. {myLvl.level} · {topicTitle(topic, myLvl.level)}</span>
           <RankPlate rank={ranks?.me} />
         </div>
         <div className="vs-mark"><span>VS</span></div>
@@ -161,7 +162,7 @@ export default function Duel({ topic, me, opponent, ranks, questions, onFinish, 
           {opponent.champion && <div className="champ-badge">👑 Champion du thème</div>}
           <Avatar seed={opponent.avatar} size={128} ring={ranks?.opp <= 10 ? 'var(--gold)' : 'var(--opp)'} className="vs-av" />
           <b>{opponent.flag} {opponent.name}</b>
-          <span>Niv. {oppLvl.level} · {oppLvl.title}</span>
+          <span>Niv. {oppLvl.level} · {topicTitle(topic, oppLvl.level)}</span>
           <RankPlate rank={ranks?.opp} />
         </div>
         <div className="vs-topic"><TopicIcon topic={topic} size={30} /> {topic.name}</div>
