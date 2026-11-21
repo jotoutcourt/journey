@@ -45,6 +45,22 @@ export function OxygenCard({ wallet, at, onRefill, onDue }) {
   )
 }
 
+/* ---------- Version discrète sous le bouton Jouer (sans cadre) ---------- */
+export function OxygenInline({ wallet, at, onRefill, onDue }) {
+  const oxy = wallet?.oxygen
+  const left = useNext(oxy, at, onDue)
+  const [busy, setBusy] = useState(false)
+  if (!oxy) return null
+  const full = oxy.bottles >= oxy.max
+  const canPay = (wallet.lingots || 0) >= oxy.refill
+  return (
+    <div className="oxy-inline">
+      <Bottles n={oxy.bottles} max={oxy.max} />
+      {!full && <small>+1 dans {mmss(left ?? 0)}{canPay && <> · <button className="link-btn" disabled={busy} onClick={async () => { setBusy(true); await onRefill(); setBusy(false) }}>remplir ({oxy.refill} lingots)</button></>}</small>}
+    </div>
+  )
+}
+
 /* ---------- Plus d'oxygène ---------- */
 export function OxygenSheet({ wallet, at, onRefill, onDue, onClose, partner }) {
   const oxy = wallet?.oxygen

@@ -853,3 +853,23 @@ button.wallet-pill { border: 0; cursor: pointer; }
   background: linear-gradient(135deg, #a866ff66, #6a2bd155); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
   box-shadow: inset 0 0 0 1.5px #e2c8ffaa, inset 0 1px 0 #ffffff55, 0 10px 24px -8px #8b3dffcc; }
 .kh-btn.violet:active { box-shadow: inset 0 0 0 1.5px #e2c8ffaa, 0 4px 12px -6px #8b3dffcc; }
+
+/* ===== Accueil : un seul bouton Jouer en verre, oxygène sans cadre, texte discret ===== */
+.kh-pitch { margin: 2px 0 0; padding: 0 12px; background: none; box-shadow: none; backdrop-filter: none; max-width: 320px;
+  color: #d8ccf5cc; font-size: 13.5px; line-height: 1.45; text-shadow: 0 1px 8px #0b0420, 0 0 2px #0b0420; }
+.kh-pitch b { color: #d9b8ff; font-weight: 600; }
+.kh-play { position: relative; overflow: hidden; margin-top: 14px; width: min(72vw, 280px); height: 60px; border-radius: 999px;
+  font-family: var(--display); font-weight: 600; font-size: 22px; letter-spacing: 0.06em; color: #fff;
+  background: linear-gradient(180deg, #ffffff2e, #ffffff0d); backdrop-filter: blur(14px) saturate(1.4); -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  box-shadow: inset 0 0 0 1.5px #ffffff66, inset 0 1px 0 #ffffffaa, 0 12px 30px -8px #a866ffcc, 0 0 40px -10px #ffc940aa;
+  text-shadow: 0 2px 10px #8b3dffaa; transition: transform 0.15s, box-shadow 0.2s; }
+.kh-play::before { content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1.5px; pointer-events: none;
+  background: linear-gradient(120deg, #ffe27a, #ff9de8 45%, #8fd3ff); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; opacity: 0.9; }
+.kh-play::after { content: ''; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 40%, #ffffff55 50%, transparent 60%) -150% 0 / 60% 100% no-repeat; animation: btnShine 4s 1.2s ease-in-out infinite; }
+.kh-play:active { transform: scale(0.96); }
+.oxy-inline { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 12px; }
+.oxy-inline .oxy-bottles { gap: 8px; }
+.oxy-inline .oxy-bottles i { width: 14px; height: 22px; }
+.oxy-inline small { color: #cbbdf0; font-size: 12px; text-shadow: 0 1px 6px #0b0420; }
+.oxy-inline .link-btn { color: #8fe9d6; font-size: 12px; }
+.kraken-hero .bh-bonus { margin-top: 8px; background: #0b042099; }

@@ -15,7 +15,7 @@ import { createOutgoing, tickChallenges, pendingCount, markPlayed } from './lib/
 import { Inbox, ChallengeSheet, NotifyBanner, SentScreen } from './components/Challenges.jsx'
 import { ButinHome, ButinGame, DuoInviteBanner } from './components/Butin.jsx'
 import { Party, PartyInviteBanner } from './components/Party.jsx'
-import { OxygenCard, OxygenSheet } from './components/Oxygen.jsx'
+import { OxygenInline, OxygenSheet } from './components/Oxygen.jsx'
 import { Shop } from './components/Shop.jsx'
 import { priceOf, isLockable } from './lib/shop.js'
 import { buildButin } from './lib/butin.js'
@@ -967,10 +967,10 @@ export default function App() {
         onShare={() => shareText(`${route.data.outcome === 'win' ? 'Victoire' : 'Duel'} ${route.data.myScore}–${route.data.oppScore} contre ${route.opponent.name} sur « ${topic.name} » dans Kraken !`)} />
     ); break
     default: view = <Home st={st} topics={topics} go={go} wallet={wallet} onSolo={startSolo}
-      oxygen={<OxygenCard wallet={wallet} at={walletAt} onRefill={refill} onDue={refreshWallet} />} />
+      oxygen={<OxygenInline wallet={wallet} at={walletAt} onRefill={refill} onDue={refreshWallet} />} />
   }
   if (!view) view = <Home st={st} topics={topics} go={go} wallet={wallet} onSolo={startSolo}
-    oxygen={<OxygenCard wallet={wallet} at={walletAt} onRefill={refill} onDue={refreshWallet} />} />
+    oxygen={<OxygenInline wallet={wallet} at={walletAt} onRefill={refill} onDue={refreshWallet} />} />
 
   return (
     <div className={`app ${fullscreen ? 'full' : ''}`}>

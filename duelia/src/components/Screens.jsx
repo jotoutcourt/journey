@@ -30,6 +30,7 @@ export function TopicTile({ topic, onClick, sub, price }) {
 
 /* ---------------- Accueil ---------------- */
 export function Home({ go, wallet, onSolo, oxygen }) {
+  const [choose, setChoose] = useState(false)
   return (
     <div className="screen home immersive">
       {/* décor plein écran : grotte sous-marine, rayons de lumière et bulles */}
@@ -46,15 +47,28 @@ export function Home({ go, wallet, onSolo, oxygen }) {
       <section className="kraken-hero">
         <img className="kh-art" src="/mascotte/pirate-anim.webp" alt="" aria-hidden="true" />
         <h1 className="kraken-sign-img"><img src="/decor/pancarte.webp" alt="L'Appât du Kraken" draggable="false" /></h1>
-        <p className="kh-pitch">Vole le trésor du <b>Kraken</b> : cache tes lingots dans la bonne caisse avant que ses tentacules ne les reprennent.</p>
-        <div className="kh-actions">
-          <button className="kh-btn gold" onClick={onSolo}><span aria-hidden="true">🏴‍☠️</span> Jouer</button>
-          <button className="kh-btn violet" onClick={() => go({ name: 'butin' })}><span aria-hidden="true">👥</span> À deux</button>
-        </div>
-        {wallet?.daily_bonus && <span className="bh-bonus">🎁 +5 lingots offerts sur ta première partie du jour</span>}
+        <p className="kh-pitch">Cache tes lingots dans la bonne caisse avant que les tentacules du <b>Kraken</b> ne les reprennent.</p>
+        <button className="kh-play" onClick={() => setChoose(true)}>Jouer</button>
+        {oxygen}
+        {wallet?.daily_bonus && <span className="bh-bonus">🎁 +5 lingots sur ta première partie du jour</span>}
       </section>
 
-      {oxygen}
+      {choose && (
+        <div className="sheet-backdrop" onClick={() => setChoose(false)}>
+          <div className="sheet friend-sheet" role="dialog" aria-labelledby="mode-title" onClick={e => e.stopPropagation()}>
+            <h2 id="mode-title">Comment jouer ?</h2>
+            <ul className="pick-list who-list">
+              <li><button className="pick-friend" onClick={() => { setChoose(false); onSolo() }}>
+                <span className="who-icon" aria-hidden="true">🏴‍☠️</span><span className="pf-info"><b>Seul contre le Kraken</b><small>1 bouteille d'oxygène</small></span><i aria-hidden="true">›</i>
+              </button></li>
+              <li><button className="pick-friend" onClick={() => { setChoose(false); go({ name: 'butin' }) }}>
+                <span className="who-icon" aria-hidden="true">👥</span><span className="pf-info"><b>Avec un ami</b><small>Chacun sur son téléphone, en direct</small></span><i aria-hidden="true">›</i>
+              </button></li>
+            </ul>
+            <button className="link-btn" onClick={() => setChoose(false)}>Annuler</button>
+          </div>
+        </div>
+      )}
       <InstallBanner />
     </div>
   )
