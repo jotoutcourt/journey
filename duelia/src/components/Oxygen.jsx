@@ -18,7 +18,7 @@ function useNext(oxy, at, onDue) {
 }
 
 function Bottles({ n, max }) {
-  return <span className="oxy-bottles" aria-label={`${n} bouteilles sur ${max}`}>{Array.from({ length: max }, (_, i) => <img key={i} src="/decor/bouteille.webp" alt="" draggable="false" className={i < n ? 'full' : 'empty'} />)}</span>
+  return <span className="oxy-bottles" aria-label={`${n} bouteilles sur ${max}`}>{Array.from({ length: max }, (_, i) => <i key={i} className={i < n ? 'full' : ''} />)}</span>
 }
 
 /* ---------- Carte de l'accueil ---------- */

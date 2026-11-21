@@ -16,7 +16,7 @@ import { Inbox, ChallengeSheet, NotifyBanner, SentScreen } from './components/Ch
 import { ButinHome, ButinGame, DuoInviteBanner } from './components/Butin.jsx'
 import { Party, PartyInviteBanner } from './components/Party.jsx'
 import { OxygenInline, OxygenSheet } from './components/Oxygen.jsx'
-import { Shop } from './components/Shop.jsx'
+import { Shop, StarterPick } from './components/Shop.jsx'
 import { priceOf, isLockable } from './lib/shop.js'
 import { buildButin } from './lib/butin.js'
 import { FriendsScreen, FriendChallengeSheet, PickFriendSheet, PlayWhoSheet, InviteWaiting, LiveInviteBanner, FriendSent, SharedTopics, ChallengeMessage } from './components/Social.jsx'
@@ -616,6 +616,7 @@ export default function App() {
     const ids = [...new Set([...(st.follows || []), ...Object.entries(st.topicStats || {}).filter(([, v]) => (v?.played || 0) > 0).map(([k]) => k)])]
     api.claimTopics(ids).then(u => { if (u) setUnlocks(u); update(s => ({ ...s, shopClaimed: true })) }).catch(() => {})
   }, [unlocks?.veteran, st.shopClaimed]) // eslint-disable-line react-hooks/exhaustive-deps
+  const pickStarters = async (ids) => { const u = await api.pickStarterTopics(ids); if (u) setUnlocks(u); setToast('🎉 Tes 5 thèmes sont débloqués !') }
   const lockPrice = useCallback((t) => (unlocks && isLockable(t) && !unlocks.topics.includes(t.id) ? priceOf(t.id) : 0), [unlocks])
   const unlock = async (t) => {
     try {
@@ -895,7 +896,9 @@ export default function App() {
   const badge = pendingCount(st) + social.counts.challenges
   const friendBadge = social.counts.requests
   let view
-  switch (route.name) {
+  if (unlocks?.needs_pick && hasProfile && !['duel', 'match', 'results', 'butingame', 'party', 'linkintro', 'linkload'].includes(route.name)) {
+    view = <StarterPick topics={topics} onDone={pickStarters} />
+  } else switch (route.name) {
     case 'topics': view = <Topics topics={topics} go={go} lockPrice={lockPrice} importTopic={importTopic} onRequest={() => setRequestSheet(true)} extra={<SharedTopics online={online} installed={new Set(st.custom.filter(t => t.shared).map(t => t.id))} onOpen={installShared} onList={listShared} />} />; break
     case 'topic': view = topic ? <TopicPage st={st} topic={topic} go={go} toggleFollow={toggleFollow} shareTopic={shareTopic} deleteTopic={deleteTopic} online={online} onPublish={publishTopic} onUnpublish={unpublishTopic} onPlay={(t) => { social.refreshFriends?.(); setPlayWho(t) }}
       lockPrice={lockPrice(topic)} lingots={wallet?.lingots || 0} onUnlock={unlock} /> : null; break

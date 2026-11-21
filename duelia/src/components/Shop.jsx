@@ -51,3 +51,34 @@ export function Shop({ topics, wallet, isLocked, onUnlock, onOpen, onBack, onlin
     </div>
   )
 }
+
+/* ---------- Premier lancement : choisir ses 5 thèmes gratuits ---------- */
+export function StarterPick({ topics, count = 5, onDone }) {
+  const [picked, setPicked] = useState([])
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState(null)
+  const list = topics.filter(isLockable)
+  const toggle = (id) => setPicked(p => (p.includes(id) ? p.filter(x => x !== id) : p.length < count ? [...p, id] : p))
+  return (
+    <div className="screen starter-pick">
+      <Mascot pose="pirate" size={110} />
+      <h1>Choisis tes {count} thèmes</h1>
+      <p className="sp-sub">Ils sont à toi, gratuitement. Les autres se débloquent plus tard avec les lingots volés au Kraken.</p>
+      <div className="grid sp-grid">
+        {list.map(t => (
+          <button key={t.id} className={`topic-tile pickable ${picked.includes(t.id) ? 'picked' : ''}`} onClick={() => toggle(t.id)}>
+            <TopicIcon topic={t} size={64} /><b>{t.name}</b>
+          </button>
+        ))}
+      </div>
+      {err && <p className="recover-err">{err}</p>}
+      <div className="sp-dock">
+        <button className="kh-play sp-go" disabled={picked.length !== count || busy} onClick={async () => {
+          setBusy(true); setErr(null)
+          try { await onDone(picked) } catch { setErr('Impossible d\'enregistrer ton choix : vérifie ta connexion.') }
+          setBusy(false)
+        }}>{picked.length === count ? (busy ? '…' : 'C\'est parti !') : `${picked.length} / ${count} choisis`}</button>
+      </div>
+    </div>
+  )
+}

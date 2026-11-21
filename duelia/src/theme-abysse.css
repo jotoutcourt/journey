@@ -894,3 +894,13 @@ button.wallet-pill { border: 0; cursor: pointer; }
 .kh-mode + .kh-mode { animation-delay: 0.05s; }
 .kh-mode span { font-size: 20px; }
 @keyframes modeIn { from { opacity: 0; transform: scale(0.7); } }
+.oxy-inline .oxy-bottles { gap: 8px; align-items: center; }
+.oxy-inline .oxy-bottles i { width: 15px; height: 24px; }
+/* premier lancement : choix des 5 thèmes */
+.starter-pick { display: flex; flex-direction: column; align-items: center; text-align: center; padding-bottom: 110px; }
+.starter-pick h1 { margin-top: 4px; }
+.sp-sub { color: var(--muted); font-size: 14px; max-width: 340px; margin: 6px 0 14px; }
+.sp-grid { width: 100%; }
+.sp-dock { position: fixed; left: 0; right: 0; bottom: calc(env(safe-area-inset-bottom) + 76px); display: flex; justify-content: center; z-index: 5; pointer-events: none; }
+.sp-dock .kh-play { pointer-events: auto; margin: 0; background: linear-gradient(180deg, #a866ffcc, #6a2bd1cc); }
+.sp-dock .kh-play:disabled { opacity: 0.85; background: #14082ecc; }
