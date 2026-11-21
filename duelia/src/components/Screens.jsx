@@ -45,11 +45,7 @@ export function Home({ go, wallet, onSolo, oxygen }) {
       {/* Le jeu principal : L'Appât du Kraken */}
       <section className="kraken-hero">
         <img className="kh-art" src="/mascotte/pirate-anim.webp" alt="" aria-hidden="true" />
-        <div className="kraken-sign" role="heading" aria-level="1">
-          <i className="ks-end l" aria-hidden="true" /><i className="ks-end r" aria-hidden="true" />
-          <span className="ks-crown" aria-hidden="true">👑</span>
-          <span className="ks-board"><b>L'Appât du Kraken</b></span>
-        </div>
+        <h1 className="kraken-sign-img"><img src="/decor/pancarte.webp" alt="L'Appât du Kraken" draggable="false" /></h1>
         <p className="kh-pitch">Vole le trésor du <b>Kraken</b> : cache tes lingots dans la bonne caisse avant que ses tentacules ne les reprennent.</p>
         <div className="kh-actions">
           <button className="kh-btn gold" onClick={onSolo}><span aria-hidden="true">🏴‍☠️</span> Jouer</button>

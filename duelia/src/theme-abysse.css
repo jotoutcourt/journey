@@ -800,3 +800,7 @@ button.wallet-pill { border: 0; cursor: pointer; }
 .home-bg { background: linear-gradient(180deg, #0b042033 0%, transparent 30%, transparent 70%, #0b042066 100%), #0b0420 url(/decor/accueil-fond.webp) center bottom / cover no-repeat; }
 .home-bg .rays { opacity: 0.5; }
 .kh-art { filter: drop-shadow(0 12px 30px #1a0640cc) drop-shadow(0 0 40px #ffc94044); }
+/* pancarte dessinée (image) */
+.kraken-sign-img { margin: -34px 0 0; width: 100%; max-width: 400px; line-height: 0; }
+.kraken-sign-img img { width: 100%; height: auto; filter: drop-shadow(0 10px 18px #000b) drop-shadow(0 0 22px #a866ff55); animation: signIn 0.6s cubic-bezier(.2,1.4,.4,1) both; }
+@keyframes signIn { from { opacity: 0; transform: scale(0.85) translateY(10px); } }
