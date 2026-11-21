@@ -431,3 +431,4 @@ html.abysse .butin-card .butin-art { width: 72px; height: 72px; background: none
 .bg-verdict { gap: 6px; }
 .kraken-says { margin: -4px 0 4px; color: #d9c6ff; font-style: italic; }
 @media (prefers-reduced-motion: reduce) { .tentacle, .kraken-react img { animation: none !important; } }
+.bg-treasure > b .ingot, .butin-final b .ingot { width: 26px; height: 15px; vertical-align: 3px; margin-right: 4px; }

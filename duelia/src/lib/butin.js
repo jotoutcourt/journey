@@ -3,13 +3,13 @@
 import { seeded, shuffle } from './rng.js'
 
 export const START = 20 // lingots au départ
-export const LINGOT = 1000 // valeur affichée d'un lingot (en pièces d'or)
 export const ROUNDS = 8
 // Nombre de réponses par manche : de moins en moins de choix… mais tout se joue sur la fin
 export const OPTIONS = [4, 4, 4, 4, 3, 3, 3, 2]
 export const PLACE_MS = 45000
 
-export const gold = (lingots) => (lingots * LINGOT).toLocaleString('fr-FR')
+// Affichage : on compte simplement en lingots
+export const gold = (n) => `${n} lingot${n > 1 ? 's' : ''}`
 
 // Prépare les 8 manches : thèmes officiels variés (jamais deux fois de suite), réponses réduites selon la manche
 export function buildButin(topics, seed = Date.now() + ':' + Math.random()) {

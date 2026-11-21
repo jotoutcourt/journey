@@ -44,7 +44,7 @@ export function ButinHome({ online, friends, onInvite, onBack, onAddFriend }) {
       <header className="top"><button className="back" onClick={onBack} aria-label="Retour">←</button><h1>Le Butin</h1></header>
       <section className="butin-hero">
         <Mascot pose="pirate-anim" size={230} className="butin-pirate" />
-        <p><b>Volez le trésor du Kraken, à deux !</b> Vous venez de lui dérober <b>{gold(START)} pièces d'or</b> en {START} lingots… mais il veut les récupérer.</p>
+        <p><b>Volez le trésor du Kraken, à deux !</b> Vous venez de lui dérober <b>{START} lingots d'or</b>… mais il veut les récupérer.</p>
         <ol className="butin-rules">
           <li>À chaque question, cachez ensemble vos lingots dans les caisses des réponses. Chacun voit en direct ce que fait l'autre.</li>
           <li>Il faut <b>toujours laisser au moins une caisse vide</b>. Les lingots non cachés sont repris.</li>
@@ -218,7 +218,7 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
         <h1>{view.status === 'left' ? (view.left_by_me ? 'Partie quittée' : `${partner.name} a quitté la partie`) : view.bank > 0 ? 'Butin volé !' : 'Le Kraken a tout récupéré'}</h1>
         {view.status === 'done' && <p className="kraken-says">{view.bank > 0 ? (view.bank >= START ? '« Tout… vous m\'avez TOUT pris ?! »' : '« Grrr… la prochaine fois, je reprends tout ! »') : '« Mwahaha ! Mon or reste avec moi ! »'}</p>}
         {view.status === 'done' && <>
-          <div className="butin-final"><small>Butin final</small><b>🪙 {gold(view.bank)}</b><span>{rank ? `${rank.icon} ${rank.name}` : 'Rien à ramener cette fois…'}</span></div>
+          <div className="butin-final"><small>Butin final</small><b><i className="ingot" /> {gold(view.bank)}</b><span>{rank ? `${rank.icon} ${rank.name}` : 'Rien à ramener cette fois…'}</span></div>
           <div className="butin-duo"><Avatar seed={me.avatar} photo={me.photo} size={56} ring="var(--me)" /><span>&</span><Avatar seed={partner.avatar} photo={partner.photo} size={56} ring="var(--gold)" /></div>
           <VoiceBar voice={voice} partner={partner} hangUp />
           <ol className="butin-history">
@@ -270,7 +270,7 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
         <ConfirmButton className="bg-quit" onConfirm={() => { api.leaveDuo(gameId).catch(() => {}); onExit() }} confirmLabel="Quitter ?">✕</ConfirmButton>
         <div className="bg-treasure">
           <small>Votre butin</small>
-          <b>🪙 {gold(view.bank)}</b>
+          <b><i className="ingot" /> {gold(view.bank)}</b>
           <div className="bg-bars" aria-hidden="true">{Array.from({ length: START }, (_, i) => <i key={i} className={i < view.bank ? 'on' : ''} />)}</div>
         </div>
         <div className={`bg-timer ${secs <= 10 && !reveal ? 'hurry' : ''}`}>{reveal ? '⏸' : secs}</div>
@@ -328,7 +328,7 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
           <div className={`kraken-react ${lost ? 'happy' : 'sad'}`}>
             <Mascot pose={lost ? 'victoire' : 'defaite'} size={74} />
             <div className="kraken-bubble">
-              <b className={lost ? 'bad' : 'good'}>{lost === 0 ? 'Rien repris ! Bien joué 🎉' : h.kept === 0 ? 'Le Kraken a tout repris… 🐙' : `Le Kraken reprend ${gold(lost)} pièces`}</b>
+              <b className={lost ? 'bad' : 'good'}>{lost === 0 ? 'Rien repris ! Bien joué 🎉' : h.kept === 0 ? 'Le Kraken a tout repris… 🐙' : `Le Kraken reprend ${gold(lost)}`}</b>
               <small>« {(lost === 0 ? SAD : h.kept === 0 ? GLEE : HAPPY)[view.round % 4]} »</small>
             </div>
           </div>
