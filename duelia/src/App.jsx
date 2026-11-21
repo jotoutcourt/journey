@@ -18,6 +18,8 @@ import { Inbox, ChallengeSheet, NotifyBanner, SentScreen } from './components/Ch
 import { FriendsScreen, FriendChallengeSheet, InviteWaiting, LiveInviteBanner, FriendSent, FriendChallenges, SharedTopics } from './components/Social.jsx'
 import * as api from './lib/account.js'
 import TopicRequestSheet from './components/TopicRequest.jsx'
+import Pari from './components/Pari.jsx'
+import { pariDay as pariDayRef } from './lib/pari.js'
 import { useSocial, friendOpponent, fromPlain, logFrom } from './lib/useSocial.js'
 import { pushStatus, enablePush, disablePush, refreshPush } from './lib/push.js'
 import RankShift from './components/RankShift.jsx'
@@ -495,6 +497,26 @@ export default function App() {
   const social = useSocial(online)
   const [friendSheet, setFriendSheet] = useState(null)
   const [requestSheet, setRequestSheet] = useState(false)
+  // Le Pari : record, partie du jour (seule la première compte) et classement du jour
+  const [pariBoard, setPariBoard] = useState(null)
+  const finishPari = ({ bank, daily, day }) => {
+    const first = daily && stRef.current.pari?.daily?.day !== day
+    update(s => ({
+      ...s,
+      pari: {
+        ...(s.pari || {}), games: (s.pari?.games || 0) + 1,
+        best: !daily ? Math.max(s.pari?.best || 0, bank) : s.pari?.best || 0,
+        daily: first ? { day, bank } : s.pari?.daily,
+      },
+    }))
+    setPariBoard(null)
+    if (first && online) api.submitPari(day, bank).catch(() => {})
+  }
+  const loadPariBoard = useCallback(() => {
+    if (!online) { setPariBoard('offline'); return }
+    // laisse le temps à la partie d'être enregistrée
+    setTimeout(() => api.getPariBoard(pariDayRef()).then(b => setPariBoard(b || 'offline')).catch(() => setPariBoard('offline')), 1200)
+  }, [online])
   const requestApi = useMemo(() => ({ request: api.requestTopic, vote: api.voteTopicRequest, list: api.listTopicRequests }), [])
   const [push, setPush] = useState(null)
   const [dismissedInvites, setDismissedInvites] = useState([])
@@ -806,7 +828,9 @@ export default function App() {
   }
 
   const meForDuel = { ...me, topicXp: st.topicStats[route.id]?.xp || 0 }
-  const fullscreen = ['match', 'duel', 'results', 'tower', 'sent', 'invite', 'friendsent', 'linkload', 'linkready', 'linkintro', 'linkreply'].includes(route.name)
+  const fullscreen = ['match', 'duel', 'results', 'tower', 'pari', 'sent', 'invite', 'friendsent', 'linkload', 'linkready', 'linkintro', 'linkreply'].includes(route.name)
+  // pas de rechargement automatique (nouvelle version) pendant une partie
+  window.__dueliaBusy = ['match', 'duel', 'tower', 'pari', 'invite', 'create'].includes(route.name)
   const badge = pendingCount(st) + social.counts.challenges
   const friendBadge = social.counts.requests
   let view
@@ -816,6 +840,8 @@ export default function App() {
     case 'ranking': view = <Ranking st={st} topic={topic} go={go} />; break
     case 'create': view = <CreateTopic key={route.id || 'new'} st={st} existing={route.id ? topic : null} onSave={saveTopic} go={go} />; break
     case 'profile': view = <Profile st={st} topics={topics} update={update} go={go} account={account} onMakeCode={getRecoveryCode} onRecover={recoverAccount} push={push} onPush={onPush} onFriends={() => go({ name: 'friends' })} friendCount={social.social?.friends?.length} />; break
+    case 'pari': view = <Pari key={route.daily ? 'pd' : 'pl' + (route.n || 0)} topics={topics} st={st} daily={!!route.daily} onFinish={finishPari}
+      onExit={() => go({ name: 'home' })} board={pariBoard} loadBoard={loadPariBoard} />; break
     case 'tower': view = <Tower key={route.daily ? 'daily' : 'free'} topics={topics} profile={me} daily={!!route.daily} towerState={st.tower}
       onFinish={finishTower} onExit={() => go({ name: 'home' })} />; break
     case 'match': view = <Matchmaking key={route.id} topic={topic} opponent={route.opponent} onReady={startDuel} onCancel={() => go({ name: 'topic', id: topic.id })}

@@ -10,6 +10,7 @@ import { PERIODS, myPeriodXp, resetIn } from '../lib/periods.js'
 import { meEntry, resizeImage } from '../lib/profile.js'
 import { topicTitle, nextTitle, ladderFor, TITLE_LEVELS } from '../lib/titles.js'
 import { RecoverForm } from './AccountCard.jsx'
+import { pariDay } from '../lib/pari.js'
 import { dayKey } from '../lib/tower.js'
 import { decodeTopic } from '../lib/store.js'
 import { sfx } from '../lib/sound.js'
@@ -59,6 +60,24 @@ export function Home({ st, topics, go }) {
           <b>{me.name}</b>
           <span>Niveau {lvl.level} · {lvl.title}</span>
           <XpBar xp={st.xp} />
+        </div>
+      </section>
+
+      <section className="tower-card pari-card">
+        <div className="tc-head">
+          <span className="pari-art" aria-hidden="true">🎲</span>
+          <div>
+            <b>Le Pari</b>
+            <small>Mode solo · mise tes jetons en ne connaissant que le thème, puis réponds</small>
+          </div>
+        </div>
+        <div className="tc-actions">
+          <button className="btn btn-secondary" onClick={() => go({ name: 'pari' })}>
+            Partie libre{st.pari?.best ? ` · record ${st.pari.best.toLocaleString('fr-FR')}` : ''}
+          </button>
+          <button className="btn btn-gold" onClick={() => go({ name: 'pari', daily: true })}>
+            {st.pari?.daily?.day === pariDay() ? `Pari du jour · ${st.pari.daily.bank.toLocaleString('fr-FR')}` : 'Pari du jour'}
+          </button>
         </div>
       </section>
 

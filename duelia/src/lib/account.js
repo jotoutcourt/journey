@@ -137,3 +137,7 @@ export const getSharedTopic = (id) => rpc('get_shared_topic', { p_id: id })
 export const requestTopic = (name, details) => rpc('request_topic', { p_name: name, p_details: details || '' })
 export const voteTopicRequest = (id) => rpc('vote_topic_request', { p_id: id })
 export const listTopicRequests = () => rpc('list_topic_requests')
+
+// Le Pari : partie du jour et classement
+export const submitPari = (day, score) => rpc('submit_pari', { p_day: day, p_score: Math.round(score) })
+export const getPariBoard = (day) => rpc('get_pari_board', { p_day: day })

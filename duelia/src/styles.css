@@ -848,3 +848,60 @@ img { -webkit-user-drag: none; }
 .req-list li div { display: flex; flex-direction: column; min-width: 0; }
 .req-list li small { color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
 .req-list li div { text-align: left; align-items: flex-start; }
+/* ===== Le Pari ===== */
+.pari-art { width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center; font-size: 30px; background: linear-gradient(135deg, #2b1f4d, #4a1f3d); flex: none; }
+.pari { display: flex; flex-direction: column; gap: 12px; min-height: 100%; }
+.pari-intro, .pari-end { align-items: center; text-align: center; padding-top: 24px; }
+.pari-logo { font-size: 64px; animation: pop 0.5s both; }
+.pari-lead { color: var(--muted); max-width: 340px; margin: 0; }
+.pari-lead b { color: var(--text); }
+.pari-rules { list-style: none; padding: 14px; margin: 0; background: var(--card); border-radius: 16px; display: flex; flex-direction: column; gap: 8px; text-align: left; width: 100%; box-sizing: border-box; }
+.pari-note { color: var(--muted); font-size: 13px; margin: 0; }
+.pari-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.pari-round { color: var(--muted); }
+.pari-round b { color: var(--text); font-size: 20px; }
+.pari-bank { display: flex; flex-direction: column; align-items: flex-end; }
+.pari-bank small { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; }
+.pari-bank b { font-family: 'Bricolage Grotesque', sans-serif; font-size: 26px; color: var(--gold, #f2c94c); }
+.pari-dots { display: flex; gap: 6px; justify-content: center; }
+.pari-dots i { width: 22px; height: 6px; border-radius: 3px; background: var(--card); }
+.pari-dots i.ok { background: #3ddc84; } .pari-dots i.ko { background: #ff5d73; } .pari-dots i.cur { background: var(--violet); }
+.pari-bet { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; animation: fadeUp 0.35s both; }
+.pari-bet h2 { margin: 4px 0 0; }
+.pari-lvl { color: var(--muted); }
+.pari-last { background: rgba(255, 120, 60, 0.15); color: #ffb08a; border-radius: 12px; padding: 8px 12px; margin: 0; font-weight: 700; }
+.pari-ask { font-weight: 700; margin: 6px 0 0; }
+.pari-steps { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; width: 100%; }
+.pari-step { background: var(--card); border: 2px solid transparent; border-radius: 12px; padding: 10px 2px; color: var(--text); font: inherit; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.pari-step b { font-size: 14px; } .pari-step small { color: var(--muted); font-size: 11px; }
+.pari-step.on { border-color: var(--gold, #f2c94c); background: rgba(242, 201, 76, 0.12); }
+.pari-stake { display: flex; flex-direction: column; align-items: center; gap: 2px; margin: 4px 0; }
+.pari-stake span { color: var(--muted); font-size: 13px; }
+.pari-stake b { font-family: 'Bricolage Grotesque', sans-serif; font-size: 40px; color: var(--gold, #f2c94c); }
+.pari-q { display: flex; flex-direction: column; gap: 10px; animation: fadeUp 0.3s both; }
+.pari-qhead { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.pari-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--card); border-radius: 999px; padding: 4px 10px 4px 4px; font-size: 13px; max-width: 45%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.pari-chip.gold { color: var(--gold, #f2c94c); padding-left: 10px; font-weight: 700; }
+.pari-timer { font-weight: 800; } .pari-timer.hurry { color: #ff5d73; }
+.pari-bar { height: 6px; border-radius: 3px; background: var(--card); overflow: hidden; }
+.pari-bar i { display: block; height: 100%; background: var(--c, var(--violet)); transition: width 0.1s linear; }
+.pari .opt.gone { visibility: hidden; }
+.pari-joker { align-self: center; }
+.pari-result { text-align: center; font-family: 'Bricolage Grotesque', sans-serif; font-size: 28px; font-weight: 800; margin: 4px 0 0; animation: pop 0.4s both; }
+.pari-result.up, .pari-delta.up { color: #3ddc84; } .pari-result.down, .pari-delta.down { color: #ff5d73; }
+.pari-final { display: flex; flex-direction: column; align-items: center; }
+.pari-final small { color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; font-size: 12px; }
+.pari-final b { font-family: 'Bricolage Grotesque', sans-serif; font-size: 56px; color: var(--gold, #f2c94c); line-height: 1.1; }
+.pari-final span { color: var(--muted); }
+.pari-delta { margin: 0; font-weight: 700; }
+.pari-recap { list-style: none; padding: 0; margin: 0; width: 100%; display: flex; flex-direction: column; gap: 4px; }
+.pari-recap li { display: flex; align-items: center; gap: 8px; background: var(--card); border-radius: 10px; padding: 6px 10px; font-size: 14px; text-align: left; }
+.pari-recap li .pr-name { flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.pari-recap li > :first-child { flex: none; }
+.pari-steps.n3 { grid-template-columns: repeat(3, 1fr); }
+.pari-recap li.ok b { color: #3ddc84; } .pari-recap li.ko b { color: #ff5d73; }
+.pari-board { width: 100%; text-align: left; }
+.pari-board ol { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }
+.pari-board li { display: flex; align-items: center; gap: 8px; background: var(--card); border-radius: 10px; padding: 6px 10px; }
+.pari-board li.me { outline: 2px solid var(--gold, #f2c94c); }
+.pb-rank { width: 34px; font-weight: 800; } .pb-name { flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
