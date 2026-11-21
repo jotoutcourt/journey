@@ -25,7 +25,7 @@ export function ButinHome({ online, friends, onInvite, onBack, onAddFriend }) {
     <div className="screen butin-home">
       <header className="top"><button className="back" onClick={onBack} aria-label="Retour">←</button><h1>Le Butin</h1></header>
       <section className="butin-hero">
-        <div className="butin-chest" aria-hidden="true">💰</div>
+        <Mascot pose="pirate-anim" size={230} className="butin-pirate" />
         <p><b>À deux, chacun sur son téléphone.</b> Vous partagez un trésor de <b>{gold(START)} pièces d'or</b> en {START} lingots.</p>
         <ol className="butin-rules">
           <li>À chaque question, répartissez ensemble vos lingots sur les réponses. Vous voyez en direct ce que fait l'autre.</li>
@@ -87,7 +87,7 @@ export function DuoInviteBanner({ invite, onAccept, onDecline }) {
   return (
     <div className="sheet-backdrop">
       <div className="sheet invite-sheet" role="alertdialog" aria-labelledby="duo-inv-title">
-        <Avatar seed={invite.from.avatar} photo={invite.from.photo} size={80} ring="var(--gold)" />
+        <Mascot pose="pirate" size={110} />
         <h2 id="duo-inv-title">💰 {invite.from.name} t'invite au Butin</h2>
         <p className="sheet-sub">Chassez le trésor ensemble : vous répartissez vos lingots à deux, en direct.</p>
         <button className="btn btn-gold wide" disabled={busy} onClick={async () => { setBusy(true); await onAccept(invite); setBusy(false) }}>{busy ? 'Connexion…' : 'On y va !'}</button>

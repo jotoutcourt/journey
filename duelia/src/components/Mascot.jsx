@@ -10,6 +10,8 @@ const SRC = {
   combat: '/mascotte/combat.webp',
   'combat-anim': '/mascotte/combat-anim.webp',
   attente: '/mascotte/attente-anim.webp',
+  pirate: '/mascotte/pirate.webp',
+  'pirate-anim': '/mascotte/pirate-anim.webp',
   'hors-ligne': '/mascotte/hors-ligne.webp',
   notification: '/mascotte/notification.webp',
 }

@@ -66,7 +66,7 @@ export function Home({ st, topics, go }) {
 
       <section className="tower-card butin-card">
         <div className="tc-head">
-          <span className="pari-art butin-art" aria-hidden="true">💰</span>
+          <img className="butin-art" src="/mascotte/pirate.webp" alt="" aria-hidden="true" />
           <div>
             <b>Le Butin <span className="new-tag">À deux</span></b>
             <small>Avec un ami, chacun sur son téléphone : répartissez vos lingots sur les réponses et sauvez le trésor</small>
