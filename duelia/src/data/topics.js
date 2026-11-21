@@ -381,7 +381,8 @@ const SEED = [
 
 // Thèmes communautaires livrés avec l'appli
 const MINE = ['c-calzona', 'c-desperate', 'c-disney', 'c-villa', 'c-eras', 'c-greys', 'c-friends', 'c-potter', 'c-gossip', 'c-pop2000']
-export const COMMUNITY_SEED = SEED.filter(t => !MINE.includes(t.id))
+// Anciens thèmes « de la communauté » (attribués à des joueurs simulés) : ce sont désormais des thèmes officiels
+export const COMMUNITY_SEED = SEED.filter(t => !MINE.includes(t.id)).map(({ by, community, ...t }) => ({ ...t, official: true })) // eslint-disable-line no-unused-vars
 
 // Thème « Callie & Arizona » : placé dans les créations du joueur, modifiable comme s'il l'avait écrit
 export const STARTER_CREATION = { ...SEED.find(t => t.id === 'c-calzona'), own: true, community: true, followers: 0 }

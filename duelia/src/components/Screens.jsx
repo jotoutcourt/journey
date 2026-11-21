@@ -175,7 +175,8 @@ export function Topics({ topics, go, importTopic, extra, onRequest }) {
   const match = (t) => (cat === 'Tous' || t.category === cat) && (!q || norm(t.name + ' ' + t.category).includes(norm(q)))
   const official = topics.filter(t => t.official && match(t))
   const mine = topics.filter(t => t.own && match(t))
-  const community = topics.filter(t => !t.official && !t.own && match(t))
+  // thèmes reçus par lien (les thèmes publiés installés apparaissent déjà dans « Publiés par les joueurs »)
+  const received = topics.filter(t => !t.official && !t.own && !t.shared && match(t))
 
   function doImport() {
     const raw = code.trim()
@@ -221,10 +222,12 @@ export function Topics({ topics, go, importTopic, extra, onRequest }) {
 
       {extra}
 
-      {community.length > 0 && <h3 className="sec-title">Créés par les joueurs</h3>}
-      <div className="grid">
-        {community.map(t => <TopicTile key={t.id} topic={t} onClick={() => go({ name: 'topic', id: t.id })} sub={`par ${t.by}`} />)}
-      </div>
+      {received.length > 0 && <>
+        <h3 className="sec-title">Reçus par lien</h3>
+        <div className="grid">
+          {received.map(t => <TopicTile key={t.id} topic={t} onClick={() => go({ name: 'topic', id: t.id })} sub={t.by ? `par ${t.by}` : 'reçu d\'un ami'} />)}
+        </div>
+      </>}
 
       <div className="import-box">
         <p>Un ami t'a envoyé un thème ? Colle le lien ici :</p>
