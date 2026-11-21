@@ -805,3 +805,33 @@ button.wallet-pill { border: 0; cursor: pointer; }
 .kraken-sign-img img { width: 100%; height: auto; filter: drop-shadow(0 10px 18px #000b) drop-shadow(0 0 22px #a866ff55); animation: signIn 0.6s cubic-bezier(.2,1.4,.4,1) both; }
 @keyframes signIn { from { opacity: 0; transform: scale(0.85) translateY(10px); } }
 .kraken-sign-img { margin-top: -70px; position: relative; z-index: 2; } .kh-art { position: relative; z-index: 1; }
+
+/* ===== Boutons de l'accueil, version « jeu mobile » ===== */
+.kh-actions { gap: 14px; margin-top: 12px; }
+.kh-btn { height: 64px; border-radius: 999px; font-size: 22px; letter-spacing: 0.01em; gap: 10px; overflow: visible; isolation: isolate; border: 0;
+  transition: transform 0.12s, filter 0.12s; }
+.kh-btn::before { content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit; }
+/* reflet brillant en haut */
+.kh-btn::after { content: ''; position: absolute; left: 14px; right: 14px; top: 5px; height: 42%; border-radius: 999px; z-index: 0; pointer-events: none;
+  background: linear-gradient(180deg, #ffffffb0, #ffffff10); }
+.kh-btn > * { position: relative; z-index: 1; }
+.kh-btn span { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; font-size: 20px; }
+.kh-btn:active { transform: translateY(4px); filter: brightness(0.96); }
+
+.kh-btn.gold { color: #3a1d00; text-shadow: 0 1px 0 #fff3b0;
+  background: linear-gradient(180deg, #ffe680 0%, #ffc531 40%, #ff9f0f 100%);
+  box-shadow: inset 0 0 0 3px #fff0a8, inset 0 -6px 10px #c26a0055, 0 0 0 3px #7a3d00, 0 6px 0 3px #5c2c00, 0 10px 24px #000a, 0 0 28px #ffb21e99; }
+.kh-btn.gold span { background: radial-gradient(circle at 35% 30%, #4a2a10, #1c0d02); box-shadow: inset 0 0 0 2px #ffd25a; }
+.kh-btn.gold:active { box-shadow: inset 0 0 0 3px #fff0a8, inset 0 -6px 10px #c26a0055, 0 0 0 3px #7a3d00, 0 2px 0 3px #5c2c00, 0 4px 12px #000a, 0 0 24px #ffb21e88; }
+/* reflet qui balaie le bouton Jouer */
+.kh-btn.gold { overflow: hidden; }
+.kh-btn.gold::before { z-index: 0; background: linear-gradient(110deg, transparent 35%, #ffffff99 48%, transparent 62%) -150% 0 / 60% 100% no-repeat; animation: btnShine 3.2s 1s ease-in-out infinite; }
+@keyframes btnShine { 0%, 60% { background-position: -150% 0; } 100% { background-position: 250% 0; } }
+
+.kh-btn.violet { color: #fff; text-shadow: 0 2px 0 #3d117a;
+  background: linear-gradient(180deg, #e3b8ff 0%, #b27bff 45%, #7f3df0 100%);
+  box-shadow: inset 0 0 0 3px #f2dcff, inset 0 -6px 10px #4a148c55, 0 0 0 3px #3a0f7a, 0 6px 0 3px #2a0a5c, 0 10px 24px #000a, 0 0 26px #a866ff88; }
+.kh-btn.violet span { background: radial-gradient(circle at 35% 30%, #5b2a9e, #2a0a5c); box-shadow: inset 0 0 0 2px #e2c2ff; }
+.kh-btn.violet:active { box-shadow: inset 0 0 0 3px #f2dcff, inset 0 -6px 10px #4a148c55, 0 0 0 3px #3a0f7a, 0 2px 0 3px #2a0a5c, 0 4px 12px #000a; }
+.kh-btn::before { height: auto; left: 0; right: 0; top: 0; bottom: 0; }
+.kh-btn.violet::before { content: none; }
