@@ -614,7 +614,7 @@ export function Onboarding({ topics, onDone, onRecover }) {
           {photo && <button className="btn btn-small btn-ghost" onClick={() => setPhoto(null)}>Reprendre un monstre</button>}
           {photoErr && <p className="recover-err" role="alert">{photoErr}</p>}
         </div>
-        <input className="ob-name" value={name} maxLength={18} onChange={e => setName(e.target.value)} placeholder="Ton pseudo" autoFocus />
+        <input className="ob-name" value={name} maxLength={18} onChange={e => setName(e.target.value)} placeholder="Ton pseudo" />
         <button className="btn btn-primary wide" disabled={!name.trim()} onClick={() => setStep(1)}>Continuer</button>
         {!recovering
           ? <button className="btn btn-ghost wide" onClick={() => setRecovering(true)}>J'ai déjà un compte</button>
