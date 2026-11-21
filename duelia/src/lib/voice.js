@@ -162,6 +162,17 @@ export function useDuoVoice(gameId, polite, active) {
     }
   }, [mic, build, send])
 
+  // Raccrocher : on coupe le micro et la connexion (on peut rappeler avec le bouton micro)
+  const hang = useCallback(() => {
+    const s = r.current
+    s.stream?.getTracks().forEach(t => t.stop()); s.stream = null
+    s.micOn = false; s.myLevel = null
+    setMic('off'); setLink('idle')
+    send('mic', { on: false })
+    send('bye')
+    build()
+  }, [build, send])
+
   // Si le navigateur a bloqué la lecture du son de l'autre : un simple appui la relance
   const unlock = useCallback(() => {
     const s = r.current
@@ -169,5 +180,5 @@ export function useDuoVoice(gameId, polite, active) {
     s.audio?.play().then(() => setNeedTap(false)).catch(() => {})
   }, [])
 
-  return { mic, link, partnerMic, speaking, needTap, toggleMic, unlock }
+  return { mic, link, partnerMic, speaking, needTap, toggleMic, unlock, hang }
 }

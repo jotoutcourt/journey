@@ -144,7 +144,7 @@ export const submitPari = (day, score) => rpc('submit_pari', { p_day: day, p_sco
 export const getPariBoard = (day) => rpc('get_pari_board', { p_day: day })
 
 // ===== Le Butin : mode coopératif à deux (la partie vit sur le serveur) =====
-export const inviteDuo = (to, questions) => rpc('invite_duo', { p_to: to, p_questions: questions })
+export const inviteDuo = (to, questions, voice = null) => rpc('invite_duo', { p_to: to, p_questions: questions, p_voice: voice })
 export const respondDuo = (id, accept) => rpc('respond_duo', { p_id: id, p_accept: accept })
 export const getDuo = (id) => rpc('get_duo', { p_id: id })
 export const duoPlace = (id, round, placement) => rpc('duo_place', { p_id: id, p_round: round, p_placement: placement })

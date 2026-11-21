@@ -98,8 +98,8 @@ export function DuoInviteBanner({ invite, onAccept, onDecline }) {
 }
 
 /* ---------- Micro : parler à son coéquipier ---------- */
-function VoiceBar({ voice, partner, compact }) {
-  const { mic, link, partnerMic, needTap, toggleMic, unlock } = voice
+function VoiceBar({ voice, partner, compact, hangUp }) {
+  const { mic, link, partnerMic, needTap, toggleMic, unlock, hang } = voice
   const label = compact
     ? { off: '🎙️ Micro', asking: '🎙️…', on: '🎙️ On', muted: '🔇 Off', denied: '🎙️ ✕', unsupported: '🎙️ ✕' }[mic]
     : { off: '🎙️ Activer mon micro', asking: '🎙️ Autorisation…', on: '🎙️ Micro ouvert', muted: '🔇 Micro coupé', denied: '🎙️ Micro refusé', unsupported: '🎙️ Indisponible' }[mic]
@@ -111,6 +111,7 @@ function VoiceBar({ voice, partner, compact }) {
   return (
     <div className={`voice-bar ${compact ? 'compact' : ''}`}>
       <button className={`voice-btn ${mic}`} onClick={toggleMic} disabled={mic === 'asking' || mic === 'unsupported'} aria-label={mic === 'on' ? 'Couper mon micro' : 'Activer mon micro'}>{label}</button>
+      {hangUp && (mic === 'on' || mic === 'muted') && <button className="voice-btn hang" onClick={hang}>📞 Raccrocher</button>}
       {needTap && <button className="voice-btn tap" onClick={unlock}>🔊 Entendre {partner.name}</button>}
       {note && <small className="voice-note">{note}</small>}
     </div>
@@ -118,13 +119,17 @@ function VoiceBar({ voice, partner, compact }) {
 }
 
 /* ---------- La partie ---------- */
-export function ButinGame({ gameId, me, onExit, onReplay }) {
-  const [view, setView] = useState(null) // état du serveur, avec l'heure de réception
+export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAcceptReplay }) {
+  const [state, setView] = useState(null) // état du serveur, avec l'heure de réception
+  // la partie affichée est toujours celle demandée (le composant reste monté d'une partie à l'autre pour garder la voix)
+  const view = state && state.id === gameId ? state : null
+  // canal vocal : celui de la première partie avec ce coéquipier, conservé quand on rejoue ensemble
+  const [room, setRoom] = useState(null)
   const [now, setNow] = useState(0)
   const [draft, setDraft] = useState(null) // { round, placement, at } : ce que je viens de faire, avant confirmation
   const [failed, setFailed] = useState(0)
   const queue = useRef(Promise.resolve())
-  const voice = useDuoVoice(gameId, !view?.host, !!view && ['playing', 'done'].includes(view.status))
+  const voice = useDuoVoice(room?.id, room ? !room.host : true, !!room)
 
   // Interroge le serveur en continu (la partie avance toute seule côté serveur)
   useEffect(() => {
@@ -134,7 +139,10 @@ export function ButinGame({ gameId, me, onExit, onReplay }) {
       busy = true
       try {
         const v = await api.getDuo(gameId)
-        if (alive && v) { setView({ ...v, at: Date.now() }); setFailed(0) }
+        if (alive && v) {
+          setView({ ...v, at: Date.now() }); setFailed(0)
+          if (['playing', 'done'].includes(v.status) && v.voice_id) setRoom(r => (r && r.id === v.voice_id ? r : { id: v.voice_id, host: !!v.voice_host }))
+        }
       } catch { if (alive) setFailed(f => f + 1) } finally { busy = false }
     }
     poll()
@@ -174,6 +182,7 @@ export function ButinGame({ gameId, me, onExit, onReplay }) {
         {!over && <Mascot pose="attente" size={220} className="radar-mascot wait" />}
         <p className="mm-status">{view.status === 'declined' ? `${partner.name} ne peut pas jouer maintenant.` : view.status === 'expired' ? `${partner.name} n'a pas répondu à temps.` : view.status === 'cancelled' ? 'Invitation annulée.' : `Invitation envoyée… ${left} s`}</p>
         {!over && <p className="mm-hint">{partner.name} a 60 secondes pour accepter.</p>}
+        {room && <VoiceBar voice={voice} partner={partner} hangUp />}
         {!over
           ? <button className="btn btn-ghost" onClick={() => { api.leaveDuo(gameId).catch(() => {}); onExit() }}>Annuler</button>
           : <button className="btn btn-primary" onClick={onExit}>Retour</button>}
@@ -191,7 +200,7 @@ export function ButinGame({ gameId, me, onExit, onReplay }) {
         {view.status === 'done' && <>
           <div className="butin-final"><small>Butin final</small><b>🪙 {gold(view.bank)}</b><span>{rank ? `${rank.icon} ${rank.name}` : 'Rien à ramener cette fois…'}</span></div>
           <div className="butin-duo"><Avatar seed={me.avatar} photo={me.photo} size={56} ring="var(--me)" /><span>&</span><Avatar seed={partner.avatar} photo={partner.photo} size={56} ring="var(--gold)" /></div>
-          <VoiceBar voice={voice} partner={partner} />
+          <VoiceBar voice={voice} partner={partner} hangUp />
           <ol className="butin-history">
             {view.history.map((h, i) => (
               <li key={i}><span>Q{i + 1}</span><i style={{ width: `${(h.kept / START) * 100}%` }} /><b className={h.kept === h.before ? 'ok' : h.kept ? 'mid' : 'ko'}>{h.kept}/{h.before}</b></li>
@@ -200,7 +209,9 @@ export function ButinGame({ gameId, me, onExit, onReplay }) {
           <p className="butin-ranks">{RANKS.map(r => <span key={r.min} className={view.bank >= r.min ? 'on' : ''}>{r.icon}</span>)}</p>
         </>}
         <div className="results-dock">
-          <button className="btn btn-gold" onClick={() => onReplay(partner)}>Rejouer ensemble</button>
+          {replayInvite && replayInvite.from?.player_id === partner.player_id
+            ? <button className="btn btn-gold" onClick={() => onAcceptReplay(replayInvite)}>🔁 {partner.name} veut rejouer : go !</button>
+            : <button className="btn btn-gold" onClick={() => onReplay(partner, room?.id)}>Rejouer ensemble</button>}
           <button className="btn btn-secondary" onClick={onExit}>Terminer</button>
         </div>
       </div>

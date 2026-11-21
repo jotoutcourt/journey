@@ -629,9 +629,9 @@ export default function App() {
   }
   // Le Butin : inviter un ami, ou rejoindre une partie à laquelle on est invité
   const duoInvite = social.duoInvites.find(i => !dismissedInvites.includes(i.id))
-  const startButin = async (friend) => {
+  const startButin = async (friend, voiceRoom = null) => {
     try {
-      const id = await api.inviteDuo(friend.player_id, buildButin(topics))
+      const id = await api.inviteDuo(friend.player_id, buildButin(topics), voiceRoom)
       setRoute({ name: 'butingame', gameId: id })
     } catch { setToast('Invitation impossible : vérifie ta connexion.') }
   }
@@ -877,8 +877,10 @@ export default function App() {
     case 'profile': view = <Profile st={st} topics={topics} update={update} go={go} account={account} onMakeCode={getRecoveryCode} onRecover={recoverAccount} push={push} onPush={onPush} onFriends={() => go({ name: 'friends' })} friendCount={social.social?.friends?.length} />; break
     case 'butin': view = <ButinHome online={online && !!social.social} friends={social.social?.friends} onInvite={startButin}
       onBack={() => go({ name: 'home' })} onAddFriend={() => go({ name: 'friends' })} />; break
-    case 'butingame': view = <ButinGame key={route.gameId} gameId={route.gameId} me={me}
-      onExit={() => go({ name: 'butin' })} onReplay={(p) => startButin(p)} />; break
+    case 'butingame': view = <ButinGame key="butin" gameId={route.gameId} me={me}
+      replayInvite={social.duoInvites.find(i => !dismissedInvites.includes(i.id))}
+      onAcceptReplay={acceptDuo}
+      onExit={() => go({ name: 'butin' })} onReplay={(p, room) => startButin(p, room)} />; break
     case 'pari': view = <Pari key={route.daily ? 'pd' : 'pl' + (route.n || 0)} topics={topics} st={st} daily={!!route.daily} onFinish={finishPari}
       onExit={() => go({ name: 'home' })} board={pariBoard} loadBoard={loadPariBoard} />; break
     case 'tower': view = <Tower key={route.daily ? 'daily' : 'free'} topics={topics} profile={me} daily={!!route.daily} towerState={st.tower}

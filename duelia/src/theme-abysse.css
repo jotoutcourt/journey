@@ -390,3 +390,4 @@ html.abysse .vs-screen > .vs-mark { position: absolute; top: 50%; left: 50%; tra
 /* Le Kraken pirate (illustration du mode) */
 html.abysse .butin-card .butin-art { width: 72px; height: 72px; background: none; border-radius: 0; object-fit: contain; flex: none; filter: drop-shadow(0 4px 10px #ffc94055); margin: -6px 0; }
 .butin-pirate { display: block; margin: -6px auto 0; width: min(62vw, 230px) !important; height: auto !important; filter: drop-shadow(0 10px 24px #ffc94044); }
+.voice-btn.hang { background: #ff5d7322; border-color: var(--ko); color: var(--ko); }
