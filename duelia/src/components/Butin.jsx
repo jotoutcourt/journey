@@ -38,6 +38,7 @@ export function ButinHome({ online, friends, onInvite, onBack, onAddFriend }) {
     api.getDuoBoard().then(b => { if (alive) setBoard(b) }).catch(() => {})
     return () => { alive = false }
   }, [online])
+  useEffect(() => { ['/decor/butin-fond.webp', '/mascotte/pirate-anim.webp'].forEach(src => { new Image().src = src }) }, [])
   const list = [...(friends || [])].sort((a, b) => (b.online - a.online) || a.name.localeCompare(b.name))
   return (
     <div className="screen butin-home">

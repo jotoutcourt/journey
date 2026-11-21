@@ -543,3 +543,6 @@ html.abysse .butin-card .butin-art { width: 72px; height: 72px; background: none
 .lt-grid.n3 .lt-step.minus { left: auto; right: 131px; }
 .lt-card.open .lt-card-main { opacity: 1; filter: saturate(0.3) brightness(0.55); }
 .lt-stage { padding-top: 90px; }
+/* fond dédié du Butin (néons sur les bords, centre calme pour les cartes) */
+.butin-game.loot { background: #0b0420 url(/decor/butin-fond.webp) center / cover no-repeat; }
+.butin-game.loot::before { background: linear-gradient(180deg, #0b042066 0%, transparent 30%, transparent 75%, #0b042066 100%); }
