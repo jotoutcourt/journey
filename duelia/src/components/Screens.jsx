@@ -424,7 +424,7 @@ export function Matchmaking({ topic, opponent, live, makeQuestions, onLive, onRe
       <div className="matchmaking">
         <TopicIcon topic={topic} size={96} />
         <h2>{topic.name}</h2>
-        <div className="radar live"><span /><span /><span /><Mascot pose="anim" size={150} className="radar-mascot" /></div>
+        <div className="radar live"><span /><span /><span /><Mascot pose="attente" size={250} className="radar-mascot wait" /></div>
         <p className="mm-status">Recherche d'un vrai joueur en ligne… <b>{secs} s</b></p>
         <p className="mm-hint">Si personne n'arrive d'ici 20 secondes, tu joues contre un adversaire IA.</p>
         <button className="btn btn-primary" onClick={() => stopRef.current?.(true)}>Jouer contre l'IA maintenant</button>
@@ -438,6 +438,7 @@ export function Matchmaking({ topic, opponent, live, makeQuestions, onLive, onRe
       <h2>{topic.name}</h2>
       <div className={`radar ${found ? 'found' : ''}`}>
         <span /><span /><span />
+        {!found && <Mascot pose="attente" size={250} className="radar-mascot wait" />}
         {found && <Avatar seed={opponent.avatar} size={96} ring={opponent.champion ? 'var(--gold)' : 'var(--opp)'} className="found-av" />}
       </div>
       <p className="mm-status">{found ? <>Adversaire IA : <b>{opponent.name}</b>{opponent.champion ? ' 👑' : ''}<AiTag on={opponent.ai} /></> : 'Préparation de ton adversaire IA…'}</p>

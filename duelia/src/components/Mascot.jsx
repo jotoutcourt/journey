@@ -9,6 +9,7 @@ const SRC = {
   egalite: '/mascotte/egalite.webp',
   combat: '/mascotte/combat.webp',
   'combat-anim': '/mascotte/combat-anim.webp',
+  attente: '/mascotte/attente-anim.webp',
   'hors-ligne': '/mascotte/hors-ligne.webp',
   notification: '/mascotte/notification.webp',
 }
