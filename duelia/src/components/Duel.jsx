@@ -355,15 +355,13 @@ export default function Duel({ topic, me, opponent, ranks, questions, onFinish, 
         })}
       </div>
 
-      {/* barre en segments : une manche par segment, à la couleur de celui qui l'a remportée */}
+      {/* barre en segments : une manche par segment, verte si j'ai bien répondu, rouge sinon */}
       <div className="segbar" aria-hidden="true">
         {questions.map((_, i) => {
-          const m = log.me[i], o = log.opp[i]
+          const m = log.me[i]
           let cls = i === round && !m ? 'cur' : ''
-          if (m) {
-            if (blind) cls = m.pts > 0 ? 'me' : 'none'
-            else cls = m.pts > (o?.pts || 0) ? 'me' : (o?.pts || 0) > m.pts ? 'opp' : 'none'
-          }
+          // Vert = j'ai bien répondu, rouge = faux ou pas de réponse (qui a été le plus rapide se voit au score)
+          if (m) cls = m.pts > 0 ? 'good' : 'bad'
           return <i key={i} className={cls} />
         })}
       </div>

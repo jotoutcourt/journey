@@ -93,6 +93,8 @@ html.abysse .segbar i { flex: 1; height: 10px; border-radius: 6px; background: #
 html.abysse .segbar i.me { background: var(--me); box-shadow: 0 0 10px #2ee6c566; }
 html.abysse .segbar i.opp { background: var(--opp); box-shadow: 0 0 10px #ff5c8a66; }
 html.abysse .segbar i.none { background: #4a3a7a; }
+html.abysse .segbar i.good { background: var(--ok); box-shadow: 0 0 10px #3ddc8466; }
+html.abysse .segbar i.bad { background: var(--ko); box-shadow: 0 0 10px #ff5d7366; }
 html.abysse .segbar i.cur { background: #4b2a96; box-shadow: 0 0 0 2px #a866ff inset, 0 0 12px #a866ff66; animation: segPulse 1.2s ease-in-out infinite; }
 @keyframes segPulse { 50% { box-shadow: 0 0 0 2px #c58bff inset, 0 0 18px #a866ffaa; } }
 
@@ -105,12 +107,12 @@ html.abysse .duel .opt {
   box-shadow: 0 5px 0 #b9a0ea, 0 12px 26px #0000004d;
 }
 html.abysse .duel .opt:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 2px 0 #b9a0ea; }
-html.abysse .duel .opt.ok { background: linear-gradient(180deg, #a866ff, #7d2cf2); color: #fff; box-shadow: 0 5px 0 #4f17a3, 0 0 0 2px #d9b8ff inset, 0 0 26px #a866ffaa; }
+html.abysse .duel .opt.ok { background: linear-gradient(180deg, #5cf0a6, #22c172); color: #052a15; box-shadow: 0 5px 0 #168a4f, 0 0 0 2px #b8ffd9 inset, 0 0 26px #3ddc84aa; }
 html.abysse .duel .opt.ko { background: linear-gradient(180deg, #ff7a96, #e8436a); color: #fff; box-shadow: 0 5px 0 #a3203f, 0 0 22px #ff5c8a77; }
 html.abysse .duel .opt.dim { opacity: 0.45; }
 html.abysse .duel .opt.ok::after {
   content: ''; position: absolute; right: -10px; top: -12px; width: 26px; height: 26px; pointer-events: none;
-  background: radial-gradient(circle at 30% 70%, #c58bff 0 4px, transparent 5px), radial-gradient(circle at 75% 30%, #c58bff 0 6px, transparent 7px);
+  background: radial-gradient(circle at 30% 70%, #7dffb9 0 4px, transparent 5px), radial-gradient(circle at 75% 30%, #7dffb9 0 6px, transparent 7px);
   animation: pop 0.35s both;
 }
 html.abysse .banner b { text-shadow: 0 8px 30px #8b3dff88; }
