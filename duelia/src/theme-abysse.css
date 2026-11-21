@@ -796,3 +796,7 @@ button.wallet-pill { border: 0; cursor: pointer; }
 .kh-btn.violet { background: linear-gradient(180deg, #d7a8ff 0%, #b077ff 55%, #9356f0 100%); }
 .kh-btn { height: 58px; }
 .kh-pitch { font-size: 14.5px; padding: 10px 16px; }
+/* décor de l'accueil (grotte, épave, coraux) */
+.home-bg { background: linear-gradient(180deg, #0b042033 0%, transparent 30%, transparent 70%, #0b042066 100%), #0b0420 url(/decor/accueil-fond.webp) center bottom / cover no-repeat; }
+.home-bg .rays { opacity: 0.5; }
+.kh-art { filter: drop-shadow(0 12px 30px #1a0640cc) drop-shadow(0 0 40px #ffc94044); }
