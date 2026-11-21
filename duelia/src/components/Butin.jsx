@@ -279,17 +279,16 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
         </div>
         <div className={`lt-timer ${secs <= 10 && !reveal ? 'hurry' : ''}`}>{reveal ? '⏸' : secs}</div>
       </header>
-      <div className="lt-dots" aria-hidden="true">{Array.from({ length: START }, (_, i) => <i key={i} className={i < view.bank ? 'on' : ''} />)}</div>
 
       <div className="lt-team">
         <div className={`lt-player me ${view.ready_me ? 'ready' : ''} ${voice.speaking.me ? 'speaking' : ''}`}>
-          <Avatar seed={me.avatar} photo={me.photo} size={40} />
+          <Avatar seed={me.avatar} photo={me.photo} size={30} />
           <span>Toi{view.ready_me ? ' ✓' : ''}</span>
           <button className={`lt-mic ${voice.mic}`} onClick={voice.toggleMic} disabled={voice.mic === 'asking' || voice.mic === 'unsupported'}
             aria-label={voice.mic === 'on' ? 'Couper mon micro' : 'Activer mon micro'}>{micIcon}</button>
         </div>
         <div className={`lt-player mate ${view.ready_partner ? 'ready' : ''} ${voice.speaking.partner ? 'speaking' : ''}`}>
-          <Avatar seed={partner.avatar} photo={partner.photo} size={40} />
+          <Avatar seed={partner.avatar} photo={partner.photo} size={30} />
           <span>{partner.name}{view.ready_partner ? ' ✓' : ''}</span>
           {voice.partnerMic && <i className="lt-mic-on" aria-label="Micro ouvert">🎙️</i>}
         </div>

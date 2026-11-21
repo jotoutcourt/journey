@@ -588,3 +588,24 @@ html.abysse .butin-card .butin-art { width: 72px; height: 72px; background: none
 .real-tentacle.tr { bottom: -150px; width: 58%; opacity: 0.9; }
 .real-tentacle.tr { bottom: auto; top: 6px; width: 50%; opacity: 1; }
 .real-tentacle.tr { transform-origin: 50% 30%; }
+/* haut d'écran allégé : moins de lueurs, éléments plus petits */
+.lt-bank { padding: 3px 18px 4px; box-shadow: 0 0 0 1.5px #8b5cff, 0 0 10px #8b5cff55; }
+.lt-bank small { font-size: 9px; }
+.lt-bank b { font-size: 21px; gap: 6px; }
+.lt-coin { width: 19px; height: 19px; }
+.lt-timer { min-width: 38px; height: 38px; font-size: 16px; box-shadow: 0 0 0 1.5px #8b5cff, 0 0 8px #8b5cff44; }
+.lt-quit { width: 34px; height: 34px; font-size: 14px; }
+.lt-team { margin-top: 8px; gap: 8px; }
+.lt-player { gap: 6px; padding: 2px 6px 2px 2px; font-size: 13.5px; background: #14082e99; }
+.lt-player.me { box-shadow: 0 0 0 1.5px #2ee6c5aa, 0 0 8px #2ee6c533; }
+.lt-player.mate { box-shadow: 0 0 0 1.5px #ff4fd8aa, 0 0 8px #ff4fd833; }
+.lt-player.ready.me { box-shadow: 0 0 0 2px #2ee6c5, 0 0 14px #2ee6c588; }
+.lt-player.ready.mate { box-shadow: 0 0 0 2px #ff4fd8, 0 0 14px #ff4fd888; }
+.lt-mic { width: 26px; height: 26px; font-size: 13px; }
+.lt-topic { margin-top: 8px; padding: 2px 10px; background: none; box-shadow: none; font-size: 12px; color: #b9a6e8; }
+.lt-question { margin-top: 2px; }
+/* on profite de la place gagnée en haut : plateaux un peu plus grands */
+.lt-tray { height: 66px; }
+.lt-step { height: 66px; }
+.lt-stage { padding-top: 100px; }
+.lt-grid.n3 .lt-tray, .lt-grid.n3 .lt-step { height: 54px; }
