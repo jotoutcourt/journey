@@ -48,9 +48,9 @@ export function Home({ go, wallet, onSolo, oxygen }) {
         <img className="kh-art" src="/mascotte/pirate-anim.webp" alt="" aria-hidden="true" />
         <h1 className="kraken-sign-img"><img src="/decor/pancarte.webp" alt="L'Appât du Kraken" draggable="false" /></h1>
         <p className="kh-pitch">Cache tes lingots dans la bonne caisse avant que les tentacules du <b>Kraken</b> ne les reprennent.</p>
+        {wallet?.daily_bonus && <span className="bh-bonus">🎁 +5 lingots sur ta première partie du jour</span>}
         <button className="kh-play" onClick={() => setChoose(true)}>Jouer</button>
         {oxygen}
-        {wallet?.daily_bonus && <span className="bh-bonus">🎁 +5 lingots sur ta première partie du jour</span>}
       </section>
 
       {choose && (

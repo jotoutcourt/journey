@@ -882,3 +882,9 @@ button.wallet-pill { border: 0; cursor: pointer; }
 .oxy-inline .oxy-bottles img { width: 28px; }
 .sheet .oxy-bottles img { width: 30px; }
 .kh-art { width: min(50vw, 200px); } .kraken-sign-img { margin-top: -56px; max-width: 340px; } .kh-play { margin-top: 10px; height: 54px; } .oxy-inline { margin-top: 10px; } .oxy-inline .oxy-bottles img { width: 22px; } .kraken-hero { gap: 6px; }
+/* le contenu de l'accueil est posé en bas, juste au-dessus du menu */
+.home.immersive { min-height: 100%; display: flex; flex-direction: column; padding-bottom: 14px; }
+.home.immersive .kraken-hero { margin-top: auto; }
+.home.immersive .oxy-inline { margin-bottom: 0; }
+.kraken-hero .bh-bonus { margin: 2px 0 0; }
+.kh-art { width: min(64vw, 31vh, 290px); } .kraken-sign-img { max-width: min(92vw, 380px); }
