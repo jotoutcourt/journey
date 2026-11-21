@@ -25,6 +25,6 @@ function buildPokemonQuestions() {
 
 export const POKEMON_TOPIC = {
   id: 'pokemon', name: 'Qui est ce Pokémon ?', icon: '🔍', color: '#ef5350', category: 'Jeux vidéo',
-  tagline: 'Devine le Pokémon à partir de ses indices, du n° 1 au n° 1025', by: 'Duelia', official: true, followers: 41280,
+  tagline: 'Devine le Pokémon à partir de ses indices, du n° 1 au n° 1025', by: 'Kraken', official: true, followers: 41280,
   questions: buildPokemonQuestions(),
 }

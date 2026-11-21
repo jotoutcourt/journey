@@ -154,7 +154,7 @@ export function Home({ st, topics, go }) {
 }
 
 export function Brand() {
-  return <div className="brand"><Chevrons /><span>Duelia</span></div>
+  return <div className="brand"><Chevrons /><span>Kraken</span></div>
 }
 export function Chevrons() {
   return (

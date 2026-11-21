@@ -28,7 +28,7 @@ export default function TopicRequestSheet({ online, api, onClose }) {
       <div className="sheet req-sheet" role="dialog" aria-labelledby="req-title" onClick={e => e.stopPropagation()}>
         <h2 id="req-title">💡 Demander un thème</h2>
         {!online ? <p className="sheet-sub">Il faut une connexion Internet pour envoyer une demande.</p> : <>
-          <p className="sheet-sub">Quel sujet aimerais-tu voir dans Duelia ?</p>
+          <p className="sheet-sub">Quel sujet aimerais-tu voir dans Kraken ?</p>
           <input className="req-input" value={name} maxLength={60} placeholder="Ex. : Les Simpson, la F1, Star Wars…"
             onChange={e => { setName(e.target.value); setMsg(null) }} />
           <textarea className="req-input" value={details} maxLength={300} rows={2} placeholder="Précisions (facultatif) : période, personnages, niveau…"

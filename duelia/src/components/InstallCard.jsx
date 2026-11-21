@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-// Proposition d'installer Duelia sur l'écran d'accueil (invisible si l'appli est déjà installée)
+// Proposition d'installer Kraken sur l'écran d'accueil (invisible si l'appli est déjà installée)
 let deferred = null
 if (typeof window !== 'undefined') {
   window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferred = e })
@@ -30,15 +30,15 @@ export default function InstallCard() {
   }
   return (
     <section className="install-card">
-      <h3>📲 Installer Duelia</h3>
+      <h3>📲 Installer Kraken</h3>
       {canPrompt ? (
         <>
-          <p>Ajoute Duelia à ton écran d'accueil : il s'ouvre en plein écran, comme une vraie appli, et marche même sans réseau contre l'IA.</p>
+          <p>Ajoute Kraken à ton écran d'accueil : il s'ouvre en plein écran, comme une vraie appli, et marche même sans réseau contre l'IA.</p>
           <button className="btn btn-primary wide" onClick={install}>Installer</button>
         </>
       ) : isIos() ? (
         <ol className="sheet-steps">
-          <li>Ouvre Duelia dans <b>Safari</b> (duelia.vercel.app).</li>
+          <li>Ouvre Kraken dans <b>Safari</b> (duelia.vercel.app).</li>
           <li>Appuie sur le bouton <b>Partager</b> (le carré avec une flèche vers le haut).</li>
           <li>Choisis <b>Sur l'écran d'accueil</b>, puis <b>Ajouter</b>.</li>
         </ol>

@@ -1,4 +1,4 @@
--- Duelia : amis, défis directs entre amis (différés ou en direct), notifications et thèmes partagés.
+-- Kraken : amis, défis directs entre amis (différés ou en direct), notifications et thèmes partagés.
 -- Comme le reste : tables fermées, tout passe par des fonctions qui n'agissent que pour le joueur connecté.
 
 create extension if not exists pg_net;
@@ -84,7 +84,7 @@ begin
   if (select count(*) from friend_links where a = pid and created_at > now() - interval '1 day') >= 50 then return 'limit'; end if;
   insert into friend_links (a, b) values (pid, other) on conflict do nothing;
   select name into me_name from players where id = pid;
-  perform notify_player(other, 'Demande d''ami', me_name || ' veut devenir ton ami sur Duelia', '/#amis');
+  perform notify_player(other, 'Demande d''ami', me_name || ' veut devenir ton ami sur Kraken', '/#amis');
   return 'requested';
 end $$;
 

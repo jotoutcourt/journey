@@ -85,7 +85,7 @@ const merge = (id, base) => {
 }
 
 const T = (id, name, icon, color, category, tagline, followers, questions) => ({
-  id, name, icon, color, category, tagline, followers, by: 'Duelia', official: true,
+  id, name, icon, color, category, tagline, followers, by: 'Kraken', official: true,
   questions: merge(id, questions),
 })
 

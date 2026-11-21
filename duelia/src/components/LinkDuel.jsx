@@ -14,11 +14,11 @@ async function copyText(text, fallbackEl) {
 export function LinkReady({ url, shortening, score, topic, onHome, onTopic }) {
   const [copied, setCopied] = useState(null)
   const [area, setArea] = useState(null)
-  const text = `Je te défie sur « ${topic.name} » dans Duelia ! 7 questions, tu peux me battre ?`
+  const text = `Je te défie sur « ${topic.name} » dans Kraken ! 7 questions, tu peux me battre ?`
   const canShare = typeof navigator.share === 'function'
 
   async function share() {
-    try { await navigator.share({ title: 'Duelia', text, url }); return } catch { /* refusé : on copie */ }
+    try { await navigator.share({ title: 'Kraken', text, url }); return } catch { /* refusé : on copie */ }
     setCopied(await copyText(`${text} ${url}`, area))
   }
 

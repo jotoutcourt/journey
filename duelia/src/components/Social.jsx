@@ -20,8 +20,8 @@ export function PushCard({ status, onEnable, onDisable }) {
   return (
     <section className="install-card push-card">
       <h3>🔔 Notifications</h3>
-      {status === 'install-first' && <p>Sur iPhone, les notifications marchent quand Duelia est ajouté à l'écran d'accueil (Safari → Partager → Sur l'écran d'accueil). Ouvre-le ensuite depuis son icône et active-les ici.</p>}
-      {status === 'denied' && <p>Les notifications sont bloquées pour Duelia. Tu peux les réautoriser dans les réglages de ton téléphone (Réglages → Notifications → Duelia).</p>}
+      {status === 'install-first' && <p>Sur iPhone, les notifications marchent quand Kraken est ajouté à l'écran d'accueil (Safari → Partager → Sur l'écran d'accueil). Ouvre-le ensuite depuis son icône et active-les ici.</p>}
+      {status === 'denied' && <p>Les notifications sont bloquées pour Kraken. Tu peux les réautoriser dans les réglages de ton téléphone (Réglages → Notifications → Kraken).</p>}
       {status === 'off' && <>
         <p>Sois prévenu quand un ami te défie, t'invite en direct ou a fini ta partie.</p>
         <button className="btn btn-primary wide" onClick={onEnable}>Activer les notifications</button>

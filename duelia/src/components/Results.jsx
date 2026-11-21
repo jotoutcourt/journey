@@ -74,8 +74,8 @@ export default function Results({ data, me, onRematch, onAnother, onTopic, onSha
   const linkish = data.link || data.fromLink
   // L'ami renvoie son résultat au challenger (partage, sinon copie du lien)
   async function sendReply() {
-    const text = `J'ai relevé ton défi sur « ${topic.name} » dans Duelia : ${myScore} à ${oppScore} ! Ouvre ce lien pour voir le résultat :`
-    try { await navigator.share({ title: 'Duelia', text, url: data.link.url }); setSent('shared'); return } catch { /* refusé : on copie */ }
+    const text = `J'ai relevé ton défi sur « ${topic.name} » dans Kraken : ${myScore} à ${oppScore} ! Ouvre ce lien pour voir le résultat :`
+    try { await navigator.share({ title: 'Kraken', text, url: data.link.url }); setSent('shared'); return } catch { /* refusé : on copie */ }
     try { await navigator.clipboard.writeText(`${text} ${data.link.url}`); setSent('copied') } catch { setSent('manual') }
   }
   useEffect(() => { if (outcome === 'win') sfx.win(); else if (outcome === 'lose') sfx.lose() }, [outcome])

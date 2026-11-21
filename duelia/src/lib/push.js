@@ -1,4 +1,4 @@
-// Notifications sur le téléphone (Web Push). Sur iPhone, il faut d'abord ajouter Duelia à l'écran d'accueil.
+// Notifications sur le téléphone (Web Push). Sur iPhone, il faut d'abord ajouter Kraken à l'écran d'accueil.
 // Clé PUBLIQUE d'envoi (VAPID) : faite pour être dans l'appli ; la clé privée reste chez Vercel.
 import { savePushSubscription, deletePushSubscription } from './account.js'
 

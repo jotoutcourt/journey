@@ -1,6 +1,6 @@
-// Duelia hors ligne : l'appli se lance même sans réseau (duels contre l'IA, ascension, thèmes).
+// Kraken hors ligne : l'appli se lance même sans réseau (duels contre l'IA, ascension, thèmes).
 // Les échanges avec le serveur (comptes, classements, duels en direct) ne passent jamais par le cache.
-const CACHE = 'duelia-v2'
+const CACHE = 'duelia-v3'
 const SHELL = ['/', '/manifest.webmanifest', '/favicon.svg', '/icon-192.png', '/apple-touch-icon.png']
 
 self.addEventListener('install', (e) => {
@@ -33,8 +33,8 @@ self.addEventListener('fetch', (e) => {
 // Notifications : affichage, et ouverture de l'appli au bon endroit quand on appuie dessus
 self.addEventListener('push', (e) => {
   let d
-  try { d = e.data.json() } catch { d = { title: 'Duelia', body: e.data?.text() || '' } }
-  e.waitUntil(self.registration.showNotification(d.title || 'Duelia', {
+  try { d = e.data.json() } catch { d = { title: 'Kraken', body: e.data?.text() || '' } }
+  e.waitUntil(self.registration.showNotification(d.title || 'Kraken', {
     body: d.body || '', icon: '/icon-192.png', badge: '/icon-192.png', data: { url: d.url || '/' }, tag: d.url || 'duelia',
   }))
 })

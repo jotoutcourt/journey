@@ -638,7 +638,7 @@ export default function App() {
     },
   }
 
-  const shareMyCode = () => social.code && shareText(`Ajoute-moi en ami sur Duelia ! Mon code : ${social.code.slice(0, 4)}-${social.code.slice(4)}`, `${baseUrl()}#ami=${social.code}`)
+  const shareMyCode = () => social.code && shareText(`Ajoute-moi en ami sur Kraken ! Mon code : ${social.code.slice(0, 4)}-${social.code.slice(4)}`, `${baseUrl()}#ami=${social.code}`)
 
   // Thèmes partagés
   const listShared = useCallback((q) => api.listSharedTopics(q), [])
@@ -714,8 +714,8 @@ export default function App() {
     },
     onResend: async (c) => {
       const t = byId(c.topicId)
-      const text = `Je te défie sur « ${t?.name || 'Duelia'} » dans Duelia ! 7 questions, tu peux me battre ?`
-      try { await navigator.share({ title: 'Duelia', text, url: c.url }); return } catch { /* refusé : on copie */ }
+      const text = `Je te défie sur « ${t?.name || 'Kraken'} » dans Kraken ! 7 questions, tu peux me battre ?`
+      try { await navigator.share({ title: 'Kraken', text, url: c.url }); return } catch { /* refusé : on copie */ }
       try { await navigator.clipboard.writeText(`${text} ${c.url}`); setToast('Lien du défi copié : colle-le dans un message à ton ami.') } catch { setToast('Copie impossible sur cet appareil.') }
     },
     onDismiss: (c) => update(s => ({ ...s, challenges: s.challenges.filter(x => x.id !== c.id) })),
@@ -810,7 +810,7 @@ export default function App() {
     // Copie d'abord (dans le geste de l'utilisateur), puis feuille de partage si elle existe.
     let copied = false
     try { await navigator.clipboard.writeText(full); copied = true } catch { /* refusé */ }
-    try { if (navigator.share) { await navigator.share({ title: 'Duelia', text, url }); return } } catch { /* refusé ou annulé */ }
+    try { if (navigator.share) { await navigator.share({ title: 'Kraken', text, url }); return } } catch { /* refusé ou annulé */ }
     setToast(copied ? 'Lien copié, colle-le à tes amis' : "Impossible de copier sur cet appareil")
   }
 
@@ -895,7 +895,7 @@ export default function App() {
         }}
         onAnother={() => (route.data.link || route.data.fromLink ? go({ name: 'home' }) : go({ name: 'match', id: topic.id }))}
         onTopic={() => (byId(topic.id) ? go({ name: 'topic', id: topic.id }) : go({ name: 'topics' }))}
-        onShare={() => shareText(`${route.data.outcome === 'win' ? 'Victoire' : 'Duel'} ${route.data.myScore}–${route.data.oppScore} contre ${route.opponent.name} sur « ${topic.name} » dans Duelia !`)} />
+        onShare={() => shareText(`${route.data.outcome === 'win' ? 'Victoire' : 'Duel'} ${route.data.myScore}–${route.data.oppScore} contre ${route.opponent.name} sur « ${topic.name} » dans Kraken !`)} />
     ); break
     default: view = <Home st={st} topics={topics} go={go} />
   }
