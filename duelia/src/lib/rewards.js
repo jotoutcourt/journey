@@ -3,7 +3,9 @@
 import { leaderboard } from './bots.js'
 import { myPeriodXp, PERIODS } from './periods.js'
 import { meEntry } from './profile.js'
-import { dayKey } from './tower.js'
+// Jour du calendrier local (AAAA-MM-JJ)
+export const dayKey = (d = new Date()) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 
 // Prime d'exploit selon le rang mondial de l'adversaire battu (une fois par adversaire et par jour).
 export const exploitFor = (rank) => (!rank ? 0 : rank === 1 ? 150 : rank <= 3 ? 100 : rank <= 10 ? 50 : 0)

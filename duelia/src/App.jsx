@@ -10,8 +10,6 @@ import { buildQuestions } from './lib/duel.js'
 import Results from './components/Results.jsx'
 import { Home, Topics, TopicPage, Ranking, Matchmaking, CreateTopic, Onboarding } from './components/Screens.jsx'
 import Profile from './components/Profile.jsx'
-import Tower from './components/Tower.jsx'
-import { dayKey } from './lib/tower.js'
 import { settleDuel, ranksFor } from './lib/rewards.js'
 import { createOutgoing, tickChallenges, pendingCount, markPlayed } from './lib/challenges.js'
 import { Inbox, ChallengeSheet, NotifyBanner, SentScreen } from './components/Challenges.jsx'
@@ -21,8 +19,6 @@ import { buildButin } from './lib/butin.js'
 import { FriendsScreen, FriendChallengeSheet, PickFriendSheet, InviteWaiting, LiveInviteBanner, FriendSent, SharedTopics, ChallengeMessage } from './components/Social.jsx'
 import * as api from './lib/account.js'
 import TopicRequestSheet from './components/TopicRequest.jsx'
-import Pari from './components/Pari.jsx'
-import { pariDay as pariDayRef, tierFor as tierForBank } from './lib/pari.js'
 import { useSocial, friendOpponent, fromPlain, logFrom } from './lib/useSocial.js'
 import { pushStatus, enablePush, disablePush, refreshPush } from './lib/push.js'
 import RankShift from './components/RankShift.jsx'
@@ -230,19 +226,6 @@ export default function App() {
   }, [byId, st.topicStats, st.profile, session])
 
   // Fin d'une ascension : record personnel et tentative du jour (seule la première compte).
-  const finishTower = (result, daily) => update(s => {
-    const t = s.tower || { runs: 0 }
-    const best = !t.best || result.floor > t.best.floor || (result.floor === t.best.floor && result.score > t.best.score)
-    const firstToday = daily && t.daily?.day !== dayKey()
-    return {
-      ...s,
-      tower: {
-        ...t, runs: (t.runs || 0) + 1,
-        best: !daily && best ? { floor: result.floor, score: result.score } : t.best,
-        daily: firstToday ? { day: dayKey(), floor: result.floor, score: result.score } : t.daily,
-      },
-    }
-  })
 
   const topic = route.topicObj || (route.id ? byId(route.id) : null)
   const me = st.profile
@@ -507,28 +490,6 @@ export default function App() {
   const [friendSheet, setFriendSheet] = useState(null)
   const [friendPick, setFriendPick] = useState(null) // thème choisi, en attente du choix de l'ami
   const [requestSheet, setRequestSheet] = useState(false)
-  // Le Pari : record, partie du jour (seule la première compte) et classement du jour
-  const [pariBoard, setPariBoard] = useState(null)
-  const finishPari = ({ bank, daily, day }) => {
-    const first = daily && stRef.current.pari?.daily?.day !== day
-    update(s => ({
-      ...s,
-      pari: {
-        ...(s.pari || {}), games: (s.pari?.games || 0) + 1,
-        best: !daily ? Math.max(s.pari?.best || 0, bank) : s.pari?.best || 0,
-        record: Math.max(s.pari?.record || 0, bank),
-        medal: Math.max(s.pari?.medal || 0, tierForBank(bank)?.min || 0) || undefined,
-        daily: first ? { day, bank } : s.pari?.daily,
-      },
-    }))
-    setPariBoard(null)
-    if (first && online) api.submitPari(day, bank).catch(() => {})
-  }
-  const loadPariBoard = useCallback(() => {
-    if (!online) { setPariBoard('offline'); return }
-    // laisse le temps à la partie d'être enregistrée
-    setTimeout(() => api.getPariBoard(pariDayRef()).then(b => setPariBoard(b || 'offline')).catch(() => setPariBoard('offline')), 1200)
-  }, [online])
   const requestApi = useMemo(() => ({ request: api.requestTopic, vote: api.voteTopicRequest, list: api.listTopicRequests }), [])
   const [push, setPush] = useState(null)
   const [dismissedInvites, setDismissedInvites] = useState([])
@@ -891,9 +852,9 @@ export default function App() {
   }
 
   const meForDuel = { ...me, topicXp: st.topicStats[route.id]?.xp || 0 }
-  const fullscreen = ['match', 'duel', 'results', 'tower', 'pari', 'butingame', 'party', 'sent', 'invite', 'friendsent', 'linkload', 'linkready', 'linkintro', 'linkreply'].includes(route.name)
+  const fullscreen = ['match', 'duel', 'results', 'butingame', 'party', 'sent', 'invite', 'friendsent', 'linkload', 'linkready', 'linkintro', 'linkreply'].includes(route.name)
   // pas de rechargement automatique (nouvelle version) pendant une partie
-  window.__dueliaBusy = ['match', 'duel', 'tower', 'pari', 'invite', 'create', 'butingame', 'party'].includes(route.name)
+  window.__dueliaBusy = ['match', 'duel', 'invite', 'create', 'butingame', 'party'].includes(route.name)
   const badge = pendingCount(st) + social.counts.challenges
   const friendBadge = social.counts.requests
   let view
@@ -911,10 +872,6 @@ export default function App() {
       onAcceptReplay={acceptDuo}
       onWallet={(n) => setWallet(w => ({ ...(w || {}), lingots: n, daily_bonus: false }))}
       onExit={() => go({ name: 'home' })} onReplay={(p, room) => (p ? startButin(p, room) : startSolo())} />; break
-    case 'pari': view = <Pari key={route.daily ? 'pd' : 'pl' + (route.n || 0)} topics={topics} st={st} daily={!!route.daily} onFinish={finishPari}
-      onExit={() => go({ name: 'home' })} board={pariBoard} loadBoard={loadPariBoard} />; break
-    case 'tower': view = <Tower key={route.daily ? 'daily' : 'free'} topics={topics} profile={me} daily={!!route.daily} towerState={st.tower}
-      onFinish={finishTower} onExit={() => go({ name: 'home' })} />; break
     case 'match': view = <Matchmaking key={route.id} topic={topic} opponent={route.opponent} onReady={startDuel} onCancel={() => go({ name: 'topic', id: topic.id })}
       live={route.searchLive && account.status === 'online' ? liveSearch : null} makeQuestions={makeMatchQuestions} onLive={startLive} />; break
     case 'duel': view = <Duel key={route.questions.map(q => q.idx).join() + (route.challengeId || '')} topic={topic} me={meForDuel} opponent={route.opponent} ranks={route.ranks} questions={route.questions}
@@ -977,7 +934,7 @@ export default function App() {
     <div className={`app ${fullscreen ? 'full' : ''}`}>
       <main ref={viewRef} className="view"><div key={route.name + (route.id || '')}>{view}</div></main>
       {toast && <div className="toast" role="status">{toast}</div>}
-      {notes.length > 0 && !['duel', 'match', 'tower'].includes(route.name) && (
+      {notes.length > 0 && !['duel', 'match'].includes(route.name) && (
         <NotifyBanner key={notes[0].text} note={notes[0]}
           onOpen={() => { setNotes(n => n.slice(1)); go({ name: 'inbox' }) }}
           onClose={() => setNotes(n => n.slice(1))} />
@@ -991,9 +948,9 @@ export default function App() {
         onAdd={() => { setFriendPick(null); go({ name: 'friends' }) }}
         onParty={() => { const t = friendPick; setFriendPick(null); startPartyFor(t) }}
         onCancel={() => setFriendPick(null)} />}
-      {invite && !['duel', 'match', 'invite', 'tower'].includes(route.name) && <LiveInviteBanner key={invite.id} invite={invite} onAccept={acceptInvite} onDecline={declineInvite} />}
-      {partyInvite && !invite && !['duel', 'match', 'invite', 'tower', 'butingame', 'party'].includes(route.name) && <PartyInviteBanner key={partyInvite.id} invite={partyInvite} onAccept={acceptParty} onDecline={declineParty} />}
-      {duoInvite && !invite && !['duel', 'match', 'invite', 'tower', 'butingame'].includes(route.name) && <DuoInviteBanner key={duoInvite.id} invite={duoInvite} onAccept={acceptDuo} onDecline={declineDuo} />}
+      {invite && !['duel', 'match', 'invite'].includes(route.name) && <LiveInviteBanner key={invite.id} invite={invite} onAccept={acceptInvite} onDecline={declineInvite} />}
+      {partyInvite && !invite && !['duel', 'match', 'invite', 'butingame', 'party'].includes(route.name) && <PartyInviteBanner key={partyInvite.id} invite={partyInvite} onAccept={acceptParty} onDecline={declineParty} />}
+      {duoInvite && !invite && !['duel', 'match', 'invite', 'butingame'].includes(route.name) && <DuoInviteBanner key={duoInvite.id} invite={duoInvite} onAccept={acceptDuo} onDecline={declineDuo} />}
       {shift && <RankShift shift={shift} profile={me} onClose={closeShift} />}
       {!fullscreen && (
         <nav className="tabbar">

@@ -1,33 +1,22 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Avatar from './Avatar.jsx'
 import TopicIcon from './TopicIcon.jsx'
 import AiTag from './AiTag.jsx'
 import ConfirmButton from './ConfirmButton.jsx'
 import { CATEGORIES } from '../data/topics.js'
 import { levelInfo } from '../lib/levels.js'
-import { getCommunity, leaderboard } from '../lib/bots.js'
+import { leaderboard } from '../lib/bots.js'
 import { PERIODS, myPeriodXp, resetIn } from '../lib/periods.js'
 import { meEntry, resizeImage } from '../lib/profile.js'
 import { topicTitle, nextTitle, ladderFor, TITLE_LEVELS } from '../lib/titles.js'
 import { RecoverForm } from './AccountCard.jsx'
 import Mascot from './Mascot.jsx'
 import { InstallBanner } from './InstallCard.jsx'
-import { pariDay, TIERS } from '../lib/pari.js'
-import { dayKey } from '../lib/tower.js'
 import { decodeTopic } from '../lib/store.js'
 import { sfx } from '../lib/sound.js'
 
 const fmt = (n) => n.toLocaleString('fr-FR')
 
-function XpBar({ xp }) {
-  const l = levelInfo(xp)
-  return (
-    <div className="xpbar">
-      <div className="xpbar-track"><i style={{ width: `${(l.into / l.need) * 100}%` }} /></div>
-      <small>{l.into} / {l.need} XP</small>
-    </div>
-  )
-}
 
 export function TopicTile({ topic, onClick, sub }) {
   return (
@@ -40,16 +29,7 @@ export function TopicTile({ topic, onClick, sub }) {
 }
 
 /* ---------------- Accueil ---------------- */
-export function Home({ st, topics, go, wallet, onSolo }) {
-  const me = st.profile
-  const lvl = levelInfo(st.xp)
-  const followed = topics.filter(t => st.follows.includes(t.id))
-  const popular = [...topics].filter(t => t.official).sort((a, b) => b.followers - a.followers).slice(0, 6)
-  const champs = useMemo(() => {
-    const pool = followed.length ? followed : popular
-    return pool.slice(0, 4).map(t => ({ topic: t, champ: getCommunity(t)[0] }))
-  }, [followed, popular])
-
+export function Home({ go, wallet, onSolo }) {
   return (
     <div className="screen home">
       <header className="top">
@@ -72,104 +52,6 @@ export function Home({ st, topics, go, wallet, onSolo }) {
       </section>
 
       <InstallBanner />
-
-      <section className="me-card" onClick={() => go({ name: 'profile' })}>
-        <Avatar seed={me.avatar} photo={me.photo} size={64} ring="var(--me)" />
-        <div className="me-info">
-          <b>{me.name}</b>
-          <span>Niveau {lvl.level} · {lvl.title}</span>
-          <XpBar xp={st.xp} />
-        </div>
-      </section>
-
-      {followed.length > 0 && (
-        <section>
-          <h3 className="sec-title">Mes thèmes</h3>
-          <div className="hscroll">
-            {followed.map(t => (
-              <TopicTile key={t.id} topic={t} onClick={() => go({ name: 'topic', id: t.id })}
-                sub={topicTitle(t, levelInfo(st.topicStats[t.id]?.xp).level)} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      <section>
-        <h3 className="sec-title">Champions à détrôner</h3>
-        <div className="champ-list">
-          {champs.map(({ topic, champ }) => (
-            <div key={topic.id} className="champ-row">
-              <Avatar seed={champ.avatar} size={44} ring="var(--gold)" />
-              <div className="champ-info">
-                <b>{champ.flag} {champ.name}<AiTag on={champ.ai} /></b>
-                <small>👑 Champion · {topic.name}</small>
-              </div>
-              <button className="btn btn-small btn-gold" onClick={() => go({ name: 'match', id: topic.id, forceChampion: true })}>Défier</button>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <h3 className="sec-title">Autres jeux</h3>
-      <section className="tower-card pari-card">
-        <div className="tc-head">
-          <span className="pari-art" aria-hidden="true">🎲</span>
-          <div>
-            <b>Le Pari</b>
-            <small>Mode solo · mise tes jetons en ne connaissant que le thème, puis réponds</small>
-          </div>
-        </div>
-        <div className="tc-actions">
-          <button className="btn btn-secondary" onClick={() => go({ name: 'pari' })}>
-            Partie libre{st.pari?.best ? ` · record ${st.pari.best.toLocaleString('fr-FR')}` : ''}{st.pari?.medal ? ' ' + TIERS.filter(x => x.min <= st.pari.medal).pop().icon : ''}
-          </button>
-          <button className="btn btn-gold" onClick={() => go({ name: 'pari', daily: true })}>
-            {st.pari?.daily?.day === pariDay() ? `Pari du jour · ${st.pari.daily.bank.toLocaleString('fr-FR')}` : 'Pari du jour'}
-          </button>
-        </div>
-      </section>
-
-      <section className="tower-card">
-        <div className="tc-head">
-          <span className="tc-art" aria-hidden="true"><i /><i /><i /><i /></span>
-          <div>
-            <b>L'Ascension</b>
-            <small>Mode solo · 3 cœurs, des portes à choisir, un boss tous les 10 étages</small>
-          </div>
-        </div>
-        <div className="tc-actions">
-          <button className="btn btn-secondary" onClick={() => go({ name: 'tower' })}>
-            Grimper{st.tower?.best ? ` · record étage ${st.tower.best.floor}` : ''}
-          </button>
-          <button className="btn btn-gold" onClick={() => go({ name: 'tower', daily: true })}>
-            {st.tower?.daily?.day === dayKey() ? `Tour du jour · étage ${st.tower.daily.floor}` : 'Tour du jour'}
-          </button>
-        </div>
-      </section>
-
-
-      <section>
-        <h3 className="sec-title">Thèmes populaires</h3>
-        <div className="grid">
-          {popular.map(t => <TopicTile key={t.id} topic={t} onClick={() => go({ name: 'topic', id: t.id })} />)}
-        </div>
-      </section>
-
-      {st.history.length > 0 && (
-        <section>
-          <h3 className="sec-title">Dernières parties</h3>
-          <ul className="history">
-            {st.history.slice(0, 8).map((h, i) => (
-              <li key={i} className={h.outcome}>
-                <Avatar seed={h.oppAvatar} size={36} />
-                <div><b>{h.oppName}{h.champion ? ' 👑' : ''}<AiTag on={h.ai} /></b><small>{h.topicName}</small></div>
-                <span className="h-score">{h.myScore}–{h.oppScore}</span>
-                <span className="h-tag">{{ win: 'V', lose: 'D', draw: 'N' }[h.outcome]}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
     </div>
   )
 }
