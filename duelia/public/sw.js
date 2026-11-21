@@ -1,6 +1,6 @@
 // Kraken hors ligne : l'appli se lance même sans réseau (duels contre l'IA, ascension, thèmes).
 // Les échanges avec le serveur (comptes, classements, duels en direct) ne passent jamais par le cache.
-const CACHE = 'duelia-v14'
+const CACHE = 'duelia-v15'
 const SHELL = ['/', '/manifest.webmanifest', '/favicon.png', '/icon-192.png', '/apple-touch-icon.png', '/mascotte/logo.webp', '/splash/kraken-splash.webp', '/mascotte/victoire.webp', '/mascotte/defaite.webp', '/mascotte/neutre.webp', '/mascotte/neutre-anim.webp', '/mascotte/egalite.webp', '/mascotte/combat.webp', '/mascotte/hors-ligne.webp', '/mascotte/notification.webp', '/mascotte/combat-anim.webp', '/mascotte/attente-anim.webp', '/decor/vs-fond-debut.webp', '/decor/tentacules.webp']
 
 self.addEventListener('install', (e) => {
@@ -16,6 +16,8 @@ self.addEventListener('fetch', (e) => {
   const url = new URL(req.url)
   const fonts = url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com'
   if (url.origin !== location.origin && !fonts) return
+  // Vérification de mise à jour : toujours le réseau, jamais le cache
+  if (url.searchParams.has('fresh')) return
   // Vidéos : lues par morceaux (Range), on laisse le navigateur faire
   if (url.pathname.endsWith('.mp4')) return
   // Page : le réseau d'abord (pour avoir la dernière version), le cache si hors ligne
