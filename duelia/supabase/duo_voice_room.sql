@@ -15,7 +15,7 @@ begin
   insert into duo_games (a, b, questions, bank, placement, voice_id) values (pid, p_to, p_questions, duo_const('start'), duo_zeros(p_questions, 0), room)
   returning id into gid;
   select name into me_name from players where id = pid;
-  perform notify_player(p_to, 'Le Butin 💰', me_name || ' t''invite à chasser le trésor à deux', '/');
+  perform notify_player(p_to, 'Le Butin 💰', me_name || ' t''invite à voler le trésor du Kraken', '/');
   return gid;
 end $$;
 revoke all on function public.invite_duo(uuid, jsonb, uuid) from public, anon;

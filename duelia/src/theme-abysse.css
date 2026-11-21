@@ -391,3 +391,43 @@ html.abysse .vs-screen > .vs-mark { position: absolute; top: 50%; left: 50%; tra
 html.abysse .butin-card .butin-art { width: 72px; height: 72px; background: none; border-radius: 0; object-fit: contain; flex: none; filter: drop-shadow(0 4px 10px #ffc94055); margin: -6px 0; }
 .butin-pirate { display: block; margin: -6px auto 0; width: min(62vw, 230px) !important; height: auto !important; filter: drop-shadow(0 10px 24px #ffc94044); }
 .voice-btn.hang { background: #ff5d7322; border-color: var(--ko); color: var(--ko); }
+
+/* ---------- Le Butin v2 : on vole le Kraken, ses tentacules reprennent l'or ---------- */
+/* les réponses sont des caisses en bois (plus de trappes) */
+.hatch { background:
+    repeating-linear-gradient(0deg, transparent 0 17px, #00000044 17px 19px),
+    linear-gradient(180deg, #7a4f2c, #5c3a1f);
+  box-shadow: 0 0 0 4px #3b2416, inset 0 0 0 3px #00000033, inset 0 -10px 18px #0005, 0 8px 16px #0008; }
+.hatch::before, .hatch::after { content: ''; position: absolute; left: 0; right: 0; height: 6px; background: linear-gradient(180deg, #9a9aa8, #55556a); box-shadow: 0 1px 2px #0008; }
+.hatch::before { top: 14%; } .hatch::after { bottom: 14%; }
+.hatch-gold { z-index: 1; }
+.hatch-count { z-index: 3; }
+.tentacle { position: absolute; left: 50%; bottom: 0; width: 46%; height: 150%; margin-left: -23%; z-index: 2; transform: translateY(105%); pointer-events: none; filter: drop-shadow(0 4px 8px #000a); }
+.hatch-cell.sunk .tentacle { animation: tentacleSnatch 1.9s 0.25s cubic-bezier(.45,0,.3,1) forwards; }
+@keyframes tentacleSnatch {
+  0% { transform: translateY(105%) rotate(0); }
+  35% { transform: translateY(18%) rotate(-6deg); }
+  50% { transform: translateY(22%) rotate(4deg); }
+  100% { transform: translateY(110%) rotate(-3deg); }
+}
+/* les lingots sont saisis puis emportés vers le bas avec la tentacule */
+.hatch-cell.sunk .hatch-gold .ingot { animation: ingotSnatch 1.3s calc(0.85s + var(--k) * 0.015s) cubic-bezier(.5,0,.8,.5) forwards; }
+@keyframes ingotSnatch { 0% { transform: perspective(40px) rotateX(18deg); } 15% { transform: translateY(-6px) rotate(-6deg); } 100% { transform: translateY(160%) scale(0.5) rotate(25deg); opacity: 0; } }
+.hatch-cell.sunk .hatch { box-shadow: 0 0 0 4px var(--ko), 0 0 22px #ff5d7366, 0 8px 16px #0008; }
+.hatch-cell.open .hatch { filter: grayscale(0.5) brightness(0.7); }
+.hatch-cell.ok .hatch::before, .hatch-cell.ok .hatch::after { background: linear-gradient(180deg, #ffe08a, #b8862b); }
+/* réaction du Kraken à la révélation */
+.kraken-react { display: flex; align-items: center; gap: 10px; text-align: left; animation: fadeUp 0.35s 0.6s both; }
+.kraken-react .mascot, .kraken-react img { flex: none; }
+.kraken-react.happy img { animation: krakenGloat 0.5s 0.9s ease-in-out 3 alternate; }
+.kraken-react.sad img { animation: krakenSulk 1.2s 0.9s ease-in-out both; }
+@keyframes krakenGloat { to { transform: translateY(-6px) rotate(6deg) scale(1.06); } }
+@keyframes krakenSulk { 50% { transform: rotate(-6deg) translateY(3px); } }
+.kraken-bubble { position: relative; flex: 1; padding: 8px 12px; border-radius: 16px; background: #1f1342ee; border: 1px solid var(--line); display: flex; flex-direction: column; gap: 2px; }
+.kraken-bubble::before { content: ''; position: absolute; left: -7px; top: 50%; width: 12px; height: 12px; margin-top: -6px; background: inherit; border-left: 1px solid var(--line); border-bottom: 1px solid var(--line); transform: rotate(45deg); }
+.kraken-bubble b { font-family: var(--display); font-size: 18px; }
+.kraken-bubble b.good { color: var(--ok); } .kraken-bubble b.bad { color: var(--ko); }
+.kraken-bubble small { color: #d9c6ff; font-style: italic; font-size: 13px; }
+.bg-verdict { gap: 6px; }
+.kraken-says { margin: -4px 0 4px; color: #d9c6ff; font-style: italic; }
+@media (prefers-reduced-motion: reduce) { .tentacle, .kraken-react img { animation: none !important; } }

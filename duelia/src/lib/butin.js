@@ -52,12 +52,12 @@ export function move(placement, idx, delta, bank) {
   return validPlacement(next, bank) ? next : placement
 }
 
-// Palier (titre) du duo selon le butin final
+// Titre du duo de voleurs selon le butin final
 export const RANKS = [
-  { min: 1, icon: '🪙', name: 'Pilleurs d\'épaves' },
-  { min: 5, icon: '⚓', name: 'Corsaires' },
-  { min: 10, icon: '🏴‍☠️', name: 'Capitaines' },
-  { min: 15, icon: '👑', name: 'Rois des abysses' },
-  { min: 20, icon: '💎', name: 'Légendes du Kraken' },
+  { min: 1, icon: '🪙', name: 'Pickpockets' },
+  { min: 5, icon: '🗝️', name: 'Crocheteurs' },
+  { min: 10, icon: '🏴‍☠️', name: 'Pirates' },
+  { min: 15, icon: '👑', name: 'Maîtres voleurs' },
+  { min: 20, icon: '💎', name: 'Fléaux du Kraken' },
 ]
 export const rankFor = (bank) => [...RANKS].reverse().find(r => bank >= r.min) || null

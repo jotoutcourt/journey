@@ -69,11 +69,11 @@ export function Home({ st, topics, go }) {
           <img className="butin-art" src="/mascotte/pirate.webp" alt="" aria-hidden="true" />
           <div>
             <b>Le Butin <span className="new-tag">À deux</span></b>
-            <small>Avec un ami, chacun sur son téléphone : répartissez vos lingots sur les réponses et sauvez le trésor</small>
+            <small>Avec un ami, chacun sur son téléphone : volez le trésor du Kraken avant que ses tentacules ne le reprennent</small>
           </div>
         </div>
         <div className="tc-actions">
-          <button className="btn btn-gold" onClick={() => go({ name: 'butin' })}>Chasser le trésor</button>
+          <button className="btn btn-gold" onClick={() => go({ name: 'butin' })}>Voler le trésor</button>
         </div>
       </section>
 

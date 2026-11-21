@@ -35,6 +35,6 @@ describe('Le Butin', () => {
   })
   it('les paliers suivent le butin final', () => {
     expect(rankFor(0)).toBeNull()
-    expect(rankFor(20).name).toBe('Légendes du Kraken')
+    expect(rankFor(20).name).toBe('Fléaux du Kraken')
   })
 })
