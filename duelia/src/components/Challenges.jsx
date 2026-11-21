@@ -130,6 +130,7 @@ export function Inbox({ st, topics, now, onAccept, onReject, onPlay, onResult, o
       line = c.status === 'declined' ? (c.dir === 'out' ? 'A refusé ton défi' : 'Tu as refusé ce défi') : c.status === 'expired' ? 'Pas joué en 7 jours' : 'Défi annulé'
     }
     if (!group) continue
+    if (c.their_msg) line = <>{line}<span className="ch-their-msg">💬 « {c.their_msg} »</span></>
     items.push({
       id: 'f-' + c.id, group, line, actions, topic: { id: c.topic_id, ...c.topic }, when: Date.parse(c.answered_at || c.created_at), unseen: group === 'play',
       avatar: c.opponent.avatar, photo: c.opponent.photo, name: `${c.opponent.flag ? c.opponent.flag + ' ' : ''}${c.opponent.name}`,

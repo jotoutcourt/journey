@@ -160,9 +160,10 @@ export function FriendChallengeSheet({ friend, topics, initialTopic, onPick, onC
           <div className="sheet-topic"><TopicIcon topic={topic} size={28} /> {topic.name} <button className="link-btn" onClick={() => setTopic(null)}>changer</button></div>
           {friend.online && <button className="btn btn-primary wide" onClick={() => onPick(topic, 'live')}>⚡ Duel en direct <small>({friend.name} est en ligne)</small></button>}
           <button className={`btn ${friend.online ? 'btn-secondary' : 'btn-primary'} wide`} onClick={() => onPick(topic, 'async')}>📨 Défi différé</button>
+          {!friend.online && <button className="btn btn-secondary wide" onClick={() => onPick(topic, 'live')}>⚡ Demander un duel en direct</button>}
           <p className="sheet-note">{friend.online
             ? 'En direct : vous jouez en même temps. Différé : tu joues maintenant, il joue quand il veut.'
-            : `${friend.name} n'est pas en ligne : tu joues maintenant, il jouera quand il voudra et tu recevras le résultat.`}</p>
+            : `${friend.name} n'est pas en ligne. Différé : tu joues maintenant, il jouera quand il voudra. En direct : il reçoit une notification et a 2 minutes pour te rejoindre.`}</p>
         </>}
         <button className="btn btn-ghost wide" onClick={onCancel}>Annuler</button>
       </div>
@@ -208,7 +209,7 @@ export function PickFriendSheet({ topic, friends, online, onPick, onLink, onAdd,
 export function InviteWaiting({ friend, topic, status, startedAt, onCancel, onAsync }) {
   const [now, setNow] = useState(() => Date.now())
   useEffect(() => { const id = setInterval(() => setNow(Date.now()), 500); return () => clearInterval(id) }, [])
-  const left = Math.max(0, 60 - Math.floor((now - startedAt) / 1000))
+  const left = Math.max(0, 120 - Math.floor((now - startedAt) / 1000))
   const over = status === 'declined' || status === 'expired' || status === 'failed'
   return (
     <div className="matchmaking">
@@ -244,8 +245,40 @@ export function LiveInviteBanner({ invite, onAccept, onDecline }) {
   )
 }
 
+/* ---------- Petit message à l'autre joueur après un défi différé ---------- */
+const QUICK = ['GG 👏', 'Revanche ? 😏', 'Trop facile 😎', 'J\'ai eu chaud 😅', 'Celle-là était dure 🤯']
+export function ChallengeMessage({ name, theirMsg, myMsg, onSend }) {
+  const [text, setText] = useState('')
+  const [sent, setSent] = useState(myMsg || null)
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState(false)
+  async function send(msg) {
+    const m = msg.trim().slice(0, 140)
+    if (!m || busy) return
+    setBusy(true); setErr(false)
+    try { await onSend(m); setSent(m); setText('') } catch { setErr(true) }
+    setBusy(false)
+  }
+  return (
+    <section className="ch-msg">
+      {theirMsg && <p className="ch-msg-theirs"><b>{name}</b> : « {theirMsg} »</p>}
+      {sent
+        ? <p className="ch-msg-sent">✓ Ton message : « {sent} »</p>
+        : <>
+          <p className="ch-msg-title">💬 Un petit mot pour {name} ?</p>
+          <div className="ch-msg-quick">{QUICK.map(q => <button key={q} disabled={busy} onClick={() => send(q)}>{q}</button>)}</div>
+          <form className="ch-msg-form" onSubmit={e => { e.preventDefault(); send(text) }}>
+            <input value={text} maxLength={140} placeholder="Ou écris ton message…" onChange={e => setText(e.target.value)} />
+            <button className="btn btn-small btn-primary" disabled={busy || !text.trim()}>Envoyer</button>
+          </form>
+          {err && <small className="recover-err">Envoi impossible : vérifie ta connexion.</small>}
+        </>}
+    </section>
+  )
+}
+
 /* ---------- Défi envoyé à un ami ---------- */
-export function FriendSent({ friend, topic, score, failed, onRetry, onInbox, onHome }) {
+export function FriendSent({ friend, topic, score, failed, onRetry, onInbox, onHome, onMessage }) {
   return (
     <div className="screen link-screen">
       <div className="link-card">
@@ -254,6 +287,7 @@ export function FriendSent({ friend, topic, score, failed, onRetry, onInbox, onH
         <div className="sheet-topic"><TopicIcon topic={topic} size={24} /> {topic.name}</div>
         <p>Tu as marqué <b>{score} points</b>. {failed ? 'Vérifie ta connexion et réessaie.' : `Ton score reste caché : ${friend.name} le découvrira à la fin de sa partie, et tu recevras le résultat dans Défis.`}</p>
       </div>
+      {failed === false && onMessage && <ChallengeMessage name={friend.name} onSend={onMessage} />}
       {failed && <button className="btn btn-primary wide" onClick={onRetry}>Réessayer</button>}
       <button className="btn btn-secondary wide" onClick={onInbox}>Voir mes défis</button>
       <button className="btn btn-ghost wide" onClick={onHome}>Accueil</button>

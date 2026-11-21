@@ -68,7 +68,7 @@ function LevelRing({ before, after, topic }) {
   )
 }
 
-export default function Results({ data, me, onRematch, onAnother, onTopic, onShare }) {
+export default function Results({ data, me, onRematch, onAnother, onTopic, onShare, extra }) {
   const { outcome, myScore, oppScore, opponent, topic, bonuses, total, before, after, log, questions } = data
   const [showRecap, setShowRecap] = useState(false)
   const [sent, setSent] = useState(null)
@@ -147,6 +147,8 @@ export default function Results({ data, me, onRematch, onAnother, onTopic, onSha
           {!sent && data.autoSent !== 'ok' && <small>Si l'envoi automatique échoue, ce lien permet à {data.link.to} de voir qui a gagné.</small>}
         </div>
       )}
+
+      {extra}
 
       <div className="results-actions">
         <button className="btn btn-ghost" onClick={() => setShowRecap(s => !s)}>{showRecap ? 'Masquer' : 'Voir'} les réponses</button>

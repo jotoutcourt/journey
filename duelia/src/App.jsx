@@ -17,7 +17,7 @@ import { createOutgoing, tickChallenges, pendingCount, markPlayed } from './lib/
 import { Inbox, ChallengeSheet, NotifyBanner, SentScreen } from './components/Challenges.jsx'
 import { ButinHome, ButinGame, DuoInviteBanner } from './components/Butin.jsx'
 import { buildButin } from './lib/butin.js'
-import { FriendsScreen, FriendChallengeSheet, PickFriendSheet, InviteWaiting, LiveInviteBanner, FriendSent, SharedTopics } from './components/Social.jsx'
+import { FriendsScreen, FriendChallengeSheet, PickFriendSheet, InviteWaiting, LiveInviteBanner, FriendSent, SharedTopics, ChallengeMessage } from './components/Social.jsx'
 import * as api from './lib/account.js'
 import TopicRequestSheet from './components/TopicRequest.jsx'
 import Pari from './components/Pari.jsx'
@@ -330,7 +330,7 @@ export default function App() {
     if (r.friendSend) {
       const answers = plain(log.me, questions.length)
       const send = () => api.sendChallenge(r.friendSend.player_id, t, questions, answers)
-        .then(() => setRoute(cur => (cur.name === 'friendsent' ? { ...cur, failed: false } : cur)))
+        .then(cid => setRoute(cur => (cur.name === 'friendsent' ? { ...cur, failed: false, challengeId: cid } : cur)))
         .catch(() => setRoute(cur => (cur.name === 'friendsent' ? { ...cur, failed: true } : cur)))
       setRoute({ name: 'friendsent', id: r.id, topicObj: r.topicObj, friend: r.friendSend, score: myScore, failed: undefined, retry: send })
       send()
@@ -344,7 +344,7 @@ export default function App() {
         const mine = fromPlain(answers.map(a => [a.choice, a.t]), questions.length)
         const theirs = fromPlain(c.from_answers, questions.length)
         const data = settleFriend(c, res.my_score, res.their_score, logFrom(questions, mine, theirs))
-        setRoute({ ...r, name: 'results', data, friendRematch: c.opponent })
+        setRoute({ ...r, name: 'results', data, friendRematch: c.opponent, friendMsg: { id: c.id, name: c.opponent.name, theirMsg: c.their_msg } })
         social.refreshChallenges()
       }).catch(() => { setToast('Envoi impossible : vérifie ta connexion. Le défi t\'attend toujours dans Défis.'); setRoute({ name: 'inbox' }) })
       return
@@ -659,7 +659,8 @@ export default function App() {
       const data = st.friendResults?.[c.id]
       if (!data) { setToast('Résultat en cours de récupération…'); return }
       const t = topicOf(c)
-      setRoute({ name: 'results', id: byId(c.topic_id) ? c.topic_id : undefined, topicObj: byId(c.topic_id) ? null : t, opponent: data.opponent, data: { ...data, topic: t }, friendRematch: c.opponent })
+      setRoute({ name: 'results', id: byId(c.topic_id) ? c.topic_id : undefined, topicObj: byId(c.topic_id) ? null : t, opponent: data.opponent, data: { ...data, topic: t }, friendRematch: c.opponent,
+        friendMsg: { id: c.id, name: c.opponent.name, theirMsg: c.their_msg, myMsg: c.my_msg } })
     },
   }
 
@@ -916,6 +917,7 @@ export default function App() {
     case 'invite': view = topic ? <InviteWaiting key={route.startedAt} friend={route.friend} topic={topic} status={route.status} startedAt={route.startedAt}
       onCancel={cancelInvite} onAsync={() => startFriendDuel(route.friend, topic, 'async')} /> : null; break
     case 'friendsent': view = topic ? <FriendSent friend={route.friend} topic={topic} score={route.score} failed={route.failed}
+      onMessage={route.challengeId ? (m) => api.setChallengeMessage(route.challengeId, m) : null}
       onRetry={() => { setRoute(cur => ({ ...cur, failed: undefined })); route.retry() }} onInbox={() => go({ name: 'inbox' })} onHome={() => go({ name: 'home' })} /> : null; break
     case 'sent': {
       const ch = (st.challenges || []).find(c => c.id === route.challengeId)
@@ -924,6 +926,8 @@ export default function App() {
     }
     case 'results': view = (
       <Results data={route.data} me={me}
+        extra={route.friendMsg && <ChallengeMessage key={route.friendMsg.id} name={route.friendMsg.name} theirMsg={route.friendMsg.theirMsg} myMsg={route.friendMsg.myMsg}
+          onSend={(m) => api.setChallengeMessage(route.friendMsg.id, m).then(social.refreshChallenges)} />}
         onRematch={() => {
           const linkish = route.data.link || route.data.fromLink
           if (route.friendRematch) return setFriendSheet({ ...route.friendRematch, online: social.social?.friends?.find(f => f.player_id === route.friendRematch.player_id)?.online })
