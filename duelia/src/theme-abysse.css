@@ -432,3 +432,114 @@ html.abysse .butin-card .butin-art { width: 72px; height: 72px; background: none
 .kraken-says { margin: -4px 0 4px; color: #d9c6ff; font-style: italic; }
 @media (prefers-reduced-motion: reduce) { .tentacle, .kraken-react img { animation: none !important; } }
 .bg-treasure > b .ingot, .butin-final b .ingot { width: 26px; height: 15px; vertical-align: 3px; margin-right: 4px; }
+
+/* ===================== Le Butin v3 : style néon (maquette) ===================== */
+.butin-game.loot { background: #0b0420 url(/decor/vs-fond-debut.webp) center / cover no-repeat; gap: 0; }
+.butin-game.loot::before { content: ''; position: absolute; inset: 0; z-index: 0; background: linear-gradient(180deg, #0b0420cc 0%, #0b042099 40%, #0b0420b3 100%); pointer-events: none; }
+.loot > * { position: relative; z-index: 1; }
+.lt-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.lt-quit { width: 38px; height: 38px; border-radius: 50%; background: #ffffff14; font-size: 16px; white-space: nowrap; }
+.lt-bank { display: flex; flex-direction: column; align-items: center; padding: 4px 22px 6px; border-radius: 99px; background: #14082ecc;
+  box-shadow: 0 0 0 2px #8b5cff, 0 0 18px #8b5cff88, inset 0 0 12px #8b5cff33; }
+.lt-bank small { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #d9c6ff; }
+.lt-bank b { display: flex; align-items: center; gap: 8px; font-family: var(--display); font-size: 25px; line-height: 1.05; color: var(--gold); text-shadow: 0 0 16px #ffc94066; }
+.lt-coin { width: 24px; height: 24px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff1b8, #ffc940 45%, #b8862b 80%); box-shadow: 0 0 10px #ffc94099, inset 0 0 0 2px #e0a52a; }
+.lt-timer { min-width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; font-family: var(--display); font-weight: 700; font-size: 18px; background: #14082ecc; box-shadow: 0 0 0 2px #8b5cff, 0 0 14px #8b5cff66; }
+.lt-timer.hurry { box-shadow: 0 0 0 2px var(--ko), 0 0 14px #ff5d73aa; color: var(--ko); animation: segPulse 0.8s infinite; }
+.lt-dots { display: flex; justify-content: center; gap: 4px; margin-top: 7px; }
+.lt-dots i { width: 9px; height: 9px; border-radius: 50%; background: #2d1b5c; box-shadow: inset 0 0 0 1px #5a3fa0; transition: all 0.4s; }
+.lt-dots i.on { background: radial-gradient(circle at 35% 30%, #fff1b8, #ffc940 55%, #b8862b); box-shadow: 0 0 6px #ffc94099; }
+/* joueurs : pastilles néon turquoise (toi) et rose (coéquipier) */
+.lt-team { display: flex; justify-content: space-between; gap: 10px; margin-top: 10px; }
+.lt-player { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; padding: 3px 8px 3px 3px; border-radius: 99px; background: #14082ecc; font-family: var(--display); font-weight: 600; font-size: 15px; transition: box-shadow 0.3s; }
+.lt-player > span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lt-player.me { box-shadow: 0 0 0 2px #2ee6c5, 0 0 16px #2ee6c577; }
+.lt-player.mate { box-shadow: 0 0 0 2px #ff4fd8, 0 0 16px #ff4fd877; color: #ffc6f2; }
+.lt-player.ready.me { box-shadow: 0 0 0 3px #2ee6c5, 0 0 24px #2ee6c5cc; }
+.lt-player.ready.mate { box-shadow: 0 0 0 3px #ff4fd8, 0 0 24px #ff4fd8cc; }
+.lt-player.speaking img, .lt-player.speaking .avatar { animation: talk 0.35s ease-in-out infinite alternate; }
+.lt-mic { flex: none; width: 32px; height: 32px; border-radius: 50%; background: #ffffff14; font-size: 15px; display: grid; place-items: center; }
+.lt-mic.on { background: #2ee6c533; box-shadow: 0 0 0 1.5px #2ee6c5; }
+.lt-mic.muted { background: #ff5d7333; }
+.lt-mic-on { font-style: normal; font-size: 14px; }
+.lt-voice-note { margin: 6px 0 0; text-align: center; font-size: 12px; color: var(--muted); }
+.lt-topic { align-self: center; margin-top: 10px; padding: 4px 14px; border-radius: 99px; background: #14082ecc; box-shadow: inset 0 0 0 1px #5a3fa0; font-size: 13px; color: #d9c6ff; }
+.lt-question { text-align: center; font-size: clamp(19px, 5.2vw, 23px); line-height: 1.22; margin: 8px 4px 0; text-shadow: 0 4px 18px #000c; }
+/* le Kraken derrière les caisses */
+.lt-stage { position: relative; margin-top: 4px; padding-top: 74px; }
+.lt-kraken { position: absolute; z-index: 0; top: -6px; left: 50%; width: 230px; margin-left: -115px; height: auto; pointer-events: none; filter: drop-shadow(0 0 24px #8b3dff88); animation: krakenWatch 3s ease-in-out infinite; }
+@keyframes krakenWatch { 50% { transform: translateY(-4px) rotate(-2deg); } }
+.loot.reveal .lt-kraken { animation: krakenLunge 1.2s 0.2s ease-in-out both; }
+@keyframes krakenLunge { 40% { transform: translateY(-10px) scale(1.08); } }
+.lt-grid { position: relative; z-index: 1; display: grid; gap: 10px; }
+.lt-grid.n4, .lt-grid.n2 { grid-template-columns: 1fr 1fr; }
+.lt-grid.n3 { grid-template-columns: 1fr; gap: 8px; }
+/* une caisse = carte néon : lettre + réponse, puis le plateau de lingots */
+.lt-card { position: relative; }
+.lt-card-main { width: 100%; display: flex; flex-direction: column; gap: 6px; padding: 8px; border-radius: 18px; text-align: left; color: #fff;
+  background: linear-gradient(180deg, #24104fee, #14082ef2); box-shadow: 0 0 0 2px #7c4dff, 0 0 16px #7c4dff66, inset 0 0 18px #7c4dff22; transition: box-shadow 0.3s, transform 0.15s; }
+.lt-card-main:active:not(:disabled) { transform: scale(0.97); }
+.lt-head { display: flex; align-items: center; gap: 8px; min-height: 30px; }
+.lt-letter { flex: none; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-family: var(--display); font-weight: 700; font-size: 16px; background: #0b0420; box-shadow: 0 0 0 2px #a98bff, 0 0 10px #a98bff88; }
+.lt-text { flex: 1; min-width: 0; font-family: var(--display); font-weight: 600; font-size: 15px; line-height: 1.15; overflow-wrap: anywhere; }
+.lt-tray { position: relative; display: block; height: 58px; border-radius: 12px; overflow: hidden; background: linear-gradient(180deg, #0a0418, #1a0b3d); box-shadow: inset 0 3px 10px #000c, inset 0 0 0 1px #3b2773; }
+.lt-grid.n3 .lt-card-main { flex-direction: row; align-items: center; }
+.lt-grid.n3 .lt-head { flex: 1; }
+.lt-grid.n3 .lt-tray { flex: 1.1; height: 50px; }
+.lt-gold { position: absolute; inset: 6px 8px 5px; display: flex; flex-wrap: wrap-reverse; align-content: flex-start; justify-content: center; gap: 1px 2px; }
+.lt-ingot { width: 20px; height: 11px; border-radius: 2px 2px 3px 3px; background: linear-gradient(180deg, #fff3c2 0%, #ffd24a 35%, #e0a52a 70%, #a8741a 100%);
+  box-shadow: 0 1px 0 #7a5410, 0 0 6px #ffc94066; clip-path: polygon(12% 0, 88% 0, 100% 100%, 0 100%); animation: ingotDrop 0.25s ease-out both; }
+.lt-count { position: absolute; right: 5px; top: 4px; padding: 0 6px; border-radius: 99px; background: #000b; color: var(--gold); font-family: var(--display); font-weight: 700; font-size: 12px; z-index: 2; }
+.lt-card .tentacle { width: 44%; height: 170%; margin-left: -6%; z-index: 3; }
+.lt-step { position: absolute; z-index: 2; bottom: 6px; width: 30px; height: 26px; border-radius: 9px; background: #0b0420dd; box-shadow: inset 0 0 0 1px #7c4dff; font-family: var(--display); font-weight: 700; font-size: 13px; color: #d9c6ff; }
+.lt-step.minus { left: 6px; } .lt-step.plus { right: 6px; width: 34px; }
+.lt-step:disabled { opacity: 0.3; }
+.lt-grid.n3 .lt-step { bottom: 50%; margin-bottom: -13px; }
+.lt-grid.n3 .lt-step.minus { left: auto; right: 46px; }
+/* états */
+.lt-card.has .lt-card-main { box-shadow: 0 0 0 2px #b38cff, 0 0 22px #a866ffaa, inset 0 0 18px #a866ff33; }
+.lt-card.ok .lt-card-main { box-shadow: 0 0 0 3px #3ddc84, 0 0 28px #3ddc84cc, inset 0 0 20px #3ddc8444; }
+.lt-card.ok .lt-letter { box-shadow: 0 0 0 2px #3ddc84, 0 0 12px #3ddc84; }
+.lt-card.ok .lt-tray::after { content: '✦  ✦'; position: absolute; inset: 0; display: grid; place-items: center; color: #fff6c2; font-size: 14px; letter-spacing: 70px; text-shadow: 0 0 8px #ffc940; animation: twinkle 1s ease-in-out infinite alternate; }
+@keyframes twinkle { from { opacity: 0.3; } to { opacity: 1; } }
+.lt-card.sunk .lt-card-main { box-shadow: 0 0 0 3px #ff4f9a, 0 0 28px #ff4f9acc, inset 0 0 20px #ff4f9a44; }
+.lt-card.sunk .lt-letter { box-shadow: 0 0 0 2px #ff4f9a, 0 0 12px #ff4f9a; }
+.lt-card.sunk .tentacle { animation: tentacleSnatch 1.9s 0.25s cubic-bezier(.45,0,.3,1) forwards; }
+.lt-card.sunk .lt-ingot { animation: ingotSnatch 1.3s calc(0.85s + var(--k) * 0.015s) cubic-bezier(.5,0,.8,.5) forwards; }
+.lt-card.open .lt-card-main { opacity: 0.45; }
+/* bas d'écran */
+.lt-dock { margin-top: auto; padding-top: 10px; display: flex; flex-direction: column; gap: 8px; text-align: center; }
+.lt-free { margin: 0; font-size: 13.5px; color: #d9c6ff; }
+.lt-free.warn b { color: var(--gold); }
+.lt-free .link-btn { margin-left: 6px; }
+/* bulle du Kraken à la révélation (néon rose) */
+.lt-bubble { flex-direction: row; align-items: center; gap: 6px; text-align: left; padding: 6px 14px 6px 4px; border-radius: 99px; background: #14082ef2;
+  box-shadow: 0 0 0 2px #ff4fd8, 0 0 22px #ff4fd888; animation: fadeUp 0.35s 0.5s both; margin-top: auto; }
+.lt-bubble.sad { box-shadow: 0 0 0 2px #3ddc84, 0 0 22px #3ddc8488; }
+.lt-bubble > div { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.lt-bubble b { font-family: var(--display); font-size: 18px; color: #ff8fe4; }
+.lt-bubble.sad b { color: var(--ok); }
+.lt-bubble b em { font-style: normal; color: var(--gold); font-size: 21px; }
+.lt-bubble small { color: #e9dcff; font-style: italic; font-size: 13.5px; }
+.lt-bubble-kraken { margin: -18px 0 -10px -6px; width: 86px !important; height: auto !important; animation: krakenGloat 0.5s 0.9s ease-in-out 3 alternate; }
+.lt-bubble.sad .lt-bubble-kraken { animation: krakenSulk 1.2s 0.9s ease-in-out both; }
+@media (prefers-reduced-motion: reduce) { .lt-kraken, .lt-bubble-kraken { animation: none !important; } }
+/* ajustements : Kraken plus visible, boutons en bandes sur les côtés du plateau (ne cachent plus l'or) */
+.lt-stage { padding-top: 100px; }
+.lt-kraken { width: 250px; margin-left: -125px; top: -10px; }
+.lt-question { margin-top: 6px; }
+.lt-topic { margin-top: 8px; }
+.lt-team { margin-top: 8px; }
+.lt-card-main { gap: 5px; padding: 7px; }
+.lt-tray { height: 56px; }
+.lt-gold { inset: 4px 30px 3px; gap: 1px 2px; }
+.lt-ingot { width: 19px; height: 10px; }
+.lt-step { bottom: 7px; height: 56px; width: 26px; border-radius: 12px 0 0 12px; font-size: 14px; background: #ffffff0d; box-shadow: inset -1px 0 0 #3b2773; }
+.lt-step.minus { left: 7px; }
+.lt-step.plus { right: 7px; width: 26px; border-radius: 0 12px 12px 0; box-shadow: inset 1px 0 0 #3b2773; font-size: 12px; }
+.lt-count { right: 32px; }
+.lt-grid.n3 .lt-tray { flex: none; width: 150px; height: 48px; }
+.lt-grid.n3 .lt-step { bottom: 7px; margin: 0; height: 48px; }
+.lt-grid.n3 .lt-step.minus { left: auto; right: 131px; }
+.lt-card.open .lt-card-main { opacity: 1; filter: saturate(0.3) brightness(0.55); }
+.lt-stage { padding-top: 90px; }

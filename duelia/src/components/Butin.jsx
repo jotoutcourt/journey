@@ -263,60 +263,76 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
     send(() => api.duoPlace(gameId, view.round, next))
   }
 
+  const micIcon = { on: '🎙️', muted: '🔇', asking: '⏳', denied: '🚫', unsupported: '🚫' }[voice.mic] || '🎙️'
+  const voiceNote = voice.mic === 'denied' ? 'Micro refusé : autorise-le dans les réglages du téléphone (Safari › Micro).'
+    : voice.link === 'failed' ? 'Connexion vocale impossible sur ce réseau (essayez en Wi-Fi).'
+      : (voice.mic === 'on' || voice.mic === 'muted') && voice.link !== 'connected' ? (voice.partnerMic ? 'Connexion de la voix…' : `En attente du micro de ${partner.name}…`) : null
+
   return (
-    <div className={`butin-game ${reveal ? 'reveal' : ''}`}>
-      <img className="duel-deco" src="/decor/tentacules.webp" alt="" aria-hidden="true" draggable="false" />
-      <header className="bg-top">
-        <ConfirmButton className="bg-quit" onConfirm={() => { api.leaveDuo(gameId).catch(() => {}); onExit() }} confirmLabel="Quitter ?">✕</ConfirmButton>
-        <div className="bg-treasure">
+    <div className={`butin-game loot ${reveal ? 'reveal' : ''}`}>
+      <header className="lt-top">
+        <ConfirmButton className="lt-quit" onConfirm={() => { api.leaveDuo(gameId).catch(() => {}); onExit() }} confirmLabel="Quitter ?">✕</ConfirmButton>
+        <div className="lt-bank">
           <small>Votre butin</small>
-          <b><i className="ingot" /> {gold(view.bank)}</b>
-          <div className="bg-bars" aria-hidden="true">{Array.from({ length: START }, (_, i) => <i key={i} className={i < view.bank ? 'on' : ''} />)}</div>
+          <b><i className="lt-coin" aria-hidden="true" />{gold(view.bank)}</b>
         </div>
-        <div className={`bg-timer ${secs <= 10 && !reveal ? 'hurry' : ''}`}>{reveal ? '⏸' : secs}</div>
+        <div className={`lt-timer ${secs <= 10 && !reveal ? 'hurry' : ''}`}>{reveal ? '⏸' : secs}</div>
       </header>
+      <div className="lt-dots" aria-hidden="true">{Array.from({ length: START }, (_, i) => <i key={i} className={i < view.bank ? 'on' : ''} />)}</div>
 
-
-      <div className="bg-team">
-        <span className={`bg-mate ${view.ready_me ? 'ready' : ''} ${voice.speaking.me ? 'speaking' : ''}`}><Avatar seed={me.avatar} photo={me.photo} size={34} ring="var(--me)" />Toi {voice.mic === 'on' ? '🎙️' : ''}{view.ready_me ? '✓' : ''}</span>
-        <span className={`bg-mate ${view.ready_partner ? 'ready' : ''} ${voice.speaking.partner ? 'speaking' : ''}`}><Avatar seed={partner.avatar} photo={partner.photo} size={34} ring="var(--gold)" />{partner.name} {voice.partnerMic ? '🎙️' : ''}{view.ready_partner ? '✓' : ''}</span>
-        <VoiceBar voice={voice} partner={partner} compact />
+      <div className="lt-team">
+        <div className={`lt-player me ${view.ready_me ? 'ready' : ''} ${voice.speaking.me ? 'speaking' : ''}`}>
+          <Avatar seed={me.avatar} photo={me.photo} size={40} />
+          <span>Toi{view.ready_me ? ' ✓' : ''}</span>
+          <button className={`lt-mic ${voice.mic}`} onClick={voice.toggleMic} disabled={voice.mic === 'asking' || voice.mic === 'unsupported'}
+            aria-label={voice.mic === 'on' ? 'Couper mon micro' : 'Activer mon micro'}>{micIcon}</button>
+        </div>
+        <div className={`lt-player mate ${view.ready_partner ? 'ready' : ''} ${voice.speaking.partner ? 'speaking' : ''}`}>
+          <Avatar seed={partner.avatar} photo={partner.photo} size={40} />
+          <span>{partner.name}{view.ready_partner ? ' ✓' : ''}</span>
+          {voice.partnerMic && <i className="lt-mic-on" aria-label="Micro ouvert">🎙️</i>}
+        </div>
       </div>
+      {(voiceNote || voice.needTap) && (
+        <p className="lt-voice-note">{voiceNote}{voice.needTap && <button className="link-btn" onClick={voice.unlock}>🔊 entendre {partner.name}</button>}</p>
+      )}
 
-      <div className="bg-topic">Question {view.round + 1}/{view.rounds}{q?.topic ? ` · ${q.topic.icon} ${q.topic.name}` : ''}</div>
-      <h2 className="bg-question">{q?.q}</h2>
+      <div className="lt-topic">Question {view.round + 1}/{view.rounds}{q?.topic ? ` · ${q.topic.icon} ${q.topic.name}` : ''}</div>
+      <h2 className="lt-question">{q?.q}</h2>
 
-      {/* Le pont du navire : une trappe par réponse, les lingots posés dessus */}
-      <div className={`bg-deck n${q?.options.length || 4}`}>
-        {q?.options.map((o, i) => {
-          const n = placement[i] || 0
-          const cls = reveal ? (i === q.correct ? 'ok' : n ? 'sunk' : 'open') : n ? 'has' : ''
-          return (
-            <div key={i} className={`hatch-cell ${cls}`}>
-              <button className="hatch" onClick={() => edit(i, 1)} disabled={reveal} aria-label={`${LETTERS[i]} : ${o}, ${n} lingots. Toucher pour ajouter un lingot`}>
-                <Tentacle />
-                <span className="hatch-gold" aria-hidden="true">
-                  {Array.from({ length: n }, (_, k) => <i key={k} className="ingot" style={{ '--k': k }} />)}
-                </span>
-                {n > 0 && <span className="hatch-count">{n}</span>}
-              </button>
-              <div className="hatch-plate">
-                <span className="bg-letter">{LETTERS[i]}</span>
-                <span className="hatch-text">{o}</span>
+      {/* Le Kraken pirate surveille son or, derrière les caisses */}
+      <div className="lt-stage">
+        <img className="lt-kraken" src="/mascotte/pirate-anim.webp" alt="" aria-hidden="true" draggable="false" />
+        <div className={`lt-grid n${q?.options.length || 4}`}>
+          {q?.options.map((o, i) => {
+            const n = placement[i] || 0
+            const cls = reveal ? (i === q.correct ? 'ok' : n ? 'sunk' : 'open') : n ? 'has' : ''
+            return (
+              <div key={i} className={`lt-card ${cls}`}>
+                <button className="lt-card-main" onClick={() => edit(i, 1)} disabled={reveal} aria-label={`${LETTERS[i]} : ${o}, ${n} lingots. Toucher pour ajouter un lingot`}>
+                  <span className="lt-head"><span className="lt-letter">{LETTERS[i]}</span><span className="lt-text">{o}</span></span>
+                  <span className="lt-tray">
+                    <span className="lt-gold" aria-hidden="true">
+                      {Array.from({ length: n }, (_, k) => <i key={k} className="lt-ingot" style={{ '--k': k }} />)}
+                    </span>
+                    {n > 0 && <span className="lt-count">{n}</span>}
+                    <Tentacle />
+                  </span>
+                </button>
+                {!reveal && <>
+                  <button className="lt-step minus" onClick={() => edit(i, -1)} disabled={!n} aria-label="Retirer un lingot">−</button>
+                  <button className="lt-step plus" onClick={() => edit(i, 5)} disabled={!free} aria-label="Ajouter cinq lingots">+5</button>
+                </>}
               </div>
-              {!reveal && <div className="hatch-steps">
-                <button onClick={() => edit(i, -1)} disabled={!n} aria-label="Retirer un lingot">−</button>
-                <button onClick={() => edit(i, 5)} disabled={!free} aria-label="Ajouter cinq lingots">+5</button>
-              </div>}
-            </div>
-          )
-        })}
+            )
+          })}
+        </div>
       </div>
 
       {!reveal ? (
-        <div className="bg-dock">
-          <p className={`bg-free ${free ? 'warn' : ''}`}>
-            {free ? <>Encore <b>{free} lingot{free > 1 ? 's' : ''}</b> à poser : sinon ils seront perdus.</> : 'Tous les lingots sont posés.'}
+        <div className="lt-dock">
+          <p className={`lt-free ${free ? 'warn' : ''}`}>
+            {free ? <>Encore <b>{free} lingot{free > 1 ? 's' : ''}</b> à cacher, sinon le Kraken les reprend.</> : 'Tous les lingots sont cachés.'}
             {placed(placement) > 0 && <button className="link-btn" onClick={clearAll}>tout reprendre</button>}
           </p>
           <button className={`btn ${view.ready_me ? 'btn-ghost' : 'btn-gold'} wide`} onClick={() => send(() => api.duoReady(gameId, view.round, !view.ready_me))}>
@@ -324,15 +340,12 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
           </button>
         </div>
       ) : (
-        <div className="bg-dock bg-verdict" role="status">
-          <div className={`kraken-react ${lost ? 'happy' : 'sad'}`}>
-            <Mascot pose={lost ? 'victoire' : 'defaite'} size={74} />
-            <div className="kraken-bubble">
-              <b className={lost ? 'bad' : 'good'}>{lost === 0 ? 'Rien repris ! Bien joué 🎉' : h.kept === 0 ? 'Le Kraken a tout repris… 🐙' : `Le Kraken reprend ${gold(lost)}`}</b>
-              <small>« {(lost === 0 ? SAD : h.kept === 0 ? GLEE : HAPPY)[view.round % 4]} »</small>
-            </div>
+        <div className={`lt-dock lt-bubble ${lost ? 'happy' : 'sad'}`} role="status">
+          <Mascot pose={lost ? 'pirate' : 'defaite'} size={86} className="lt-bubble-kraken" />
+          <div>
+            <b>{lost === 0 ? 'Rien repris ! Bien joué 🎉' : h.kept === 0 ? <>Le Kraken reprend <em>tout</em></> : <>Le Kraken reprend <em>{gold(lost)}</em></>}</b>
+            <small>« {(lost === 0 ? SAD : h.kept === 0 ? GLEE : HAPPY)[view.round % 4]} »</small>
           </div>
-          <small>{view.bank > 0 && view.round + 1 < view.rounds ? 'Question suivante dans un instant…' : 'Fin du casse…'}</small>
         </div>
       )}
     </div>
