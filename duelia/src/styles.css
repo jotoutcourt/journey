@@ -840,3 +840,11 @@ img { -webkit-user-drag: none; }
 .push-card { margin-top: 10px; }
 .friends .ch-list { margin-bottom: 6px; }
 .inbox-create { margin-top: 24px; }
+.req-sheet { max-height: 88vh; overflow-y: auto; }
+.req-input { width: 100%; box-sizing: border-box; background: var(--bg, #0e0f1f); color: var(--text); border: 2px solid var(--card); border-radius: 12px; padding: 12px; font: inherit; resize: none; }
+.req-sheet .sec-title { align-self: flex-start; margin: 8px 0 0; }
+.req-list { list-style: none; margin: 0; padding: 0; width: 100%; display: flex; flex-direction: column; gap: 8px; }
+.req-list li { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--card); border-radius: 12px; padding: 10px 12px; }
+.req-list li div { display: flex; flex-direction: column; min-width: 0; }
+.req-list li small { color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+.req-list li div { text-align: left; align-items: flex-start; }

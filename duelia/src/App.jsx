@@ -17,6 +17,7 @@ import { createOutgoing, tickChallenges, pendingCount, markPlayed } from './lib/
 import { Inbox, ChallengeSheet, NotifyBanner, SentScreen } from './components/Challenges.jsx'
 import { FriendsScreen, FriendChallengeSheet, InviteWaiting, LiveInviteBanner, FriendSent, FriendChallenges, SharedTopics } from './components/Social.jsx'
 import * as api from './lib/account.js'
+import TopicRequestSheet from './components/TopicRequest.jsx'
 import { useSocial, friendOpponent, fromPlain, logFrom } from './lib/useSocial.js'
 import { pushStatus, enablePush, disablePush, refreshPush } from './lib/push.js'
 import RankShift from './components/RankShift.jsx'
@@ -493,6 +494,8 @@ export default function App() {
   const online = account.status === 'online'
   const social = useSocial(online)
   const [friendSheet, setFriendSheet] = useState(null)
+  const [requestSheet, setRequestSheet] = useState(false)
+  const requestApi = useMemo(() => ({ request: api.requestTopic, vote: api.voteTopicRequest, list: api.listTopicRequests }), [])
   const [push, setPush] = useState(null)
   const [dismissedInvites, setDismissedInvites] = useState([])
   useEffect(() => {
@@ -808,7 +811,7 @@ export default function App() {
   const friendBadge = social.counts.requests
   let view
   switch (route.name) {
-    case 'topics': view = <Topics topics={topics} go={go} importTopic={importTopic} extra={<SharedTopics online={online} installed={new Set(st.custom.filter(t => t.shared).map(t => t.id))} onOpen={installShared} onList={listShared} />} />; break
+    case 'topics': view = <Topics topics={topics} go={go} importTopic={importTopic} onRequest={() => setRequestSheet(true)} extra={<SharedTopics online={online} installed={new Set(st.custom.filter(t => t.shared).map(t => t.id))} onOpen={installShared} onList={listShared} />} />; break
     case 'topic': view = topic ? <TopicPage st={st} topic={topic} go={go} toggleFollow={toggleFollow} shareTopic={shareTopic} deleteTopic={deleteTopic} online={online} onPublish={publishTopic} onUnpublish={unpublishTopic} /> : null; break
     case 'ranking': view = <Ranking st={st} topic={topic} go={go} />; break
     case 'create': view = <CreateTopic key={route.id || 'new'} st={st} existing={route.id ? topic : null} onSave={saveTopic} go={go} />; break
@@ -880,6 +883,7 @@ export default function App() {
           onClose={() => setNotes(n => n.slice(1))} />
       )}
       {sheet && <ChallengeSheet sheet={sheet} onSend={sendChallenge} onCancel={() => setSheet(null)} />}
+      {requestSheet && <TopicRequestSheet online={online} api={requestApi} onClose={() => setRequestSheet(false)} />}
       {friendSheet && <FriendChallengeSheet friend={friendSheet} topics={friendTopics} onPick={(t, mode) => startFriendDuel(friendSheet, t, mode)} onCancel={() => setFriendSheet(null)} />}
       {invite && !['duel', 'match', 'invite', 'tower'].includes(route.name) && <LiveInviteBanner key={invite.id} invite={invite} onAccept={acceptInvite} onDecline={declineInvite} />}
       {shift && <RankShift shift={shift} profile={me} onClose={closeShift} />}

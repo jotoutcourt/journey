@@ -147,7 +147,7 @@ export function Chevrons() {
 }
 
 /* ---------------- Thèmes ---------------- */
-export function Topics({ topics, go, importTopic, extra }) {
+export function Topics({ topics, go, importTopic, extra, onRequest }) {
   const [q, setQ] = useState('')
   const [cat, setCat] = useState('Tous')
   const [code, setCode] = useState('')
@@ -191,6 +191,11 @@ export function Topics({ topics, go, importTopic, extra }) {
           <span className="topic-icon plus" style={{ width: 76, height: 76 }}>+</span>
           <b>Créer un thème</b>
           <small>Tes questions, tes règles</small>
+        </button>
+        <button className="topic-tile create-tile" onClick={onRequest}>
+          <span className="topic-icon plus" style={{ width: 76, height: 76 }}>💡</span>
+          <b>Demander un thème</b>
+          <small>Propose un sujet, on le crée</small>
         </button>
         {mine.map(t => <TopicTile key={t.id} topic={t} onClick={() => go({ name: 'topic', id: t.id })} sub={`${t.questions.length} questions`} />)}
       </div>

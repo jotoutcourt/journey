@@ -132,3 +132,8 @@ export const publishTopic = (topic, publishedId) => rpc('publish_topic', {
 export const unpublishTopic = (id) => rpc('unpublish_topic', { p_id: id })
 export const listSharedTopics = (query) => rpc('list_shared_topics', { p_query: query || null })
 export const getSharedTopic = (id) => rpc('get_shared_topic', { p_id: id })
+
+// Demandes de thèmes
+export const requestTopic = (name, details) => rpc('request_topic', { p_name: name, p_details: details || '' })
+export const voteTopicRequest = (id) => rpc('vote_topic_request', { p_id: id })
+export const listTopicRequests = () => rpc('list_topic_requests')
