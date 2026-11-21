@@ -29,7 +29,7 @@ function Tentacle() {
 }
 
 /* ---------- Accueil du mode : règles, choix du coéquipier, classement des duos ---------- */
-export function ButinHome({ online, friends, onInvite, onBack, onAddFriend }) {
+export function ButinHome({ online, friends, onInvite, onBack, onAddFriend, onSolo, wallet }) {
   const [board, setBoard] = useState(null)
   const [busy, setBusy] = useState(null)
   useEffect(() => {
@@ -53,7 +53,10 @@ export function ButinHome({ online, friends, onInvite, onBack, onAddFriend }) {
         </ol>
       </section>
 
-      <h3 className="sec-title">Choisis ton coéquipier</h3>
+      <button className="btn btn-gold wide butin-solo-btn" onClick={onSolo} disabled={!online}>🏴‍☠️ Jouer seul contre le Kraken</button>
+      {wallet && <p className="butin-wallet">Ton trésor : <i className="lt-coin" aria-hidden="true" /><b>{wallet.lingots} lingots</b>{wallet.daily_bonus ? ' · 🎁 +5 sur ta première partie du jour' : ''}</p>}
+
+      <h3 className="sec-title">Ou à deux : choisis ton coéquipier</h3>
       {!online && <p className="inbox-empty">Ce mode se joue en ligne : vérifie ta connexion.</p>}
       {online && list.length === 0 && (
         <div className="inbox-empty">
@@ -138,7 +141,7 @@ function VoiceBar({ voice, partner, compact, hangUp }) {
 }
 
 /* ---------- La partie ---------- */
-export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAcceptReplay }) {
+export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAcceptReplay, onWallet }) {
   const [state, setView] = useState(null) // état du serveur, avec l'heure de réception
   // la partie affichée est toujours celle demandée (le composant reste monté d'une partie à l'autre pour garder la voix)
   const view = state && state.id === gameId ? state : null
@@ -148,6 +151,8 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
   const [draft, setDraft] = useState(null) // { round, placement, at } : ce que je viens de faire, avant confirmation
   const [failed, setFailed] = useState(0)
   const queue = useRef(Promise.resolve())
+  const onWalletRef = useRef(onWallet)
+  useEffect(() => { onWalletRef.current = onWallet })
   const voice = useDuoVoice(room?.id, room ? !room.host : true, !!room)
 
   // Interroge le serveur en continu (la partie avance toute seule côté serveur)
@@ -160,7 +165,8 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
         const v = await api.getDuo(gameId)
         if (alive && v) {
           setView({ ...v, at: Date.now() }); setFailed(0)
-          if (['playing', 'done'].includes(v.status) && v.voice_id) setRoom(r => (r && r.id === v.voice_id ? r : { id: v.voice_id, host: !!v.voice_host }))
+          if (v.status === 'done' && v.wallet != null) onWalletRef.current?.(v.wallet)
+          if (!v.solo && ['playing', 'done'].includes(v.status) && v.voice_id) setRoom(r => (r && r.id === v.voice_id ? r : { id: v.voice_id, host: !!v.voice_host }))
         }
       } catch { if (alive) setFailed(f => f + 1) } finally { busy = false }
     }
@@ -188,7 +194,8 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
   if (!view) {
     return <div className="screen butin-game center"><Mascot pose="attente" size={200} /><p className="muted">{failed > 3 ? 'Connexion difficile…' : 'Connexion au trésor…'}</p><button className="btn btn-ghost" onClick={onExit}>Retour</button></div>
   }
-  const partner = view.partner || { name: 'Ton coéquipier' }
+  const solo = !!view.solo
+  const partner = view.partner || { name: solo ? 'Le Kraken' : 'Ton coéquipier' }
 
   // Invitation envoyée : on attend la réponse
   if (view.status === 'invited' || ['declined', 'expired', 'cancelled'].includes(view.status)) {
@@ -217,11 +224,17 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
         {/* le Kraken est le méchant : il boude quand vous repartez avec de l'or, il jubile quand il a tout récupéré */}
         <Mascot pose={view.status === 'left' ? 'neutre' : view.bank > 0 ? 'defaite' : 'victoire'} size={170} />
         <h1>{view.status === 'left' ? (view.left_by_me ? 'Partie quittée' : `${partner.name} a quitté la partie`) : view.bank > 0 ? 'Butin volé !' : 'Le Kraken a tout récupéré'}</h1>
-        {view.status === 'done' && <p className="kraken-says">{view.bank > 0 ? (view.bank >= START ? '« Tout… vous m\'avez TOUT pris ?! »' : '« Grrr… la prochaine fois, je reprends tout ! »') : '« Mwahaha ! Mon or reste avec moi ! »'}</p>}
+        {view.status === 'done' && <p className="kraken-says">{view.bank > 0 ? (view.bank >= START ? (solo ? '« Tout… tu m\'as TOUT pris ?! »' : '« Tout… vous m\'avez TOUT pris ?! »') : '« Grrr… la prochaine fois, je reprends tout ! »') : '« Mwahaha ! Mon or reste avec moi ! »'}</p>}
         {view.status === 'done' && <>
           <div className="butin-final"><small>Butin final</small><b><i className="ingot" /> {gold(view.bank)}</b><span>{rank ? `${rank.icon} ${rank.name}` : 'Rien à ramener cette fois…'}</span></div>
-          <div className="butin-duo"><Avatar seed={me.avatar} photo={me.photo} size={56} ring="var(--me)" /><span>&</span><Avatar seed={partner.avatar} photo={partner.photo} size={56} ring="var(--gold)" /></div>
-          <VoiceBar voice={voice} partner={partner} hangUp />
+          {view.reward?.length > 0 && (
+            <div className="butin-reward">
+              {view.reward.map((r, i) => <span key={i}>+{r.delta} {r.reason === 'butin' ? 'lingots volés' : r.reason === 'bonus_jour' ? 'bonus du jour 🎁' : r.reason === 'parfait' ? 'casse parfait 💎' : ''}</span>)}
+              {view.wallet != null && <b>Ton trésor : <i className="lt-coin" aria-hidden="true" />{view.wallet} lingots</b>}
+            </div>
+          )}
+          {!solo && <div className="butin-duo"><Avatar seed={me.avatar} photo={me.photo} size={56} ring="var(--me)" /><span>&</span><Avatar seed={partner.avatar} photo={partner.photo} size={56} ring="var(--gold)" /></div>}
+          {!solo && <VoiceBar voice={voice} partner={partner} hangUp />}
           <ol className="butin-history">
             {view.history.map((h, i) => (
               <li key={i}><span>Q{i + 1}</span><i style={{ width: `${(h.kept / START) * 100}%` }} /><b className={h.kept === h.before ? 'ok' : h.kept ? 'mid' : 'ko'}>{h.kept}/{h.before}</b></li>
@@ -232,7 +245,7 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
         <div className="results-dock">
           {replayInvite && replayInvite.from?.player_id === partner.player_id
             ? <button className="btn btn-gold" onClick={() => onAcceptReplay(replayInvite)}>🔁 {partner.name} veut rejouer : go !</button>
-            : <button className="btn btn-gold" onClick={() => onReplay(partner, room?.id)}>Rejouer ensemble</button>}
+            : <button className="btn btn-gold" onClick={() => onReplay(solo ? null : partner, room?.id)}>{solo ? 'Rejouer' : 'Rejouer ensemble'}</button>}
           <button className="btn btn-secondary" onClick={onExit}>Terminer</button>
         </div>
       </div>
@@ -284,14 +297,14 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
         <div className={`lt-player me ${view.ready_me ? 'ready' : ''} ${voice.speaking.me ? 'speaking' : ''}`}>
           <Avatar seed={me.avatar} photo={me.photo} size={30} />
           <span>Toi{view.ready_me ? ' ✓' : ''}</span>
-          <button className={`lt-mic ${voice.mic}`} onClick={voice.toggleMic} disabled={voice.mic === 'asking' || voice.mic === 'unsupported'}
-            aria-label={voice.mic === 'on' ? 'Couper mon micro' : 'Activer mon micro'}>{micIcon}</button>
+          {!solo && <button className={`lt-mic ${voice.mic}`} onClick={voice.toggleMic} disabled={voice.mic === 'asking' || voice.mic === 'unsupported'}
+            aria-label={voice.mic === 'on' ? 'Couper mon micro' : 'Activer mon micro'}>{micIcon}</button>}
         </div>
-        <div className={`lt-player mate ${view.ready_partner ? 'ready' : ''} ${voice.speaking.partner ? 'speaking' : ''}`}>
+        {!solo && <div className={`lt-player mate ${view.ready_partner ? 'ready' : ''} ${voice.speaking.partner ? 'speaking' : ''}`}>
           <Avatar seed={partner.avatar} photo={partner.photo} size={30} />
           <span>{partner.name}{view.ready_partner ? ' ✓' : ''}</span>
           {voice.partnerMic && <i className="lt-mic-on" aria-label="Micro ouvert">🎙️</i>}
-        </div>
+        </div>}
       </div>
       {(voiceNote || voice.needTap) && (
         <p className="lt-voice-note">{voiceNote}{voice.needTap && <button className="link-btn" onClick={voice.unlock}>🔊 entendre {partner.name}</button>}</p>
@@ -339,7 +352,7 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
             {placed(placement) > 0 && <button className="link-btn" onClick={clearAll}>tout reprendre</button>}
           </p>
           <button className={`btn ${view.ready_me ? 'btn-ghost' : 'btn-gold'} wide`} onClick={() => send(() => api.duoReady(gameId, view.round, !view.ready_me))}>
-            {view.ready_me ? (view.ready_partner ? 'C\'est parti…' : `En attente de ${partner.name}… (annuler)`) : view.ready_partner ? `${partner.name} est prêt·e : on valide !` : 'On valide ✓'}
+            {solo ? 'Valider ✓' : view.ready_me ? (view.ready_partner ? 'C\'est parti…' : `En attente de ${partner.name}… (annuler)`) : view.ready_partner ? `${partner.name} est prêt·e : on valide !` : 'On valide ✓'}
           </button>
         </div>
       ) : (

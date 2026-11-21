@@ -609,3 +609,31 @@ html.abysse .butin-card .butin-art { width: 72px; height: 72px; background: none
 .lt-step { height: 66px; }
 .lt-stage { padding-top: 100px; }
 .lt-grid.n3 .lt-tray, .lt-grid.n3 .lt-step { height: 54px; }
+
+/* ===== Accueil : le Butin en jeu principal ===== */
+.home .top { display: flex; align-items: center; justify-content: space-between; }
+.wallet-pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px 5px 6px; border-radius: 99px; background: #14082ecc; box-shadow: 0 0 0 1.5px #ffc94099, 0 0 12px #ffc94033; font-family: var(--display); font-weight: 700; font-size: 17px; color: var(--gold); }
+.wallet-pill .lt-coin, .butin-wallet .lt-coin, .butin-reward .lt-coin { width: 20px; height: 20px; display: inline-block; vertical-align: -4px; margin-right: 4px; }
+.butin-hero-card { position: relative; display: grid; grid-template-columns: 120px 1fr; gap: 6px 12px; align-items: center; margin-top: 4px; padding: 14px 14px 14px 6px; border-radius: 24px; overflow: hidden;
+  background: #0b0420 url(/decor/butin-fond.webp) center / cover; box-shadow: 0 0 0 2px #8b5cff, 0 0 24px #8b5cff66; }
+.butin-hero-card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, #0b042000, #0b0420aa 45%); pointer-events: none; }
+.butin-hero-card > * { position: relative; }
+.bh-art { width: 128px; height: auto; margin: -8px 0 -10px; filter: drop-shadow(0 6px 16px #ffc94044); grid-row: span 2; }
+.bh-text { display: flex; flex-direction: column; gap: 4px; }
+.bh-text b { font-family: var(--display); font-size: 28px; line-height: 1; text-shadow: 0 0 18px #a866ff; }
+.bh-text small { color: #e1d4ff; font-size: 13.5px; line-height: 1.3; }
+.bh-bonus { align-self: flex-start; margin-top: 2px; padding: 3px 9px; border-radius: 99px; background: #ffc94022; color: var(--gold); font-size: 12px; font-weight: 700; }
+.bh-actions { display: grid; grid-template-columns: 1.3fr 1fr; gap: 8px; }
+.bh-actions .btn { padding: 12px 8px; }
+.butin-solo-btn { margin: 4px 0 6px; font-size: 18px; }
+.butin-wallet { text-align: center; color: var(--muted); margin: 0 0 6px; }
+.butin-wallet b { color: var(--gold); }
+.butin-reward { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 10px 18px; border-radius: 16px; background: #ffc94014; border: 1px solid #ffc94055; color: var(--gold); font-weight: 700; }
+.butin-reward b { margin-top: 4px; color: var(--text); font-family: var(--display); }
+.lt-team > .lt-player:only-child { flex: none; min-width: 140px; margin: 0 auto; }
+/* bandeau d'installation */
+.install-banner { margin-top: 10px; padding: 10px 12px; border-radius: 16px; background: var(--card); border: 1px solid var(--line); display: flex; flex-direction: column; gap: 8px; }
+.install-banner.warn { border-color: #ffc94088; }
+.install-banner p { margin: 0; font-size: 14px; }
+.install-banner > div { display: flex; gap: 8px; }
+.install-banner a.btn { align-self: flex-start; text-decoration: none; }

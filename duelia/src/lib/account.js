@@ -154,3 +154,6 @@ export const getDuoBoard = () => rpc('get_duo_board')
 export const duoSignal = (id, kind, payload) => rpc('duo_signal', { p_game: id, p_kind: kind, p_payload: payload })
 export const duoSignalsSince = (id, after) => rpc('duo_signals_since', { p_game: id, p_after: after })
 export const setChallengeMessage = (id, msg) => rpc('set_challenge_message', { p_id: id, p_msg: msg })
+// ===== Le Butin solo et porte-monnaie de lingots =====
+export const startSoloButin = (questions) => rpc('start_solo_butin', { p_questions: questions })
+export const getWallet = () => rpc('get_wallet')

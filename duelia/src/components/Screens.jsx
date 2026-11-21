@@ -11,6 +11,7 @@ import { meEntry, resizeImage } from '../lib/profile.js'
 import { topicTitle, nextTitle, ladderFor, TITLE_LEVELS } from '../lib/titles.js'
 import { RecoverForm } from './AccountCard.jsx'
 import Mascot from './Mascot.jsx'
+import { InstallBanner } from './InstallCard.jsx'
 import { pariDay, TIERS } from '../lib/pari.js'
 import { dayKey } from '../lib/tower.js'
 import { decodeTopic } from '../lib/store.js'
@@ -39,7 +40,7 @@ export function TopicTile({ topic, onClick, sub }) {
 }
 
 /* ---------------- Accueil ---------------- */
-export function Home({ st, topics, go }) {
+export function Home({ st, topics, go, wallet, onSolo }) {
   const me = st.profile
   const lvl = levelInfo(st.xp)
   const followed = topics.filter(t => st.follows.includes(t.id))
@@ -53,7 +54,24 @@ export function Home({ st, topics, go }) {
     <div className="screen home">
       <header className="top">
         <Brand />
+        {wallet && <span className="wallet-pill" title="Tes lingots"><i className="lt-coin" aria-hidden="true" />{wallet.lingots}</span>}
       </header>
+
+      {/* Le jeu principal : le Butin */}
+      <section className="butin-hero-card">
+        <img className="bh-art" src="/mascotte/pirate-anim.webp" alt="" aria-hidden="true" />
+        <div className="bh-text">
+          <b>Le Butin</b>
+          <small>Vole le trésor du Kraken : cache tes lingots dans la bonne caisse avant que ses tentacules ne les reprennent.</small>
+          {wallet?.daily_bonus && <span className="bh-bonus">🎁 +5 lingots offerts sur ta première partie du jour</span>}
+        </div>
+        <div className="bh-actions">
+          <button className="btn btn-gold" onClick={onSolo}>🏴‍☠️ Jouer</button>
+          <button className="btn btn-secondary" onClick={() => go({ name: 'butin' })}>👥 À deux</button>
+        </div>
+      </section>
+
+      <InstallBanner />
 
       <section className="me-card" onClick={() => go({ name: 'profile' })}>
         <Avatar seed={me.avatar} photo={me.photo} size={64} ring="var(--me)" />
@@ -64,19 +82,35 @@ export function Home({ st, topics, go }) {
         </div>
       </section>
 
-      <section className="tower-card butin-card">
-        <div className="tc-head">
-          <img className="butin-art" src="/mascotte/pirate.webp" alt="" aria-hidden="true" />
-          <div>
-            <b>Le Butin <span className="new-tag">À deux</span></b>
-            <small>Avec un ami, chacun sur son téléphone : volez le trésor du Kraken avant que ses tentacules ne le reprennent</small>
+      {followed.length > 0 && (
+        <section>
+          <h3 className="sec-title">Mes thèmes</h3>
+          <div className="hscroll">
+            {followed.map(t => (
+              <TopicTile key={t.id} topic={t} onClick={() => go({ name: 'topic', id: t.id })}
+                sub={topicTitle(t, levelInfo(st.topicStats[t.id]?.xp).level)} />
+            ))}
           </div>
-        </div>
-        <div className="tc-actions">
-          <button className="btn btn-gold" onClick={() => go({ name: 'butin' })}>Voler le trésor</button>
+        </section>
+      )}
+
+      <section>
+        <h3 className="sec-title">Champions à détrôner</h3>
+        <div className="champ-list">
+          {champs.map(({ topic, champ }) => (
+            <div key={topic.id} className="champ-row">
+              <Avatar seed={champ.avatar} size={44} ring="var(--gold)" />
+              <div className="champ-info">
+                <b>{champ.flag} {champ.name}<AiTag on={champ.ai} /></b>
+                <small>👑 Champion · {topic.name}</small>
+              </div>
+              <button className="btn btn-small btn-gold" onClick={() => go({ name: 'match', id: topic.id, forceChampion: true })}>Défier</button>
+            </div>
+          ))}
         </div>
       </section>
 
+      <h3 className="sec-title">Autres jeux</h3>
       <section className="tower-card pari-card">
         <div className="tc-head">
           <span className="pari-art" aria-hidden="true">🎲</span>
@@ -113,33 +147,6 @@ export function Home({ st, topics, go }) {
         </div>
       </section>
 
-      {followed.length > 0 && (
-        <section>
-          <h3 className="sec-title">Mes thèmes</h3>
-          <div className="hscroll">
-            {followed.map(t => (
-              <TopicTile key={t.id} topic={t} onClick={() => go({ name: 'topic', id: t.id })}
-                sub={topicTitle(t, levelInfo(st.topicStats[t.id]?.xp).level)} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      <section>
-        <h3 className="sec-title">Champions à détrôner</h3>
-        <div className="champ-list">
-          {champs.map(({ topic, champ }) => (
-            <div key={topic.id} className="champ-row">
-              <Avatar seed={champ.avatar} size={44} ring="var(--gold)" />
-              <div className="champ-info">
-                <b>{champ.flag} {champ.name}<AiTag on={champ.ai} /></b>
-                <small>👑 Champion · {topic.name}</small>
-              </div>
-              <button className="btn btn-small btn-gold" onClick={() => go({ name: 'match', id: topic.id, forceChampion: true })}>Défier</button>
-            </div>
-          ))}
-        </div>
-      </section>
 
       <section>
         <h3 className="sec-title">Thèmes populaires</h3>

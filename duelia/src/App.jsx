@@ -629,6 +629,16 @@ export default function App() {
   }
   // Le Butin : inviter un ami, ou rejoindre une partie à laquelle on est invité
   const duoInvite = social.duoInvites.find(i => !dismissedInvites.includes(i.id))
+  // Porte-monnaie de lingots (sur le serveur) et Butin solo contre le Kraken
+  const [wallet, setWallet] = useState(null)
+  const refreshWallet = useCallback(() => api.getWallet().then(w => { if (w) setWallet(w) }).catch(() => {}), [])
+  useEffect(() => { if (account.status === 'online') refreshWallet() }, [account.status, refreshWallet])
+  const startSolo = async () => {
+    try {
+      const id = await api.startSoloButin(buildButin(topics))
+      setRoute({ name: 'butingame', gameId: id })
+    } catch { setToast('Impossible de lancer la partie : vérifie ta connexion.') }
+  }
   const startButin = async (friend, voiceRoom = null) => {
     try {
       const id = await api.inviteDuo(friend.player_id, buildButin(topics), voiceRoom)
@@ -876,12 +886,13 @@ export default function App() {
     case 'ranking': view = <Ranking st={st} topic={topic} go={go} />; break
     case 'create': view = <CreateTopic key={route.id || 'new'} st={st} existing={route.id ? topic : null} onSave={saveTopic} go={go} />; break
     case 'profile': view = <Profile st={st} topics={topics} update={update} go={go} account={account} onMakeCode={getRecoveryCode} onRecover={recoverAccount} push={push} onPush={onPush} onFriends={() => go({ name: 'friends' })} friendCount={social.social?.friends?.length} />; break
-    case 'butin': view = <ButinHome online={online && !!social.social} friends={social.social?.friends} onInvite={startButin}
+    case 'butin': view = <ButinHome online={online && account.status === 'online'} friends={social.social?.friends} onInvite={startButin} onSolo={startSolo} wallet={wallet}
       onBack={() => go({ name: 'home' })} onAddFriend={() => go({ name: 'friends' })} />; break
     case 'butingame': view = <ButinGame key="butin" gameId={route.gameId} me={me}
       replayInvite={social.duoInvites.find(i => !dismissedInvites.includes(i.id))}
       onAcceptReplay={acceptDuo}
-      onExit={() => go({ name: 'butin' })} onReplay={(p, room) => startButin(p, room)} />; break
+      onWallet={(n) => setWallet(w => ({ ...(w || {}), lingots: n, daily_bonus: false }))}
+      onExit={() => go({ name: 'home' })} onReplay={(p, room) => (p ? startButin(p, room) : startSolo())} />; break
     case 'pari': view = <Pari key={route.daily ? 'pd' : 'pl' + (route.n || 0)} topics={topics} st={st} daily={!!route.daily} onFinish={finishPari}
       onExit={() => go({ name: 'home' })} board={pariBoard} loadBoard={loadPariBoard} />; break
     case 'tower': view = <Tower key={route.daily ? 'daily' : 'free'} topics={topics} profile={me} daily={!!route.daily} towerState={st.tower}
@@ -940,9 +951,9 @@ export default function App() {
         onTopic={() => (byId(topic.id) ? go({ name: 'topic', id: topic.id }) : go({ name: 'topics' }))}
         onShare={() => shareText(`${route.data.outcome === 'win' ? 'Victoire' : 'Duel'} ${route.data.myScore}–${route.data.oppScore} contre ${route.opponent.name} sur « ${topic.name} » dans Kraken !`)} />
     ); break
-    default: view = <Home st={st} topics={topics} go={go} />
+    default: view = <Home st={st} topics={topics} go={go} wallet={wallet} onSolo={startSolo} />
   }
-  if (!view) view = <Home st={st} topics={topics} go={go} />
+  if (!view) view = <Home st={st} topics={topics} go={go} wallet={wallet} onSolo={startSolo} />
 
   return (
     <div className={`app ${fullscreen ? 'full' : ''}`}>
