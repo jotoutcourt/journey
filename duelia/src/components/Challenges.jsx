@@ -68,7 +68,7 @@ export function SentScreen({ challenge, topic, onInbox, onHome }) {
 }
 
 /* ---------- Onglet Défis ---------- */
-export function Inbox({ st, topics, now, onAccept, onReject, onPlay, onResult, onDismiss, onResend, onCancel, extra }) {
+export function Inbox({ st, topics, now, onAccept, onReject, onPlay, onResult, onDismiss, onResend, onCancel, extra, footer }) {
   const list = st.challenges || []
   const byId = (id) => topics.find(t => t.id === id)
   const groups = [
@@ -145,6 +145,7 @@ export function Inbox({ st, topics, now, onAccept, onReject, onPlay, onResult, o
           </ul>
         </section>
       ))}
+      {footer}
     </div>
   )
 }

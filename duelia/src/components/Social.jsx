@@ -216,7 +216,7 @@ export function FriendSent({ friend, topic, score, failed, onRetry, onInbox, onH
 }
 
 /* ---------- Défis entre amis dans l'onglet Défis ---------- */
-export function FriendChallenges({ list, results, now, onPlay, onDecline, onCancel, onSee, onFriends }) {
+export function FriendChallenges({ list, results, now, onPlay, onDecline, onCancel, onSee }) {
   const ago = (iso) => {
     const m = Math.max(0, Math.round((now - Date.parse(iso)) / 60000))
     return m < 1 ? 'à l\'instant' : m < 60 ? `il y a ${m} min` : m < 1440 ? `il y a ${Math.round(m / 60)} h` : `il y a ${Math.round(m / 1440)} j`
@@ -240,11 +240,8 @@ export function FriendChallenges({ list, results, now, onPlay, onDecline, onCanc
   }
   return (
     <section className="friend-ch">
-      <div className="friend-ch-head">
-        <h3 className="sec-title">Entre amis</h3>
-        <button className="btn btn-small btn-secondary" onClick={onFriends}>👥 Mes amis</button>
-      </div>
-      {groups.length === 0 && <p className="inbox-empty">Aucun défi entre amis pour l'instant. Ouvre « Mes amis » et appuie sur « Défier ».</p>}
+      <h3 className="sec-title">Entre amis</h3>
+      {groups.length === 0 && <p className="inbox-empty">Aucun défi entre amis pour l'instant. Va dans l'onglet Amis et appuie sur « Défier » à côté d'un ami.</p>}
       {groups.map(g => (
         <div key={g.key}>
           <h4 className="sub-title">{g.title} <small>({g.items.length})</small></h4>

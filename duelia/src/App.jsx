@@ -147,7 +147,7 @@ const TABS = [
   { name: 'home', label: 'Accueil', icon: <path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z" /> },
   { name: 'topics', label: 'Thèmes', icon: <><rect x="4" y="4" width="7" height="7" rx="2" /><rect x="13" y="4" width="7" height="7" rx="2" /><rect x="4" y="13" width="7" height="7" rx="2" /><rect x="13" y="13" width="7" height="7" rx="2" /></> },
   { name: 'inbox', label: 'Défis', icon: <><path d="M6 4l6 6M18 4l-6 6M4 20l6-6M20 20l-6-6" /><circle cx="12" cy="12" r="2.5" /></> },
-  { name: 'create', label: 'Créer', icon: <path d="M12 4v16M4 12h16" strokeWidth="2.6" /> },
+  { name: 'friends', label: 'Amis', icon: <><circle cx="9" cy="8" r="3.2" /><path d="M3 19c.8-3.2 3.1-5 6-5s5.2 1.8 6 5" /><circle cx="17" cy="9" r="2.4" /><path d="M16 14.2c2.4.2 4.2 1.8 5 4.3" /></> },
   { name: 'profile', label: 'Profil', icon: <><circle cx="12" cy="8" r="4" /><path d="M4 20c1-4 4-6 8-6s7 2 8 6" /></> },
 ]
 
@@ -615,7 +615,6 @@ export default function App() {
       const t = topicOf(c)
       setRoute({ name: 'results', id: byId(c.topic_id) ? c.topic_id : undefined, topicObj: byId(c.topic_id) ? null : t, opponent: data.opponent, data: { ...data, topic: t }, friendRematch: c.opponent })
     },
-    onFriends: () => go({ name: 'friends' }),
   }
 
   const shareMyCode = () => social.code && shareText(`Ajoute-moi en ami sur Duelia ! Mon code : ${social.code.slice(0, 4)}-${social.code.slice(4)}`, `${baseUrl()}#ami=${social.code}`)
@@ -811,7 +810,8 @@ export default function App() {
 
   const meForDuel = { ...me, topicXp: st.topicStats[route.id]?.xp || 0 }
   const fullscreen = ['match', 'duel', 'results', 'tower', 'sent', 'invite', 'friendsent', 'linkload', 'linkready', 'linkintro', 'linkreply'].includes(route.name)
-  const badge = pendingCount(st) + social.counts.challenges + social.counts.requests
+  const badge = pendingCount(st) + social.counts.challenges
+  const friendBadge = social.counts.requests
   let view
   switch (route.name) {
     case 'topics': view = <Topics topics={topics} go={go} importTopic={importTopic} extra={<SharedTopics online={online} installed={new Set(st.custom.filter(t => t.shared).map(t => t.id))} onOpen={installShared} onList={listShared} />} />; break
@@ -842,12 +842,13 @@ export default function App() {
       ? <LinkReplyIntro reply={link} known={(st.linkChallenges || []).some(c => c.id === link.id)} onSee={openReply} onHome={() => { setLink(null); go({ name: 'home' }) }} />
       : null; break
     case 'inbox': view = <Inbox st={st} topics={topics} now={clock} {...inboxHandlers}
-      extra={<FriendChallenges list={social.challenges} results={st.friendResults} now={clock} {...friendHandlers} />} />; break
+      extra={<FriendChallenges list={social.challenges} results={st.friendResults} now={clock} {...friendHandlers} />}
+      footer={<button className="btn btn-ghost wide inbox-create" onClick={() => go({ name: 'create' })}>＋ Créer un thème</button>} />; break
     case 'friends': view = <FriendsScreen online={online} social={social.social} code={social.code} initialCode={route.code} now={clock} push={push} onPush={onPush}
       onAdd={(c) => api.addFriend(c).then(r => { social.refreshFriends(); return r })}
       onRespond={(f, yes) => api.respondFriend(f.player_id, yes).then(social.refreshFriends).catch(() => setToast('Pas de connexion.'))}
       onRemove={(f) => api.removeFriend(f.player_id).then(social.refreshFriends).catch(() => setToast('Pas de connexion.'))}
-      onChallenge={setFriendSheet} onShareCode={shareMyCode} onBack={() => go({ name: 'inbox' })} />; break
+      onChallenge={setFriendSheet} onShareCode={shareMyCode} />; break
     case 'invite': view = topic ? <InviteWaiting key={route.startedAt} friend={route.friend} topic={topic} status={route.status} startedAt={route.startedAt}
       onCancel={cancelInvite} onAsync={() => startFriendDuel(route.friend, topic, 'async')} /> : null; break
     case 'friendsent': view = topic ? <FriendSent friend={route.friend} topic={topic} score={route.score} failed={route.failed}
@@ -896,6 +897,7 @@ export default function App() {
               <svg viewBox="0 0 24 24">{t.icon}</svg>
               <span>{t.label}</span>
               {t.name === 'inbox' && badge > 0 && <i className="tab-badge">{badge}</i>}
+              {t.name === 'friends' && friendBadge > 0 && <i className="tab-badge">{friendBadge}</i>}
             </button>
           ))}
         </nav>
