@@ -928,7 +928,7 @@ img { -webkit-user-drag: none; }
 .radar-mascot { position: relative; z-index: 1; }
 .empty-mascot { margin: 10px auto 0; }
 .vs-mark { display: flex; flex-direction: column; align-items: center; }
-.vs-mascot { margin-bottom: -18px; animation: mascotIn 0.6s 0.4s cubic-bezier(.2,1.4,.4,1) both; filter: drop-shadow(0 8px 22px #8b3dff66); position: relative; z-index: 0; }
+.vs-mascot { margin-bottom: -30px; animation: mascotIn 0.6s 0.4s cubic-bezier(.2,1.4,.4,1) both; filter: drop-shadow(0 8px 22px #8b3dff66); position: relative; z-index: 0; }
 .vs-mark span { position: relative; z-index: 1; }
 .notify-mascot { width: 44px; height: 44px; flex: none; align-self: flex-end; margin-bottom: -10px; }
 .push-title { display: flex; align-items: center; gap: 8px; }

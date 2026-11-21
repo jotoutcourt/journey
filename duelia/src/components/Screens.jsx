@@ -367,6 +367,8 @@ const SEARCH_MS = 20000
 
 // Recherche d'un vrai joueur sur le thème pendant 20 s ; sinon (ou sur demande) adversaire IA.
 export function Matchmaking({ topic, opponent, live, makeQuestions, onLive, onReady, onCancel }) {
+  // précharge la pieuvre boxeuse de l'écran face-à-face
+  useEffect(() => { new Image().src = '/mascotte/combat-anim.webp' }, [])
   const [searching, setSearching] = useState(!!live)
   const [secs, setSecs] = useState(0)
   const [found, setFound] = useState(false)
