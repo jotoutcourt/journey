@@ -19,6 +19,7 @@ import x_inventions from './extra/inventions.js'
 import x_sports from './extra/sports.js'
 import x_monuments from './extra/monuments.js'
 import x_anglais from './extra/anglais.js'
+import x_orthographe from './extra/orthographe.js'
 import x_dessins_animes from './extra/dessins-animes.js'
 import x_c_series_cultes from './extra/c-series-cultes.js'
 import x_c_espace from './extra/c-espace.js'
@@ -63,6 +64,7 @@ const EXTRA = {
   'sports': x_sports,
   'monuments': x_monuments,
   'anglais': x_anglais,
+  'orthographe': x_orthographe,
   'dessins-animes': x_dessins_animes,
   'c-series-cultes': x_c_series_cultes,
   'c-espace': x_c_espace,
@@ -303,6 +305,7 @@ export const OFFICIAL_TOPICS = [
   T('sports', 'Sports & JO', '🏅', '#3ddc84', 'Sport', 'Jeux olympiques, tennis, rugby, F1…', 21350, []),
   T('monuments', 'Monuments du monde', '🗽', '#2ec4ff', 'Géographie', 'Merveilles, tours et temples', 18090, []),
   T('anglais', 'Anglais', '🇬🇧', '#5b7cff', 'Langue', 'Vocabulaire, faux amis et expressions', 19570, []),
+  T('orthographe', 'Orthographe', '✍️', '#ff9f43', 'Langue', 'Mots pièges, accords, pluriels et homophones', 16580, []),
   T('dessins-animes', 'Dessins animés', '📺', '#ffb648', 'Cinéma & TV', 'Des Simpson à Miyazaki', 22640, []),
 ]
 
