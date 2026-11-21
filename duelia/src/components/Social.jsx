@@ -140,8 +140,8 @@ export function FriendsScreen({ online, social, code, initialCode, now, push, on
 }
 
 /* ---------- Défier un ami : choix du thème et du mode ---------- */
-export function FriendChallengeSheet({ friend, topics, onPick, onCancel }) {
-  const [topic, setTopic] = useState(null)
+export function FriendChallengeSheet({ friend, topics, initialTopic, onPick, onCancel }) {
+  const [topic, setTopic] = useState(initialTopic || null)
   return (
     <div className="sheet-backdrop" onClick={onCancel}>
       <div className="sheet friend-sheet" role="dialog" aria-labelledby="fsheet-title" onClick={e => e.stopPropagation()}>
@@ -165,6 +165,40 @@ export function FriendChallengeSheet({ friend, topics, onPick, onCancel }) {
             : `${friend.name} n'est pas en ligne : tu joues maintenant, il jouera quand il voudra et tu recevras le résultat.`}</p>
         </>}
         <button className="btn btn-ghost wide" onClick={onCancel}>Annuler</button>
+      </div>
+    </div>
+  )
+}
+
+/* ---------- Depuis un thème : choisir l'ami à défier ---------- */
+export function PickFriendSheet({ topic, friends, online, onPick, onLink, onAdd, onCancel }) {
+  const list = [...(friends || [])].sort((a, b) => (b.online - a.online) || a.name.localeCompare(b.name))
+  return (
+    <div className="sheet-backdrop" onClick={onCancel}>
+      <div className="sheet friend-sheet" role="dialog" aria-labelledby="pick-title" onClick={e => e.stopPropagation()}>
+        <div className="sheet-topic"><TopicIcon topic={topic} size={28} /> {topic.name}</div>
+        <h2 id="pick-title">Défier un ami</h2>
+        {!online && <p className="sheet-sub">Pas de connexion : tu peux quand même défier quelqu'un par lien.</p>}
+        {online && list.length === 0 && <>
+          <Mascot pose="anim" size={96} />
+          <p className="sheet-sub">Tu n'as pas encore d'amis sur Kraken. Envoie-leur un défi par lien : en le relevant, ils deviennent tes amis.</p>
+        </>}
+        {online && list.length > 0 && (
+          <ul className="pick-list">
+            {list.map(f => (
+              <li key={f.player_id}>
+                <button className="pick-friend" onClick={() => onPick(f)}>
+                  <Avatar seed={f.avatar} photo={f.photo} size={44} ring={f.online ? 'var(--good, #3ddc84)' : undefined} />
+                  <span><b>{f.flag} {f.name}</b><small>{f.online ? '● En ligne' : 'Hors ligne'}</small></span>
+                  <i aria-hidden="true">›</i>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        <button className={`btn ${online && list.length > 0 ? 'btn-ghost' : 'btn-primary'} wide`} onClick={onLink}>🔗 Défier par lien</button>
+        {online && list.length === 0 && <button className="btn btn-ghost wide" onClick={onAdd}>Ajouter un ami avec son code</button>}
+        <button className="link-btn" onClick={onCancel}>Annuler</button>
       </div>
     </div>
   )
@@ -224,63 +258,6 @@ export function FriendSent({ friend, topic, score, failed, onRetry, onInbox, onH
       <button className="btn btn-secondary wide" onClick={onInbox}>Voir mes défis</button>
       <button className="btn btn-ghost wide" onClick={onHome}>Accueil</button>
     </div>
-  )
-}
-
-/* ---------- Défis entre amis dans l'onglet Défis ---------- */
-export function FriendChallenges({ list, results, now, onPlay, onDecline, onCancel, onSee }) {
-  const ago = (iso) => {
-    const m = Math.max(0, Math.round((now - Date.parse(iso)) / 60000))
-    return m < 1 ? 'à l\'instant' : m < 60 ? `il y a ${m} min` : m < 1440 ? `il y a ${Math.round(m / 60)} h` : `il y a ${Math.round(m / 1440)} j`
-  }
-  const groups = [
-    { key: 'in', title: 'Tes amis te défient', items: list.filter(c => c.dir === 'in' && c.status === 'pending') },
-    { key: 'done', title: 'Résultats entre amis', items: list.filter(c => c.status === 'done').slice(0, 15) },
-    { key: 'out', title: 'Envoyés à tes amis', items: list.filter(c => c.dir === 'out' && c.status === 'pending') },
-    { key: 'other', title: 'Refusés ou expirés', items: list.filter(c => ['declined', 'expired', 'cancelled'].includes(c.status) && !(c.dir === 'in' && c.status === 'cancelled')).slice(0, 8) },
-  ].filter(g => g.items.length)
-  const line = (c) => {
-    if (c.status === 'pending') return c.dir === 'in' ? 'Joue les 7 questions : son score reste caché jusqu\'à la fin' : `Tu as marqué ${c.my_score} pts · en attente de sa partie`
-    if (c.status === 'done') {
-      const r = results?.[c.id]
-      const v = c.my_score > c.their_score ? 'Victoire' : c.my_score < c.their_score ? 'Défaite' : 'Égalité'
-      return `${v} ${c.my_score}–${c.their_score}${r?.total ? ` · +${r.total} XP` : ''}`
-    }
-    if (c.status === 'declined') return c.dir === 'out' ? 'A refusé ton défi' : 'Tu as refusé ce défi'
-    if (c.status === 'expired') return 'Pas joué en 7 jours'
-    return 'Défi annulé'
-  }
-  return (
-    <section className="friend-ch">
-      <h3 className="sec-title">Entre amis</h3>
-      {groups.length === 0 && <Mascot pose="anim" size={120} className="empty-mascot" />}
-      {groups.length === 0 && <p className="inbox-empty">Aucun défi entre amis pour l'instant. Va dans l'onglet Amis et appuie sur « Défier » à côté d'un ami.</p>}
-      {groups.map(g => (
-        <div key={g.key}>
-          <h4 className="sub-title">{g.title} <small>({g.items.length})</small></h4>
-          <ul className="ch-list">
-            {g.items.map(c => (
-              <li key={c.id} className={`ch-item ${g.key === 'in' ? 'unseen' : ''}`}>
-                <Avatar seed={c.opponent.avatar} photo={c.opponent.photo} size={44} />
-                <div className="ch-info">
-                  <b>{c.opponent.flag} {c.opponent.name}</b>
-                  <small className="ch-topic"><TopicIcon topic={{ id: c.topic_id, ...c.topic }} size={16} /> {c.topic.name} · {ago(c.answered_at || c.created_at)}</small>
-                  <small>{line(c)}</small>
-                </div>
-                <div className="ch-actions">
-                  {g.key === 'in' && <>
-                    <button className="btn btn-small btn-primary" onClick={() => onPlay(c)}>Jouer</button>
-                    <button className="btn btn-small btn-ghost" onClick={() => onDecline(c)}>Refuser</button>
-                  </>}
-                  {g.key === 'done' && <button className="btn btn-small btn-secondary" onClick={() => onSee(c)}>Voir</button>}
-                  {g.key === 'out' && <ConfirmButton className="btn btn-small btn-ghost danger" onConfirm={() => onCancel(c)} confirmLabel="Sûr ?">Annuler</ConfirmButton>}
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
-    </section>
   )
 }
 

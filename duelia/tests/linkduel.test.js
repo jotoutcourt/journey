@@ -19,6 +19,14 @@ describe('défi par lien', () => {
     expect(d.expiresAt).toBe(123)
     expect(d.score).toBe(scoreOf(questions, d.answers))
   })
+  it('le code ami du challenger voyage dans le lien (pour devenir amis), un code invalide est ignoré', () => {
+    const ok = decodeChallenge(encodeChallenge({ id: 'f', from: { name: 'Jo', fc: 'AB23CD45' }, topic, questions, answers }))
+    expect(ok.from.fc).toBe('AB23CD45')
+    const bad = decodeChallenge(encodeChallenge({ id: 'f', from: { name: 'Jo', fc: 'x<script>' }, topic, questions, answers }))
+    expect(bad.from.fc).toBeNull()
+    const none = decodeChallenge(encodeChallenge({ id: 'f', from: { name: 'Jo' }, topic, questions, answers }))
+    expect(none.from.fc).toBeNull()
+  })
   it('les temps impossibles sont ramenés dans les bornes', () => {
     const bad = answers.map(a => ({ ...a, t: 999999 }))
     const d = decodeChallenge(encodeChallenge({ id: 'x', from: { name: 'Jo' }, topic, questions, answers: bad }))

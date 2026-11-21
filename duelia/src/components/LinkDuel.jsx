@@ -11,8 +11,9 @@ async function copyText(text, fallbackEl) {
 }
 
 /* ---------- Le défi est prêt : on l'envoie ---------- */
-export function LinkReady({ url, shortening, score, topic, onHome, onTopic }) {
+export function LinkReady({ url, shortening, score, topic, onName, onHome, onTopic }) {
   const [copied, setCopied] = useState(null)
+  const [to, setTo] = useState('')
   const [area, setArea] = useState(null)
   const text = `Je te défie sur « ${topic.name} » dans Kraken ! 7 questions, tu peux me battre ?`
   const canShare = typeof navigator.share === 'function'
@@ -29,8 +30,12 @@ export function LinkReady({ url, shortening, score, topic, onHome, onTopic }) {
         <h1>Ton défi est prêt</h1>
         <p>Tu as marqué <b>{score} points</b>. Ton score reste caché : ton ami le découvrira à la fin de sa partie.</p>
       </div>
-      <button className="btn btn-primary wide" onClick={share} disabled={shortening}>{shortening ? 'Préparation du lien…' : canShare ? '📤 Envoyer le défi' : '📋 Copier le lien du défi'}</button>
-      {canShare && <button className="btn btn-ghost wide" disabled={shortening} onClick={async () => setCopied(await copyText(`${text} ${url}`, area))}>📋 Copier le lien</button>}
+      <label className="link-field link-to">
+        <small>Pour qui ? (facultatif)</small>
+        <input value={to} maxLength={18} placeholder="Ex. Maman, Léa…" onChange={e => setTo(e.target.value)} onBlur={() => onName?.(to)} />
+      </label>
+      <button className="btn btn-primary wide" onClick={() => { onName?.(to); share() }} disabled={shortening}>{shortening ? 'Préparation du lien…' : canShare ? '📤 Envoyer le défi' : '📋 Copier le lien du défi'}</button>
+      {canShare && <button className="btn btn-ghost wide" disabled={shortening} onClick={async () => { onName?.(to); setCopied(await copyText(`${text} ${url}`, area)) }}>📋 Copier le lien</button>}
       {copied === true && <p className="link-ok" role="status">Lien copié. Colle-le dans un message à ton ami.</p>}
       {copied === false && <p className="link-ok" role="status">Copie automatique impossible : le lien est sélectionné ci-dessous, copie-le à la main.</p>}
       <label className="link-field">
@@ -40,7 +45,7 @@ export function LinkReady({ url, shortening, score, topic, onHome, onTopic }) {
       <ol className="sheet-steps">
         <li>Ton ami ouvre le lien et joue les mêmes 7 questions.</li>
         <li>Tes réponses s'affichent au fil de sa partie ; il découvre le résultat à la fin.</li>
-        <li>Il peut te renvoyer son résultat par un lien : ouvre-le pour voir qui a gagné.</li>
+        <li>Le résultat t'arrive automatiquement, et vous devenez amis sur Kraken.</li>
       </ol>
       <div className="results-actions">
         <button className="btn btn-ghost" onClick={onTopic}>Retour au thème</button>

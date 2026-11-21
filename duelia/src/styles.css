@@ -770,6 +770,7 @@ img { -webkit-user-drag: none; }
 .link-card p b { color: var(--text); }
 .link-ok { margin: 0; text-align: center; color: var(--ok); font-weight: 700; font-size: 14px; }
 .link-field { display: flex; flex-direction: column; gap: 6px; }
+.link-to input { width: 100%; border: 1px solid var(--line); background: var(--bg2); border-radius: 12px; padding: 12px 14px; font-size: 16px; color: var(--text); }
 .link-field small { color: var(--muted); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
 .link-field textarea, .link-manual { width: 100%; border: 1px solid var(--line); background: var(--bg2); border-radius: 12px; padding: 10px; font-size: 12px; color: var(--muted); resize: none; word-break: break-all; }
 .link-reply { display: flex; flex-direction: column; gap: 8px; margin-top: 22px; text-align: center; }
@@ -947,3 +948,13 @@ img { -webkit-user-drag: none; }
 .push-title { display: flex; align-items: center; gap: 8px; }
 .offline-card { display: flex; align-items: center; gap: 12px; background: var(--card); border: 1.5px dashed var(--line); border-radius: 18px; padding: 10px 14px; margin-bottom: 12px; }
 .offline-card p { margin: 0; color: var(--muted); font-size: 14px; }
+
+/* Choix de l'ami à défier depuis un thème */
+.pick-list { list-style: none; margin: 4px 0; padding: 0; width: 100%; max-height: 46vh; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+.pick-friend { width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 16px; background: var(--card); border: 1px solid var(--line); text-align: left; }
+.pick-friend:active { transform: scale(0.98); }
+.pick-friend span { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.pick-friend b { font-family: var(--display); font-size: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pick-friend small { color: var(--muted); font-size: 13px; }
+.pick-friend i { font-style: normal; font-size: 24px; color: var(--muted); }
+.tp-link { display: block; margin: 8px auto 0; font-size: 14px; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }

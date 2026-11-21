@@ -39,7 +39,7 @@ export function scoreOf(questions, answers) {
 export function encodeChallenge({ id, from, topic, questions, answers, expiresAt }) {
   return b64encode({
     v: 1, id, x: expiresAt,
-    f: { n: from.name, a: from.avatar, fl: from.flag },
+    f: { n: from.name, a: from.avatar, fl: from.flag, ...(from.fc ? { c: from.fc } : {}) },
     t: { id: topic.id, n: topic.name, i: topic.icon, c: topic.color, k: topic.category },
     q: questions.map(q => [q.q, ...q.options, q.correct, q.idx ?? -1]),
     a: answers.map(a => [a.choice, Math.round(a.t)]),
@@ -78,7 +78,7 @@ export function decodeChallenge(code) {
     if (!name || !topicName || !questions || !answers) return null
     return {
       id: String(d.id || '').slice(0, 40) || 'lien',
-      from: { name, avatar: str(d.f.a, 40) || name, flag: str(d.f.fl, 8) || '🏳️' },
+      from: { name, avatar: str(d.f.a, 40) || name, flag: str(d.f.fl, 8) || '🏳️', fc: /^[A-Z0-9]{6,12}$/.test(d.f.c || '') ? d.f.c : null },
       topic: {
         id: str(d.t.id, 40) || 'lien', name: topicName, icon: str(d.t.i, 8) || '❓',
         color: /^#[0-9a-f]{6}$/i.test(d.t.c) ? d.t.c : '#7c5cff', category: str(d.t.k, 30) || 'Culture',

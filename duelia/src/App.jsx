@@ -15,7 +15,7 @@ import { dayKey } from './lib/tower.js'
 import { settleDuel, ranksFor } from './lib/rewards.js'
 import { createOutgoing, tickChallenges, pendingCount, markPlayed } from './lib/challenges.js'
 import { Inbox, ChallengeSheet, NotifyBanner, SentScreen } from './components/Challenges.jsx'
-import { FriendsScreen, FriendChallengeSheet, InviteWaiting, LiveInviteBanner, FriendSent, FriendChallenges, SharedTopics } from './components/Social.jsx'
+import { FriendsScreen, FriendChallengeSheet, PickFriendSheet, InviteWaiting, LiveInviteBanner, FriendSent, SharedTopics } from './components/Social.jsx'
 import * as api from './lib/account.js'
 import TopicRequestSheet from './components/TopicRequest.jsx'
 import Pari from './components/Pari.jsx'
@@ -275,14 +275,14 @@ export default function App() {
     if (r.linkCreate) {
       const id = Date.now().toString(36) + '-' + Array.from(crypto.getRandomValues(new Uint8Array(9)), b => b.toString(36).padStart(2, '0')).join('')
       const answers = plain(log.me, questions.length)
-      const url = challengeUrl({ id, from: meEntry(st.profile), topic: t, questions, answers, expiresAt: Date.now() + LINK_TTL })
+      const url = challengeUrl({ id, from: { ...meEntry(st.profile), fc: social.code || null }, topic: t, questions, answers, expiresAt: Date.now() + LINK_TTL })
       const entry = { id: 'lk-' + id, dir: 'link-out', linkId: id, topicId: t.id, opponent: FRIEND, createdAt: Date.now(), status: 'waiting-link', url, myScore, unseen: false }
       setSt(s => ({
         ...s,
         linkChallenges: [{ id, topicId: t.id, questions, answers, score: myScore, at: Date.now(), replies: [] }, ...(s.linkChallenges || [])].slice(0, 30),
         challenges: [entry, ...(s.challenges || [])].slice(0, 40),
       }))
-      setRoute({ name: 'linkready', id: t.id, url, score: myScore, shortening: true })
+      setRoute({ name: 'linkready', id: t.id, url, score: myScore, shortening: true, entryId: entry.id })
       // lien court (les longs liens sont coupés par certaines messageries) ; en cas d'échec on garde le long
       shortenUrl(url).catch(() => url).then(short => {
         setRoute(cur => (cur.name === 'linkready' && cur.url === url ? { ...cur, url: short, shortening: false } : cur))
@@ -300,6 +300,12 @@ export default function App() {
       const known = byId(ch.topic.id)
       // Envoi automatique au serveur : le challenger le recevra sans lien de réponse
       const answersPlain = plain(log.me, questions.length)
+      // Relever un défi par lien fait de vous des amis (si les deux ont un compte)
+      if (ch.from.fc && social.code && ch.from.fc !== social.code) {
+        api.befriendByLink(ch.from.fc).then(res => {
+          if (res === 'added') { setToast(`${ch.from.name} est maintenant dans tes amis`); social.refreshFriends() }
+        }).catch(() => {})
+      }
       submitLinkResult(ch.id, meEntry(st.profile), answersPlain)
         .then(() => setRoute(cur => (cur.name === 'results' && cur.data?.link?.key === reply.key ? { ...cur, data: { ...cur.data, autoSent: 'ok' } } : cur)))
         .catch(() => setRoute(cur => (cur.name === 'results' && cur.data?.link?.key === reply.key ? { ...cur, data: { ...cur.data, autoSent: 'failed' } } : cur)))
@@ -496,6 +502,7 @@ export default function App() {
   const online = account.status === 'online'
   const social = useSocial(online)
   const [friendSheet, setFriendSheet] = useState(null)
+  const [friendPick, setFriendPick] = useState(null) // thème choisi, en attente du choix de l'ami
   const [requestSheet, setRequestSheet] = useState(false)
   // Le Pari : record, partie du jour (seule la première compte) et classement du jour
   const [pariBoard, setPariBoard] = useState(null)
@@ -638,6 +645,11 @@ export default function App() {
     },
   }
 
+  // Nom donné au destinataire d'un défi par lien (« Défi pour Maman ») : remplace « Ton ami » dans la liste
+  const nameLinkTarget = (name) => {
+    const n = name.trim().slice(0, 18)
+    setSt(s => ({ ...s, challenges: (s.challenges || []).map(c => (c.id === route.entryId ? { ...c, opponent: n ? { ...FRIEND, name: n, flag: '' } : FRIEND } : c)) }))
+  }
   const shareMyCode = () => social.code && shareText(`Ajoute-moi en ami sur Kraken ! Mon code : ${social.code.slice(0, 4)}-${social.code.slice(4)}`, `${baseUrl()}#ami=${social.code}`)
 
   // Thèmes partagés
@@ -841,7 +853,7 @@ export default function App() {
   let view
   switch (route.name) {
     case 'topics': view = <Topics topics={topics} go={go} importTopic={importTopic} onRequest={() => setRequestSheet(true)} extra={<SharedTopics online={online} installed={new Set(st.custom.filter(t => t.shared).map(t => t.id))} onOpen={installShared} onList={listShared} />} />; break
-    case 'topic': view = topic ? <TopicPage st={st} topic={topic} go={go} toggleFollow={toggleFollow} shareTopic={shareTopic} deleteTopic={deleteTopic} online={online} onPublish={publishTopic} onUnpublish={unpublishTopic} /> : null; break
+    case 'topic': view = topic ? <TopicPage st={st} topic={topic} go={go} toggleFollow={toggleFollow} shareTopic={shareTopic} deleteTopic={deleteTopic} online={online} onPublish={publishTopic} onUnpublish={unpublishTopic} onFriend={(t) => { social.refreshFriends?.(); setFriendPick(t) }} /> : null; break
     case 'ranking': view = <Ranking st={st} topic={topic} go={go} />; break
     case 'create': view = <CreateTopic key={route.id || 'new'} st={st} existing={route.id ? topic : null} onSave={saveTopic} go={go} />; break
     case 'profile': view = <Profile st={st} topics={topics} update={update} go={go} account={account} onMakeCode={getRecoveryCode} onRecover={recoverAccount} push={push} onPush={onPush} onFriends={() => go({ name: 'friends' })} friendCount={social.social?.friends?.length} />; break
@@ -854,7 +866,7 @@ export default function App() {
     case 'duel': view = <Duel key={route.questions.map(q => q.idx).join() + (route.challengeId || '')} topic={topic} me={meForDuel} opponent={route.opponent} ranks={route.ranks} questions={route.questions}
       mode={route.mode} ghost={route.ghost} link={liveLink} onFinish={finishDuel} onQuit={route.challengeId ? () => go({ name: 'inbox' }) : quitDuel} />; break
     case 'linkload': view = <div className="screen link-screen"><div className="link-card"><div className="spinner" aria-hidden="true" /><h1>Ouverture du défi…</h1></div></div>; break
-    case 'linkready': view = <LinkReady url={route.url} shortening={route.shortening} score={route.score} topic={topic} onHome={() => go({ name: 'home' })} onTopic={() => go({ name: 'topic', id: topic.id })} />; break
+    case 'linkready': view = <LinkReady url={route.url} shortening={route.shortening} score={route.score} topic={topic} onName={nameLinkTarget} onHome={() => go({ name: 'home' })} onTopic={() => go({ name: 'topic', id: topic.id })} />; break
     case 'linkintro': view = link?.kind === 'challenge' ? (
       <LinkIntro challenge={link} onLater={() => { setLink(null); go({ name: 'home' }) }}
         onAccept={() => {
@@ -870,7 +882,7 @@ export default function App() {
       ? <LinkReplyIntro reply={link} known={(st.linkChallenges || []).some(c => c.id === link.id)} onSee={openReply} onHome={() => { setLink(null); go({ name: 'home' }) }} />
       : null; break
     case 'inbox': view = <Inbox st={st} topics={topics} now={clock} {...inboxHandlers}
-      extra={<FriendChallenges list={social.challenges} results={st.friendResults} now={clock} {...friendHandlers} />}
+      friend={{ list: social.challenges || [], results: st.friendResults, ...friendHandlers }}
       footer={<button className="btn btn-ghost wide inbox-create" onClick={() => go({ name: 'create' })}>＋ Créer un thème</button>} />; break
     case 'friends': view = <FriendsScreen online={online} social={social.social} code={social.code} initialCode={route.code} now={clock} push={push} onPush={onPush}
       onAdd={(c) => api.addFriend(c).then(r => { social.refreshFriends(); return r })}
@@ -915,7 +927,12 @@ export default function App() {
       )}
       {sheet && <ChallengeSheet sheet={sheet} onSend={sendChallenge} onCancel={() => setSheet(null)} />}
       {requestSheet && <TopicRequestSheet online={online} api={requestApi} onClose={() => setRequestSheet(false)} />}
-      {friendSheet && <FriendChallengeSheet friend={friendSheet} topics={friendTopics} onPick={(t, mode) => startFriendDuel(friendSheet, t, mode)} onCancel={() => setFriendSheet(null)} />}
+      {friendSheet && <FriendChallengeSheet friend={friendSheet} topics={friendTopics} initialTopic={friendSheet.topic} onPick={(t, mode) => startFriendDuel(friendSheet, t, mode)} onCancel={() => setFriendSheet(null)} />}
+      {friendPick && <PickFriendSheet topic={friendPick} friends={social.social?.friends} online={online && !!social.social}
+        onPick={(f) => { setFriendPick(null); setFriendSheet({ ...f, topic: friendPick }) }}
+        onLink={() => { const t = friendPick; setFriendPick(null); go({ name: 'linkcreate', id: t.id }) }}
+        onAdd={() => { setFriendPick(null); go({ name: 'friends' }) }}
+        onCancel={() => setFriendPick(null)} />}
       {invite && !['duel', 'match', 'invite', 'tower'].includes(route.name) && <LiveInviteBanner key={invite.id} invite={invite} onAccept={acceptInvite} onDecline={declineInvite} />}
       {shift && <RankShift shift={shift} profile={me} onClose={closeShift} />}
       {!fullscreen && (
