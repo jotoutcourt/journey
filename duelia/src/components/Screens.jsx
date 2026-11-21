@@ -49,26 +49,15 @@ export function Home({ go, wallet, onSolo, oxygen }) {
         <h1 className="kraken-sign-img"><img src="/decor/pancarte.webp" alt="L'Appât du Kraken" draggable="false" /></h1>
         <p className="kh-pitch">Cache tes lingots dans la bonne caisse avant que les tentacules du <b>Kraken</b> ne les reprennent.</p>
         {wallet?.daily_bonus && <span className="bh-bonus">🎁 +5 lingots sur ta première partie du jour</span>}
-        <button className="kh-play" onClick={() => setChoose(true)}>Jouer</button>
+        {!choose
+          ? <button className="kh-play" onClick={() => setChoose(true)}>Jouer</button>
+          : <div className="kh-modes" onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setChoose(false) }}>
+            <button className="kh-play kh-mode" autoFocus onClick={() => { setChoose(false); onSolo() }}><span aria-hidden="true">🏴‍☠️</span>Solo</button>
+            <button className="kh-play kh-mode" onClick={() => { setChoose(false); go({ name: 'butin' }) }}><span aria-hidden="true">👥</span>À deux</button>
+          </div>}
         {oxygen}
       </section>
 
-      {choose && (
-        <div className="sheet-backdrop" onClick={() => setChoose(false)}>
-          <div className="sheet friend-sheet" role="dialog" aria-labelledby="mode-title" onClick={e => e.stopPropagation()}>
-            <h2 id="mode-title">Comment jouer ?</h2>
-            <ul className="pick-list who-list">
-              <li><button className="pick-friend" onClick={() => { setChoose(false); onSolo() }}>
-                <span className="who-icon" aria-hidden="true">🏴‍☠️</span><span className="pf-info"><b>Seul contre le Kraken</b><small>1 bouteille d'oxygène</small></span><i aria-hidden="true">›</i>
-              </button></li>
-              <li><button className="pick-friend" onClick={() => { setChoose(false); go({ name: 'butin' }) }}>
-                <span className="who-icon" aria-hidden="true">👥</span><span className="pf-info"><b>Avec un ami</b><small>Chacun sur son téléphone, en direct</small></span><i aria-hidden="true">›</i>
-              </button></li>
-            </ul>
-            <button className="link-btn" onClick={() => setChoose(false)}>Annuler</button>
-          </div>
-        </div>
-      )}
       <InstallBanner />
     </div>
   )
