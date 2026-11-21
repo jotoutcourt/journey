@@ -43,7 +43,7 @@ export function ButinHome({ online, friends, onInvite, onBack, onAddFriend, onSo
   const list = [...(friends || [])].sort((a, b) => (b.online - a.online) || a.name.localeCompare(b.name))
   return (
     <div className="screen butin-home">
-      <header className="top"><button className="back" onClick={onBack} aria-label="Retour">←</button><h1>Le Butin</h1></header>
+      <header className="top"><button className="back" onClick={onBack} aria-label="Retour">←</button><h1>L'Appât du Kraken</h1></header>
       <section className="butin-hero">
         <Mascot pose="pirate-anim" size={230} className="butin-pirate" />
         <p><b>Volez le trésor du Kraken, à deux !</b> Vous venez de lui dérober <b>{START} lingots d'or</b>… mais il veut les récupérer.</p>
@@ -111,7 +111,7 @@ export function DuoInviteBanner({ invite, onAccept, onDecline }) {
     <div className="sheet-backdrop">
       <div className="sheet invite-sheet" role="alertdialog" aria-labelledby="duo-inv-title">
         <Mascot pose="pirate" size={110} />
-        <h2 id="duo-inv-title">💰 {invite.from.name} t'invite au Butin</h2>
+        <h2 id="duo-inv-title">💰 {invite.from.name} t'invite à l'Appât du Kraken</h2>
         <p className="sheet-sub">Volez le trésor du Kraken ensemble : vous cachez vos lingots à deux, en direct.</p>
         <button className="btn btn-gold wide" disabled={busy} onClick={async () => { setBusy(true); await onAccept(invite); setBusy(false) }}>{busy ? 'Connexion…' : 'On y va !'}</button>
         <button className="btn btn-ghost wide" onClick={() => onDecline(invite)}>Pas maintenant</button>

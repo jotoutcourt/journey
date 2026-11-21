@@ -31,21 +31,24 @@ export function TopicTile({ topic, onClick, sub, price }) {
 /* ---------------- Accueil ---------------- */
 export function Home({ go, wallet, onSolo, oxygen }) {
   return (
-    <div className="screen home">
+    <div className="screen home immersive">
+      {/* décor plein écran : grotte sous-marine, rayons de lumière et bulles */}
+      <div className="home-bg" aria-hidden="true">
+        <i className="rays" />
+        <span className="home-bubbles">{Array.from({ length: 10 }, (_, k) => <i key={k} style={{ '--x': `${(k * 37) % 100}%`, '--d': `${6 + (k % 4)}s`, '--w': `${(k * 0.7) % 5}s`, '--s': `${8 + (k % 3) * 6}px` }} />)}</span>
+      </div>
       <header className="top">
         <Brand />
         {wallet && <button className="wallet-pill" title="Boutique" onClick={() => go({ name: 'shop' })}><i className="lt-coin" aria-hidden="true" />{wallet.lingots}<span className="wp-shop">🏪</span></button>}
       </header>
 
-      {/* Le jeu principal : le Butin */}
-      <section className="butin-hero-card">
-        <img className="bh-art" src="/mascotte/pirate-anim.webp" alt="" aria-hidden="true" />
-        <div className="bh-text">
-          <b>Le Butin</b>
-          <small>Vole le trésor du Kraken : cache tes lingots dans la bonne caisse avant que ses tentacules ne les reprennent.</small>
-          {wallet?.daily_bonus && <span className="bh-bonus">🎁 +5 lingots offerts sur ta première partie du jour</span>}
-        </div>
-        <div className="bh-actions">
+      {/* Le jeu principal : L'Appât du Kraken */}
+      <section className="kraken-hero">
+        <img className="kh-art" src="/mascotte/pirate-anim.webp" alt="" aria-hidden="true" />
+        <div className="kraken-sign" role="heading" aria-level="1"><span className="ks-crown" aria-hidden="true">👑</span><b>L'Appât du Kraken</b></div>
+        <p className="kh-pitch">Vole le trésor du <b>Kraken</b> : cache tes lingots dans la bonne caisse avant que ses tentacules ne les reprennent.</p>
+        {wallet?.daily_bonus && <span className="bh-bonus">🎁 +5 lingots offerts sur ta première partie du jour</span>}
+        <div className="kh-actions">
           <button className="btn btn-gold" onClick={onSolo}>🏴‍☠️ Jouer{wallet?.oxygen && <small className="bh-cost"> · 1 🫧</small>}</button>
           <button className="btn btn-secondary" onClick={() => go({ name: 'butin' })}>👥 À deux</button>
         </div>
@@ -176,7 +179,7 @@ export function TopicPage({ st, topic, go, toggleFollow, shareTopic, deleteTopic
           <button className="btn btn-ghost" onClick={() => go({ name: 'ranking', id: topic.id })}>Classement</button>
         </div>
       </div>
-      {lockPrice > 0 && <p className="tp-locked">🔒 Thème à débloquer dans la boutique pour {lockPrice} lingots. {lingots < lockPrice ? `Il t'en manque ${lockPrice - lingots} : joue au Butin pour en gagner.` : ''}</p>}
+      {lockPrice > 0 && <p className="tp-locked">🔒 Thème à débloquer dans la boutique pour {lockPrice} lingots. {lingots < lockPrice ? `Il t'en manque ${lockPrice - lingots} : joue à L'Appât du Kraken pour en gagner.` : ''}</p>}
       <p className="tp-tagline">{topic.tagline || `Un thème créé par ${topic.by}`}{!topic.official && <> · par <b>{topic.by}</b></>}</p>
 
       <div className="progress-label"><small>Questions découvertes</small><small>{seenPct} %</small></div>

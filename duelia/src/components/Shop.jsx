@@ -18,7 +18,7 @@ export function Shop({ topics, wallet, isLocked, onUnlock, onOpen, onBack, onlin
       </header>
       <section className="shop-hero">
         <Mascot pose="pirate" size={96} />
-        <p>Dépense les lingots volés au Kraken pour débloquer de nouveaux thèmes. Gagne des lingots en jouant au <b>Butin</b>.</p>
+        <p>Dépense les lingots volés au Kraken pour débloquer de nouveaux thèmes. Gagne des lingots en jouant à <b>L'Appât du Kraken</b>.</p>
       </section>
       {!online && <p className="inbox-empty">La boutique a besoin d'une connexion.</p>}
       {online && locked.length === 0 && <p className="inbox-empty">Tu as débloqué tous les thèmes ! 🏆</p>}
@@ -42,7 +42,7 @@ export function Shop({ topics, wallet, isLocked, onUnlock, onOpen, onBack, onlin
             )
           })}
         </ul>
-        {locked.some(t => lingots < priceOf(t.id)) && <p className="shop-note">Il te manque des lingots ? Une partie de Butin en rapporte jusqu'à 20, et +5 pour la première du jour.</p>}
+        {locked.some(t => lingots < priceOf(t.id)) && <p className="shop-note">Il te manque des lingots ? Une partie de l'Appât du Kraken en rapporte jusqu'à 20, et +5 pour la première du jour.</p>}
       </>}
       {owned.length > 0 && <>
         <h3 className="sec-title">Déjà à toi <small>({owned.length})</small></h3>
