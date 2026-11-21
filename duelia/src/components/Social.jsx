@@ -171,8 +171,38 @@ export function FriendChallengeSheet({ friend, topics, initialTopic, onPick, onC
   )
 }
 
+/* ---------- Bouton « Jouer » d'un thème : contre qui ? ---------- */
+export function PlayWhoSheet({ topic, online, hasFriends, onPick, onCancel }) {
+  const opts = [
+    { key: 'ai', icon: '🤖', title: 'Contre l\'IA', sub: 'Ou un vrai joueur en ligne s\'il y en a un', ok: true },
+    { key: 'friend', icon: '⚔️', title: 'Un ami', sub: 'En direct ou en différé, à 2', ok: online },
+    { key: 'party', icon: '👥', title: 'Plusieurs amis', sub: 'En direct, de 2 à 4 joueurs', ok: online && hasFriends },
+    { key: 'link', icon: '🔗', title: 'Par lien', sub: 'Pour quelqu\'un qui n\'a pas encore l\'appli', ok: true },
+  ]
+  return (
+    <div className="sheet-backdrop" onClick={onCancel}>
+      <div className="sheet friend-sheet" role="dialog" aria-labelledby="who-title" onClick={e => e.stopPropagation()}>
+        <div className="sheet-topic"><TopicIcon topic={topic} size={28} /> {topic.name}</div>
+        <h2 id="who-title">Contre qui ?</h2>
+        <ul className="pick-list who-list">
+          {opts.map(o => (
+            <li key={o.key}>
+              <button className="pick-friend" disabled={!o.ok} onClick={() => onPick(o.key)}>
+                <span className="who-icon" aria-hidden="true">{o.icon}</span>
+                <span className="pf-info"><b>{o.title}</b><small>{o.ok ? o.sub : o.key === 'party' && online ? 'Ajoute d\'abord des amis' : 'Nécessite une connexion'}</small></span>
+                <i aria-hidden="true">›</i>
+              </button>
+            </li>
+          ))}
+        </ul>
+        <button className="link-btn" onClick={onCancel}>Annuler</button>
+      </div>
+    </div>
+  )
+}
+
 /* ---------- Depuis un thème : choisir l'ami à défier ---------- */
-export function PickFriendSheet({ topic, friends, online, onPick, onLink, onAdd, onParty, onCancel }) {
+export function PickFriendSheet({ topic, friends, online, onPick, onLink, onAdd, onCancel }) {
   const list = [...(friends || [])].sort((a, b) => (b.online - a.online) || a.name.localeCompare(b.name))
   return (
     <div className="sheet-backdrop" onClick={onCancel}>
@@ -197,7 +227,6 @@ export function PickFriendSheet({ topic, friends, online, onPick, onLink, onAdd,
             ))}
           </ul>
         )}
-        {online && list.length > 0 && onParty && <button className="btn btn-secondary wide" onClick={onParty}>👥 Partie à plusieurs (jusqu'à 4)</button>}
         <button className={`btn ${online && list.length > 0 ? 'btn-ghost' : 'btn-primary'} wide`} onClick={onLink}>🔗 Défier par lien</button>
         {online && list.length === 0 && <button className="btn btn-ghost wide" onClick={onAdd}>Ajouter un ami avec son code</button>}
         <button className="link-btn" onClick={onCancel}>Annuler</button>

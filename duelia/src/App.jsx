@@ -16,7 +16,7 @@ import { Inbox, ChallengeSheet, NotifyBanner, SentScreen } from './components/Ch
 import { ButinHome, ButinGame, DuoInviteBanner } from './components/Butin.jsx'
 import { Party, PartyInviteBanner } from './components/Party.jsx'
 import { buildButin } from './lib/butin.js'
-import { FriendsScreen, FriendChallengeSheet, PickFriendSheet, InviteWaiting, LiveInviteBanner, FriendSent, SharedTopics, ChallengeMessage } from './components/Social.jsx'
+import { FriendsScreen, FriendChallengeSheet, PickFriendSheet, PlayWhoSheet, InviteWaiting, LiveInviteBanner, FriendSent, SharedTopics, ChallengeMessage } from './components/Social.jsx'
 import * as api from './lib/account.js'
 import TopicRequestSheet from './components/TopicRequest.jsx'
 import { useSocial, friendOpponent, fromPlain, logFrom } from './lib/useSocial.js'
@@ -489,6 +489,7 @@ export default function App() {
   const social = useSocial(online)
   const [friendSheet, setFriendSheet] = useState(null)
   const [friendPick, setFriendPick] = useState(null) // thème choisi, en attente du choix de l'ami
+  const [playWho, setPlayWho] = useState(null) // thème choisi, en attente de « contre qui ? »
   const [requestSheet, setRequestSheet] = useState(false)
   const requestApi = useMemo(() => ({ request: api.requestTopic, vote: api.voteTopicRequest, list: api.listTopicRequests }), [])
   const [push, setPush] = useState(null)
@@ -860,7 +861,7 @@ export default function App() {
   let view
   switch (route.name) {
     case 'topics': view = <Topics topics={topics} go={go} importTopic={importTopic} onRequest={() => setRequestSheet(true)} extra={<SharedTopics online={online} installed={new Set(st.custom.filter(t => t.shared).map(t => t.id))} onOpen={installShared} onList={listShared} />} />; break
-    case 'topic': view = topic ? <TopicPage st={st} topic={topic} go={go} toggleFollow={toggleFollow} shareTopic={shareTopic} deleteTopic={deleteTopic} online={online} onPublish={publishTopic} onUnpublish={unpublishTopic} onFriend={(t) => { social.refreshFriends?.(); setFriendPick(t) }} /> : null; break
+    case 'topic': view = topic ? <TopicPage st={st} topic={topic} go={go} toggleFollow={toggleFollow} shareTopic={shareTopic} deleteTopic={deleteTopic} online={online} onPublish={publishTopic} onUnpublish={unpublishTopic} onPlay={(t) => { social.refreshFriends?.(); setPlayWho(t) }} /> : null; break
     case 'ranking': view = <Ranking st={st} topic={topic} go={go} />; break
     case 'create': view = <CreateTopic key={route.id || 'new'} st={st} existing={route.id ? topic : null} onSave={saveTopic} go={go} />; break
     case 'profile': view = <Profile st={st} topics={topics} update={update} go={go} account={account} onMakeCode={getRecoveryCode} onRecover={recoverAccount} push={push} onPush={onPush} onFriends={() => go({ name: 'friends' })} friendCount={social.social?.friends?.length} />; break
@@ -942,11 +943,19 @@ export default function App() {
       {sheet && <ChallengeSheet sheet={sheet} onSend={sendChallenge} onCancel={() => setSheet(null)} />}
       {requestSheet && <TopicRequestSheet online={online} api={requestApi} onClose={() => setRequestSheet(false)} />}
       {friendSheet && <FriendChallengeSheet friend={friendSheet} topics={friendTopics} initialTopic={friendSheet.topic} onPick={(t, mode) => startFriendDuel(friendSheet, t, mode)} onCancel={() => setFriendSheet(null)} />}
+      {playWho && <PlayWhoSheet topic={playWho} online={online && !!social.social} hasFriends={(social.social?.friends || []).length > 0}
+        onPick={(k) => {
+          const t = playWho; setPlayWho(null)
+          if (k === 'ai') go({ name: 'match', id: t.id })
+          else if (k === 'friend') setFriendPick(t)
+          else if (k === 'party') startPartyFor(t)
+          else go({ name: 'linkcreate', id: t.id })
+        }}
+        onCancel={() => setPlayWho(null)} />}
       {friendPick && <PickFriendSheet topic={friendPick} friends={social.social?.friends} online={online && !!social.social}
         onPick={(f) => { setFriendPick(null); setFriendSheet({ ...f, topic: friendPick }) }}
         onLink={() => { const t = friendPick; setFriendPick(null); go({ name: 'linkcreate', id: t.id }) }}
         onAdd={() => { setFriendPick(null); go({ name: 'friends' }) }}
-        onParty={() => { const t = friendPick; setFriendPick(null); startPartyFor(t) }}
         onCancel={() => setFriendPick(null)} />}
       {invite && !['duel', 'match', 'invite'].includes(route.name) && <LiveInviteBanner key={invite.id} invite={invite} onAccept={acceptInvite} onDecline={declineInvite} />}
       {partyInvite && !invite && !['duel', 'match', 'invite', 'butingame', 'party'].includes(route.name) && <PartyInviteBanner key={partyInvite.id} invite={partyInvite} onAccept={acceptParty} onDecline={declineParty} />}

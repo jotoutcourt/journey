@@ -972,3 +972,5 @@ img { -webkit-user-drag: none; }
 /* Drapeau affiché en grand sous l'énoncé */
 .q-flag { display: block; margin: 10px auto 0; font-size: clamp(84px, 26vw, 120px); line-height: 1; text-shadow: none; filter: drop-shadow(0 8px 18px #000a); animation: pop 0.35s both; }
 .lt-question .q-flag { font-size: clamp(60px, 18vw, 84px); margin-top: 4px; }
+.who-icon { width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; font-size: 24px; background: #ffffff10; flex: none; }
+.who-list .pick-friend:disabled { opacity: 0.45; }

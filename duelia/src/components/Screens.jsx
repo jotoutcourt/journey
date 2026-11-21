@@ -145,7 +145,7 @@ export function Topics({ topics, go, importTopic, extra, onRequest }) {
 }
 
 /* ---------------- Page d'un thème ---------------- */
-export function TopicPage({ st, topic, go, toggleFollow, shareTopic, deleteTopic, online, onPublish, onUnpublish, onFriend }) {
+export function TopicPage({ st, topic, go, toggleFollow, shareTopic, deleteTopic, online, onPublish, onUnpublish, onPlay }) {
   const stats = st.topicStats[topic.id] || { xp: 0, played: 0, wins: 0, seen: [] }
   const lvl = levelInfo(stats.xp)
   const following = st.follows.includes(topic.id)
@@ -165,15 +165,13 @@ export function TopicPage({ st, topic, go, toggleFollow, shareTopic, deleteTopic
       <div className="tp-hero">
         <TopicIcon topic={topic} size={128} />
         <div className="tp-actions">
-          <button className="btn btn-primary" onClick={() => go({ name: 'match', id: topic.id })}>Jouer</button>
+          <button className="btn btn-primary" onClick={() => onPlay(topic)}>Jouer</button>
           <button className={`btn ${following ? 'btn-ghost' : 'btn-secondary'}`} onClick={() => toggleFollow(topic.id)}>
             {following ? '✓ Suivi' : '+ Suivre'}
           </button>
           <button className="btn btn-ghost" onClick={() => go({ name: 'ranking', id: topic.id })}>Classement</button>
         </div>
       </div>
-      <button className="btn btn-gold wide tp-friend" onClick={() => onFriend(topic)}>⚔️ Défier un ami</button>
-      <button className="link-btn tp-link" onClick={() => go({ name: 'linkcreate', id: topic.id })}>ou défier par lien</button>
       <p className="tp-tagline">{topic.tagline || `Un thème créé par ${topic.by}`}{!topic.official && <> · par <b>{topic.by}</b></>}</p>
 
       <div className="progress-label"><small>Questions découvertes</small><small>{seenPct} %</small></div>
