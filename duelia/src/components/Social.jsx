@@ -15,12 +15,22 @@ function seenLabel(f, now) {
   return h < 24 ? `Vu il y a ${h} h` : `Vu il y a ${Math.round(h / 24)} j`
 }
 
+/* ---------- Pas de réseau ---------- */
+export function Offline({ text }) {
+  return (
+    <div className="offline-card" role="status">
+      <Mascot pose="hors-ligne" size={96} />
+      <p>{text}</p>
+    </div>
+  )
+}
+
 /* ---------- Notifications ---------- */
 export function PushCard({ status, onEnable, onDisable }) {
   if (!status || status === 'unsupported') return null
   return (
     <section className="install-card push-card">
-      <h3>🔔 Notifications</h3>
+      <h3 className="push-title"><Mascot pose="notification" size={40} /> Notifications</h3>
       {status === 'install-first' && <p>Sur iPhone, les notifications marchent quand Kraken est ajouté à l'écran d'accueil (Safari → Partager → Sur l'écran d'accueil). Ouvre-le ensuite depuis son icône et active-les ici.</p>}
       {status === 'denied' && <p>Les notifications sont bloquées pour Kraken. Tu peux les réautoriser dans les réglages de ton téléphone (Réglages → Notifications → Kraken).</p>}
       {status === 'off' && <>
@@ -59,7 +69,7 @@ export function FriendsScreen({ online, social, code, initialCode, now, push, on
         {onBack && <button className="icon-btn" onClick={onBack} aria-label="Retour">←</button>}
         <h1>Amis</h1>
       </header>
-      {!online && <p className="link-fail">Pas de connexion au serveur pour l'instant : les amis ont besoin d'Internet.</p>}
+      {!online && <Offline text="Pas de connexion au serveur pour l'instant : les amis ont besoin d'Internet." />}
 
       <section className="friend-code">
         <small>Ton code ami</small>
@@ -93,7 +103,7 @@ export function FriendsScreen({ online, social, code, initialCode, now, push, on
       </>}
 
       <h3 className="sec-title">Mes amis <small>({friends.length})</small></h3>
-      {friends.length === 0 && <Mascot pose="anim" size={120} className="empty-mascot" />}
+      {friends.length === 0 && online && <Mascot pose="anim" size={120} className="empty-mascot" />}
       {friends.length === 0 && <p className="inbox-empty">Envoie ton code à tes amis, ou entre le leur ci-dessus. Vous pourrez ensuite vous défier directement.</p>}
       <ul className="ch-list">
         {friends.map(f => (

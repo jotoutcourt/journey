@@ -4,6 +4,7 @@ import AiTag from './AiTag.jsx'
 import { lastSeenLabel } from '../lib/challenges.js'
 import { LINK_TTL } from '../lib/linkduel.js'
 import ConfirmButton from './ConfirmButton.jsx'
+import Mascot from './Mascot.jsx'
 
 function ago(ts, now) {
   const m = Math.max(0, Math.round((now - ts) / 60000))
@@ -40,7 +41,7 @@ export function NotifyBanner({ note, onOpen, onClose }) {
   return (
     <div className="notify" role="status">
       <button className="notify-body" onClick={onOpen}>
-        <span className="notify-icon" aria-hidden="true">{{ incoming: '⚔️', accepted: '✅', rejected: '🚫', your_turn: '🎯', result: '🏁' }[note.kind] || '🔔'}</span>
+        <Mascot pose="notification" size={44} className="notify-mascot" />
         <span>{note.text}</span>
       </button>
       <button className="notify-x" onClick={onClose} aria-label="Fermer">✕</button>

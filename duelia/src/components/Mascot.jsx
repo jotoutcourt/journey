@@ -6,6 +6,10 @@ const SRC = {
   tete: '/mascotte/tete.webp',
   logo: '/mascotte/logo.webp',
   anim: '/mascotte/neutre-anim.webp',
+  egalite: '/mascotte/egalite.webp',
+  combat: '/mascotte/combat.webp',
+  'hors-ligne': '/mascotte/hors-ligne.webp',
+  notification: '/mascotte/notification.webp',
 }
 
 export default function Mascot({ pose = 'neutre', size = 140, className = '', alt = '' }) {

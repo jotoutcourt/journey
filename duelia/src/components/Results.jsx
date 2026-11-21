@@ -86,7 +86,7 @@ export default function Results({ data, me, onRematch, onAnother, onTopic, onSha
     <div className={`results ${outcome}`}>
       {outcome === 'win' && <div className="confetti" aria-hidden="true">{Array.from({ length: 24 }, (_, i) => <i key={i} style={{ '--i': i }} />)}</div>}
       <p className="results-topic">{topic.icon} {topic.name}</p>
-      <Mascot pose={outcome === 'win' ? 'victoire' : outcome === 'lose' ? 'defaite' : 'anim'} size={150} className="results-mascot" />
+      <Mascot pose={outcome === 'win' ? 'victoire' : outcome === 'lose' ? 'defaite' : 'egalite'} size={150} className="results-mascot" />
       <h1 className="results-title">{title}</h1>
       {outcome === 'win' && opponent.champion && <div className="champ-beaten">👑 Tu as battu le champion du thème !</div>}
 

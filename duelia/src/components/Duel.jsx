@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import Avatar from './Avatar.jsx'
 import TopicIcon from './TopicIcon.jsx'
 import AiTag from './AiTag.jsx'
+import Mascot from './Mascot.jsx'
 import ConfirmButton from './ConfirmButton.jsx'
 import { botAnswer } from '../lib/bots.js'
 import { levelInfo } from '../lib/levels.js'
@@ -250,7 +251,7 @@ export default function Duel({ topic, me, opponent, ranks, questions, onFinish, 
           <span>Niv. {myLvl.level} · {topicTitle(topic, myLvl.level)}</span>
           <RankPlate rank={ranks?.me} />
         </div>
-        <div className="vs-mark"><span>VS</span></div>
+        <div className="vs-mark"><Mascot pose="combat" size={118} className="vs-mascot" /><span>VS</span></div>
         <div className="vs-side vs-right">
           {opponent.champion && <div className="champ-badge">👑 Champion du thème</div>}
           <Avatar seed={opponent.avatar} photo={opponent.photo} size={128} ring={ranks?.opp <= 10 ? 'var(--gold)' : 'var(--opp)'} className="vs-av" />

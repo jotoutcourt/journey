@@ -208,7 +208,7 @@ export default function Pari({ topics, st, daily, onFinish, onExit, board, loadB
 export function PariBoard({ board, load }) {
   useEffect(() => { load?.() }, [load])
   if (!board) return <p className="pari-note">Chargement du classement du jour…</p>
-  if (board === 'offline') return <p className="pari-note">Classement indisponible sans connexion.</p>
+  if (board === 'offline') return <div className="offline-card"><Mascot pose="hors-ligne" size={80} /><p>Classement indisponible sans connexion.</p></div>
   return (
     <section className="pari-board">
       <h3 className="sec-title">Classement du jour <small>({board.count} joueur{board.count > 1 ? 's' : ''})</small></h3>
