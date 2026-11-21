@@ -755,3 +755,44 @@ button.wallet-pill { border: 0; cursor: pointer; }
 .kh-actions .btn-gold { box-shadow: 0 5px 0 #b8862b, 0 0 22px #ffc94077; }
 .home.immersive .oxy-card { background: #14082ecc; backdrop-filter: blur(6px); }
 .kh-art { width: min(58vw, 235px); } .kraken-sign { margin-top: -20px; }
+
+/* ===== Accueil : panneau, texte et boutons fidèles à la maquette ===== */
+.kraken-sign { position: relative; margin-top: -18px; padding: 0; transform: none; background: none; box-shadow: none; width: 100%; max-width: 380px; }
+.kraken-sign::before, .kraken-sign::after { content: none; }
+/* planche : cadre en bois brun, cœur violet en lattes */
+.ks-board { position: relative; display: block; margin: 0 22px; padding: 12px 14px 14px; border-radius: 12px;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 17px, #1f0b3a66 17px 19px),
+    linear-gradient(180deg, #6b3fa3 0%, #52297f 55%, #3f1d66 100%);
+  box-shadow: 0 0 0 5px #8a5530, 0 0 0 7px #4a2a14, inset 0 3px 0 #ffffff22, inset 0 -4px 8px #0006, 0 12px 24px #000b, 0 0 34px #a866ff44; }
+.ks-board::before { content: ''; position: absolute; inset: -5px; border-radius: 14px; pointer-events: none;
+  background: repeating-linear-gradient(90deg, #00000000 0 26px, #00000026 26px 28px); mix-blend-mode: multiply;
+  -webkit-mask: linear-gradient(#000 0 0) top / 100% 5px no-repeat, linear-gradient(#000 0 0) bottom / 100% 5px no-repeat; mask: linear-gradient(#000 0 0) top / 100% 5px no-repeat, linear-gradient(#000 0 0) bottom / 100% 5px no-repeat; }
+.ks-board b { display: block; font-family: var(--display); font-weight: 700; font-size: clamp(29px, 8.6vw, 38px); line-height: 1.05; letter-spacing: 0.01em;
+  background: linear-gradient(180deg, #ffffff 0%, #f4ecff 45%, #d9c2ff 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
+  -webkit-text-stroke: 4px #2a0870; paint-order: stroke fill; filter: drop-shadow(0 4px 0 #1e0552) drop-shadow(0 0 10px #c58bff99); }
+/* bouts de planche en bois sombre, avec cordage */
+.ks-end { position: absolute; top: 50%; width: 34px; height: 54px; margin-top: -27px; border-radius: 10px;
+  background: repeating-linear-gradient(0deg, #7a4a28 0 8px, #5e371c 8px 10px); box-shadow: 0 0 0 2px #3a210f, 0 6px 10px #0009; }
+.ks-end.l { left: 0; } .ks-end.r { right: 0; }
+.ks-end::after { content: ''; position: absolute; top: -4px; bottom: -4px; width: 14px; left: 10px; border-radius: 7px;
+  background: repeating-linear-gradient(32deg, #e2bd7c 0 4px, #a87b3e 4px 7px); box-shadow: 0 2px 4px #0009, inset 0 0 0 1px #6b4a1e; }
+.ks-crown { position: absolute; z-index: 2; top: -24px; left: 50%; margin-left: -15px; font-size: 28px; filter: drop-shadow(0 0 8px #ffc940) drop-shadow(0 2px 2px #0008); }
+/* texte d'accroche : verre sombre, fin liseré lilas */
+.kh-pitch { margin-top: 10px; padding: 12px 18px; border-radius: 18px; background: #1a0b3dbb; box-shadow: inset 0 0 0 1.5px #9d7cff55, 0 6px 18px #0006; color: #e6dcff; font-size: 15px; line-height: 1.4; }
+.kh-pitch b { color: #c58bff; font-weight: 700; }
+/* boutons brillants */
+.kh-actions { margin-top: 8px; gap: 12px; }
+.kh-btn { display: flex; align-items: center; justify-content: center; gap: 10px; height: 62px; border-radius: 22px; font-family: var(--display); font-weight: 700; font-size: 21px; white-space: nowrap; position: relative; overflow: hidden; }
+.kh-btn::before { content: ''; position: absolute; left: 8%; right: 8%; top: 4px; height: 40%; border-radius: 16px; background: linear-gradient(180deg, #ffffff88, #ffffff00); pointer-events: none; }
+.kh-btn span { font-size: 24px; }
+.kh-btn.gold { color: #2a1600; background: linear-gradient(180deg, #ffd94a 0%, #ffb21e 60%, #f29a0c 100%); box-shadow: inset 0 0 0 2px #ffe89a, 0 5px 0 #a8650a, 0 0 26px #ffb21e88; }
+.kh-btn.violet { color: #2a0a5c; background: linear-gradient(180deg, #e2c2ff 0%, #c08bff 60%, #a46cf5 100%); box-shadow: inset 0 0 0 2px #f0e0ff, 0 5px 0 #6a35b8, 0 0 22px #a866ff66; }
+.kh-btn:active { transform: translateY(3px); }
+.kraken-hero .bh-bonus { margin-top: 2px; }
+.ks-board b { background: none; color: #fbf6ff; -webkit-text-stroke: 5px #2a0870; paint-order: stroke fill; filter: none;
+  text-shadow: 0 4px 0 #1e0552, 0 0 16px #c58bffaa; font-size: clamp(30px, 9vw, 40px); }
+.ks-board { padding: 10px 12px 12px; box-shadow: 0 0 0 6px #9a5f33, 0 0 0 9px #3a210f, inset 0 3px 0 #ffffff22, inset 0 -4px 8px #0006, 0 12px 24px #000b, 0 0 34px #a866ff44; }
+.kh-btn.violet { background: linear-gradient(180deg, #d7a8ff 0%, #b077ff 55%, #9356f0 100%); }
+.kh-btn { height: 58px; }
+.kh-pitch { font-size: 14.5px; padding: 10px 16px; }

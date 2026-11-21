@@ -45,13 +45,17 @@ export function Home({ go, wallet, onSolo, oxygen }) {
       {/* Le jeu principal : L'Appât du Kraken */}
       <section className="kraken-hero">
         <img className="kh-art" src="/mascotte/pirate-anim.webp" alt="" aria-hidden="true" />
-        <div className="kraken-sign" role="heading" aria-level="1"><span className="ks-crown" aria-hidden="true">👑</span><b>L'Appât du Kraken</b></div>
-        <p className="kh-pitch">Vole le trésor du <b>Kraken</b> : cache tes lingots dans la bonne caisse avant que ses tentacules ne les reprennent.</p>
-        {wallet?.daily_bonus && <span className="bh-bonus">🎁 +5 lingots offerts sur ta première partie du jour</span>}
-        <div className="kh-actions">
-          <button className="btn btn-gold" onClick={onSolo}>🏴‍☠️ Jouer{wallet?.oxygen && <small className="bh-cost"> · 1 🫧</small>}</button>
-          <button className="btn btn-secondary" onClick={() => go({ name: 'butin' })}>👥 À deux</button>
+        <div className="kraken-sign" role="heading" aria-level="1">
+          <i className="ks-end l" aria-hidden="true" /><i className="ks-end r" aria-hidden="true" />
+          <span className="ks-crown" aria-hidden="true">👑</span>
+          <span className="ks-board"><b>L'Appât du Kraken</b></span>
         </div>
+        <p className="kh-pitch">Vole le trésor du <b>Kraken</b> : cache tes lingots dans la bonne caisse avant que ses tentacules ne les reprennent.</p>
+        <div className="kh-actions">
+          <button className="kh-btn gold" onClick={onSolo}><span aria-hidden="true">🏴‍☠️</span> Jouer</button>
+          <button className="kh-btn violet" onClick={() => go({ name: 'butin' })}><span aria-hidden="true">👥</span> À deux</button>
+        </div>
+        {wallet?.daily_bonus && <span className="bh-bonus">🎁 +5 lingots offerts sur ta première partie du jour</span>}
       </section>
 
       {oxygen}
