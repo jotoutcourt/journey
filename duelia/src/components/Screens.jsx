@@ -29,7 +29,7 @@ export function TopicTile({ topic, onClick, sub }) {
 }
 
 /* ---------------- Accueil ---------------- */
-export function Home({ go, wallet, onSolo }) {
+export function Home({ go, wallet, onSolo, oxygen }) {
   return (
     <div className="screen home">
       <header className="top">
@@ -46,11 +46,12 @@ export function Home({ go, wallet, onSolo }) {
           {wallet?.daily_bonus && <span className="bh-bonus">🎁 +5 lingots offerts sur ta première partie du jour</span>}
         </div>
         <div className="bh-actions">
-          <button className="btn btn-gold" onClick={onSolo}>🏴‍☠️ Jouer</button>
+          <button className="btn btn-gold" onClick={onSolo}>🏴‍☠️ Jouer{wallet?.oxygen && <small className="bh-cost"> · 1 🫧</small>}</button>
           <button className="btn btn-secondary" onClick={() => go({ name: 'butin' })}>👥 À deux</button>
         </div>
       </section>
 
+      {oxygen}
       <InstallBanner />
     </div>
   )

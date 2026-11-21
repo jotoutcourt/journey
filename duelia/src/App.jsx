@@ -15,6 +15,7 @@ import { createOutgoing, tickChallenges, pendingCount, markPlayed } from './lib/
 import { Inbox, ChallengeSheet, NotifyBanner, SentScreen } from './components/Challenges.jsx'
 import { ButinHome, ButinGame, DuoInviteBanner } from './components/Butin.jsx'
 import { Party, PartyInviteBanner } from './components/Party.jsx'
+import { OxygenCard, OxygenSheet } from './components/Oxygen.jsx'
 import { buildButin } from './lib/butin.js'
 import { FriendsScreen, FriendChallengeSheet, PickFriendSheet, PlayWhoSheet, InviteWaiting, LiveInviteBanner, FriendSent, SharedTopics, ChallengeMessage } from './components/Social.jsx'
 import * as api from './lib/account.js'
@@ -594,25 +595,38 @@ export default function App() {
   const duoInvite = social.duoInvites.find(i => !dismissedInvites.includes(i.id))
   // Porte-monnaie de lingots (sur le serveur) et Butin solo contre le Kraken
   const [wallet, setWallet] = useState(null)
-  const refreshWallet = useCallback(() => api.getWallet().then(w => { if (w) setWallet(w) }).catch(() => {}), [])
-  useEffect(() => { if (account.status === 'online') refreshWallet() }, [account.status, refreshWallet])
+  const [walletAt, setWalletAt] = useState(0) // moment de réception (pour le compte à rebours de l'oxygène)
+  const [oxySheet, setOxySheet] = useState(null) // { partner? } quand une partie est refusée faute d'oxygène
+  const refreshWallet = useCallback(() => api.getWallet().then(w => { if (w) { setWallet(w); setWalletAt(Date.now()) } }).catch(() => {}), [])
+  const refill = async () => {
+    try { const w = await api.refillOxygen(); setWallet(w); setWalletAt(Date.now()); setToast('🫧 Réserve d\'oxygène pleine !'); return true }
+    catch { setToast('Recharge impossible.'); return false }
+  }
+  const noOxygen = (e) => /oxygène/.test(e?.message || '')
+  const onHome = route.name === 'home'
+  useEffect(() => { if (account.status === 'online' && onHome) refreshWallet() }, [account.status, refreshWallet, onHome])
   const startSolo = async () => {
     try {
       const id = await api.startSoloButin(buildButin(topics))
       setRoute({ name: 'butingame', gameId: id })
-    } catch { setToast('Impossible de lancer la partie : vérifie ta connexion.') }
+      refreshWallet()
+    } catch (e) { if (noOxygen(e)) { refreshWallet(); setOxySheet({}) } else setToast('Impossible de lancer la partie : vérifie ta connexion.') }
   }
   const startButin = async (friend, voiceRoom = null) => {
     try {
       const id = await api.inviteDuo(friend.player_id, buildButin(topics), voiceRoom)
       setRoute({ name: 'butingame', gameId: id })
-    } catch { setToast('Invitation impossible : vérifie ta connexion.') }
+    } catch (e) { if (noOxygen(e)) { refreshWallet(); setOxySheet({}) } else setToast('Invitation impossible : vérifie ta connexion.') }
   }
   const acceptDuo = async (inv) => {
     setDismissedInvites(d => [...d, inv.id])
     let v
-    try { v = await api.respondDuo(inv.id, true) } catch { v = null }
+    try { v = await api.respondDuo(inv.id, true) } catch (e) {
+      if (noOxygen(e)) { refreshWallet(); setOxySheet(/coéquipier/.test(e.message) ? { partner: inv.from.name } : {}); return }
+      v = null
+    }
     if (!v) { setToast('Trop tard : l\'invitation a expiré.'); return }
+    refreshWallet()
     setRoute({ name: 'butingame', gameId: inv.id })
   }
   // Duel quiz à plusieurs : créer un salon, ou rejoindre celui d'un ami
@@ -927,9 +941,11 @@ export default function App() {
         onTopic={() => (byId(topic.id) ? go({ name: 'topic', id: topic.id }) : go({ name: 'topics' }))}
         onShare={() => shareText(`${route.data.outcome === 'win' ? 'Victoire' : 'Duel'} ${route.data.myScore}–${route.data.oppScore} contre ${route.opponent.name} sur « ${topic.name} » dans Kraken !`)} />
     ); break
-    default: view = <Home st={st} topics={topics} go={go} wallet={wallet} onSolo={startSolo} />
+    default: view = <Home st={st} topics={topics} go={go} wallet={wallet} onSolo={startSolo}
+      oxygen={<OxygenCard wallet={wallet} at={walletAt} onRefill={refill} onDue={refreshWallet} />} />
   }
-  if (!view) view = <Home st={st} topics={topics} go={go} wallet={wallet} onSolo={startSolo} />
+  if (!view) view = <Home st={st} topics={topics} go={go} wallet={wallet} onSolo={startSolo}
+    oxygen={<OxygenCard wallet={wallet} at={walletAt} onRefill={refill} onDue={refreshWallet} />} />
 
   return (
     <div className={`app ${fullscreen ? 'full' : ''}`}>
@@ -943,6 +959,7 @@ export default function App() {
       {sheet && <ChallengeSheet sheet={sheet} onSend={sendChallenge} onCancel={() => setSheet(null)} />}
       {requestSheet && <TopicRequestSheet online={online} api={requestApi} onClose={() => setRequestSheet(false)} />}
       {friendSheet && <FriendChallengeSheet friend={friendSheet} topics={friendTopics} initialTopic={friendSheet.topic} onPick={(t, mode) => startFriendDuel(friendSheet, t, mode)} onCancel={() => setFriendSheet(null)} />}
+      {oxySheet && <OxygenSheet wallet={wallet} at={walletAt} partner={oxySheet.partner} onRefill={refill} onDue={refreshWallet} onClose={() => setOxySheet(null)} />}
       {playWho && <PlayWhoSheet topic={playWho} online={online && !!social.social} hasFriends={(social.social?.friends || []).length > 0}
         onPick={(k) => {
           const t = playWho; setPlayWho(null)
