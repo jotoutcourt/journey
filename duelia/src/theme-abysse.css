@@ -570,3 +570,21 @@ html.abysse .butin-card .butin-art { width: 72px; height: 72px; background: none
 .loot .lt-question { text-shadow: 0 2px 4px #000, 0 4px 18px #000c; }
 .big-tentacle.tc { top: 6px; height: 220px; }
 @keyframes tentLungeC { 45% { transform: translateY(-8px) scale(1.05); } }
+/* Tentacules dessinées par Jordan (vidéo détourée) : une sort du bord gauche, l'autre du bord droit en miroir */
+.big-tentacle { display: none; }
+.real-tentacle { position: absolute; width: 74%; max-width: 300px; height: auto; filter: drop-shadow(0 0 18px #8b3dffaa); pointer-events: none; }
+.real-tentacle.tl { left: 0; top: 0; transform-origin: 0% 30%; animation: realSwayL 4.6s ease-in-out infinite; }
+.real-tentacle.tr { right: 0; bottom: 10px; transform-origin: 100% 30%; animation: realSwayR 5.2s ease-in-out infinite; }
+@keyframes realSwayL { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(4deg) translateY(-6px); } }
+@keyframes realSwayR { 0%, 100% { transform: scaleX(-1) rotate(-3deg); } 50% { transform: scaleX(-1) rotate(5deg) translateY(-8px); } }
+.loot.reveal .real-tentacle.tl { animation: realLungeL 1.4s 0.15s ease-in-out both; }
+.loot.reveal .real-tentacle.tr { animation: realLungeR 1.4s 0.25s ease-in-out both; }
+@keyframes realLungeL { 45% { transform: rotate(10deg) translateX(14px) scale(1.06); } }
+@keyframes realLungeR { 45% { transform: scaleX(-1) rotate(10deg) translateX(14px) scale(1.06); } }
+@media (prefers-reduced-motion: reduce) { .real-tentacle { animation: none !important; } }
+.real-tentacle.tl { width: 62%; top: -28px; }
+.real-tentacle.tr { width: 60%; bottom: -84px; }
+.real-tentacle.tr { bottom: -46px; width: 56%; }
+.real-tentacle.tr { bottom: -150px; width: 58%; opacity: 0.9; }
+.real-tentacle.tr { bottom: auto; top: 6px; width: 50%; opacity: 1; }
+.real-tentacle.tr { transform-origin: 50% 30%; }
