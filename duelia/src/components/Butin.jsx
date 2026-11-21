@@ -237,15 +237,14 @@ export function ButinGame({ gameId, me, onExit, onReplay }) {
       <img className="duel-deco" src="/decor/tentacules.webp" alt="" aria-hidden="true" draggable="false" />
       <header className="bg-top">
         <ConfirmButton className="bg-quit" onConfirm={() => { api.leaveDuo(gameId).catch(() => {}); onExit() }} confirmLabel="Quitter ?">✕</ConfirmButton>
-        <div className="bg-round">Question {view.round + 1}/{view.rounds}</div>
+        <div className="bg-treasure">
+          <small>Votre trésor</small>
+          <b>🪙 {gold(view.bank)}</b>
+          <div className="bg-bars" aria-hidden="true">{Array.from({ length: START }, (_, i) => <i key={i} className={i < view.bank ? 'on' : ''} />)}</div>
+        </div>
         <div className={`bg-timer ${secs <= 10 && !reveal ? 'hurry' : ''}`}>{reveal ? '⏸' : secs}</div>
       </header>
 
-      <div className="bg-treasure">
-        <small>Votre trésor</small>
-        <b>🪙 {gold(view.bank)}</b>
-        <div className="bg-bars" aria-hidden="true">{Array.from({ length: START }, (_, i) => <i key={i} className={i < view.bank ? 'on' : ''} />)}</div>
-      </div>
 
       <div className="bg-team">
         <span className={`bg-mate ${view.ready_me ? 'ready' : ''} ${voice.speaking.me ? 'speaking' : ''}`}><Avatar seed={me.avatar} photo={me.photo} size={34} ring="var(--me)" />Toi {voice.mic === 'on' ? '🎙️' : ''}{view.ready_me ? '✓' : ''}</span>
@@ -253,21 +252,30 @@ export function ButinGame({ gameId, me, onExit, onReplay }) {
         <VoiceBar voice={voice} partner={partner} compact />
       </div>
 
-      {q?.topic && <div className="bg-topic">{q.topic.icon} {q.topic.name}</div>}
+      <div className="bg-topic">Question {view.round + 1}/{view.rounds}{q?.topic ? ` · ${q.topic.icon} ${q.topic.name}` : ''}</div>
       <h2 className="bg-question">{q?.q}</h2>
 
-      <div className="bg-options">
+      {/* Le pont du navire : une trappe par réponse, les lingots posés dessus */}
+      <div className={`bg-deck n${q?.options.length || 4}`}>
         {q?.options.map((o, i) => {
           const n = placement[i] || 0
-          const cls = reveal ? (i === q.correct ? 'ok' : n ? 'sunk' : 'dim') : n ? 'has' : ''
+          const cls = reveal ? (i === q.correct ? 'ok' : n ? 'sunk' : 'open') : n ? 'has' : ''
           return (
-            <div key={i} className={`bg-opt ${cls}`}>
-              <button className="bg-opt-main" onClick={() => edit(i, 1)} disabled={reveal}>
-                <span className="bg-letter">{LETTERS[i]}</span>
-                <span className="bg-text">{o}</span>
-                <span className="bg-stack" aria-label={`${n} lingots`}>{n > 0 && <><i className="ingot" />×{n}</>}</span>
+            <div key={i} className={`hatch-cell ${cls}`}>
+              <button className="hatch" onClick={() => edit(i, 1)} disabled={reveal} aria-label={`${LETTERS[i]} : ${o}, ${n} lingots. Toucher pour ajouter un lingot`}>
+                <span className="hatch-hole" aria-hidden="true"><i className="hole-tentacle" /></span>
+                <span className="hatch-door left" aria-hidden="true" />
+                <span className="hatch-door right" aria-hidden="true" />
+                <span className="hatch-gold" aria-hidden="true">
+                  {Array.from({ length: n }, (_, k) => <i key={k} className="ingot" style={{ '--k': k }} />)}
+                </span>
+                {n > 0 && <span className="hatch-count">{n}</span>}
               </button>
-              {!reveal && <div className="bg-steps">
+              <div className="hatch-plate">
+                <span className="bg-letter">{LETTERS[i]}</span>
+                <span className="hatch-text">{o}</span>
+              </div>
+              {!reveal && <div className="hatch-steps">
                 <button onClick={() => edit(i, -1)} disabled={!n} aria-label="Retirer un lingot">−</button>
                 <button onClick={() => edit(i, 5)} disabled={!free} aria-label="Ajouter cinq lingots">+5</button>
               </div>}
