@@ -96,8 +96,8 @@ export default function Duel({ topic, me, opponent, ranks, questions, onFinish, 
     if (phase !== 'vs') return
     const big = !!bigMatch(ranks)
     if (big) sfx.bigVs()
-    const stopMusic = introMusic(big ? 4.8 : 2.9, big)
-    const id = setTimeout(() => setPhase('banner'), big ? 4800 : 2900)
+    const stopMusic = introMusic(big ? 4.8 : 3.4, big)
+    const id = setTimeout(() => setPhase('banner'), big ? 4800 : 3400)
     return () => { clearTimeout(id); stopMusic() }
   }, [phase, ranks])
 
@@ -243,20 +243,25 @@ export default function Duel({ topic, me, opponent, ranks, questions, onFinish, 
     const big = bigMatch(ranks)
     return (
       <div className={`vs-screen ${big ? 'big' : ''} ${mode !== 'live' && !big ? 'has-async' : ''}`}>
-        {big && <div className="vs-rays" aria-hidden="true" />}
+        <div className="vs-rays" aria-hidden="true" />
+        <div className="vs-glow" aria-hidden="true" />
         <div className="vs-side vs-left">
           {ranks?.me === 1 && <div className="champ-badge">👑 Champion du thème</div>}
           <Avatar seed={me.avatar} photo={me.photo} size={128} ring={ranks?.me <= 10 ? 'var(--gold)' : 'var(--me)'} className="vs-av" />
-          <b>{me.name}</b>
-          <span>Niv. {myLvl.level} · {topicTitle(topic, myLvl.level)}</span>
+          <div className="vs-txt">
+            <b>{me.name}</b>
+            <span>Niv. {myLvl.level} · {topicTitle(topic, myLvl.level)}</span>
+          </div>
           <RankPlate rank={ranks?.me} />
         </div>
-        <div className="vs-mark"><Mascot pose="combat-anim" size={124} className="vs-mascot" /><span>VS</span></div>
+        <div className="vs-mark"><Mascot pose="combat-anim" size={340} className="vs-mascot" /><span>VS</span></div>
         <div className="vs-side vs-right">
           {opponent.champion && <div className="champ-badge">👑 Champion du thème</div>}
           <Avatar seed={opponent.avatar} photo={opponent.photo} size={128} ring={ranks?.opp <= 10 ? 'var(--gold)' : 'var(--opp)'} className="vs-av" />
-          <b>{opponent.flag} {opponent.name}<AiTag on={opponent.ai} /></b>
-          <span>{opponent.id === 'ami' ? 'Jouera après toi' : `Niv. ${oppLvl.level} · ${topicTitle(topic, oppLvl.level)}`}</span>
+          <div className="vs-txt">
+            <b>{opponent.flag} {opponent.name}<AiTag on={opponent.ai} /></b>
+            <span>{opponent.id === 'ami' ? 'Jouera après toi' : `Niv. ${oppLvl.level} · ${topicTitle(topic, oppLvl.level)}`}</span>
+          </div>
           <RankPlate rank={ranks?.opp} />
         </div>
         <div className="vs-topic"><TopicIcon topic={topic} size={30} /> {topic.name}</div>
