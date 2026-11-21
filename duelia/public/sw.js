@@ -1,7 +1,7 @@
 // Kraken hors ligne : l'appli se lance même sans réseau (duels contre l'IA, ascension, thèmes).
 // Les échanges avec le serveur (comptes, classements, duels en direct) ne passent jamais par le cache.
-const CACHE = 'duelia-v8'
-const SHELL = ['/', '/manifest.webmanifest', '/favicon.png', '/icon-192.png', '/apple-touch-icon.png', '/mascotte/logo.webp', '/splash/kraken-splash.webp', '/mascotte/victoire.webp', '/mascotte/defaite.webp', '/mascotte/neutre.webp', '/mascotte/neutre-anim.webp', '/mascotte/egalite.webp', '/mascotte/combat.webp', '/mascotte/hors-ligne.webp', '/mascotte/notification.webp', '/mascotte/combat-anim.webp']
+const CACHE = 'duelia-v9'
+const SHELL = ['/', '/manifest.webmanifest', '/favicon.png', '/icon-192.png', '/apple-touch-icon.png', '/mascotte/logo.webp', '/splash/kraken-splash.webp', '/mascotte/victoire.webp', '/mascotte/defaite.webp', '/mascotte/neutre.webp', '/mascotte/neutre-anim.webp', '/mascotte/egalite.webp', '/mascotte/combat.webp', '/mascotte/hors-ligne.webp', '/mascotte/notification.webp', '/mascotte/combat-anim.webp', '/decor/vs-fond.webp', '/decor/tentacules.webp']
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()))

@@ -38,7 +38,7 @@ if (import.meta.env.PROD && location.hostname.endsWith('vercel.app')) {
   setInterval(check, 10 * 60 * 1000)
 }
 
-// Écran de démarrage : reste au moins 1,2 s, puis s'efface en fondu
+// Écran de démarrage : reste au moins 2 s (le temps de voir les bulles), puis s'efface en fondu
 {
   const splash = document.getElementById('splash')
   if (splash) {
@@ -46,7 +46,7 @@ if (import.meta.env.PROD && location.hostname.endsWith('vercel.app')) {
     const hide = () => setTimeout(() => {
       splash.classList.add('out')
       setTimeout(() => splash.remove(), 500)
-    }, Math.max(0, 1200 - (performance.now() - shown)))
+    }, Math.max(0, 2000 - (performance.now() - shown)))
     requestAnimationFrame(() => requestAnimationFrame(hide))
   }
 }

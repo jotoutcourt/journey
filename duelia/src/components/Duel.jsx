@@ -48,7 +48,8 @@ export default function Duel({ topic, me, opponent, ranks, questions, onFinish, 
   const blind = mode === 'blind'
   const remote = mode === 'remote'
   const remoteRef = useRef({ got: new Map(), sent: new Set(), misses: 0 })
-  const [phase, setPhase] = useState('vs') // vs → banner → play → reveal → … → done
+  const [phase, setPhase] = useState('vs') // vs → count (3, 2, 1, GO) → banner → play → reveal → … → done
+  const [count, setCount] = useState(3)
   const [round, setRound] = useState(0)
   const [myScore, setMyScore] = useState(0)
   const [oppScore, setOppScore] = useState(0)
@@ -97,9 +98,20 @@ export default function Duel({ topic, me, opponent, ranks, questions, onFinish, 
     const big = !!bigMatch(ranks)
     if (big) sfx.bigVs()
     const stopMusic = introMusic(big ? 4.8 : 3.4, big)
-    const id = setTimeout(() => setPhase('banner'), big ? 4800 : 3400)
+    const id = setTimeout(() => setPhase('count'), big ? 4300 : 3000)
     return () => { clearTimeout(id); stopMusic() }
   }, [phase, ranks])
+
+  // Décompte avant la première question : 3, 2, 1, GO
+  useEffect(() => {
+    if (phase !== 'count') return
+    if (count === 0) sfx.vs(); else sfx.tick()
+    const id = setTimeout(() => {
+      if (count > 0) setCount(c => c - 1)
+      else setPhase('banner')
+    }, count === 0 ? 700 : 620)
+    return () => clearTimeout(id)
+  }, [phase, count])
 
   // Musique de réflexion tant qu'on n'a pas répondu
   useEffect(() => {
@@ -239,6 +251,16 @@ export default function Duel({ topic, me, opponent, ranks, questions, onFinish, 
   const myLvl = levelInfo(me.topicXp)
   const oppLvl = levelInfo(opponent.xp)
 
+  if (phase === 'count') {
+    return (
+      <div className="duel countdown">
+        <img className="duel-deco" src="/decor/tentacules.webp" alt="" aria-hidden="true" draggable="false" />
+        <Mascot pose="combat-anim" size={340} className="count-mascot" />
+        <div key={count} className={`count-num ${count === 0 ? 'go' : ''}`}>{count === 0 ? 'GO !' : count}</div>
+      </div>
+    )
+  }
+
   if (phase === 'vs') {
     const big = bigMatch(ranks)
     return (
@@ -254,7 +276,7 @@ export default function Duel({ topic, me, opponent, ranks, questions, onFinish, 
           </div>
           <RankPlate rank={ranks?.me} />
         </div>
-        <div className="vs-mark"><Mascot pose="combat-anim" size={340} className="vs-mascot" /><span>VS</span></div>
+        <div className="vs-mark"><span>VS</span></div>
         <div className="vs-side vs-right">
           {opponent.champion && <div className="champ-badge">👑 Champion du thème</div>}
           <Avatar seed={opponent.avatar} photo={opponent.photo} size={128} ring={ranks?.opp <= 10 ? 'var(--gold)' : 'var(--opp)'} className="vs-av" />
@@ -292,6 +314,7 @@ export default function Duel({ topic, me, opponent, ranks, questions, onFinish, 
 
   return (
     <div className="duel">
+      <img className="duel-deco" src="/decor/tentacules.webp" alt="" aria-hidden="true" draggable="false" />
       <div className="duel-top">
         <ConfirmButton className="icon-btn quit" onConfirm={quit} confirmLabel="Abandonner ?" aria-label="Abandonner">✕</ConfirmButton>
         <div className="pl pl-me">
@@ -328,6 +351,19 @@ export default function Duel({ topic, me, opponent, ranks, questions, onFinish, 
           const cls = m
             ? (m && m.pts > 0 ? 'ok' : 'ko') : i === round ? 'cur' : ''
           return <span key={i} className={cls} />
+        })}
+      </div>
+
+      {/* barre en segments : une manche par segment, à la couleur de celui qui l'a remportée */}
+      <div className="segbar" aria-hidden="true">
+        {questions.map((_, i) => {
+          const m = log.me[i], o = log.opp[i]
+          let cls = i === round && !m ? 'cur' : ''
+          if (m) {
+            if (blind) cls = m.pts > 0 ? 'me' : 'none'
+            else cls = m.pts > (o?.pts || 0) ? 'me' : (o?.pts || 0) > m.pts ? 'opp' : 'none'
+          }
+          return <i key={i} className={cls} />
         })}
       </div>
 
