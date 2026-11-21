@@ -172,7 +172,7 @@ export function FriendChallengeSheet({ friend, topics, initialTopic, onPick, onC
 }
 
 /* ---------- Depuis un thème : choisir l'ami à défier ---------- */
-export function PickFriendSheet({ topic, friends, online, onPick, onLink, onAdd, onCancel }) {
+export function PickFriendSheet({ topic, friends, online, onPick, onLink, onAdd, onParty, onCancel }) {
   const list = [...(friends || [])].sort((a, b) => (b.online - a.online) || a.name.localeCompare(b.name))
   return (
     <div className="sheet-backdrop" onClick={onCancel}>
@@ -197,6 +197,7 @@ export function PickFriendSheet({ topic, friends, online, onPick, onLink, onAdd,
             ))}
           </ul>
         )}
+        {online && list.length > 0 && onParty && <button className="btn btn-secondary wide" onClick={onParty}>👥 Partie à plusieurs (jusqu'à 4)</button>}
         <button className={`btn ${online && list.length > 0 ? 'btn-ghost' : 'btn-primary'} wide`} onClick={onLink}>🔗 Défier par lien</button>
         {online && list.length === 0 && <button className="btn btn-ghost wide" onClick={onAdd}>Ajouter un ami avec son code</button>}
         <button className="link-btn" onClick={onCancel}>Annuler</button>

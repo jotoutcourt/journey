@@ -637,3 +637,40 @@ html.abysse .butin-card .butin-art { width: 72px; height: 72px; background: none
 .install-banner p { margin: 0; font-size: 14px; }
 .install-banner > div { display: flex; gap: 8px; }
 .install-banner a.btn { align-self: flex-start; text-decoration: none; }
+
+/* ===================== Duel quiz à plusieurs ===================== */
+.party.center, .screen.party.center { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; min-height: 100%; }
+.party.lobby .sheet-topic { align-self: center; }
+.party-players { list-style: none; padding: 0; margin: 0 0 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.party-players li { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 8px; border-radius: 18px; background: var(--card); box-shadow: 0 0 0 2px var(--c), 0 0 14px color-mix(in srgb, var(--c) 40%, transparent); text-align: center; }
+.party-players b { font-family: var(--display); font-size: 15px; }
+.party-players small { color: var(--muted); font-size: 12px; }
+.party-wait { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 10px; color: var(--muted); }
+.party-game { padding-bottom: calc(env(safe-area-inset-bottom) + 16px); }
+.party-top { display: flex; align-items: center; justify-content: space-between; }
+.party-round { font-family: var(--display); font-weight: 600; color: var(--muted); }
+.party-board { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; }
+.party-chip { position: relative; display: flex; align-items: center; gap: 6px; padding: 4px 8px 4px 4px; border-radius: 99px; background: #14082ecc; box-shadow: 0 0 0 1.5px var(--c); transition: box-shadow 0.3s; min-width: 0; }
+.party-chip span { display: flex; flex-direction: column; min-width: 0; line-height: 1.1; }
+.party-chip b { font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.party-chip small { color: var(--c); font-weight: 700; font-size: 12px; }
+.party-chip.me { background: color-mix(in srgb, var(--c) 18%, #14082e); }
+.party-chip.answered { box-shadow: 0 0 0 2.5px var(--c), 0 0 14px var(--c); }
+.pc-done { position: absolute; right: 8px; font-style: normal; color: var(--c); font-weight: 800; }
+.party-game .question { margin: 18px 6px 16px; }
+.party-game .opt { position: relative; flex-direction: column; }
+.party-game .opt.picked { box-shadow: 0 0 0 3px #a866ff, 0 5px 0 #4f17a3; background: linear-gradient(180deg, #efe3ff, #d9c2ff); }
+.party-picks { display: flex; justify-content: center; gap: 6px; margin-top: 4px; }
+.pp-pick { display: inline-flex; align-items: center; gap: 3px; padding: 1px 6px 1px 1px; border-radius: 99px; background: #0b0420cc; box-shadow: 0 0 0 1.5px var(--c); color: #fff; font-size: 12px; font-weight: 700; }
+.party-status { text-align: center; color: var(--muted); margin-top: 10px; }
+.party-count .party-vs { display: flex; justify-content: center; gap: 8px; margin: 6px 0; }
+.party-end { padding: calc(env(safe-area-inset-top) + 24px) 16px 0; display: flex; flex-direction: column; align-items: center; gap: 10px; min-height: 100%; text-align: center; }
+.party-podium { list-style: none; padding: 0; margin: 6px 0; width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 8px; }
+.party-podium li { display: flex; align-items: center; gap: 10px; padding: 8px 14px 8px 10px; border-radius: 18px; background: var(--card); box-shadow: 0 0 0 1.5px var(--c); }
+.party-podium li:first-child { box-shadow: 0 0 0 2.5px var(--gold), 0 0 22px #ffc94055; }
+.party-podium li.me { background: color-mix(in srgb, var(--c) 16%, var(--card)); }
+.party-podium b { flex: 1; text-align: left; font-family: var(--display); }
+.pp-medal { width: 30px; font-size: 22px; }
+.pp-score { font-family: var(--display); font-weight: 700; color: var(--c); }
+.party-end .results-dock { width: calc(100% + 32px); margin-top: auto; }
+html.abysse .duel.party-game .opt.picked { background: linear-gradient(180deg, #c9a6ff, #a866ff); color: #fff; box-shadow: 0 0 0 3px #e2ccff, 0 5px 0 #4f17a3, 0 0 22px #a866ffaa; opacity: 1; }

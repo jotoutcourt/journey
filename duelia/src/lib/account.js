@@ -157,3 +157,14 @@ export const setChallengeMessage = (id, msg) => rpc('set_challenge_message', { p
 // ===== Le Butin solo et porte-monnaie de lingots =====
 export const startSoloButin = (questions) => rpc('start_solo_butin', { p_questions: questions })
 export const getWallet = () => rpc('get_wallet')
+// ===== Duel quiz à plusieurs (2 à 4 joueurs, en direct) =====
+export const createParty = (topic, questions) => rpc('create_party', {
+  p_topic_id: topic.id, p_topic: { name: topic.name, icon: topic.icon, color: topic.color, category: topic.category },
+  p_questions: questions.map(q => ({ q: q.q, options: q.options, correct: q.correct, idx: q.idx })),
+})
+export const inviteToParty = (party, friend) => rpc('invite_to_party', { p_party: party, p_friend: friend })
+export const respondParty = (party, accept) => rpc('respond_party', { p_party: party, p_accept: accept })
+export const startParty = (party) => rpc('start_party', { p_party: party })
+export const getParty = (id) => rpc('get_party', { p_id: id })
+export const partyAnswer = (party, round, choice) => rpc('party_answer', { p_party: party, p_round: round, p_choice: choice })
+export const leaveParty = (party) => rpc('leave_party', { p_party: party })

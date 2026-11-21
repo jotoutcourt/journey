@@ -16,6 +16,7 @@ import { settleDuel, ranksFor } from './lib/rewards.js'
 import { createOutgoing, tickChallenges, pendingCount, markPlayed } from './lib/challenges.js'
 import { Inbox, ChallengeSheet, NotifyBanner, SentScreen } from './components/Challenges.jsx'
 import { ButinHome, ButinGame, DuoInviteBanner } from './components/Butin.jsx'
+import { Party, PartyInviteBanner } from './components/Party.jsx'
 import { buildButin } from './lib/butin.js'
 import { FriendsScreen, FriendChallengeSheet, PickFriendSheet, InviteWaiting, LiveInviteBanner, FriendSent, SharedTopics, ChallengeMessage } from './components/Social.jsx'
 import * as api from './lib/account.js'
@@ -652,6 +653,22 @@ export default function App() {
     if (!v) { setToast('Trop tard : l\'invitation a expiré.'); return }
     setRoute({ name: 'butingame', gameId: inv.id })
   }
+  // Duel quiz à plusieurs : créer un salon, ou rejoindre celui d'un ami
+  const partyInvite = (social.partyInvites || []).find(i => !dismissedInvites.includes(i.id))
+  const startPartyFor = async (topic) => {
+    try {
+      const id = await api.createParty(topic, buildQuestions(topic, st.topicStats[topic.id]?.seen))
+      setRoute({ name: 'party', partyId: id })
+    } catch { setToast('Impossible de créer la partie : vérifie ta connexion.') }
+  }
+  const acceptParty = async (inv) => {
+    setDismissedInvites(d => [...d, inv.id])
+    let v
+    try { v = await api.respondParty(inv.id, true) } catch { v = null }
+    if (!v) { setToast('Trop tard : la partie a commencé ou a été annulée.'); return }
+    setRoute({ name: 'party', partyId: inv.id })
+  }
+  const declineParty = (inv) => { setDismissedInvites(d => [...d, inv.id]); api.respondParty(inv.id, false).catch(() => {}) }
   const declineDuo = (inv) => { setDismissedInvites(d => [...d, inv.id]); api.respondDuo(inv.id, false).catch(() => {}) }
   const declineInvite = (inv) => { setDismissedInvites(d => [...d, inv.id]); api.respondLiveInvite(inv.id, false).catch(() => {}) }
 
@@ -874,9 +891,9 @@ export default function App() {
   }
 
   const meForDuel = { ...me, topicXp: st.topicStats[route.id]?.xp || 0 }
-  const fullscreen = ['match', 'duel', 'results', 'tower', 'pari', 'butingame', 'sent', 'invite', 'friendsent', 'linkload', 'linkready', 'linkintro', 'linkreply'].includes(route.name)
+  const fullscreen = ['match', 'duel', 'results', 'tower', 'pari', 'butingame', 'party', 'sent', 'invite', 'friendsent', 'linkload', 'linkready', 'linkintro', 'linkreply'].includes(route.name)
   // pas de rechargement automatique (nouvelle version) pendant une partie
-  window.__dueliaBusy = ['match', 'duel', 'tower', 'pari', 'invite', 'create', 'butingame'].includes(route.name)
+  window.__dueliaBusy = ['match', 'duel', 'tower', 'pari', 'invite', 'create', 'butingame', 'party'].includes(route.name)
   const badge = pendingCount(st) + social.counts.challenges
   const friendBadge = social.counts.requests
   let view
@@ -886,6 +903,7 @@ export default function App() {
     case 'ranking': view = <Ranking st={st} topic={topic} go={go} />; break
     case 'create': view = <CreateTopic key={route.id || 'new'} st={st} existing={route.id ? topic : null} onSave={saveTopic} go={go} />; break
     case 'profile': view = <Profile st={st} topics={topics} update={update} go={go} account={account} onMakeCode={getRecoveryCode} onRecover={recoverAccount} push={push} onPush={onPush} onFriends={() => go({ name: 'friends' })} friendCount={social.social?.friends?.length} />; break
+    case 'party': view = <Party key={route.partyId} partyId={route.partyId} friends={social.social?.friends} onExit={() => go({ name: 'home' })} />; break
     case 'butin': view = <ButinHome online={online && account.status === 'online'} friends={social.social?.friends} onInvite={startButin} onSolo={startSolo} wallet={wallet}
       onBack={() => go({ name: 'home' })} onAddFriend={() => go({ name: 'friends' })} />; break
     case 'butingame': view = <ButinGame key="butin" gameId={route.gameId} me={me}
@@ -971,8 +989,10 @@ export default function App() {
         onPick={(f) => { setFriendPick(null); setFriendSheet({ ...f, topic: friendPick }) }}
         onLink={() => { const t = friendPick; setFriendPick(null); go({ name: 'linkcreate', id: t.id }) }}
         onAdd={() => { setFriendPick(null); go({ name: 'friends' }) }}
+        onParty={() => { const t = friendPick; setFriendPick(null); startPartyFor(t) }}
         onCancel={() => setFriendPick(null)} />}
       {invite && !['duel', 'match', 'invite', 'tower'].includes(route.name) && <LiveInviteBanner key={invite.id} invite={invite} onAccept={acceptInvite} onDecline={declineInvite} />}
+      {partyInvite && !invite && !['duel', 'match', 'invite', 'tower', 'butingame', 'party'].includes(route.name) && <PartyInviteBanner key={partyInvite.id} invite={partyInvite} onAccept={acceptParty} onDecline={declineParty} />}
       {duoInvite && !invite && !['duel', 'match', 'invite', 'tower', 'butingame'].includes(route.name) && <DuoInviteBanner key={duoInvite.id} invite={duoInvite} onAccept={acceptDuo} onDecline={declineDuo} />}
       {shift && <RankShift shift={shift} profile={me} onClose={closeShift} />}
       {!fullscreen && (
