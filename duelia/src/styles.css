@@ -851,7 +851,7 @@ img { -webkit-user-drag: none; }
 /* ===== Le Pari ===== */
 .pari-art { width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center; font-size: 30px; background: linear-gradient(135deg, #2b1f4d, #4a1f3d); flex: none; }
 .pari { display: flex; flex-direction: column; gap: 12px; min-height: 100%; }
-.pari-intro, .pari-end { align-items: center; text-align: center; padding-top: 24px; }
+.pari-intro, .pari-end { align-items: center; text-align: center; padding-top: calc(env(safe-area-inset-top) + 28px); }
 .pari-logo { font-size: 64px; animation: pop 0.5s both; }
 .pari-lead { color: var(--muted); max-width: 340px; margin: 0; }
 .pari-lead b { color: var(--text); }
