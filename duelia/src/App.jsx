@@ -822,9 +822,12 @@ export default function App() {
   if (!me) {
     return (
       <div className="app">
-        <Onboarding topics={topics} onRecover={recoverAccount} onDone={({ name, avatar, photo, follows }) => {
-          update(s => ({ ...s, profile: { id: Math.random().toString(36).slice(2), name, avatar, ...(photo ? { photo } : {}), createdAt: Date.now() }, follows: [...new Set([...s.follows, ...follows, ...(SHARED ? [SHARED.id] : [])])] }))
-        }} />
+        {/* dans la zone qui défile : sur un petit écran (ou avec le clavier ouvert), on doit pouvoir descendre jusqu'au bouton */}
+        <main className="view"><div>
+          <Onboarding topics={topics} onRecover={recoverAccount} onDone={({ name, avatar, photo, follows }) => {
+            update(s => ({ ...s, profile: { id: Math.random().toString(36).slice(2), name, avatar, ...(photo ? { photo } : {}), createdAt: Date.now() }, follows: [...new Set([...s.follows, ...follows, ...(SHARED ? [SHARED.id] : [])])] }))
+          }} />
+        </div></main>
       </div>
     )
   }
