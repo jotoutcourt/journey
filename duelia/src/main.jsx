@@ -49,15 +49,33 @@ if (import.meta.env.PROD && location.hostname.endsWith('vercel.app')) {
   setInterval(check, 5 * 60 * 1000)
 }
 
-// Écran de démarrage : reste au moins 2 s (le temps de voir les bulles), puis s'efface en fondu
+// Écran de démarrage : une barre de progression (mise en scène) se remplit en ~3,5 s,
+// avec quelques à-coups pour faire « vrai », puis l'écran s'efface en fondu
 {
   const splash = document.getElementById('splash')
   if (splash) {
-    const shown = performance.now()
-    const hide = () => setTimeout(() => {
-      splash.classList.add('out')
-      setTimeout(() => splash.remove(), 500)
-    }, Math.max(0, 2000 - (performance.now() - shown)))
-    requestAnimationFrame(() => requestAnimationFrame(hide))
+    const fill = splash.querySelector('.bar i'), label = splash.querySelector('.loader b')
+    const DURATION = 3500
+    // étapes : [moment (0-1), progression (0-1)] — démarrage rapide, deux paliers, sprint final
+    const STEPS = [[0, 0], [0.18, 0.34], [0.32, 0.41], [0.5, 0.63], [0.66, 0.7], [0.86, 0.94], [1, 1]]
+    const at = (x) => {
+      for (let k = 1; k < STEPS.length; k++) {
+        const [x0, y0] = STEPS[k - 1], [x1, y1] = STEPS[k]
+        if (x <= x1) { const u = (x - x0) / (x1 - x0); return y0 + (y1 - y0) * (1 - (1 - u) * (1 - u)) }
+      }
+      return 1
+    }
+    const start = performance.now()
+    const tick = () => {
+      const p = at(Math.min(1, (performance.now() - start) / DURATION))
+      if (fill) fill.style.width = (p * 100).toFixed(1) + '%'
+      if (label) label.textContent = Math.round(p * 100) + ' %'
+      if (p < 1) return requestAnimationFrame(tick)
+      setTimeout(() => {
+        splash.classList.add('out')
+        setTimeout(() => splash.remove(), 500)
+      }, 250)
+    }
+    requestAnimationFrame(tick)
   }
 }
