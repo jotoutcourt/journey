@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import QuestionText from './QuestionText.jsx'
 import Avatar from './Avatar.jsx'
 import TopicIcon from './TopicIcon.jsx'
 import AiTag from './AiTag.jsx'
@@ -372,7 +373,7 @@ export default function Duel({ topic, me, opponent, ranks, questions, onFinish, 
         </div>
       ) : (
         <div className="qa" key={'q' + round}>
-          {q.img ? <PictureQuestion q={q} revealed={reveal} /> : <h2 className="question">{q.q}</h2>}
+          {q.img ? <PictureQuestion q={q} revealed={reveal} /> : <h2 className="question"><QuestionText text={q.q} /></h2>}
           <div className="options">
             {q.options.map((opt, i) => {
               let cls = 'opt'

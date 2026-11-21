@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Avatar from './Avatar.jsx'
 import Mascot from './Mascot.jsx'
+import QuestionText from './QuestionText.jsx'
 import ConfirmButton from './ConfirmButton.jsx'
 import * as api from '../lib/account.js'
 import { gold, move, placed, rankFor, RANKS, START, ROUNDS } from '../lib/butin.js'
@@ -311,7 +312,7 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
       )}
 
       <div className="lt-topic">Question {view.round + 1}/{view.rounds}{q?.topic ? ` · ${q.topic.icon} ${q.topic.name}` : ''}</div>
-      <h2 className="lt-question">{q?.q}</h2>
+      <h2 className="lt-question"><QuestionText text={q?.q} /></h2>
 
       {/* Les tentacules du Kraken rôdent derrière les caisses */}
       <div className="lt-stage">

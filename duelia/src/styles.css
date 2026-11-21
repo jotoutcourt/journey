@@ -969,3 +969,6 @@ img { -webkit-user-drag: none; }
 .ch-msg-form { display: flex; gap: 6px; }
 .ch-msg-form input { flex: 1; min-width: 0; padding: 9px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg2); font-size: 16px; }
 .ch-their-msg { display: block; margin-top: 3px; color: #ffb3ef; font-style: italic; }
+/* Drapeau affiché en grand sous l'énoncé */
+.q-flag { display: block; margin: 10px auto 0; font-size: clamp(84px, 26vw, 120px); line-height: 1; text-shadow: none; filter: drop-shadow(0 8px 18px #000a); animation: pop 0.35s both; }
+.lt-question .q-flag { font-size: clamp(60px, 18vw, 84px); margin-top: 4px; }

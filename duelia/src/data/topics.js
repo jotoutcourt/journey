@@ -297,7 +297,7 @@ export const OFFICIAL_TOPICS = [
     ['Comment s\'appelle le chien à trois têtes gardien des Enfers ?', 'Cerbère', 'Orthos', "L'Hydre", 'La Chimère'],
   ]),
   T('france', 'Géographie de France', '🗺️', '#3a7bff', 'Géographie', 'Régions, fleuves, villes et outre-mer', 15420, []),
-  T('drapeaux', 'Drapeaux du monde', '🏳️', '#ff7a59', 'Géographie', 'Couleurs, symboles et étoiles', 17830, []),
+  T('drapeaux', 'Drapeaux du monde', '🏳️', '#ff7a59', 'Géographie', 'Retrouve le pays de 100 vrais drapeaux', 17830, []),
   T('corps', 'Corps humain', '🫀', '#ff5d73', 'Sciences', 'Organes, os, sens et santé', 13960, []),
   T('litterature', 'Littérature', '📚', '#8d6e63', 'Culture', 'Auteurs, romans et personnages', 16240, []),
   T('art', 'Art & peinture', '🎨', '#e85dff', 'Culture', "Chefs-d'œuvre, artistes et musées", 14710, []),

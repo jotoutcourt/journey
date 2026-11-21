@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import QuestionText from './QuestionText.jsx'
 import Avatar from './Avatar.jsx'
 import AiTag from './AiTag.jsx'
 import TopicIcon from './TopicIcon.jsx'
@@ -131,7 +132,7 @@ function TowerQuestion({ q, time, opponent, plan, bonus, onUseBonus, onDone, me 
         </div>
         {opponent && <div className={`t-vs-opp ${theirs && !reveal ? 'answered' : ''}`}><Avatar seed={opponent.avatar} size={40} ring="var(--gold)" /></div>}
       </div>
-      <h2 className="question">{q.q}</h2>
+      <h2 className="question"><QuestionText text={q.q} /></h2>
       <div className="options">
         {q.options.map((opt, i) => {
           let cls = 'opt'

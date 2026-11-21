@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import QuestionText from './QuestionText.jsx'
 import TopicIcon from './TopicIcon.jsx'
 import Mascot from './Mascot.jsx'
 import Avatar from './Avatar.jsx'
@@ -181,7 +182,7 @@ export default function Pari({ topics, st, daily, onFinish, onExit, board, loadB
             <span className="pari-chip gold">Mise {fmt(bet)}</span>
           </div>
           <div className="pari-bar"><i style={{ width: `${(left / PARI_TIME) * 100}%` }} /></div>
-          <h2 className="question">{r.q.q}</h2>
+          <h2 className="question"><QuestionText text={r.q.q} /></h2>
           <div className="options">
             {r.q.options.map((opt, i) => {
               let cls = 'opt'
