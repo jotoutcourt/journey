@@ -265,6 +265,7 @@ export default function Duel({ topic, me, opponent, ranks, questions, onFinish, 
     const big = bigMatch(ranks)
     return (
       <div className={`vs-screen ${big ? 'big' : ''} ${mode !== 'live' && !big ? 'has-async' : ''}`}>
+        <video className="vs-bg" src="/decor/vs-fond.mp4" poster="/decor/vs-fond-debut.webp" autoPlay muted playsInline preload="auto" aria-hidden="true" />
         <div className="vs-rays" aria-hidden="true" />
         <div className="vs-glow" aria-hidden="true" />
         <div className="vs-side vs-left">
