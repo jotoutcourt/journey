@@ -10,6 +10,16 @@ import x_animaux from './extra/animaux.js'
 import x_gastronomie from './extra/gastronomie.js'
 import x_expressions from './extra/expressions.js'
 import x_mythologie from './extra/mythologie.js'
+import x_france from './extra/france.js'
+import x_drapeaux from './extra/drapeaux.js'
+import x_corps from './extra/corps.js'
+import x_litterature from './extra/litterature.js'
+import x_art from './extra/art.js'
+import x_inventions from './extra/inventions.js'
+import x_sports from './extra/sports.js'
+import x_monuments from './extra/monuments.js'
+import x_anglais from './extra/anglais.js'
+import x_dessins_animes from './extra/dessins-animes.js'
 import x_c_series_cultes from './extra/c-series-cultes.js'
 import x_c_espace from './extra/c-espace.js'
 import x_c_calzona from './extra/c-calzona.js'
@@ -44,6 +54,16 @@ const EXTRA = {
   'gastronomie': x_gastronomie,
   'expressions': x_expressions,
   'mythologie': x_mythologie,
+  'france': x_france,
+  'drapeaux': x_drapeaux,
+  'corps': x_corps,
+  'litterature': x_litterature,
+  'art': x_art,
+  'inventions': x_inventions,
+  'sports': x_sports,
+  'monuments': x_monuments,
+  'anglais': x_anglais,
+  'dessins-animes': x_dessins_animes,
   'c-series-cultes': x_c_series_cultes,
   'c-espace': x_c_espace,
   'c-calzona': x_c_calzona,
@@ -274,6 +294,16 @@ export const OFFICIAL_TOPICS = [
     ['Qui a ouvert la boîte libérant les maux du monde ?', 'Pandore', 'Hélène', 'Médée', 'Perséphone'],
     ['Comment s\'appelle le chien à trois têtes gardien des Enfers ?', 'Cerbère', 'Orthos', "L'Hydre", 'La Chimère'],
   ]),
+  T('france', 'Géographie de France', '🗺️', '#3a7bff', 'Géographie', 'Régions, fleuves, villes et outre-mer', 15420, []),
+  T('drapeaux', 'Drapeaux du monde', '🏳️', '#ff7a59', 'Géographie', 'Couleurs, symboles et étoiles', 17830, []),
+  T('corps', 'Corps humain', '🫀', '#ff5d73', 'Sciences', 'Organes, os, sens et santé', 13960, []),
+  T('litterature', 'Littérature', '📚', '#8d6e63', 'Culture', 'Auteurs, romans et personnages', 16240, []),
+  T('art', 'Art & peinture', '🎨', '#e85dff', 'Culture', "Chefs-d'œuvre, artistes et musées", 14710, []),
+  T('inventions', 'Inventions', '💡', '#ffc93c', 'Sciences', 'Inventeurs, découvertes et dates clés', 12880, []),
+  T('sports', 'Sports & JO', '🏅', '#3ddc84', 'Sport', 'Jeux olympiques, tennis, rugby, F1…', 21350, []),
+  T('monuments', 'Monuments du monde', '🗽', '#2ec4ff', 'Géographie', 'Merveilles, tours et temples', 18090, []),
+  T('anglais', 'Anglais', '🇬🇧', '#5b7cff', 'Langue', 'Vocabulaire, faux amis et expressions', 19570, []),
+  T('dessins-animes', 'Dessins animés', '📺', '#ffb648', 'Cinéma & TV', 'Des Simpson à Miyazaki', 22640, []),
 ]
 
 // Thèmes « créés par la communauté » livrés avec l'appli pour montrer le concept.
