@@ -95,7 +95,7 @@ export default function Pari({ topics, st, daily, onFinish, onExit, board, loadB
 
   if (phase === 'intro') return (
     <div className="screen pari pari-intro">
-      <div className="pari-logo" aria-hidden="true">🎲</div>
+      <Mascot pose="anim" size={170} className="pari-mascot" />
       <h1>Le Pari{daily ? ' du jour' : ''}</h1>
       <p className="pari-lead">Tu pars avec <b>{fmt(START)} jetons</b>. À chaque manche, tu découvres seulement le <b>thème</b>… et tu mises avant de voir la question.</p>
       <ul className="pari-rules">

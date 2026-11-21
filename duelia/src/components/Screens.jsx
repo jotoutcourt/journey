@@ -10,6 +10,7 @@ import { PERIODS, myPeriodXp, resetIn } from '../lib/periods.js'
 import { meEntry, resizeImage } from '../lib/profile.js'
 import { topicTitle, nextTitle, ladderFor, TITLE_LEVELS } from '../lib/titles.js'
 import { RecoverForm } from './AccountCard.jsx'
+import Mascot from './Mascot.jsx'
 import { pariDay, TIERS } from '../lib/pari.js'
 import { dayKey } from '../lib/tower.js'
 import { decodeTopic } from '../lib/store.js'
@@ -421,7 +422,7 @@ export function Matchmaking({ topic, opponent, live, makeQuestions, onLive, onRe
       <div className="matchmaking">
         <TopicIcon topic={topic} size={96} />
         <h2>{topic.name}</h2>
-        <div className="radar live"><span /><span /><span /></div>
+        <div className="radar live"><span /><span /><span /><Mascot pose="anim" size={150} className="radar-mascot" /></div>
         <p className="mm-status">Recherche d'un vrai joueur en ligne… <b>{secs} s</b></p>
         <p className="mm-hint">Si personne n'arrive d'ici 20 secondes, tu joues contre un adversaire IA.</p>
         <button className="btn btn-primary" onClick={() => stopRef.current?.(true)}>Jouer contre l'IA maintenant</button>

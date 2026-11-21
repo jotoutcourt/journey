@@ -5,6 +5,7 @@ const SRC = {
   defaite: '/mascotte/defaite.webp',
   tete: '/mascotte/tete.webp',
   logo: '/mascotte/logo.webp',
+  anim: '/mascotte/neutre-anim.webp',
 }
 
 export default function Mascot({ pose = 'neutre', size = 140, className = '', alt = '' }) {

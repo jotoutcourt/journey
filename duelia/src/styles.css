@@ -924,3 +924,6 @@ img { -webkit-user-drag: none; }
 @keyframes mascotFloat { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-8px) rotate(2deg); } }
 @keyframes mascotSulk { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-3deg) translateY(2px); } }
 @media (prefers-reduced-motion: reduce) { .results-mascot { animation: none; } }
+.pari-mascot { margin: 0 auto; }
+.radar-mascot { position: relative; z-index: 1; }
+.empty-mascot { margin: 10px auto 0; }

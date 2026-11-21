@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import Avatar from './Avatar.jsx'
 import TopicIcon from './TopicIcon.jsx'
 import ConfirmButton from './ConfirmButton.jsx'
+import Mascot from './Mascot.jsx'
 
 const fmtCode = (c) => (c ? `${c.slice(0, 4)}-${c.slice(4)}` : '…')
 
@@ -92,6 +93,7 @@ export function FriendsScreen({ online, social, code, initialCode, now, push, on
       </>}
 
       <h3 className="sec-title">Mes amis <small>({friends.length})</small></h3>
+      {friends.length === 0 && <Mascot pose="anim" size={120} className="empty-mascot" />}
       {friends.length === 0 && <p className="inbox-empty">Envoie ton code à tes amis, ou entre le leur ci-dessus. Vous pourrez ensuite vous défier directement.</p>}
       <ul className="ch-list">
         {friends.map(f => (
@@ -241,6 +243,7 @@ export function FriendChallenges({ list, results, now, onPlay, onDecline, onCanc
   return (
     <section className="friend-ch">
       <h3 className="sec-title">Entre amis</h3>
+      {groups.length === 0 && <Mascot pose="anim" size={120} className="empty-mascot" />}
       {groups.length === 0 && <p className="inbox-empty">Aucun défi entre amis pour l'instant. Va dans l'onglet Amis et appuie sur « Défier » à côté d'un ami.</p>}
       {groups.map(g => (
         <div key={g.key}>
