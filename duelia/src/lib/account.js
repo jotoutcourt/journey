@@ -97,3 +97,38 @@ export const sendLiveAnswer = (matchId, round, choice, t) => rpc('send_live_answ
 export const getLiveAnswers = (matchId) => rpc('get_live_answers', { p_match: matchId })
 // Score officiel calculé par le serveur : { me, opp, complete }
 export const liveResult = (matchId) => rpc('live_result', { p_match: matchId })
+
+// ===== Amis, défis entre amis, notifications, thèmes partagés =====
+export const myFriendCode = () => rpc('my_friend_code')
+export const getFriends = () => rpc('get_friends')
+export const addFriend = (code) => rpc('add_friend', { p_code: code })
+export const respondFriend = (playerId, accept) => rpc('respond_friend', { p_player: playerId, p_accept: accept })
+export const removeFriend = (playerId) => rpc('remove_friend', { p_player: playerId })
+export const heartbeat = () => rpc('heartbeat')
+
+const topicMeta = (t) => ({ name: t.name, icon: t.icon, color: t.color, category: t.category })
+const plainAnswers = (answers) => answers.map(a => [a.choice, Math.round(a.t)])
+export const sendChallenge = (friendId, topic, questions, answers) => rpc('send_challenge', {
+  p_to: friendId, p_topic_id: topic.id, p_topic: topicMeta(topic), p_questions: questions.map(slimQuestion), p_answers: plainAnswers(answers),
+})
+export const getChallenges = () => rpc('get_challenges')
+export const playChallenge = (id, answers) => rpc('play_challenge', { p_id: id, p_answers: plainAnswers(answers) })
+export const declineChallenge = (id) => rpc('decline_challenge', { p_id: id })
+export const cancelChallenge = (id) => rpc('cancel_challenge', { p_id: id })
+
+export const inviteLive = (friendId, topic, questions) => rpc('invite_live', { p_to: friendId, p_topic_id: topic.id, p_topic: topicMeta(topic), p_questions: questions.map(slimQuestion) })
+export const getLiveInvite = (id) => rpc('get_live_invite', { p_id: id })
+export const cancelLiveInvite = (id) => rpc('cancel_live_invite', { p_id: id })
+export const respondLiveInvite = (id, accept) => rpc('respond_live_invite', { p_id: id, p_accept: accept })
+
+export const savePushSubscription = (endpoint, p256dh, auth) => rpc('save_push_subscription', { p_endpoint: endpoint, p_p256dh: p256dh, p_auth: auth })
+export const deletePushSubscription = (endpoint) => rpc('delete_push_subscription', { p_endpoint: endpoint })
+
+export const publishTopic = (topic, publishedId) => rpc('publish_topic', {
+  p_id: publishedId || null,
+  p_meta: { ...topicMeta(topic), tagline: topic.tagline || '', ladder: topic.ladder || null },
+  p_questions: topic.questions.map(q => ({ q: q.q, a: q.a })),
+})
+export const unpublishTopic = (id) => rpc('unpublish_topic', { p_id: id })
+export const listSharedTopics = (query) => rpc('list_shared_topics', { p_query: query || null })
+export const getSharedTopic = (id) => rpc('get_shared_topic', { p_id: id })

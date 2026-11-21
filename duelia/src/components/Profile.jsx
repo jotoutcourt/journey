@@ -4,6 +4,7 @@ import TopicIcon from './TopicIcon.jsx'
 import ConfirmButton from './ConfirmButton.jsx'
 import AccountCard from './AccountCard.jsx'
 import InstallCard from './InstallCard.jsx'
+import { PushCard } from './Social.jsx'
 import { levelInfo } from '../lib/levels.js'
 import { topicTitle } from '../lib/titles.js'
 import { COUNTRIES, computeStats, bestBadge, resizeImage } from '../lib/profile.js'
@@ -161,7 +162,7 @@ function ProfileEditor({ profile, onSave, onCancel }) {
 }
 
 /* ---------- Page profil ---------- */
-export default function Profile({ st, topics, update, go, account, onMakeCode, onRecover }) {
+export default function Profile({ st, topics, update, go, account, onMakeCode, onRecover, push, onPush, onFriends, friendCount }) {
   const me = st.profile
   const lvl = levelInfo(st.xp)
   const [editing, setEditingRaw] = useState(false)
@@ -262,6 +263,8 @@ export default function Profile({ st, topics, update, go, account, onMakeCode, o
 
       <h3 className="sec-title">Compte</h3>
       <AccountCard account={account} onMakeCode={onMakeCode} onRecover={onRecover} />
+      <button className="btn btn-secondary wide" onClick={onFriends}>👥 Mes amis{friendCount ? ` (${friendCount})` : ''}</button>
+      <PushCard status={push} onEnable={() => onPush(true)} onDisable={() => onPush(false)} />
       <InstallCard />
 
       <h3 className="sec-title">Réglages</h3>

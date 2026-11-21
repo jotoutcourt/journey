@@ -16,8 +16,12 @@ import { dayKey } from './lib/tower.js'
 import { settleDuel, ranksFor } from './lib/rewards.js'
 import { createOutgoing, tickChallenges, pendingCount, markPlayed } from './lib/challenges.js'
 import { Inbox, ChallengeSheet, NotifyBanner, SentScreen } from './components/Challenges.jsx'
+import { FriendsScreen, FriendChallengeSheet, InviteWaiting, LiveInviteBanner, FriendSent, FriendChallenges, SharedTopics } from './components/Social.jsx'
+import * as api from './lib/account.js'
+import { useSocial, friendOpponent, fromPlain, logFrom } from './lib/useSocial.js'
+import { pushStatus, enablePush, disablePush, refreshPush } from './lib/push.js'
 import RankShift from './components/RankShift.jsx'
-import { readLinkFromHash, challengeUrl, replyUrl, LINK_TTL, shortenUrl, resolveShort } from './lib/linkduel.js'
+import { readLinkFromHash, challengeUrl, replyUrl, LINK_TTL, shortenUrl, resolveShort, baseUrl } from './lib/linkduel.js'
 import { LinkReady, LinkIntro, LinkReplyIntro } from './components/LinkDuel.jsx'
 import { applyLinkReply, rowToReply } from './lib/linkresults.js'
 import { submitLinkResult, fetchLinkResults } from './lib/server.js'
@@ -32,6 +36,16 @@ const SHARED = (() => {
   history.replaceState(null, '', location.pathname + location.search)
   return decodeTopic(m[1])
 })()
+
+// Raccourcis ouverts par une notification ou un lien d'ami : #defis, #amis, #ami=CODE
+function readNavHash() {
+  const m = location.hash.match(/^#(defis|amis|ami=([A-Za-z0-9-]{8,9}))$/)
+  if (!m) return null
+  history.replaceState(null, '', location.pathname + location.search)
+  if (m[1] === 'defis') return { name: 'inbox' }
+  return { name: 'friends', code: m[2] ? m[2].replace('-', '').toUpperCase() : undefined }
+}
+const NAV = readNavHash()
 
 // Un défi par lien (#d=…) ou la réponse d'un ami (#r=…) ouvert au chargement
 const LINK = readLinkFromHash()
@@ -135,7 +149,7 @@ export default function App() {
     LINK?.kind === 'short' ? { name: 'linkload' }
       : LINK?.kind === 'challenge' ? { name: 'linkintro' }
       : LINK?.kind === 'reply' ? { name: 'linkreply' }
-        : SHARED ? { name: 'topic', id: SHARED.id } : { name: 'home' }))
+        : NAV ? NAV : SHARED ? { name: 'topic', id: SHARED.id } : { name: 'home' }))
   const [link, setLink] = useState(LINK?.kind === 'challenge' || LINK?.kind === 'reply' ? LINK : null)
 
   useEffect(() => { saveState(st) }, [st])
@@ -298,6 +312,35 @@ export default function App() {
       setLink(null)
       return
     }
+    // Défi différé envoyé à un ami : il part sur le serveur
+    if (r.friendSend) {
+      const answers = plain(log.me, questions.length)
+      const send = () => api.sendChallenge(r.friendSend.player_id, t, questions, answers)
+        .then(() => setRoute(cur => (cur.name === 'friendsent' ? { ...cur, failed: false } : cur)))
+        .catch(() => setRoute(cur => (cur.name === 'friendsent' ? { ...cur, failed: true } : cur)))
+      setRoute({ name: 'friendsent', id: r.id, topicObj: r.topicObj, friend: r.friendSend, score: myScore, failed: undefined, retry: send })
+      send()
+      return
+    }
+    // Défi d'un ami joué : le serveur calcule les deux scores
+    if (r.friendPlay) {
+      const c = r.friendPlay
+      const answers = plain(log.me, questions.length)
+      api.playChallenge(c.id, answers).then(res => {
+        const mine = fromPlain(answers.map(a => [a.choice, a.t]), questions.length)
+        const theirs = fromPlain(c.from_answers, questions.length)
+        const data = settleFriend(c, res.my_score, res.their_score, logFrom(questions, mine, theirs))
+        setRoute({ ...r, name: 'results', data, friendRematch: c.opponent })
+        social.refreshChallenges()
+      }).catch(() => { setToast('Envoi impossible : vérifie ta connexion. Le défi t\'attend toujours dans Défis.'); setRoute({ name: 'inbox' }) })
+      return
+    }
+    // Duel en direct sur un thème que l'on n'a pas (invitation d'un ami) : pas d'XP, juste le résultat
+    if (r.topicObj && !byId(r.topicObj.id)) {
+      const outcome = myScore > oppScore ? 'win' : myScore < oppScore ? 'lose' : 'draw'
+      setRoute({ ...r, name: 'results', data: { outcome, myScore, oppScore, opponent: r.opponent, bonuses: {}, total: 0, before: 0, after: 0, log, questions, noXp: true, topic: t }, friendRematch: r.friend })
+      return
+    }
     const ch = r.challengeId ? (st.challenges || []).find(c => c.id === r.challengeId) : null
     // Défi reçu : on a joué sans voir l'adversaire, le résultat viendra plus tard
     if (ch && ch.dir === 'in') {
@@ -311,7 +354,8 @@ export default function App() {
       ? state.challenges.map(c => (c.id === ch.id ? { ...c, status: 'done', myScore, result: data, unseen: false } : c))
       : state.challenges
     setSt({ ...state, challenges })
-    setRoute({ ...r, name: 'results', data: { ...data, topic: t } })
+    setRoute({ ...r, name: 'results', data: { ...data, topic: t }, friendRematch: r.friend })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [route, byId, st])
 
   // Les défis avancent dans le temps (réponses, parties jouées, nouveaux défis reçus).
@@ -442,6 +486,183 @@ export default function App() {
     return () => { alive = false; clearTimeout(first); clearInterval(iv) }
   }, [])
 
+  // ===== Amis, défis entre amis, invitations en direct, notifications, thèmes partagés =====
+  const online = account.status === 'online'
+  const social = useSocial(online)
+  const [friendSheet, setFriendSheet] = useState(null)
+  const [push, setPush] = useState(null)
+  const [dismissedInvites, setDismissedInvites] = useState([])
+  useEffect(() => {
+    if (!online) return
+    pushStatus().then(setPush).catch(() => setPush('unsupported'))
+    refreshPush().catch(() => {})
+  }, [online])
+  const onPush = (on) => {
+    setPush('busy')
+    ;(on ? enablePush() : disablePush()).then(setPush).catch(() => pushStatus().then(setPush).catch(() => setPush('off')))
+  }
+
+  // Règlement d'un défi entre amis (une seule fois) : XP si l'on a le thème, et résultat gardé pour « Voir »
+  const topicOf = (c) => byId(c.topic_id) || { id: c.topic_id, icon: '❓', color: '#7c5cff', category: 'Culture', ...c.topic, questions: [] }
+  function settleFriend(c, myScore, oppScore, log) {
+    const t = topicOf(c), known = byId(c.topic_id), opponent = friendOpponent(c.opponent)
+    const base = stRef.current
+    if (base.friendResults?.[c.id]) return { ...base.friendResults[c.id], topic: t }
+    let data, next
+    if (known) {
+      const res = settleDuel(base, { topic: known, opponent, myScore, oppScore, log, questions: c.questions })
+      data = res.data; next = res.state
+    } else {
+      data = { outcome: myScore > oppScore ? 'win' : myScore < oppScore ? 'lose' : 'draw', myScore, oppScore, opponent, bonuses: {}, total: 0, before: 0, after: 0, log, questions: c.questions, noXp: true }
+      next = base
+    }
+    const keep = Object.fromEntries(Object.entries({ ...(next.friendResults || {}), [c.id]: data }).slice(-40))
+    setSt({ ...next, friendResults: keep })
+    return { ...data, topic: t }
+  }
+  // Mes défis envoyés qui viennent d'être joués : on les règle et on prévient
+  useEffect(() => {
+    const done = social.challenges.filter(c => c.dir === 'out' && c.status === 'done' && !stRef.current.friendResults?.[c.id])
+    if (!done.length) return
+    const notesNew = []
+    for (const c of done) {
+      const n = c.questions.length
+      const data = settleFriend(c, c.my_score, c.their_score, logFrom(c.questions, fromPlain(c.from_answers, n), fromPlain(c.to_answers, n)))
+      notesNew.push({ text: `${c.opponent.name} a joué ton défi : ${data.outcome === 'win' ? 'victoire' : data.outcome === 'lose' ? 'défaite' : 'égalité'} ${c.my_score}–${c.their_score}`, kind: 'result' })
+    }
+    setNotes(nn => [...nn, ...notesNew].slice(-5))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [social.challenges])
+
+  const friendTopics = useMemo(() => {
+    const ok = topics.filter(t => t.questions.length >= 7)
+    const fav = ok.filter(t => st.follows.includes(t.id) || t.own)
+    return [...fav, ...ok.filter(t => t.official && !fav.includes(t))]
+  }, [topics, st.follows])
+
+  const startFriendDuel = (friend, topic, mode) => {
+    setFriendSheet(null)
+    const questions = buildQuestions(topic, st.topicStats[topic.id]?.seen)
+    if (mode === 'live') {
+      setRoute({ name: 'invite', id: topic.id, friend, inviteId: null, status: 'pending', startedAt: Date.now(), questions })
+      api.inviteLive(friend.player_id, topic, questions)
+        .then(inviteId => setRoute(cur => (cur.name === 'invite' && !cur.inviteId ? { ...cur, inviteId } : cur)))
+        .catch(() => setRoute(cur => (cur.name === 'invite' ? { ...cur, status: 'failed' } : cur)))
+      return
+    }
+    go({ name: 'duel', id: topic.id, opponent: { ...friendOpponent(friend), id: 'ami' }, mode: 'blind', friendSend: friend, questions })
+  }
+  // Le challenger attend que son ami accepte le duel en direct
+  const inviteId = route.name === 'invite' && route.status === 'pending' ? route.inviteId : null
+  useEffect(() => {
+    if (!inviteId) return
+    let alive = true, busy = false
+    const iv = setInterval(async () => {
+      if (busy) return
+      busy = true
+      try {
+        const res = await api.getLiveInvite(inviteId)
+        if (!alive || !res) return
+        if (res.status === 'accepted' && res.match) { alive = false; startLive(res.match) }
+        else if (res.status !== 'pending') setRoute(cur => (cur.name === 'invite' ? { ...cur, status: res.status } : cur))
+      } catch { /* réseau : on réessaie */ } finally { busy = false }
+    }, 1500)
+    return () => { alive = false; clearInterval(iv) }
+  }, [inviteId, startLive])
+  const cancelInvite = () => {
+    if (route.inviteId && route.status === 'pending') api.cancelLiveInvite(route.inviteId).catch(() => {})
+    go({ name: 'friends' })
+  }
+
+  // Invitation reçue
+  const invite = social.invites.find(i => !dismissedInvites.includes(i.id))
+  const acceptInvite = async (inv) => {
+    setDismissedInvites(d => [...d, inv.id])
+    let m
+    try { m = await api.respondLiveInvite(inv.id, true) } catch { m = null }
+    if (!m) { setToast('Trop tard : l\'invitation a expiré.'); return }
+    const known = byId(inv.topic_id)
+    const opponent = { ...friendOpponent(inv.from) }
+    setRoute({
+      name: 'duel', id: known ? known.id : inv.topic_id, topicObj: known ? null : { id: inv.topic_id, icon: '❓', color: '#7c5cff', category: 'Culture', ...inv.topic, questions: [] },
+      mode: 'remote', matchId: m.id, opponent, questions: m.questions, ranks: {}, friend: inv.from,
+    })
+  }
+  const declineInvite = (inv) => { setDismissedInvites(d => [...d, inv.id]); api.respondLiveInvite(inv.id, false).catch(() => {}) }
+
+  const friendHandlers = {
+    onPlay: (c) => {
+      const known = byId(c.topic_id)
+      setRoute({
+        name: 'duel', id: known ? known.id : c.topic_id, topicObj: known ? null : topicOf(c),
+        opponent: friendOpponent(c.opponent), questions: c.questions, mode: 'ghost', ghost: fromPlain(c.from_answers, c.questions.length), friendPlay: c,
+      })
+    },
+    onDecline: (c) => api.declineChallenge(c.id).then(social.refreshChallenges).catch(() => setToast('Pas de connexion.')),
+    onCancel: (c) => api.cancelChallenge(c.id).then(social.refreshChallenges).catch(() => setToast('Pas de connexion.')),
+    onSee: (c) => {
+      const data = st.friendResults?.[c.id]
+      if (!data) { setToast('Résultat en cours de récupération…'); return }
+      const t = topicOf(c)
+      setRoute({ name: 'results', id: byId(c.topic_id) ? c.topic_id : undefined, topicObj: byId(c.topic_id) ? null : t, opponent: data.opponent, data: { ...data, topic: t }, friendRematch: c.opponent })
+    },
+    onFriends: () => go({ name: 'friends' }),
+  }
+
+  const shareMyCode = () => social.code && shareText(`Ajoute-moi en ami sur Duelia ! Mon code : ${social.code.slice(0, 4)}-${social.code.slice(4)}`, `${baseUrl()}#ami=${social.code}`)
+
+  // Thèmes partagés
+  const listShared = useCallback((q) => api.listSharedTopics(q), [])
+  const installShared = async (id) => {
+    let full
+    try { full = await api.getSharedTopic(id) } catch { full = null }
+    if (!full) { setToast('Impossible d\'ouvrir ce thème (connexion ?).'); return }
+    const t = {
+      id: full.id, ...full.meta, ladder: full.meta.ladder || undefined, questions: full.questions, by: full.by_name,
+      community: true, shared: true, imported: !full.mine, own: !!full.mine, published: !!full.mine, followers: 0, sharedAt: full.updated_at,
+    }
+    update(s => ({
+      ...s,
+      custom: s.custom.some(x => x.id === t.id) ? s.custom.map(x => (x.id === t.id ? { ...x, ...t } : x)) : [t, ...s.custom],
+      follows: s.follows.includes(t.id) ? s.follows : [...s.follows, t.id],
+    }))
+    go({ name: 'topic', id: t.id })
+  }
+  const publishTopic = async (t) => {
+    let id
+    try { id = await api.publishTopic(t, t.id.startsWith('p-') ? t.id : null) } catch { setToast('Publication impossible (connexion ?).'); return }
+    // le thème prend son identifiant public : progression, abonnement et classement suivent
+    update(s => {
+      const rename = (x) => (x === t.id ? id : x)
+      const stats = { ...s.topicStats }
+      if (id !== t.id && stats[t.id]) { stats[id] = stats[t.id]; delete stats[t.id] }
+      return {
+        ...s,
+        custom: s.custom.map(x => (x.id === t.id ? { ...x, id, published: true, shared: true } : x)),
+        follows: s.follows.map(rename),
+        topicStats: stats,
+      }
+    })
+    setToast('Thème publié ! Tous les joueurs peuvent le trouver dans Thèmes.')
+    if (id !== t.id) setRoute({ name: 'topic', id })
+  }
+  const unpublishTopic = async (t) => {
+    try { await api.unpublishTopic(t.id) } catch { setToast('Pas de connexion.'); return }
+    update(s => ({ ...s, custom: s.custom.map(x => (x.id === t.id ? { ...x, published: false } : x)) }))
+    setToast('Thème retiré : il n\'est plus visible des autres joueurs.')
+  }
+  // Un thème partagé installé se met à jour quand on ouvre sa page
+  const sharedPageId = route.name === 'topic' && route.id?.startsWith('p-') ? route.id : null
+  useEffect(() => {
+    if (!online || !sharedPageId) return
+    const local = stRef.current.custom.find(x => x.id === sharedPageId)
+    if (!local || local.own) return
+    api.getSharedTopic(sharedPageId).then(full => {
+      if (!full || full.updated_at === local.sharedAt) return
+      update(s => ({ ...s, custom: s.custom.map(x => (x.id === sharedPageId ? { ...x, ...full.meta, questions: full.questions, by: full.by_name, sharedAt: full.updated_at } : x)) }))
+    }).catch(() => {})
+  }, [online, sharedPageId, update])
+
   const sendChallenge = () => {
     const c = createOutgoing(st, sheet.topic, sheet.opponent)
     update(s => ({ ...s, challenges: [c, ...(s.challenges || [])] }))
@@ -504,6 +725,8 @@ export default function App() {
         follows: s.follows.includes(t.id) ? s.follows : [...s.follows, t.id],
       }
     })
+    // thème publié : la version de tous les joueurs suit les modifications
+    if (t.own && t.published && t.id.startsWith('p-')) api.publishTopic(t, t.id).catch(() => setToast('Modifs enregistrées ici, mais pas encore publiées (connexion ?).'))
     go({ name: 'topic', id: t.id })
   }
 
@@ -539,7 +762,11 @@ export default function App() {
       resolveShort(l.id).then(show)
     }
     if (LINK?.kind === 'short') resolveShort(LINK.id).then(show)
-    const onHash = () => open(readLinkFromHash())
+    const onHash = () => {
+      const nav = readNavHash()
+      if (nav) { setRoute(nav); return }
+      open(readLinkFromHash())
+    }
     window.addEventListener('hashchange', onHash)
     return () => { alive = false; window.removeEventListener('hashchange', onHash) }
   }, [])
@@ -574,15 +801,15 @@ export default function App() {
   }
 
   const meForDuel = { ...me, topicXp: st.topicStats[route.id]?.xp || 0 }
-  const fullscreen = ['match', 'duel', 'results', 'tower', 'sent', 'linkload', 'linkready', 'linkintro', 'linkreply'].includes(route.name)
-  const badge = pendingCount(st)
+  const fullscreen = ['match', 'duel', 'results', 'tower', 'sent', 'invite', 'friendsent', 'linkload', 'linkready', 'linkintro', 'linkreply'].includes(route.name)
+  const badge = pendingCount(st) + social.counts.challenges + social.counts.requests
   let view
   switch (route.name) {
-    case 'topics': view = <Topics topics={topics} go={go} importTopic={importTopic} />; break
-    case 'topic': view = topic ? <TopicPage st={st} topic={topic} go={go} toggleFollow={toggleFollow} shareTopic={shareTopic} deleteTopic={deleteTopic} /> : null; break
+    case 'topics': view = <Topics topics={topics} go={go} importTopic={importTopic} extra={<SharedTopics online={online} installed={new Set(st.custom.filter(t => t.shared).map(t => t.id))} onOpen={installShared} onList={listShared} />} />; break
+    case 'topic': view = topic ? <TopicPage st={st} topic={topic} go={go} toggleFollow={toggleFollow} shareTopic={shareTopic} deleteTopic={deleteTopic} online={online} onPublish={publishTopic} onUnpublish={unpublishTopic} /> : null; break
     case 'ranking': view = <Ranking st={st} topic={topic} go={go} />; break
     case 'create': view = <CreateTopic key={route.id || 'new'} st={st} existing={route.id ? topic : null} onSave={saveTopic} go={go} />; break
-    case 'profile': view = <Profile st={st} topics={topics} update={update} go={go} account={account} onMakeCode={getRecoveryCode} onRecover={recoverAccount} />; break
+    case 'profile': view = <Profile st={st} topics={topics} update={update} go={go} account={account} onMakeCode={getRecoveryCode} onRecover={recoverAccount} push={push} onPush={onPush} onFriends={() => go({ name: 'friends' })} friendCount={social.social?.friends?.length} />; break
     case 'tower': view = <Tower key={route.daily ? 'daily' : 'free'} topics={topics} profile={me} daily={!!route.daily} towerState={st.tower}
       onFinish={finishTower} onExit={() => go({ name: 'home' })} />; break
     case 'match': view = <Matchmaking key={route.id} topic={topic} opponent={route.opponent} onReady={startDuel} onCancel={() => go({ name: 'topic', id: topic.id })}
@@ -605,7 +832,17 @@ export default function App() {
     case 'linkreply': view = link?.kind === 'reply'
       ? <LinkReplyIntro reply={link} known={(st.linkChallenges || []).some(c => c.id === link.id)} onSee={openReply} onHome={() => { setLink(null); go({ name: 'home' }) }} />
       : null; break
-    case 'inbox': view = <Inbox st={st} topics={topics} now={clock} {...inboxHandlers} />; break
+    case 'inbox': view = <Inbox st={st} topics={topics} now={clock} {...inboxHandlers}
+      extra={<FriendChallenges list={social.challenges} results={st.friendResults} now={clock} {...friendHandlers} />} />; break
+    case 'friends': view = <FriendsScreen online={online} social={social.social} code={social.code} initialCode={route.code} now={clock} push={push} onPush={onPush}
+      onAdd={(c) => api.addFriend(c).then(r => { social.refreshFriends(); return r })}
+      onRespond={(f, yes) => api.respondFriend(f.player_id, yes).then(social.refreshFriends).catch(() => setToast('Pas de connexion.'))}
+      onRemove={(f) => api.removeFriend(f.player_id).then(social.refreshFriends).catch(() => setToast('Pas de connexion.'))}
+      onChallenge={setFriendSheet} onShareCode={shareMyCode} onBack={() => go({ name: 'inbox' })} />; break
+    case 'invite': view = topic ? <InviteWaiting key={route.startedAt} friend={route.friend} topic={topic} status={route.status} startedAt={route.startedAt}
+      onCancel={cancelInvite} onAsync={() => startFriendDuel(route.friend, topic, 'async')} /> : null; break
+    case 'friendsent': view = topic ? <FriendSent friend={route.friend} topic={topic} score={route.score} failed={route.failed}
+      onRetry={() => { setRoute(cur => ({ ...cur, failed: undefined })); route.retry() }} onInbox={() => go({ name: 'inbox' })} onHome={() => go({ name: 'home' })} /> : null; break
     case 'sent': {
       const ch = (st.challenges || []).find(c => c.id === route.challengeId)
       view = ch && topic ? <SentScreen challenge={ch} topic={topic} onInbox={() => go({ name: 'inbox' })} onHome={() => go({ name: 'home' })} /> : null
@@ -615,6 +852,7 @@ export default function App() {
       <Results data={route.data} me={me}
         onRematch={() => {
           const linkish = route.data.link || route.data.fromLink
+          if (route.friendRematch) return setFriendSheet({ ...route.friendRematch, online: social.social?.friends?.find(f => f.player_id === route.friendRematch.player_id)?.online })
           if (route.mode === 'remote') return go({ name: 'match', id: topic.id }) // on recherche un joueur en ligne
           if (!linkish) return go({ name: 'match', id: topic.id, opponent: route.opponent, live: true })
           // revanche par lien : nouvelles questions du même thème si on l'a, sinon choix d'un thème
@@ -638,6 +876,8 @@ export default function App() {
           onClose={() => setNotes(n => n.slice(1))} />
       )}
       {sheet && <ChallengeSheet sheet={sheet} onSend={sendChallenge} onCancel={() => setSheet(null)} />}
+      {friendSheet && <FriendChallengeSheet friend={friendSheet} topics={friendTopics} onPick={(t, mode) => startFriendDuel(friendSheet, t, mode)} onCancel={() => setFriendSheet(null)} />}
+      {invite && !['duel', 'match', 'invite', 'tower'].includes(route.name) && <LiveInviteBanner key={invite.id} invite={invite} onAccept={acceptInvite} onDecline={declineInvite} />}
       {shift && <RankShift shift={shift} profile={me} onClose={closeShift} />}
       {!fullscreen && (
         <nav className="tabbar">

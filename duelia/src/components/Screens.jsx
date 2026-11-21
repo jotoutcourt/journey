@@ -152,7 +152,7 @@ export function Chevrons() {
 }
 
 /* ---------------- Thèmes ---------------- */
-export function Topics({ topics, go, importTopic }) {
+export function Topics({ topics, go, importTopic, extra }) {
   const [q, setQ] = useState('')
   const [cat, setCat] = useState('Tous')
   const [code, setCode] = useState('')
@@ -200,6 +200,8 @@ export function Topics({ topics, go, importTopic }) {
         {mine.map(t => <TopicTile key={t.id} topic={t} onClick={() => go({ name: 'topic', id: t.id })} sub={`${t.questions.length} questions`} />)}
       </div>
 
+      {extra}
+
       {community.length > 0 && <h3 className="sec-title">Créés par les joueurs</h3>}
       <div className="grid">
         {community.map(t => <TopicTile key={t.id} topic={t} onClick={() => go({ name: 'topic', id: t.id })} sub={`par ${t.by}`} />)}
@@ -218,7 +220,7 @@ export function Topics({ topics, go, importTopic }) {
 }
 
 /* ---------------- Page d'un thème ---------------- */
-export function TopicPage({ st, topic, go, toggleFollow, shareTopic, deleteTopic }) {
+export function TopicPage({ st, topic, go, toggleFollow, shareTopic, deleteTopic, online, onPublish, onUnpublish }) {
   const stats = st.topicStats[topic.id] || { xp: 0, played: 0, wins: 0, seen: [] }
   const lvl = levelInfo(stats.xp)
   const following = st.follows.includes(topic.id)
@@ -282,6 +284,8 @@ export function TopicPage({ st, topic, go, toggleFollow, shareTopic, deleteTopic
         <div className="tp-owner">
           <button className="btn btn-ghost" onClick={() => shareTopic(topic)}>🔗 Partager ce thème</button>
           {topic.own && <button className="btn btn-ghost" onClick={() => go({ name: 'create', id: topic.id })}>✏️ Modifier</button>}
+          {topic.own && online && !topic.published && topic.questions.length >= 7 && <button className="btn btn-secondary" onClick={() => onPublish(topic)}>🌍 Publier pour tous</button>}
+          {topic.own && topic.published && <ConfirmButton className="btn btn-ghost" onConfirm={() => onUnpublish(topic)} confirmLabel="Ne plus publier ?">🌍 Publié · Retirer</ConfirmButton>}
           {(topic.own || topic.imported) && <ConfirmButton className="btn btn-ghost danger" onConfirm={() => deleteTopic(topic)} confirmLabel="Supprimer pour de bon ?">Supprimer</ConfirmButton>}
         </div>
       )}

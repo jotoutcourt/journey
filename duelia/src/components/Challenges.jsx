@@ -68,7 +68,7 @@ export function SentScreen({ challenge, topic, onInbox, onHome }) {
 }
 
 /* ---------- Onglet Défis ---------- */
-export function Inbox({ st, topics, now, onAccept, onReject, onPlay, onResult, onDismiss, onResend, onCancel }) {
+export function Inbox({ st, topics, now, onAccept, onReject, onPlay, onResult, onDismiss, onResend, onCancel, extra }) {
   const list = st.challenges || []
   const byId = (id) => topics.find(t => t.id === id)
   const groups = [
@@ -103,7 +103,9 @@ export function Inbox({ st, topics, now, onAccept, onReject, onPlay, onResult, o
   return (
     <div className="screen inbox">
       <header className="top"><h1>Défis</h1></header>
-      {groups.length === 0 && (
+      {extra}
+      {groups.length > 0 && extra && <h3 className="sec-title">Défis par lien</h3>}
+      {groups.length === 0 && !extra && (
         <div className="inbox-empty">
           <p><b>Aucun défi pour l'instant.</b></p>
           <p>Ouvre le classement d'un thème et appuie sur « Défier ». Si le joueur n'est pas en ligne, il recevra ton défi et jouera de son côté. Les autres joueurs peuvent aussi te défier : leurs défis arrivent ici.</p>
