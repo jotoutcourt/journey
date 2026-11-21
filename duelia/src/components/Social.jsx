@@ -189,7 +189,7 @@ export function PickFriendSheet({ topic, friends, online, onPick, onLink, onAdd,
               <li key={f.player_id}>
                 <button className="pick-friend" onClick={() => onPick(f)}>
                   <Avatar seed={f.avatar} photo={f.photo} size={44} ring={f.online ? 'var(--good, #3ddc84)' : undefined} />
-                  <span><b>{f.flag} {f.name}</b><small>{f.online ? '● En ligne' : 'Hors ligne'}</small></span>
+                  <span className="pf-info"><b>{f.flag} {f.name}</b><small>{f.online ? '● En ligne' : 'Hors ligne'}</small></span>
                   <i aria-hidden="true">›</i>
                 </button>
               </li>

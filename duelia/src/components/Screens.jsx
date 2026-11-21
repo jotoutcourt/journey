@@ -64,6 +64,19 @@ export function Home({ st, topics, go }) {
         </div>
       </section>
 
+      <section className="tower-card butin-card">
+        <div className="tc-head">
+          <span className="pari-art butin-art" aria-hidden="true">💰</span>
+          <div>
+            <b>Le Butin <span className="new-tag">À deux</span></b>
+            <small>Avec un ami, chacun sur son téléphone : répartissez vos lingots sur les réponses et sauvez le trésor</small>
+          </div>
+        </div>
+        <div className="tc-actions">
+          <button className="btn btn-gold" onClick={() => go({ name: 'butin' })}>Chasser le trésor</button>
+        </div>
+      </section>
+
       <section className="tower-card pari-card">
         <div className="tc-head">
           <span className="pari-art" aria-hidden="true">🎲</span>

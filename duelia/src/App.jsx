@@ -15,6 +15,8 @@ import { dayKey } from './lib/tower.js'
 import { settleDuel, ranksFor } from './lib/rewards.js'
 import { createOutgoing, tickChallenges, pendingCount, markPlayed } from './lib/challenges.js'
 import { Inbox, ChallengeSheet, NotifyBanner, SentScreen } from './components/Challenges.jsx'
+import { ButinHome, ButinGame, DuoInviteBanner } from './components/Butin.jsx'
+import { buildButin } from './lib/butin.js'
 import { FriendsScreen, FriendChallengeSheet, PickFriendSheet, InviteWaiting, LiveInviteBanner, FriendSent, SharedTopics } from './components/Social.jsx'
 import * as api from './lib/account.js'
 import TopicRequestSheet from './components/TopicRequest.jsx'
@@ -625,6 +627,22 @@ export default function App() {
       mode: 'remote', matchId: m.id, opponent, questions: m.questions, ranks: {}, friend: inv.from,
     })
   }
+  // Le Butin : inviter un ami, ou rejoindre une partie à laquelle on est invité
+  const duoInvite = social.duoInvites.find(i => !dismissedInvites.includes(i.id))
+  const startButin = async (friend) => {
+    try {
+      const id = await api.inviteDuo(friend.player_id, buildButin(topics))
+      setRoute({ name: 'butingame', gameId: id })
+    } catch { setToast('Invitation impossible : vérifie ta connexion.') }
+  }
+  const acceptDuo = async (inv) => {
+    setDismissedInvites(d => [...d, inv.id])
+    let v
+    try { v = await api.respondDuo(inv.id, true) } catch { v = null }
+    if (!v) { setToast('Trop tard : l\'invitation a expiré.'); return }
+    setRoute({ name: 'butingame', gameId: inv.id })
+  }
+  const declineDuo = (inv) => { setDismissedInvites(d => [...d, inv.id]); api.respondDuo(inv.id, false).catch(() => {}) }
   const declineInvite = (inv) => { setDismissedInvites(d => [...d, inv.id]); api.respondLiveInvite(inv.id, false).catch(() => {}) }
 
   const friendHandlers = {
@@ -845,9 +863,9 @@ export default function App() {
   }
 
   const meForDuel = { ...me, topicXp: st.topicStats[route.id]?.xp || 0 }
-  const fullscreen = ['match', 'duel', 'results', 'tower', 'pari', 'sent', 'invite', 'friendsent', 'linkload', 'linkready', 'linkintro', 'linkreply'].includes(route.name)
+  const fullscreen = ['match', 'duel', 'results', 'tower', 'pari', 'butingame', 'sent', 'invite', 'friendsent', 'linkload', 'linkready', 'linkintro', 'linkreply'].includes(route.name)
   // pas de rechargement automatique (nouvelle version) pendant une partie
-  window.__dueliaBusy = ['match', 'duel', 'tower', 'pari', 'invite', 'create'].includes(route.name)
+  window.__dueliaBusy = ['match', 'duel', 'tower', 'pari', 'invite', 'create', 'butingame'].includes(route.name)
   const badge = pendingCount(st) + social.counts.challenges
   const friendBadge = social.counts.requests
   let view
@@ -857,6 +875,10 @@ export default function App() {
     case 'ranking': view = <Ranking st={st} topic={topic} go={go} />; break
     case 'create': view = <CreateTopic key={route.id || 'new'} st={st} existing={route.id ? topic : null} onSave={saveTopic} go={go} />; break
     case 'profile': view = <Profile st={st} topics={topics} update={update} go={go} account={account} onMakeCode={getRecoveryCode} onRecover={recoverAccount} push={push} onPush={onPush} onFriends={() => go({ name: 'friends' })} friendCount={social.social?.friends?.length} />; break
+    case 'butin': view = <ButinHome online={online && !!social.social} friends={social.social?.friends} onInvite={startButin}
+      onBack={() => go({ name: 'home' })} onAddFriend={() => go({ name: 'friends' })} />; break
+    case 'butingame': view = <ButinGame key={route.gameId} gameId={route.gameId} me={me}
+      onExit={() => go({ name: 'butin' })} onReplay={(p) => startButin(p)} />; break
     case 'pari': view = <Pari key={route.daily ? 'pd' : 'pl' + (route.n || 0)} topics={topics} st={st} daily={!!route.daily} onFinish={finishPari}
       onExit={() => go({ name: 'home' })} board={pariBoard} loadBoard={loadPariBoard} />; break
     case 'tower': view = <Tower key={route.daily ? 'daily' : 'free'} topics={topics} profile={me} daily={!!route.daily} towerState={st.tower}
@@ -934,6 +956,7 @@ export default function App() {
         onAdd={() => { setFriendPick(null); go({ name: 'friends' }) }}
         onCancel={() => setFriendPick(null)} />}
       {invite && !['duel', 'match', 'invite', 'tower'].includes(route.name) && <LiveInviteBanner key={invite.id} invite={invite} onAccept={acceptInvite} onDecline={declineInvite} />}
+      {duoInvite && !invite && !['duel', 'match', 'invite', 'tower', 'butingame'].includes(route.name) && <DuoInviteBanner key={duoInvite.id} invite={duoInvite} onAccept={acceptDuo} onDecline={declineDuo} />}
       {shift && <RankShift shift={shift} profile={me} onClose={closeShift} />}
       {!fullscreen && (
         <nav className="tabbar">

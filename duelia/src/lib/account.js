@@ -142,3 +142,12 @@ export const listTopicRequests = () => rpc('list_topic_requests')
 // Le Pari : partie du jour et classement
 export const submitPari = (day, score) => rpc('submit_pari', { p_day: day, p_score: Math.round(score) })
 export const getPariBoard = (day) => rpc('get_pari_board', { p_day: day })
+
+// ===== Le Butin : mode coopératif à deux (la partie vit sur le serveur) =====
+export const inviteDuo = (to, questions) => rpc('invite_duo', { p_to: to, p_questions: questions })
+export const respondDuo = (id, accept) => rpc('respond_duo', { p_id: id, p_accept: accept })
+export const getDuo = (id) => rpc('get_duo', { p_id: id })
+export const duoPlace = (id, round, placement) => rpc('duo_place', { p_id: id, p_round: round, p_placement: placement })
+export const duoReady = (id, round, ready) => rpc('duo_ready', { p_id: id, p_round: round, p_ready: ready })
+export const leaveDuo = (id) => rpc('leave_duo', { p_id: id })
+export const getDuoBoard = () => rpc('get_duo_board')
