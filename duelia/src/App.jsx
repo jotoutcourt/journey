@@ -5,7 +5,6 @@ import { loadState, saveState, emptyState, encodeTopic, decodeTopic } from './li
 import { findOpponent, getCommunity, leaderboard } from './lib/bots.js'
 import { meEntry } from './lib/profile.js'
 import { setSound, setMusic } from './lib/sound.js'
-import { pick } from './lib/rng.js'
 import Duel from './components/Duel.jsx'
 import { buildQuestions } from './lib/duel.js'
 import Results from './components/Results.jsx'
@@ -238,11 +237,6 @@ export default function App() {
       },
     }
   })
-
-  const quickDuel = () => {
-    const pool = st.follows.length ? st.follows : topics.filter(t => t.official).map(t => t.id)
-    go({ name: 'match', id: pick(pool) })
-  }
 
   const topic = route.topicObj || (route.id ? byId(route.id) : null)
   const me = st.profile
@@ -872,9 +866,9 @@ export default function App() {
         onTopic={() => (byId(topic.id) ? go({ name: 'topic', id: topic.id }) : go({ name: 'topics' }))}
         onShare={() => shareText(`${route.data.outcome === 'win' ? 'Victoire' : 'Duel'} ${route.data.myScore}–${route.data.oppScore} contre ${route.opponent.name} sur « ${topic.name} » dans Duelia !`)} />
     ); break
-    default: view = <Home st={st} topics={topics} go={go} quickDuel={quickDuel} />
+    default: view = <Home st={st} topics={topics} go={go} />
   }
-  if (!view) view = <Home st={st} topics={topics} go={go} quickDuel={quickDuel} />
+  if (!view) view = <Home st={st} topics={topics} go={go} />
 
   return (
     <div className={`app ${fullscreen ? 'full' : ''}`}>

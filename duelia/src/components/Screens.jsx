@@ -37,7 +37,7 @@ export function TopicTile({ topic, onClick, sub }) {
 }
 
 /* ---------------- Accueil ---------------- */
-export function Home({ st, topics, go, quickDuel }) {
+export function Home({ st, topics, go }) {
   const me = st.profile
   const lvl = levelInfo(st.xp)
   const followed = topics.filter(t => st.follows.includes(t.id))
@@ -61,11 +61,6 @@ export function Home({ st, topics, go, quickDuel }) {
           <XpBar xp={st.xp} />
         </div>
       </section>
-
-      <button className="quick-duel" onClick={quickDuel}>
-        <span className="qd-glyph" aria-hidden="true"><Chevrons /></span>
-        <span className="qd-txt"><b>Entraînement contre l'IA</b><small>Un thème au hasard parmi les tiens, un adversaire IA à ta taille. Pour un vrai duel : « Défier un ami » depuis un thème</small></span>
-      </button>
 
       <section className="tower-card">
         <div className="tc-head">
