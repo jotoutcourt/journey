@@ -187,8 +187,16 @@ html.abysse .countdown { position: relative; display: flex; flex-direction: colu
 
 /* Duel important (plaque « Top N mondial » + bandeau du bas) : on resserre pour tout faire tenir */
 html.abysse .vs-screen.big { padding-top: calc(env(safe-area-inset-top) + 56px); }
-html.abysse .vs-screen.big .vs-mark span { font-size: clamp(80px, 24vw, 112px); }
+html.abysse .vs-screen.big .vs-mark span { font-size: clamp(72px, 21vw, 100px); }
 html.abysse .vs-screen.big .vs-side .vs-av { width: 96px !important; height: 96px !important; }
 html.abysse .vs-screen.big .vs-side b { font-size: 22px; }
 html.abysse .vs-screen.big .vs-side .vs-txt { margin-top: 4px; }
 html.abysse .vs-screen.big .vs-side .vs-rank { margin-top: 4px; }
+
+/* Le VS est ancré au centre exact de l'écran : c'est là que le bleu et le rose fusionnent dans le fond */
+html.abysse .vs-screen { grid-template-rows: 1fr clamp(150px, 46vw, 190px) 1fr; }
+html.abysse .vs-screen.has-async { grid-template-rows: 1fr clamp(130px, 38vw, 165px) 1fr; }
+html.abysse .vs-screen.big { grid-template-rows: 1fr clamp(96px, 28vw, 130px) 1fr; }
+html.abysse .vs-screen > .vs-left { grid-row: 1; align-self: end; }
+html.abysse .vs-screen > .vs-right { grid-row: 3; align-self: start; }
+html.abysse .vs-screen > .vs-mark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 3; margin: 0; }
