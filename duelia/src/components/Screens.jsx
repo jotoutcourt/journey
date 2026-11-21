@@ -153,8 +153,8 @@ export function Home({ st, topics, go }) {
   )
 }
 
-export function Brand() {
-  return <div className="brand"><Chevrons /><span>Kraken</span></div>
+export function Brand({ big = false }) {
+  return <div className={`brand ${big ? 'big' : ''}`}><img src="/mascotte/logo.webp" alt="Kraken" className="brand-logo" draggable="false" /></div>
 }
 export function Chevrons() {
   return (
@@ -587,7 +587,7 @@ export function Onboarding({ topics, onDone, onRecover }) {
   if (step === 0) {
     return (
       <div className="screen onboarding">
-        <Brand />
+        <Brand big />
         <h1 className="ob-title">Des duels de quiz,<br />sur tous les sujets.</h1>
         <p className="ob-sub">Réponds juste, réponds vite : chaque seconde gagnée te donne des points d'avance.</p>
         <div className="ob-av">

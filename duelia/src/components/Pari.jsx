@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import TopicIcon from './TopicIcon.jsx'
+import Mascot from './Mascot.jsx'
 import Avatar from './Avatar.jsx'
 import { START, ROUNDS, PARI_TIME, stepsFor, planGame, pariTopics, betRange, betFor, settle, gainFor, oddsFor, pariDay, TIERS, tierFor, nextTier } from '../lib/pari.js'
 import { levelInfo } from '../lib/levels.js'
@@ -117,7 +118,7 @@ export default function Pari({ topics, st, daily, onFinish, onExit, board, loadB
     const gain = bank - START
     return (
       <div className="screen pari pari-end">
-        <div className="pari-logo" aria-hidden="true">{bank <= 0 ? '💸' : gain > 0 ? '🤑' : '😬'}</div>
+        <Mascot pose={gain > 0 ? 'victoire' : 'defaite'} size={150} className="results-mascot" />
         <h1>{bank <= 0 ? 'Ruiné !' : gain > 0 ? 'Bien joué !' : 'Partie terminée'}</h1>
         <div className="pari-final"><small>Tapis final</small><b>{fmt(bank)}</b><span>jetons</span></div>
         <p className={`pari-delta ${gain >= 0 ? 'up' : 'down'}`}>{gain >= 0 ? '+' : ''}{fmt(gain)} par rapport au départ</p>

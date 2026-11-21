@@ -1,3 +1,4 @@
+import Mascot from './Mascot.jsx'
 import { useEffect, useState } from 'react'
 import Avatar from './Avatar.jsx'
 import AiTag from './AiTag.jsx'
@@ -85,6 +86,7 @@ export default function Results({ data, me, onRematch, onAnother, onTopic, onSha
     <div className={`results ${outcome}`}>
       {outcome === 'win' && <div className="confetti" aria-hidden="true">{Array.from({ length: 24 }, (_, i) => <i key={i} style={{ '--i': i }} />)}</div>}
       <p className="results-topic">{topic.icon} {topic.name}</p>
+      <Mascot pose={outcome === 'win' ? 'victoire' : outcome === 'lose' ? 'defaite' : 'neutre'} size={150} className="results-mascot" />
       <h1 className="results-title">{title}</h1>
       {outcome === 'win' && opponent.champion && <div className="champ-beaten">👑 Tu as battu le champion du thème !</div>}
 

@@ -913,3 +913,14 @@ img { -webkit-user-drag: none; }
 .pari-beat b { color: var(--text); }
 .pari-medal { font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; font-weight: 800; margin: 0; animation: pop 0.5s both; }
 .pari-stake span b { font-family: inherit; font-size: inherit; }
+/* ===== Mascotte ===== */
+.brand-logo { height: 64px; width: auto; display: block; }
+.brand.big .brand-logo { height: 150px; margin: 0 auto; }
+.brand.big { justify-content: center; }
+.mascot { display: block; object-fit: contain; pointer-events: none; user-select: none; }
+.results-mascot { margin: 4px auto -6px; animation: mascotIn 0.6s cubic-bezier(.2,1.4,.4,1) both, mascotFloat 3.2s 0.6s ease-in-out infinite; }
+.mascot-defaite.results-mascot { animation: mascotIn 0.6s cubic-bezier(.2,1.4,.4,1) both, mascotSulk 2.6s 0.6s ease-in-out infinite; }
+@keyframes mascotIn { from { opacity: 0; transform: scale(0.4) translateY(30px); } to { opacity: 1; transform: none; } }
+@keyframes mascotFloat { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-8px) rotate(2deg); } }
+@keyframes mascotSulk { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-3deg) translateY(2px); } }
+@media (prefers-reduced-motion: reduce) { .results-mascot { animation: none; } }
