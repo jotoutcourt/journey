@@ -128,6 +128,15 @@ function initialState() {
     }
     s.starterVersion = 7
   }
+  // Mise à jour unique (v8) : cinq nouveaux thèmes rejoignent les créations du joueur.
+  if (s.starterVersion < 8) {
+    for (const { topic, since } of STARTER_CREATIONS) {
+      if (since !== 8 || s.custom.some(t => t.id === topic.id)) continue
+      s.custom = [...s.custom, topic]
+      if (!s.follows.includes(topic.id)) s.follows = [...s.follows, topic.id]
+    }
+    s.starterVersion = 8
+  }
   return s
 }
 

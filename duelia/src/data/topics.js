@@ -17,6 +17,11 @@ import x_c_desperate from './extra/c-desperate.js'
 import x_c_disney from './extra/c-disney.js'
 import x_c_villa from './extra/c-villa.js'
 import x_c_eras from './extra/c-eras.js'
+import x_greys from './extra/c-greys.js'
+import x_friends from './extra/c-friends.js'
+import x_potter from './extra/c-potter.js'
+import x_gossip from './extra/c-gossip.js'
+import x_pop2000 from './extra/c-pop2000.js'
 
 // Banque de thèmes officiels. Chaque question : [énoncé, bonne réponse, leurre, leurre, leurre].
 // Les réponses sont mélangées au moment du duel.
@@ -46,6 +51,11 @@ const EXTRA = {
   'c-disney': x_c_disney,
   'c-villa': x_c_villa,
   'c-eras': x_c_eras,
+  'c-greys': x_greys,
+  'c-friends': x_friends,
+  'c-potter': x_potter,
+  'c-gossip': x_gossip,
+  'c-pop2000': x_pop2000,
 }
 
 // Fusionne les questions de base et les supplémentaires, sans doublon d'énoncé.
@@ -344,17 +354,37 @@ const SEED = [
     tagline: 'Taylor Swift, 149 concerts et des bracelets d\'amitié', by: 'Jo', followers: 0, community: true, questions: [],
   },
   {
+    id: 'c-greys', name: "Grey's Anatomy", icon: '🩺', color: '#3e9bd6', category: 'Cinéma & TV',
+    tagline: 'Seattle Grace, McDreamy et chirurgies impossibles', by: 'Jo', followers: 0, community: true, questions: [],
+  },
+  {
+    id: 'c-friends', name: 'Friends', icon: '☕', color: '#e8a93a', category: 'Cinéma & TV',
+    tagline: 'Central Perk, six amis et un canapé orange', by: 'Jo', followers: 0, community: true, questions: [],
+  },
+  {
+    id: 'c-potter', name: 'Harry Potter', icon: '⚡', color: '#9b5de5', category: 'Cinéma & TV',
+    tagline: 'Poudlard, sortilèges et Quidditch', by: 'Jo', followers: 0, community: true, questions: [],
+  },
+  {
+    id: 'c-gossip', name: 'Gossip Girl', icon: '💋', color: '#d4a017', category: 'Cinéma & TV',
+    tagline: "Les secrets de l'Upper East Side", by: 'Jo', followers: 0, community: true, questions: [],
+  },
+  {
+    id: 'c-pop2000', name: 'Pop des années 2000', icon: '🎤', color: '#ff4fa3', category: 'Musique',
+    tagline: 'Tubes, télé-crochets et clips cultes', by: 'Jo', followers: 0, community: true, questions: [],
+  },
+  {
     id: 'c-disney', name: 'Disney', icon: '🏰', color: '#4f7bff', category: 'Cinéma & TV',
     tagline: 'Un siècle de films, de personnages et de parcs', by: 'Jo', followers: 0, community: true, questions: [],
   },
 ].map(t => ({ ...t, questions: merge(t.id, t.questions) }))
 
 // Thèmes communautaires livrés avec l'appli
-const MINE = ['c-calzona', 'c-desperate', 'c-disney', 'c-villa', 'c-eras']
+const MINE = ['c-calzona', 'c-desperate', 'c-disney', 'c-villa', 'c-eras', 'c-greys', 'c-friends', 'c-potter', 'c-gossip', 'c-pop2000']
 export const COMMUNITY_SEED = SEED.filter(t => !MINE.includes(t.id))
 
 // Thème « Callie & Arizona » : placé dans les créations du joueur, modifiable comme s'il l'avait écrit
 export const STARTER_CREATION = { ...SEED.find(t => t.id === 'c-calzona'), own: true, community: true, followers: 0 }
 // Tous les thèmes rangés dans les créations du joueur, avec la version de l'appli qui les a ajoutés
-const SINCE = { 'c-calzona': 1, 'c-desperate': 3, 'c-disney': 3, 'c-villa': 4, 'c-eras': 7 }
+const SINCE = { 'c-calzona': 1, 'c-desperate': 3, 'c-disney': 3, 'c-villa': 4, 'c-eras': 7, 'c-greys': 8, 'c-friends': 8, 'c-potter': 8, 'c-gossip': 8, 'c-pop2000': 8 }
 export const STARTER_CREATIONS = MINE.map(id => ({ topic: { ...SEED.find(t => t.id === id), own: true, community: true, followers: 0 }, since: SINCE[id] }))
