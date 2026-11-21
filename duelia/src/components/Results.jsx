@@ -85,6 +85,7 @@ export default function Results({ data, me, onRematch, onAnother, onTopic, onSha
   return (
     <div className={`results ${outcome}`}>
       {outcome === 'win' && <div className="confetti" aria-hidden="true">{Array.from({ length: 24 }, (_, i) => <i key={i} style={{ '--i': i }} />)}</div>}
+      <button className="results-quit" onClick={onTopic} aria-label="Quitter">✕</button>
       <p className="results-topic">{topic.icon} {topic.name}</p>
       <Mascot pose={outcome === 'win' ? 'victoire' : outcome === 'lose' ? 'defaite' : 'egalite'} size={150} className="results-mascot" />
       <h1 className="results-title">{title}</h1>
@@ -148,8 +149,6 @@ export default function Results({ data, me, onRematch, onAnother, onTopic, onSha
       )}
 
       <div className="results-actions">
-        <button className="btn btn-primary" onClick={onRematch}>{linkish ? 'Défier en retour' : 'Revanche'}</button>
-        <button className="btn btn-secondary" onClick={onAnother}>{linkish ? 'Accueil' : 'Nouvel adversaire'}</button>
         <button className="btn btn-ghost" onClick={() => setShowRecap(s => !s)}>{showRecap ? 'Masquer' : 'Voir'} les réponses</button>
         <button className="btn btn-ghost" onClick={onShare}>Partager</button>
         <button className="btn btn-ghost wide" onClick={onTopic}>Retour au thème</button>
@@ -172,6 +171,10 @@ export default function Results({ data, me, onRematch, onAnother, onTopic, onSha
           })}
         </ol>
       )}
+      <div className="results-dock">
+        <button className="btn btn-primary" onClick={onRematch}>{linkish ? 'Défier en retour' : 'Revanche'}</button>
+        <button className="btn btn-secondary" onClick={onAnother}>{linkish ? 'Accueil' : 'Nouvel adversaire'}</button>
+      </div>
     </div>
   )
 }

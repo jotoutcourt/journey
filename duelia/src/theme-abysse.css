@@ -157,6 +157,7 @@ html.abysse .vs-mark { display: flex; justify-content: center; }
 html.abysse .vs-mark .vs-mascot { display: none; }
 html.abysse .vs-mark span {
   font-family: var(--display); font-weight: 700; font-style: italic; font-size: clamp(110px, 34vw, 160px); line-height: 0.9; letter-spacing: -0.03em;
+  padding: 0.04em 0.2em 0.1em 0.12em; /* l'italique déborde : sans marge, le dégradé coupe le S */
   background: linear-gradient(180deg, #ffffff 0%, #efe3ff 40%, #b98aff 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
   -webkit-text-stroke: 5px #3a0f8a; paint-order: stroke fill;
   filter: drop-shadow(0 7px 0 #2a0870) drop-shadow(0 0 24px #a866ffaa) drop-shadow(0 16px 30px #000c);
