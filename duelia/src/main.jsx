@@ -4,8 +4,8 @@ import './styles.css'
 import './theme-abysse.css'
 import App from './App.jsx'
 
-// Aperçu du thème « Abysse » : ?theme=abysse (essai avant de l'adopter)
-if (/[?&]theme=abysse/.test(location.search)) document.documentElement.classList.add('abysse')
+// Thème « Abysse » (couleurs de la pieuvre Kraken), appliqué partout
+document.documentElement.classList.add('abysse')
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
