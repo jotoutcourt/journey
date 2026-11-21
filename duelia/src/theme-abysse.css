@@ -1,0 +1,65 @@
+/* Thème « Abysse » : couleurs et formes accordées à la pieuvre et au logo Kraken.
+   Activé par la classe .abysse sur <html>. Même mise en page, nouvel habillage. */
+html.abysse {
+  --bg: #120a26;
+  --bg2: #180d33;
+  --card: #1f1342;
+  --card2: #2a1a57;
+  --line: #3b2773;
+  --text: #f6f0ff;
+  --muted: #ab9fd4;
+  --me: #2ee6c5;
+  --opp: #ff5c8a;
+  --violet: #9b4dff;
+  --lilac: #c58bff;
+  --gold: #ffc940;
+  --ok: #3ddc84;
+  --ko: #ff5d73;
+  --radius: 22px;
+  --display: 'Fredoka', 'Bricolage Grotesque', system-ui, sans-serif;
+}
+html.abysse body {
+  background:
+    radial-gradient(700px 420px at 50% -8%, #8b3dff38, transparent 70%),
+    radial-gradient(520px 380px at 100% 100%, #c58bff1c, transparent 70%),
+    radial-gradient(420px 320px at 0% 70%, #2ee6c50f, transparent 70%),
+    linear-gradient(180deg, #120a26 0%, #170b31 100%);
+}
+html.abysse h1, html.abysse h2, html.abysse h3 { font-weight: 600; letter-spacing: 0; }
+
+/* Boutons : relief en bas, comme les lettres du logo */
+html.abysse .btn { border-radius: 18px; font-family: var(--display); font-weight: 600; letter-spacing: 0.01em; }
+html.abysse .btn-primary { background: linear-gradient(180deg, #a866ff, #8433ff); color: #fff; box-shadow: 0 5px 0 #4f17a3, 0 12px 26px #8b3dff4d; }
+html.abysse .btn-primary:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 2px 0 #4f17a3; }
+html.abysse .btn-secondary { background: var(--lilac); color: #2a0a5c; box-shadow: 0 4px 0 #8a52d6; }
+html.abysse .btn-gold { box-shadow: 0 4px 0 #b8862b; }
+html.abysse .btn-ghost { background: #ffffff0a; border: 1.5px solid var(--line); }
+
+/* Cartes : violet profond, lueur douce, motif de ventouses sur les modes solo */
+html.abysse .me-card, html.abysse .tower-card {
+  background: linear-gradient(160deg, #2a1a57, #1d1240); border: 1.5px solid #3b2773;
+  box-shadow: 0 10px 30px #00000040, inset 0 1px 0 #ffffff0d;
+}
+html.abysse .tower-card {
+  background:
+    radial-gradient(circle, #c58bff14 2.2px, transparent 2.8px) 0 0 / 20px 20px,
+    linear-gradient(160deg, #2a1a57, #1d1240);
+}
+html.abysse .tabbar { background: color-mix(in srgb, #150b2e 90%, transparent); border-top-color: #2e1d5c; }
+html.abysse .tabbar button.on { color: var(--lilac); }
+html.abysse .tabbar button.on svg { filter: drop-shadow(0 0 8px #c58bff88); }
+html.abysse .chip.on { background: var(--lilac); color: #2a0a5c; }
+html.abysse .topic-icon { box-shadow: 0 6px 0 #0000002e, 0 10px 22px #00000040; }
+
+/* Duel : réponses lilas pâle, relief violet */
+html.abysse .opt { background: #f5efff; color: #22124a; box-shadow: 0 4px 0 #cbb6f2; border-radius: 18px; }
+html.abysse .opt:active:not(:disabled) { box-shadow: 0 1px 0 #cbb6f2; }
+html.abysse .question { font-family: var(--display); font-weight: 600; }
+html.abysse .score, html.abysse .clock span { font-family: var(--display); }
+
+/* Résultats */
+html.abysse .results-title { font-family: var(--display); font-weight: 700; }
+html.abysse .results.win .results-title { background: linear-gradient(90deg, var(--lilac), var(--gold)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+html.abysse .results-mascot, html.abysse .pari-mascot { filter: drop-shadow(0 10px 28px #8b3dff66); }
+html.abysse .ring-fg { stroke: var(--violet); }
+html.abysse .brand-logo { filter: drop-shadow(0 8px 24px #8b3dff55); }
