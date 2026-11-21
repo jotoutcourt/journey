@@ -31,6 +31,14 @@ export function TopicTile({ topic, onClick, sub, price }) {
 /* ---------------- Accueil ---------------- */
 export function Home({ go, wallet, onSolo, oxygen }) {
   const [choose, setChoose] = useState(false)
+  const modesRef = useRef(null)
+  // un appui en dehors des boutons Solo / À deux fait revenir « Jouer » (sans gêner l'appui sur les boutons, iPhone compris)
+  useEffect(() => {
+    if (!choose) return
+    const away = (e) => { if (modesRef.current && !modesRef.current.contains(e.target)) setChoose(false) }
+    const id = setTimeout(() => document.addEventListener('pointerdown', away), 0)
+    return () => { clearTimeout(id); document.removeEventListener('pointerdown', away) }
+  }, [choose])
   return (
     <div className="screen home immersive">
       {/* décor plein écran : grotte sous-marine, rayons de lumière et bulles */}
@@ -51,8 +59,8 @@ export function Home({ go, wallet, onSolo, oxygen }) {
         {wallet?.daily_bonus && <span className="bh-bonus">🎁 +5 lingots sur ta première partie du jour</span>}
         {!choose
           ? <button className="kh-play" onClick={() => setChoose(true)}>Jouer</button>
-          : <div className="kh-modes" onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setChoose(false) }}>
-            <button className="kh-play kh-mode" autoFocus onClick={() => { setChoose(false); onSolo() }}><span aria-hidden="true">🏴‍☠️</span>Solo</button>
+          : <div className="kh-modes" ref={modesRef}>
+            <button className="kh-play kh-mode" onClick={() => { setChoose(false); onSolo() }}><span aria-hidden="true">🏴‍☠️</span>Solo</button>
             <button className="kh-play kh-mode" onClick={() => { setChoose(false); go({ name: 'butin' }) }}><span aria-hidden="true">👥</span>À deux</button>
           </div>}
         {oxygen}
