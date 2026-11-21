@@ -151,3 +151,5 @@ export const duoPlace = (id, round, placement) => rpc('duo_place', { p_id: id, p
 export const duoReady = (id, round, ready) => rpc('duo_ready', { p_id: id, p_round: round, p_ready: ready })
 export const leaveDuo = (id) => rpc('leave_duo', { p_id: id })
 export const getDuoBoard = () => rpc('get_duo_board')
+export const duoSignal = (id, kind, payload) => rpc('duo_signal', { p_game: id, p_kind: kind, p_payload: payload })
+export const duoSignalsSince = (id, after) => rpc('duo_signals_since', { p_game: id, p_after: after })

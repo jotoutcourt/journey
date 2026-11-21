@@ -287,3 +287,20 @@ html.abysse .butin-art { background: linear-gradient(135deg, #5a3a00, #b8862b); 
 .butin-ranks span { opacity: 0.25; filter: grayscale(1); }
 .butin-ranks span.on { opacity: 1; filter: none; }
 .butin-end .results-dock { width: calc(100% + 32px); margin-top: auto; }
+
+/* Voix dans le Butin */
+.voice-bar { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px; margin-top: 8px; }
+.voice-btn { padding: 6px 12px; border-radius: 99px; font-size: 13px; font-weight: 700; background: #ffffff12; border: 1px solid var(--line); color: var(--text); }
+.voice-btn.on { background: #3ddc8422; border-color: var(--ok); color: var(--ok); }
+.voice-btn.muted { background: #ff5d7322; border-color: var(--ko); color: var(--ko); }
+.voice-btn.tap { background: var(--gold); color: #3a2600; border: 0; animation: segPulse 1s infinite; }
+.voice-note { flex-basis: 100%; text-align: center; color: var(--muted); font-size: 12px; }
+.bg-mate.speaking { box-shadow: 0 0 0 2px var(--ok), 0 0 16px #3ddc8488; }
+.bg-mate.speaking img, .bg-mate.speaking .avatar { animation: talk 0.35s ease-in-out infinite alternate; }
+@keyframes talk { to { transform: scale(1.08); } }
+.voice-bar.compact { display: contents; }
+.voice-bar.compact .voice-note { order: 9; margin-top: -2px; }
+.bg-team { flex-wrap: wrap; align-items: center; gap: 8px; }
+.bg-team .voice-btn { padding: 8px 12px; }
+.butin-game .bg-question { margin: 8px 4px 12px; }
+.butin-game .bg-topic { margin-top: 10px; }

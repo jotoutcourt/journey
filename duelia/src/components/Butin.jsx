@@ -6,6 +6,7 @@ import ConfirmButton from './ConfirmButton.jsx'
 import * as api from '../lib/account.js'
 import { gold, move, placed, rankFor, RANKS, START, ROUNDS } from '../lib/butin.js'
 import { sfx } from '../lib/sound.js'
+import { useDuoVoice } from '../lib/voice.js'
 
 const LETTERS = ['A', 'B', 'C', 'D']
 
@@ -96,6 +97,26 @@ export function DuoInviteBanner({ invite, onAccept, onDecline }) {
   )
 }
 
+/* ---------- Micro : parler à son coéquipier ---------- */
+function VoiceBar({ voice, partner, compact }) {
+  const { mic, link, partnerMic, needTap, toggleMic, unlock } = voice
+  const label = compact
+    ? { off: '🎙️ Micro', asking: '🎙️…', on: '🎙️ On', muted: '🔇 Off', denied: '🎙️ ✕', unsupported: '🎙️ ✕' }[mic]
+    : { off: '🎙️ Activer mon micro', asking: '🎙️ Autorisation…', on: '🎙️ Micro ouvert', muted: '🔇 Micro coupé', denied: '🎙️ Micro refusé', unsupported: '🎙️ Indisponible' }[mic]
+  let note = null
+  if (mic === 'denied') note = 'Autorise le micro pour Kraken dans les réglages du téléphone (Safari › Micro), puis réessaie.'
+  else if (mic === 'unsupported') note = 'Ce navigateur ne permet pas la voix.'
+  else if (link === 'failed') note = 'Connexion vocale impossible sur ce réseau (essayez en Wi-Fi).'
+  else if ((mic === 'on' || mic === 'muted') && link !== 'connected') note = partnerMic ? 'Connexion de la voix…' : `En attente du micro de ${partner.name}…`
+  return (
+    <div className={`voice-bar ${compact ? 'compact' : ''}`}>
+      <button className={`voice-btn ${mic}`} onClick={toggleMic} disabled={mic === 'asking' || mic === 'unsupported'} aria-label={mic === 'on' ? 'Couper mon micro' : 'Activer mon micro'}>{label}</button>
+      {needTap && <button className="voice-btn tap" onClick={unlock}>🔊 Entendre {partner.name}</button>}
+      {note && <small className="voice-note">{note}</small>}
+    </div>
+  )
+}
+
 /* ---------- La partie ---------- */
 export function ButinGame({ gameId, me, onExit, onReplay }) {
   const [view, setView] = useState(null) // état du serveur, avec l'heure de réception
@@ -103,6 +124,7 @@ export function ButinGame({ gameId, me, onExit, onReplay }) {
   const [draft, setDraft] = useState(null) // { round, placement, at } : ce que je viens de faire, avant confirmation
   const [failed, setFailed] = useState(0)
   const queue = useRef(Promise.resolve())
+  const voice = useDuoVoice(gameId, !view?.host, !!view && ['playing', 'done'].includes(view.status))
 
   // Interroge le serveur en continu (la partie avance toute seule côté serveur)
   useEffect(() => {
@@ -169,6 +191,7 @@ export function ButinGame({ gameId, me, onExit, onReplay }) {
         {view.status === 'done' && <>
           <div className="butin-final"><small>Butin final</small><b>🪙 {gold(view.bank)}</b><span>{rank ? `${rank.icon} ${rank.name}` : 'Rien à ramener cette fois…'}</span></div>
           <div className="butin-duo"><Avatar seed={me.avatar} photo={me.photo} size={56} ring="var(--me)" /><span>&</span><Avatar seed={partner.avatar} photo={partner.photo} size={56} ring="var(--gold)" /></div>
+          <VoiceBar voice={voice} partner={partner} />
           <ol className="butin-history">
             {view.history.map((h, i) => (
               <li key={i}><span>Q{i + 1}</span><i style={{ width: `${(h.kept / START) * 100}%` }} /><b className={h.kept === h.before ? 'ok' : h.kept ? 'mid' : 'ko'}>{h.kept}/{h.before}</b></li>
@@ -225,8 +248,9 @@ export function ButinGame({ gameId, me, onExit, onReplay }) {
       </div>
 
       <div className="bg-team">
-        <span className={`bg-mate ${view.ready_me ? 'ready' : ''}`}><Avatar seed={me.avatar} photo={me.photo} size={34} ring="var(--me)" />Toi {view.ready_me ? '✓' : ''}</span>
-        <span className={`bg-mate ${view.ready_partner ? 'ready' : ''}`}><Avatar seed={partner.avatar} photo={partner.photo} size={34} ring="var(--gold)" />{partner.name} {view.ready_partner ? '✓' : ''}</span>
+        <span className={`bg-mate ${view.ready_me ? 'ready' : ''} ${voice.speaking.me ? 'speaking' : ''}`}><Avatar seed={me.avatar} photo={me.photo} size={34} ring="var(--me)" />Toi {voice.mic === 'on' ? '🎙️' : ''}{view.ready_me ? '✓' : ''}</span>
+        <span className={`bg-mate ${view.ready_partner ? 'ready' : ''} ${voice.speaking.partner ? 'speaking' : ''}`}><Avatar seed={partner.avatar} photo={partner.photo} size={34} ring="var(--gold)" />{partner.name} {voice.partnerMic ? '🎙️' : ''}{view.ready_partner ? '✓' : ''}</span>
+        <VoiceBar voice={voice} partner={partner} compact />
       </div>
 
       {q?.topic && <div className="bg-topic">{q.topic.icon} {q.topic.name}</div>}
