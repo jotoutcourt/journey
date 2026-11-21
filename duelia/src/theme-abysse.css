@@ -874,3 +874,11 @@ button.wallet-pill { border: 0; cursor: pointer; }
 .oxy-inline .link-btn { color: #8fe9d6; font-size: 12px; }
 .kraken-hero .bh-bonus { margin-top: 8px; background: #0b042099; }
 .kh-pitch { color: #fff; text-shadow: 0 1px 2px #0b0420, 0 2px 12px #0b0420cc; } .kh-pitch b { color: #fff; font-weight: 700; }
+/* bouteilles d'oxygène dessinées : couleur quand pleine, noir et blanc quand vide */
+.oxy-bottles img { width: 26px; height: auto; display: block; transition: filter 0.4s, opacity 0.4s; }
+.oxy-bottles img.full { filter: drop-shadow(0 0 6px #2ec4ffaa); }
+.oxy-bottles img.empty { filter: grayscale(1) brightness(0.55); opacity: 0.7; }
+.oxy-inline .oxy-bottles { gap: 6px; align-items: flex-end; }
+.oxy-inline .oxy-bottles img { width: 28px; }
+.sheet .oxy-bottles img { width: 30px; }
+.kh-art { width: min(50vw, 200px); } .kraken-sign-img { margin-top: -56px; max-width: 340px; } .kh-play { margin-top: 10px; height: 54px; } .oxy-inline { margin-top: 10px; } .oxy-inline .oxy-bottles img { width: 22px; } .kraken-hero { gap: 6px; }
