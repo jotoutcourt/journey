@@ -10,7 +10,7 @@ import { PERIODS, myPeriodXp, resetIn } from '../lib/periods.js'
 import { meEntry, resizeImage } from '../lib/profile.js'
 import { topicTitle, nextTitle, ladderFor, TITLE_LEVELS } from '../lib/titles.js'
 import { RecoverForm } from './AccountCard.jsx'
-import { pariDay } from '../lib/pari.js'
+import { pariDay, TIERS } from '../lib/pari.js'
 import { dayKey } from '../lib/tower.js'
 import { decodeTopic } from '../lib/store.js'
 import { sfx } from '../lib/sound.js'
@@ -73,7 +73,7 @@ export function Home({ st, topics, go }) {
         </div>
         <div className="tc-actions">
           <button className="btn btn-secondary" onClick={() => go({ name: 'pari' })}>
-            Partie libre{st.pari?.best ? ` · record ${st.pari.best.toLocaleString('fr-FR')}` : ''}
+            Partie libre{st.pari?.best ? ` · record ${st.pari.best.toLocaleString('fr-FR')}` : ''}{st.pari?.medal ? ' ' + TIERS.filter(x => x.min <= st.pari.medal).pop().icon : ''}
           </button>
           <button className="btn btn-gold" onClick={() => go({ name: 'pari', daily: true })}>
             {st.pari?.daily?.day === pariDay() ? `Pari du jour · ${st.pari.daily.bank.toLocaleString('fr-FR')}` : 'Pari du jour'}

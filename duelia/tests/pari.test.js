@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { planGame, pariTopics, betFor, betRange, settle, START, ROUNDS, MAX_BANK } from '../src/lib/pari.js'
+import { planGame, pariTopics, betFor, betRange, settle, gainFor, tierFor, nextTier, START, ROUNDS, MAX_BANK } from '../src/lib/pari.js'
 import { OFFICIAL_TOPICS } from '../src/data/topics.js'
 
 const topics = pariTopics(OFFICIAL_TOPICS, true)
@@ -28,15 +28,25 @@ describe('Le Pari', () => {
     expect(betFor(1000, ROUNDS - 1, 0.1)).toBe(500)
     expect(betFor(7, 3, 0.1)).toBe(1)
   })
-  it('gain simple, gain doublé à la dernière manche, perte', () => {
-    expect(settle(1000, 300, true, 0)).toBe(1300)
-    expect(settle(1000, 300, false, 0)).toBe(700)
-    expect(settle(1000, 500, true, ROUNDS - 1)).toBe(2000)
+  it('la cote monte avec la mise ; une erreur coûte la mise', () => {
+    expect(settle(1000, 100, true, 0, 0.1)).toBe(1100)
+    expect(settle(1000, 250, true, 0, 0.25)).toBe(1313)
+    expect(settle(1000, 500, true, 0, 0.5)).toBe(1750)
+    expect(settle(1000, 750, true, 0, 0.75)).toBe(2500)
+    expect(settle(1000, 1000, true, 0, 1)).toBe(3500)
+    expect(settle(1000, 1000, false, 0, 1)).toBe(0)
+    expect(gainFor(500, ROUNDS - 1, 0.5)).toBe(750)
+  })
+  it('miser le minimum ne permet pas d\'atteindre le premier palier', () => {
+    let bank = START
+    for (let i = 0; i < ROUNDS; i++) { const s = i === ROUNDS - 1 ? 0.5 : 0.1; bank = settle(bank, betFor(bank, i, s), true, i, s) }
+    expect(tierFor(bank)).toBeNull()
+    expect(nextTier(bank).min).toBe(5000)
   })
   it('le plus gros tapis possible reste sous le plafond du serveur', () => {
     let bank = START
-    for (let i = 0; i < ROUNDS; i++) bank = settle(bank, bank, true, i)
+    for (let i = 0; i < ROUNDS; i++) bank = settle(bank, bank, true, i, 1)
     expect(bank).toBe(MAX_BANK)
-    expect(bank).toBeLessThanOrEqual(2048000)
+    expect(bank).toBeLessThanOrEqual(1000000000)
   })
 })

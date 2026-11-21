@@ -19,7 +19,7 @@ import { FriendsScreen, FriendChallengeSheet, InviteWaiting, LiveInviteBanner, F
 import * as api from './lib/account.js'
 import TopicRequestSheet from './components/TopicRequest.jsx'
 import Pari from './components/Pari.jsx'
-import { pariDay as pariDayRef } from './lib/pari.js'
+import { pariDay as pariDayRef, tierFor as tierForBank } from './lib/pari.js'
 import { useSocial, friendOpponent, fromPlain, logFrom } from './lib/useSocial.js'
 import { pushStatus, enablePush, disablePush, refreshPush } from './lib/push.js'
 import RankShift from './components/RankShift.jsx'
@@ -506,6 +506,8 @@ export default function App() {
       pari: {
         ...(s.pari || {}), games: (s.pari?.games || 0) + 1,
         best: !daily ? Math.max(s.pari?.best || 0, bank) : s.pari?.best || 0,
+        record: Math.max(s.pari?.record || 0, bank),
+        medal: Math.max(s.pari?.medal || 0, tierForBank(bank)?.min || 0) || undefined,
         daily: first ? { day, bank } : s.pari?.daily,
       },
     }))

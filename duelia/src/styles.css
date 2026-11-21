@@ -905,3 +905,11 @@ img { -webkit-user-drag: none; }
 .pari-board li { display: flex; align-items: center; gap: 8px; background: var(--card); border-radius: 10px; padding: 6px 10px; }
 .pari-board li.me { outline: 2px solid var(--gold, #f2c94c); }
 .pb-rank { width: 34px; font-weight: 800; } .pb-name { flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.pari-step em { font-style: normal; font-size: 12px; font-weight: 800; color: var(--gold, #f2c94c); }
+.pari-step.on em { color: #3ddc84; }
+.pari-next { color: var(--muted); font-size: 11px; white-space: nowrap; }
+.pari-stake span b.up { color: #3ddc84; } .pari-stake span b.down { color: #ff5d73; }
+.pari-beat { background: rgba(242, 201, 76, 0.12); color: var(--gold, #f2c94c); border-radius: 12px; padding: 10px 14px; margin: 0; }
+.pari-beat b { color: var(--text); }
+.pari-medal { font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; font-weight: 800; margin: 0; animation: pop 0.5s both; }
+.pari-stake span b { font-family: inherit; font-size: inherit; }

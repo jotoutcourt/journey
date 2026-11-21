@@ -2,7 +2,7 @@
 create table if not exists public.pari_scores (
   player_id uuid not null references public.players (id) on delete cascade,
   day date not null,
-  score int not null check (score between 0 and 2048000),
+  score int not null check (score between 0 and 1000000000),
   created_at timestamptz not null default now(),
   primary key (player_id, day)
 );
@@ -16,7 +16,7 @@ language plpgsql security definer set search_path = public as $$
 declare pid uuid := current_player();
 begin
   if pid is null or p_day is null or abs(p_day - current_date) > 1 then return; end if;
-  insert into pari_scores (player_id, day, score) values (pid, p_day, greatest(0, least(2048000, p_score)))
+  insert into pari_scores (player_id, day, score) values (pid, p_day, greatest(0, least(300000000, p_score)))
   on conflict do nothing;
 end $$;
 

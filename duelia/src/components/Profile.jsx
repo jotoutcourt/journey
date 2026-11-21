@@ -5,6 +5,7 @@ import ConfirmButton from './ConfirmButton.jsx'
 import AccountCard from './AccountCard.jsx'
 import InstallCard from './InstallCard.jsx'
 import { PushCard } from './Social.jsx'
+import { TIERS } from '../lib/pari.js'
 import { levelInfo } from '../lib/levels.js'
 import { topicTitle } from '../lib/titles.js'
 import { COUNTRIES, computeStats, bestBadge, resizeImage } from '../lib/profile.js'
@@ -205,6 +206,11 @@ export default function Profile({ st, topics, update, go, account, onMakeCode, o
           <span>{badgeWhen[badge.kind]}</span>
         </div>
       )}
+
+      {st.pari?.medal && (() => {
+        const t = TIERS.filter(x => x.min <= st.pari.medal).pop()
+        return t ? <div className="pf-ribbon"><b>{t.icon} Le Pari · palier {t.name}</b><span>record {(st.pari.record || 0).toLocaleString('fr-FR')} jetons</span></div> : null
+      })()}
 
       {me.bio
         ? <p className="pf-bio">{me.bio}</p>

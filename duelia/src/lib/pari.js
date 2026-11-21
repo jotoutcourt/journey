@@ -7,7 +7,21 @@ export const START = 1000
 export const ROUNDS = 10
 export const PARI_TIME = 15000
 export const STEPS = [0.1, 0.25, 0.5, 0.75, 1] // parts du tapis proposées
-export const LAST_MIN = 0.5 // dernière manche : au moins la moitié du tapis… mais gain doublé
+export const LAST_MIN = 0.5 // dernière manche : au moins la moitié du tapis
+
+// Plus on mise gros, plus la cote est forte : c'est ce qui rend le risque payant
+export const ODDS = { 0.1: 1, 0.25: 1.25, 0.5: 1.5, 0.75: 2, 1: 2.5 }
+export const oddsFor = (share) => ODDS[share] ?? 1
+
+// Paliers à atteindre (médailles)
+export const TIERS = [
+  { min: 5000, icon: '🥉', name: 'Bronze' },
+  { min: 20000, icon: '🥈', name: 'Argent' },
+  { min: 100000, icon: '🥇', name: 'Or' },
+  { min: 1000000, icon: '💎', name: 'Diamant' },
+]
+export const tierFor = (bank) => [...TIERS].reverse().find(t => bank >= t.min) || null
+export const nextTier = (bank) => TIERS.find(t => bank < t.min) || null
 
 // Jour du calendrier en France (la partie du jour change à minuit, heure de Paris)
 export function pariDay(d = new Date()) {
@@ -58,11 +72,13 @@ export function betFor(bank, round, share) {
   return Math.max(min, Math.min(max, raw))
 }
 
-// Résultat d'une manche : nouveau tapis
-export function settle(bank, bet, ok, round) {
-  const last = round === ROUNDS - 1
-  return ok ? bank + bet * (last ? 2 : 1) : bank - bet
+// Gain d'une bonne réponse : mise × cote
+export const gainFor = (bet, round, share) => Math.round(bet * oddsFor(share))
+
+// Résultat d'une manche : nouveau tapis (une erreur coûte la mise, sans cote)
+export function settle(bank, bet, ok, round, share = 0.1) {
+  return ok ? bank + gainFor(bet, round, share) : bank - bet
 }
 
-// Le plus gros tapis possible (tout miser et tout réussir) : sert de garde-fou côté serveur
-export const MAX_BANK = START * 2 ** (ROUNDS - 1) * 3
+// Le plus gros tapis possible (tapis à chaque manche, sans faute) : sert de garde-fou côté serveur
+export const MAX_BANK = Array.from({ length: ROUNDS }).reduce((b, _, i) => settle(b, b, true, i, 1), START)

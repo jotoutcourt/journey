@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import TopicIcon from './TopicIcon.jsx'
 import Avatar from './Avatar.jsx'
-import { START, ROUNDS, PARI_TIME, stepsFor, planGame, pariTopics, betRange, betFor, settle, pariDay } from '../lib/pari.js'
+import { START, ROUNDS, PARI_TIME, stepsFor, planGame, pariTopics, betRange, betFor, settle, gainFor, oddsFor, pariDay, TIERS, tierFor, nextTier } from '../lib/pari.js'
 import { levelInfo } from '../lib/levels.js'
 import { sfx } from '../lib/sound.js'
 import { thinking } from '../lib/music.js'
@@ -18,6 +18,7 @@ export default function Pari({ topics, st, daily, onFinish, onExit, board, loadB
   const [bank, setBank] = useState(START)
   const [share, setShare] = useState(0.25)
   const [bet, setBet] = useState(0)
+  const [betShare, setBetShare] = useState(0.25)
   const [choice, setChoice] = useState(null)
   const [joker, setJoker] = useState(true)
   const [hidden, setHidden] = useState([])
@@ -52,9 +53,9 @@ export default function Pari({ topics, st, daily, onFinish, onExit, board, loadB
     if (phase !== 'reveal') return
     const ok = choice === r.q.correct
     if (ok) sfx.good(); else sfx.bad()
-    const next = settle(bank, bet, ok, round)
+    const next = settle(bank, bet, ok, round, betShare)
     const id = setTimeout(() => {
-      setHistory(h => [...h, { topicId: r.topicId, bet, ok, bank: next }])
+      setHistory(h => [...h, { topicId: r.topicId, bet, ok, bank: next, delta: next - bank }])
       setBank(next)
       if (next <= 0 || round >= ROUNDS - 1) setPhase('end')
       else { setRound(x => x + 1); setChoice(null); setHidden([]); setShare(round + 1 === ROUNDS - 1 ? 0.5 : 0.25); setPhase('bet') }
@@ -69,6 +70,10 @@ export default function Pari({ topics, st, daily, onFinish, onExit, board, loadB
     if (bank > START) sfx.win(); else sfx.lose()
     onFinish({ bank, daily, day: daily ? pariDay() : null, history: [...history] })
   }, [phase]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Partie du jour : on charge le classement pour afficher le score à battre
+  useEffect(() => { if (daily && phase === 'intro') loadBoard?.() }, [daily]) // eslint-disable-line react-hooks/exhaustive-deps
+  const leader = daily && board && board !== 'offline' ? board.top?.[0] : null
 
   function answer(i) {
     if (phase !== 'question' || choice !== null) return
@@ -93,12 +98,15 @@ export default function Pari({ topics, st, daily, onFinish, onExit, board, loadB
       <h1>Le Pari{daily ? ' du jour' : ''}</h1>
       <p className="pari-lead">Tu pars avec <b>{fmt(START)} jetons</b>. À chaque manche, tu découvres seulement le <b>thème</b>… et tu mises avant de voir la question.</p>
       <ul className="pari-rules">
-        <li>✅ Bonne réponse : tu gagnes ta mise</li>
-        <li>❌ Mauvaise réponse ou temps écoulé : tu la perds</li>
+        <li>✅ Bonne réponse : tu gagnes ta mise <b>× la cote</b> — plus tu mises gros, plus la cote monte (jusqu'à ×2,5 pour un tapis)</li>
+        <li>❌ Mauvaise réponse ou temps écoulé : tu perds ta mise</li>
         <li>⏱️ 15 secondes par question · 10 manches</li>
         <li>✂️ Un joker 50/50 pour toute la partie</li>
-        <li>🔥 Dernière manche : mise d'au moins la moitié de ton tapis, <b>gain doublé</b></li>
+        <li>🔥 Dernière manche : mise d'au moins <b>la moitié de ton tapis</b></li>
+        <li>🏅 Paliers : {TIERS.map(t => `${t.icon} ${fmt(t.min)}`).join(' · ')}</li>
       </ul>
+      {daily && leader && <p className="pari-beat">🎯 Le n° 1 du jour, {leader.name}, a <b>{fmt(leader.score)} jetons</b> — à battre !</p>}
+      {daily && board && board !== 'offline' && !leader && <p className="pari-beat">🎯 Personne n'a encore joué aujourd'hui : prends la tête !</p>}
       {daily && <p className="pari-note">Mêmes thèmes et mêmes questions pour tous aujourd'hui. Seule ta première partie compte au classement.</p>}
       <button className="btn btn-primary wide" onClick={() => { sfx.tap(); setPhase('bet') }}>C'est parti</button>
       <button className="btn btn-ghost wide" onClick={onExit}>Retour</button>
@@ -113,10 +121,12 @@ export default function Pari({ topics, st, daily, onFinish, onExit, board, loadB
         <h1>{bank <= 0 ? 'Ruiné !' : gain > 0 ? 'Bien joué !' : 'Partie terminée'}</h1>
         <div className="pari-final"><small>Tapis final</small><b>{fmt(bank)}</b><span>jetons</span></div>
         <p className={`pari-delta ${gain >= 0 ? 'up' : 'down'}`}>{gain >= 0 ? '+' : ''}{fmt(gain)} par rapport au départ</p>
+        {tierFor(bank) ? <p className="pari-medal">{tierFor(bank).icon} Palier {tierFor(bank).name} atteint !</p>
+          : <p className="pari-note">Aucun palier atteint : le bronze 🥉 commence à {fmt(TIERS[0].min)} jetons. Ose miser plus gros !</p>}
         <ol className="pari-recap">
           {history.map((h, i) => {
             const t = playable.find(x => x.id === h.topicId)
-            return <li key={i} className={h.ok ? 'ok' : 'ko'}><TopicIcon topic={t} size={22} /><span className="pr-name">{t?.name}</span><b>{h.ok ? '+' : '−'}{fmt(h.bet * (h.ok && i === ROUNDS - 1 ? 2 : 1))}</b></li>
+            return <li key={i} className={h.ok ? 'ok' : 'ko'}><TopicIcon topic={t} size={22} /><span className="pr-name">{t?.name}</span><b>{h.delta >= 0 ? '+' : '−'}{fmt(Math.abs(h.delta))}</b></li>
           })}
         </ol>
         {daily && <PariBoard board={board} load={loadBoard} />}
@@ -134,7 +144,9 @@ export default function Pari({ topics, st, daily, onFinish, onExit, board, loadB
       <div className="pari-top">
         <button className="icon-btn" onClick={onExit} aria-label="Quitter">✕</button>
         <div className="pari-round">Manche <b>{round + 1}</b>/{ROUNDS}</div>
-        <div className="pari-bank"><small>Tapis</small><b>{fmt(bank)}</b></div>
+        <div className="pari-bank"><small>Tapis</small><b>{fmt(bank)}</b>
+          {nextTier(bank) ? <span className="pari-next">prochain palier {nextTier(bank).icon} {fmt(nextTier(bank).min)}</span> : <span className="pari-next">💎 palier max !</span>}
+        </div>
       </div>
       <div className="pari-dots">{rounds.map((_, i) => <i key={i} className={i < history.length ? (history[i].ok ? 'ok' : 'ko') : i === round ? 'cur' : ''} />)}</div>
 
@@ -143,20 +155,20 @@ export default function Pari({ topics, st, daily, onFinish, onExit, board, loadB
           <TopicIcon topic={topic} size={104} />
           <h2>{topic.name}</h2>
           <small className="pari-lvl">Ton niveau dans ce thème : {lvl.level}</small>
-          {last && <p className="pari-last">🔥 Dernière manche : gain doublé, mise d'au moins {fmt(min)}</p>}
+          {last && <p className="pari-last">🔥 Dernière manche : mise d'au moins {fmt(min)}</p>}
           <p className="pari-ask">Combien mises-tu ?</p>
           <div className={`pari-steps n${stepsFor(round).length}`}>
             {stepsFor(round).map(s => {
               const v = betFor(bank, round, s)
               return (
                 <button key={s} className={`pari-step ${share === s ? 'on' : ''}`} onClick={() => { sfx.tap(); setShare(s) }}>
-                  <b>{s === 1 ? 'Tapis' : `${s * 100} %`}</b><small>{fmt(v)}</small>
+                  <b>{s === 1 ? 'Tapis' : `${s * 100} %`}</b><small>{fmt(v)}</small><em>×{String(oddsFor(s)).replace('.', ',')}</em>
                 </button>
               )
             })}
           </div>
-          <div className="pari-stake"><span>Mise</span><b>{fmt(proposed)}</b><span>→ gain possible {fmt(proposed * (last ? 2 : 1))}</span></div>
-          <button className="btn btn-primary wide" onClick={() => { setBet(proposed); setLeft(PARI_TIME); setPhase('question') }}>Je mise {fmt(proposed)}</button>
+          <div className="pari-stake"><span>Mise</span><b>{fmt(proposed)}</b><span>Bonne réponse : <b className="up">+{fmt(gainFor(proposed, round, share))}</b> · Erreur : <b className="down">−{fmt(proposed)}</b></span></div>
+          <button className="btn btn-primary wide" onClick={() => { setBet(proposed); setBetShare(share); setLeft(PARI_TIME); setPhase('question') }}>Je mise {fmt(proposed)}</button>
         </div>
       )}
 
@@ -182,7 +194,7 @@ export default function Pari({ topics, st, daily, onFinish, onExit, board, loadB
           {phase === 'question' && joker && <button className="btn btn-ghost pari-joker" onClick={useJoker}>✂️ Joker 50/50</button>}
           {phase === 'reveal' && (
             <p className={`pari-result ${ok ? 'up' : 'down'}`} role="status">
-              {ok ? `+${fmt(bet * (last ? 2 : 1))} jetons` : choice === -1 ? `Temps écoulé : −${fmt(bet)}` : `−${fmt(bet)} jetons`}
+              {ok ? `+${fmt(gainFor(bet, round, betShare))} jetons` : choice === -1 ? `Temps écoulé : −${fmt(bet)}` : `−${fmt(bet)} jetons`}
             </p>
           )}
         </div>
