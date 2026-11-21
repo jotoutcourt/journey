@@ -702,3 +702,24 @@ html.abysse .duel.party-game .opt.picked { background: linear-gradient(180deg, #
 .home .bh-art { width: min(50vw, 200px); }
 .home .bh-text b { font-size: 34px; }
 .home .bh-art { width: min(40vw, 165px); } .home .bh-text small { font-size: 14px; } .home .butin-hero-card { margin-top: 4px; }
+
+/* ===== Boutique de thèmes ===== */
+button.wallet-pill { border: 0; cursor: pointer; }
+.wp-shop { margin-left: 4px; font-size: 14px; }
+.shop .top, .screen > .top:has(.shop-btn) { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.shop .top h1 { flex: 1; }
+.shop-hero { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 20px; background: linear-gradient(160deg, #3a2a0a66, var(--card)); border: 1px solid #b8862b66; }
+.shop-hero p { margin: 0; font-size: 14px; color: #e1d4ff; }
+.shop-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.shop-list li { display: flex; align-items: center; gap: 8px; padding: 8px 10px 8px 8px; border-radius: 18px; background: var(--card); border: 1px solid var(--line); }
+.shop-topic { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; text-align: left; }
+.shop-topic span { display: flex; flex-direction: column; min-width: 0; }
+.shop-topic b { font-family: var(--display); font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.shop-topic small { color: var(--muted); font-size: 12px; }
+.shop-list .btn { min-width: 74px; }
+.shop-note { color: var(--muted); font-size: 13px; text-align: center; }
+.shop-owned { display: flex; flex-wrap: wrap; gap: 8px; }
+.topic-tile .tt-icon { position: relative; display: inline-block; }
+.topic-tile.locked .tt-icon > :first-child { filter: grayscale(0.7) brightness(0.6); }
+.tt-lock { position: absolute; left: 50%; bottom: -6px; transform: translateX(-50%); padding: 2px 8px; border-radius: 99px; background: #0b0420ee; box-shadow: 0 0 0 1.5px var(--gold); color: var(--gold); font-size: 12px; font-weight: 700; white-space: nowrap; }
+.tp-locked { margin: 8px 0 0; padding: 8px 12px; border-radius: 14px; background: #ffc94014; border: 1px solid #ffc94055; color: var(--gold); font-size: 13.5px; }

@@ -18,10 +18,10 @@ import { sfx } from '../lib/sound.js'
 const fmt = (n) => n.toLocaleString('fr-FR')
 
 
-export function TopicTile({ topic, onClick, sub }) {
+export function TopicTile({ topic, onClick, sub, price }) {
   return (
-    <button className="topic-tile" onClick={onClick}>
-      <TopicIcon topic={topic} size={76} />
+    <button className={`topic-tile ${price ? 'locked' : ''}`} onClick={onClick}>
+      <span className="tt-icon"><TopicIcon topic={topic} size={76} />{price ? <span className="tt-lock">🔒 {price}</span> : null}</span>
       <b>{topic.name}</b>
       <small>{sub ?? topic.category}</small>
     </button>
@@ -34,7 +34,7 @@ export function Home({ go, wallet, onSolo, oxygen }) {
     <div className="screen home">
       <header className="top">
         <Brand />
-        {wallet && <span className="wallet-pill" title="Tes lingots"><i className="lt-coin" aria-hidden="true" />{wallet.lingots}</span>}
+        {wallet && <button className="wallet-pill" title="Boutique" onClick={() => go({ name: 'shop' })}><i className="lt-coin" aria-hidden="true" />{wallet.lingots}<span className="wp-shop">🏪</span></button>}
       </header>
 
       {/* Le jeu principal : le Butin */}
@@ -70,14 +70,15 @@ export function Chevrons() {
 }
 
 /* ---------------- Thèmes ---------------- */
-export function Topics({ topics, go, importTopic, extra, onRequest }) {
+export function Topics({ topics, go, importTopic, extra, onRequest, lockPrice = () => 0 }) {
   const [q, setQ] = useState('')
   const [cat, setCat] = useState('Tous')
   const [code, setCode] = useState('')
   const [importErr, setImportErr] = useState(false)
   const norm = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
   const match = (t) => (cat === 'Tous' || t.category === cat) && (!q || norm(t.name + ' ' + t.category).includes(norm(q)))
-  const official = topics.filter(t => t.official && match(t))
+  // thèmes débloqués d'abord, puis ceux à acheter (du moins cher au plus cher)
+  const official = topics.filter(t => t.official && match(t)).map((t, i) => [t, i]).sort((a, b) => lockPrice(a[0]) - lockPrice(b[0]) || a[1] - b[1]).map(([t]) => t)
   const mine = topics.filter(t => t.own && match(t))
   // thèmes reçus par lien (les thèmes publiés installés apparaissent déjà dans « Publiés par les joueurs »)
   const received = topics.filter(t => !t.official && !t.own && !t.shared && match(t))
@@ -94,7 +95,7 @@ export function Topics({ topics, go, importTopic, extra, onRequest }) {
 
   return (
     <div className="screen">
-      <header className="top"><h1>Thèmes</h1></header>
+      <header className="top"><h1>Thèmes</h1><button className="btn btn-small btn-gold shop-btn" onClick={() => go({ name: 'shop' })}>🏪 Boutique</button></header>
       <input className="search" placeholder="Rechercher un thème…" value={q} onChange={e => setQ(e.target.value)} />
       <div className="chips">
         {['Tous', ...CATEGORIES].map(c => (
@@ -105,7 +106,7 @@ export function Topics({ topics, go, importTopic, extra, onRequest }) {
       {official.length > 0 && <>
         <h3 className="sec-title">Thèmes officiels</h3>
         <div className="grid">
-          {official.map(t => <TopicTile key={t.id} topic={t} onClick={() => go({ name: 'topic', id: t.id })} />)}
+          {official.map(t => <TopicTile key={t.id} topic={t} price={lockPrice(t)} onClick={() => go({ name: 'topic', id: t.id })} />)}
         </div>
       </>}
 
@@ -146,7 +147,7 @@ export function Topics({ topics, go, importTopic, extra, onRequest }) {
 }
 
 /* ---------------- Page d'un thème ---------------- */
-export function TopicPage({ st, topic, go, toggleFollow, shareTopic, deleteTopic, online, onPublish, onUnpublish, onPlay }) {
+export function TopicPage({ st, topic, go, toggleFollow, shareTopic, deleteTopic, online, onPublish, onUnpublish, onPlay, lockPrice = 0, lingots = 0, onUnlock }) {
   const stats = st.topicStats[topic.id] || { xp: 0, played: 0, wins: 0, seen: [] }
   const lvl = levelInfo(stats.xp)
   const following = st.follows.includes(topic.id)
@@ -166,13 +167,16 @@ export function TopicPage({ st, topic, go, toggleFollow, shareTopic, deleteTopic
       <div className="tp-hero">
         <TopicIcon topic={topic} size={128} />
         <div className="tp-actions">
-          <button className="btn btn-primary" onClick={() => onPlay(topic)}>Jouer</button>
+          {lockPrice
+            ? <button className={`btn ${lingots >= lockPrice ? 'btn-gold' : 'btn-ghost'}`} disabled={lingots < lockPrice} onClick={() => onUnlock(topic)}>{lingots >= lockPrice ? `🔓 Débloquer · ${lockPrice}` : `🔒 ${lockPrice} lingots`}</button>
+            : <button className="btn btn-primary" onClick={() => onPlay(topic)}>Jouer</button>}
           <button className={`btn ${following ? 'btn-ghost' : 'btn-secondary'}`} onClick={() => toggleFollow(topic.id)}>
             {following ? '✓ Suivi' : '+ Suivre'}
           </button>
           <button className="btn btn-ghost" onClick={() => go({ name: 'ranking', id: topic.id })}>Classement</button>
         </div>
       </div>
+      {lockPrice > 0 && <p className="tp-locked">🔒 Thème à débloquer dans la boutique pour {lockPrice} lingots. {lingots < lockPrice ? `Il t'en manque ${lockPrice - lingots} : joue au Butin pour en gagner.` : ''}</p>}
       <p className="tp-tagline">{topic.tagline || `Un thème créé par ${topic.by}`}{!topic.official && <> · par <b>{topic.by}</b></>}</p>
 
       <div className="progress-label"><small>Questions découvertes</small><small>{seenPct} %</small></div>

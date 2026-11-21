@@ -166,3 +166,7 @@ export const getParty = (id) => rpc('get_party', { p_id: id })
 export const partyAnswer = (party, round, choice) => rpc('party_answer', { p_party: party, p_round: round, p_choice: choice })
 export const leaveParty = (party) => rpc('leave_party', { p_party: party })
 export const refillOxygen = () => rpc('refill_oxygen')
+// ===== Boutique de thèmes =====
+export const getUnlocks = () => rpc('get_unlocks')
+export const claimTopics = (ids) => rpc('claim_topics', { p_topics: ids })
+export const unlockTopic = (id) => rpc('unlock_topic', { p_topic: id })

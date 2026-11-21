@@ -16,6 +16,8 @@ import { Inbox, ChallengeSheet, NotifyBanner, SentScreen } from './components/Ch
 import { ButinHome, ButinGame, DuoInviteBanner } from './components/Butin.jsx'
 import { Party, PartyInviteBanner } from './components/Party.jsx'
 import { OxygenCard, OxygenSheet } from './components/Oxygen.jsx'
+import { Shop } from './components/Shop.jsx'
+import { priceOf, isLockable } from './lib/shop.js'
 import { buildButin } from './lib/butin.js'
 import { FriendsScreen, FriendChallengeSheet, PickFriendSheet, PlayWhoSheet, InviteWaiting, LiveInviteBanner, FriendSent, SharedTopics, ChallengeMessage } from './components/Social.jsx'
 import * as api from './lib/account.js'
@@ -603,8 +605,28 @@ export default function App() {
     catch { setToast('Recharge impossible.'); return false }
   }
   const noOxygen = (e) => /oxygène/.test(e?.message || '')
-  const onHome = route.name === 'home'
-  useEffect(() => { if (account.status === 'online' && onHome) refreshWallet() }, [account.status, refreshWallet, onHome])
+
+  // Boutique : thèmes débloqués (le serveur fait foi). Tant qu'on ne sait pas, rien n'est verrouillé.
+  const [unlocks, setUnlocks] = useState(null)
+  const refreshUnlocks = useCallback(() => api.getUnlocks().then(u => { if (u) setUnlocks(u) }).catch(() => {}), [])
+  useEffect(() => { if (account.status === 'online') refreshUnlocks() }, [account.status, refreshUnlocks])
+  // anciens joueurs : on garde les thèmes suivis ou joués avant l'ouverture de la boutique (une fois)
+  useEffect(() => {
+    if (!unlocks?.veteran || st.shopClaimed) return
+    const ids = [...new Set([...(st.follows || []), ...Object.entries(st.topicStats || {}).filter(([, v]) => (v?.played || 0) > 0).map(([k]) => k)])]
+    api.claimTopics(ids).then(u => { if (u) setUnlocks(u); update(s => ({ ...s, shopClaimed: true })) }).catch(() => {})
+  }, [unlocks?.veteran, st.shopClaimed]) // eslint-disable-line react-hooks/exhaustive-deps
+  const lockPrice = useCallback((t) => (unlocks && isLockable(t) && !unlocks.topics.includes(t.id) ? priceOf(t.id) : 0), [unlocks])
+  const unlock = async (t) => {
+    try {
+      const r = await api.unlockTopic(t.id)
+      setUnlocks(r.unlocks); setWallet(r.wallet); setWalletAt(Date.now())
+      setToast(`🔓 « ${t.name} » débloqué !`)
+    } catch (e) { setToast(/lingots/.test(e?.message || '') ? 'Pas assez de lingots.' : 'Achat impossible : vérifie ta connexion.') }
+  }
+  // solde rechargé à chaque arrivée sur l'accueil, les thèmes ou la boutique
+  const walletScreen = ['home', 'shop', 'topics', 'topic'].includes(route.name) ? route.name + (route.id || '') : null
+  useEffect(() => { if (account.status === 'online' && walletScreen) refreshWallet() }, [account.status, refreshWallet, walletScreen])
   const startSolo = async () => {
     try {
       const id = await api.startSoloButin(buildButin(topics))
@@ -874,11 +896,14 @@ export default function App() {
   const friendBadge = social.counts.requests
   let view
   switch (route.name) {
-    case 'topics': view = <Topics topics={topics} go={go} importTopic={importTopic} onRequest={() => setRequestSheet(true)} extra={<SharedTopics online={online} installed={new Set(st.custom.filter(t => t.shared).map(t => t.id))} onOpen={installShared} onList={listShared} />} />; break
-    case 'topic': view = topic ? <TopicPage st={st} topic={topic} go={go} toggleFollow={toggleFollow} shareTopic={shareTopic} deleteTopic={deleteTopic} online={online} onPublish={publishTopic} onUnpublish={unpublishTopic} onPlay={(t) => { social.refreshFriends?.(); setPlayWho(t) }} /> : null; break
+    case 'topics': view = <Topics topics={topics} go={go} lockPrice={lockPrice} importTopic={importTopic} onRequest={() => setRequestSheet(true)} extra={<SharedTopics online={online} installed={new Set(st.custom.filter(t => t.shared).map(t => t.id))} onOpen={installShared} onList={listShared} />} />; break
+    case 'topic': view = topic ? <TopicPage st={st} topic={topic} go={go} toggleFollow={toggleFollow} shareTopic={shareTopic} deleteTopic={deleteTopic} online={online} onPublish={publishTopic} onUnpublish={unpublishTopic} onPlay={(t) => { social.refreshFriends?.(); setPlayWho(t) }}
+      lockPrice={lockPrice(topic)} lingots={wallet?.lingots || 0} onUnlock={unlock} /> : null; break
     case 'ranking': view = <Ranking st={st} topic={topic} go={go} />; break
     case 'create': view = <CreateTopic key={route.id || 'new'} st={st} existing={route.id ? topic : null} onSave={saveTopic} go={go} />; break
     case 'profile': view = <Profile st={st} topics={topics} update={update} go={go} account={account} onMakeCode={getRecoveryCode} onRecover={recoverAccount} push={push} onPush={onPush} onFriends={() => go({ name: 'friends' })} friendCount={social.social?.friends?.length} />; break
+    case 'shop': view = <Shop topics={topics} wallet={wallet} online={online && account.status === 'online'} isLocked={(t) => lockPrice(t) > 0}
+      onUnlock={unlock} onOpen={(t) => go({ name: 'topic', id: t.id })} onBack={() => go({ name: 'home' })} />; break
     case 'party': view = <Party key={route.partyId} partyId={route.partyId} friends={social.social?.friends} onExit={() => go({ name: 'home' })} />; break
     case 'butin': view = <ButinHome online={online && account.status === 'online'} friends={social.social?.friends} onInvite={startButin} onSolo={startSolo} wallet={wallet}
       onBack={() => go({ name: 'home' })} onAddFriend={() => go({ name: 'friends' })} />; break
