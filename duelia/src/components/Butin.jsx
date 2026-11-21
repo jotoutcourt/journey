@@ -15,6 +15,23 @@ const HAPPY = ['Hé hé, ça c\'est à moi !', 'Merci pour l\'or, petits voleurs
 const GLEE = ['Mwahaha ! Tout est à moi !', 'Rendez-moi tout… voilà, c\'est fait !', 'Vous pensiez vraiment m\'avoir ?', 'Mon trésor, mon précieux trésor !']
 const SAD = ['Grrr… rien dans mes tentacules !', 'Comment ont-ils su ?!', 'Ce n\'est que partie remise…', 'Rendez-moi mon or, voleurs !']
 
+// Grande tentacule de décor (derrière les caisses), qui ondule
+function BigTentacle({ className }) {
+  const suckers = [[44, 262, 7], [40, 232, 6.6], [40, 202, 6.2], [44, 174, 5.8], [50, 148, 5.3], [52, 122, 4.8], [48, 98, 4.3], [40, 78, 3.8], [32, 62, 3.3], [30, 46, 2.8]]
+  return (
+    <svg className={`big-tentacle ${className}`} viewBox="0 0 120 300">
+      <defs>
+        <linearGradient id={`bt-${className}`} x1="0" x2="1">
+          <stop offset="0" stopColor="#5a1fbf" /><stop offset="0.45" stopColor="#a866ff" /><stop offset="1" stopColor="#6a2bd1" />
+        </linearGradient>
+      </defs>
+      <path d="M18 300 C 14 250, 22 210, 30 180 C 40 140, 56 120, 52 92 C 48 66, 22 66, 18 46 C 14 24, 34 8, 54 14 C 72 20, 72 42, 58 46 C 48 49, 42 40, 48 34 C 40 34, 38 44, 44 52 C 56 66, 86 80, 86 112 C 86 150, 62 180, 62 220 C 62 250, 70 280, 78 300 Z"
+        fill={`url(#bt-${className})`} stroke="#3a0f8a" strokeWidth="2.5" strokeLinejoin="round" />
+      {suckers.map(([x, y, r], i) => <circle key={i} cx={x + 14} cy={y} r={r} fill="#e9d4ff" stroke="#7a35e0" strokeWidth="1.5" />)}
+    </svg>
+  )
+}
+
 // Tentacule qui surgit du pont pour reprendre les lingots d'une mauvaise réponse
 function Tentacle() {
   return (
@@ -301,9 +318,13 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
       <div className="lt-topic">Question {view.round + 1}/{view.rounds}{q?.topic ? ` · ${q.topic.icon} ${q.topic.name}` : ''}</div>
       <h2 className="lt-question">{q?.q}</h2>
 
-      {/* Le Kraken pirate surveille son or, derrière les caisses */}
+      {/* Les tentacules du Kraken rôdent derrière les caisses */}
       <div className="lt-stage">
-        <img className="lt-kraken" src="/mascotte/pirate-anim.webp" alt="" aria-hidden="true" draggable="false" />
+        <div className="lt-tentacles" aria-hidden="true">
+          <BigTentacle className="tl" />
+          <BigTentacle className="tr" />
+          <BigTentacle className="tc" />
+        </div>
         <div className={`lt-grid n${q?.options.length || 4}`}>
           {q?.options.map((o, i) => {
             const n = placement[i] || 0

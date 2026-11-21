@@ -546,3 +546,27 @@ html.abysse .butin-card .butin-art { width: 72px; height: 72px; background: none
 /* fond dédié du Butin (néons sur les bords, centre calme pour les cartes) */
 .butin-game.loot { background: #0b0420 url(/decor/butin-fond.webp) center / cover no-repeat; }
 .butin-game.loot::before { background: linear-gradient(180deg, #0b042066 0%, transparent 30%, transparent 75%, #0b042066 100%); }
+/* Tentacules du Kraken derrière les caisses (remplacent la grande pieuvre) */
+.lt-kraken { display: none; }
+.lt-tentacles { position: absolute; inset: -20px -16px -30px; z-index: 0; pointer-events: none; overflow: visible; }
+.big-tentacle { position: absolute; bottom: 0; width: 120px; height: 300px; filter: drop-shadow(0 0 16px #8b3dff99); transform-origin: 50% 100%; }
+.big-tentacle.tl { left: -26px; bottom: 30px; height: 330px; animation: tentSwayL 4.2s ease-in-out infinite; }
+.big-tentacle.tr { right: -26px; bottom: 60px; height: 310px; transform: scaleX(-1); animation: tentSwayR 3.6s ease-in-out infinite; }
+.big-tentacle.tc { left: 50%; margin-left: -48px; top: -10px; bottom: auto; width: 96px; height: 240px; animation: tentPeek 5s ease-in-out infinite; }
+@keyframes tentSwayL { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(7deg) translateY(-6px); } }
+@keyframes tentSwayR { 0%, 100% { transform: scaleX(-1) rotate(-3deg); } 50% { transform: scaleX(-1) rotate(8deg) translateY(-8px); } }
+@keyframes tentPeek { 0%, 100% { transform: rotate(-6deg) translateY(10px); } 50% { transform: rotate(6deg) translateY(-4px); } }
+/* à la révélation, elles se ruent vers l'or */
+.loot.reveal .big-tentacle.tl { animation: tentLungeL 1.4s 0.15s ease-in-out both; }
+.loot.reveal .big-tentacle.tr { animation: tentLungeR 1.4s 0.25s ease-in-out both; }
+.loot.reveal .big-tentacle.tc { animation: tentLungeC 1.4s 0.2s ease-in-out both; }
+@keyframes tentLungeL { 45% { transform: rotate(16deg) translateY(-18px) scale(1.06); } }
+@keyframes tentLungeR { 45% { transform: scaleX(-1) rotate(16deg) translateY(-18px) scale(1.06); } }
+@keyframes tentLungeC { 45% { transform: translateY(-16px) scale(1.08); } }
+@media (prefers-reduced-motion: reduce) { .big-tentacle { animation: none !important; } }
+/* la question reste toujours lisible devant les tentacules */
+.loot .lt-stage { z-index: 0; }
+.loot .lt-question, .loot .lt-topic, .loot .lt-team, .loot .lt-top, .loot .lt-dots { z-index: 2; }
+.loot .lt-question { text-shadow: 0 2px 4px #000, 0 4px 18px #000c; }
+.big-tentacle.tc { top: 6px; height: 220px; }
+@keyframes tentLungeC { 45% { transform: translateY(-8px) scale(1.05); } }
