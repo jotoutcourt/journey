@@ -21,7 +21,7 @@ import { OxygenInline, OxygenSheet } from './components/Oxygen.jsx'
 import { Shop, StarterPick } from './components/Shop.jsx'
 import { priceOf, isLockable } from './lib/shop.js'
 import { buildButin } from './lib/butin.js'
-import { FriendsScreen, FriendChallengeSheet, PickFriendSheet, PlayWhoSheet, InviteWaiting, LiveInviteBanner, FriendSent, SharedTopics, ChallengeMessage, FriendProfile } from './components/Social.jsx'
+import { FriendsScreen, FriendChallengeSheet, PickFriendSheet, PlayWhoSheet, InviteWaiting, LiveInviteBanner, FriendSent, SharedTopics, ChallengeMessage, FriendProfile, LiveMatchMessage } from './components/Social.jsx'
 import * as api from './lib/account.js'
 import TopicRequestSheet from './components/TopicRequest.jsx'
 import { useSocial, friendOpponent, fromPlain, logFrom } from './lib/useSocial.js'
@@ -1057,8 +1057,10 @@ export default function App() {
     }
     case 'results': view = (
       <Results data={route.data} me={me}
-        extra={route.friendMsg && <ChallengeMessage key={route.friendMsg.id} name={route.friendMsg.name} theirMsg={route.friendMsg.theirMsg} myMsg={route.friendMsg.myMsg}
-          onSend={(m) => api.setChallengeMessage(route.friendMsg.id, m).then(social.refreshChallenges)} />}
+        extra={route.friendMsg ? <ChallengeMessage key={route.friendMsg.id} name={route.friendMsg.name} theirMsg={route.friendMsg.theirMsg} myMsg={route.friendMsg.myMsg}
+          onSend={(m) => api.setChallengeMessage(route.friendMsg.id, m).then(social.refreshChallenges)} />
+          : route.mode === 'remote' && route.matchId ? <LiveMatchMessage matchId={route.matchId} name={route.opponent?.name || route.data?.opponent?.name}
+            quickOnly={!route.friend && !(social.social?.friends || []).some(f => f.player_id === (route.opponent?.playerId || route.data?.opponent?.playerId))} /> : null}
         onRematch={() => {
           const linkish = route.data.link || route.data.fromLink
           if (route.friendRematch) return setFriendSheet({ ...route.friendRematch, online: social.social?.friends?.find(f => f.player_id === route.friendRematch.player_id)?.online })

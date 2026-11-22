@@ -100,6 +100,8 @@ export const sendLiveAnswer = (matchId, round, choice, t) => rpc('send_live_answ
 export const getLiveAnswers = (matchId) => rpc('get_live_answers', { p_match: matchId })
 // Score officiel calculé par le serveur : { me, opp, complete }
 export const liveResult = (matchId) => rpc('live_result', { p_match: matchId })
+export const setMatchMessage = (matchId, msg) => rpc('set_match_message', { p_match: matchId, p_msg: msg })
+export const getMatchMessages = (matchId) => rpc('get_match_messages', { p_match: matchId })
 
 // ===== Amis, défis entre amis, notifications, thèmes partagés =====
 export const myFriendCode = () => rpc('my_friend_code')

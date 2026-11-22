@@ -290,7 +290,7 @@ export function LiveInviteBanner({ invite, onAccept, onDecline }) {
 
 /* ---------- Petit message à l'autre joueur après un défi différé ---------- */
 const QUICK = ['GG 👏', 'Revanche ? 😏', 'Trop facile 😎', 'J\'ai eu chaud 😅', 'Celle-là était dure 🤯']
-export function ChallengeMessage({ name, theirMsg, myMsg, onSend }) {
+export function ChallengeMessage({ name, theirMsg, myMsg, onSend, quickOnly = false }) {
   const [text, setText] = useState('')
   const [sent, setSent] = useState(myMsg || null)
   const [busy, setBusy] = useState(false)
@@ -310,14 +310,30 @@ export function ChallengeMessage({ name, theirMsg, myMsg, onSend }) {
         : <>
           <p className="ch-msg-title">💬 Un petit mot pour {name} ?</p>
           <div className="ch-msg-quick">{QUICK.map(q => <button key={q} disabled={busy} onClick={() => send(q)}>{q}</button>)}</div>
-          <form className="ch-msg-form" onSubmit={e => { e.preventDefault(); send(text) }}>
+          {!quickOnly && <form className="ch-msg-form" onSubmit={e => { e.preventDefault(); send(text) }}>
             <input value={text} maxLength={140} placeholder="Ou écris ton message…" onChange={e => setText(e.target.value)} />
             <button className="btn btn-small btn-primary" disabled={busy || !text.trim()}>Envoyer</button>
-          </form>
+          </form>}
           {err && <small className="recover-err">Envoi impossible : vérifie ta connexion.</small>}
         </>}
     </section>
   )
+}
+
+// Message de fin de duel en direct : un seul par joueur, et on guette celui de l'adversaire pendant 3 minutes
+export function LiveMatchMessage({ matchId, name, quickOnly }) {
+  const [msgs, setMsgs] = useState(null)
+  useEffect(() => {
+    let alive = true
+    const load = () => api.getMatchMessages(matchId).then(m => { if (alive && m) setMsgs(m) }).catch(() => {})
+    load()
+    const iv = setInterval(load, 3000)
+    const stop = setTimeout(() => clearInterval(iv), 180000)
+    return () => { alive = false; clearInterval(iv); clearTimeout(stop) }
+  }, [matchId])
+  if (!msgs) return null
+  return <ChallengeMessage key={matchId} name={name} theirMsg={msgs.theirs} myMsg={msgs.mine} quickOnly={quickOnly}
+    onSend={(m) => api.setMatchMessage(matchId, m)} />
 }
 
 /* ---------- Défi envoyé à un ami ---------- */
