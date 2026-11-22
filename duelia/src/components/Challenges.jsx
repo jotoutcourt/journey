@@ -137,6 +137,10 @@ export function Inbox({ st, topics, now, onAccept, onReject, onPlay, onResult, o
     })
   }
 
+  // les résultats déjà consultés ne restent pas dans la liste
+  const seen = new Set(st.seenResults || [])
+  for (let i = items.length - 1; i >= 0; i--) if (items[i].group === 'results' && seen.has(items[i].id)) items.splice(i, 1)
+
   const LIMIT = { results: 20, closed: 8 }
   const groups = [
     { key: 'play', title: 'À toi de jouer' },

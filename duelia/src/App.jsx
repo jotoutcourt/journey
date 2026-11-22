@@ -750,9 +750,15 @@ export default function App() {
       const data = st.friendResults?.[c.id]
       if (!data) { setToast('Résultat en cours de récupération…'); return }
       const t = topicOf(c)
+      markSeen('f-' + c.id)
       setRoute({ name: 'results', id: byId(c.topic_id) ? c.topic_id : undefined, topicObj: byId(c.topic_id) ? null : t, opponent: data.opponent, data: { ...data, topic: t }, friendRematch: c.opponent,
         friendMsg: { id: c.id, name: c.opponent.name, theirMsg: c.their_msg, myMsg: c.my_msg } })
     },
+  }
+
+  // Résultat consulté : il disparaît de la liste « Résultats » (gardé dans la sauvegarde, donc sur tous les appareils)
+  function markSeen(id) {
+    update(s => (s.seenResults || []).includes(id) ? s : { ...s, seenResults: [...(s.seenResults || []), id].slice(-300) })
   }
 
   // Nom donné au destinataire d'un défi par lien (« Défi pour Maman ») : remplace « Ton ami » dans la liste
@@ -831,6 +837,7 @@ export default function App() {
     onPlay: (c) => playChallenge(c, 'ghost'),
     onResult: (c) => {
       patchChallenge(c.id, { unseen: false })
+      markSeen(c.id)
       const t = byId(c.topicId) || { id: c.topicId, icon: '🔗', color: '#7c5cff', category: 'Culture', name: 'Défi par lien', ...(c.topicMeta || {}), questions: [] }
       setRoute({ name: 'results', id: byId(c.topicId) ? c.topicId : undefined, topicObj: byId(c.topicId) ? null : t, opponent: c.opponent, data: { ...c.result, topic: t } })
     },
