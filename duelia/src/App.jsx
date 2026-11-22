@@ -184,7 +184,13 @@ export default function App() {
   const [sheet, setSheet] = useState(null)
   const [notes, setNotes] = useState([])
 
+  const lockRef = useRef(() => 0)
   const go = useCallback((r) => {
+    // un thème pas encore débloqué ne se lance pas soi-même (on peut seulement relever le défi d'un ami)
+    if ((r.name === 'match' || r.name === 'linkcreate') && lockRef.current(byId(r.id)) > 0) {
+      setToast('🔒 Débloque ce thème dans la boutique pour lancer une partie.')
+      r = { name: 'topic', id: r.id }
+    }
     // Défi par lien : on joue d'abord ses 7 questions, sans adversaire
     if (r.name === 'linkcreate') {
       const t = byId(r.id)
@@ -539,11 +545,12 @@ export default function App() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [social.challenges])
 
-  const friendTopics = useMemo(() => {
-    const ok = topics.filter(t => t.questions.length >= 7)
+  // thèmes proposés pour défier un ami : seulement ceux que l'on a débloqués
+  const friendTopicsFor = () => {
+    const ok = topics.filter(t => t.questions.length >= 7 && !lockRef.current(t))
     const fav = ok.filter(t => st.follows.includes(t.id) || t.own)
     return [...fav, ...ok.filter(t => t.official && !fav.includes(t))]
-  }, [topics, st.follows])
+  }
 
   const startFriendDuel = (friend, topic, mode) => {
     setFriendSheet(null)
@@ -618,6 +625,7 @@ export default function App() {
   }, [unlocks?.veteran, st.shopClaimed]) // eslint-disable-line react-hooks/exhaustive-deps
   const pickStarters = async (ids) => { const u = await api.pickStarterTopics(ids); if (u) setUnlocks(u); setToast('🎉 Tes 5 thèmes sont débloqués !') }
   const lockPrice = useCallback((t) => (unlocks && isLockable(t) && !unlocks.topics.includes(t.id) ? priceOf(t.id) : 0), [unlocks])
+  useEffect(() => { lockRef.current = lockPrice }, [lockPrice])
   const unlock = async (t) => {
     try {
       const r = await api.unlockTopic(t.id)
@@ -986,7 +994,7 @@ export default function App() {
       )}
       {sheet && <ChallengeSheet sheet={sheet} onSend={sendChallenge} onCancel={() => setSheet(null)} />}
       {requestSheet && <TopicRequestSheet online={online} api={requestApi} onClose={() => setRequestSheet(false)} />}
-      {friendSheet && <FriendChallengeSheet friend={friendSheet} topics={friendTopics} initialTopic={friendSheet.topic} onPick={(t, mode) => startFriendDuel(friendSheet, t, mode)} onCancel={() => setFriendSheet(null)} />}
+      {friendSheet && <FriendChallengeSheet friend={friendSheet} topics={friendTopicsFor()} initialTopic={friendSheet.topic && !lockPrice(friendSheet.topic) ? friendSheet.topic : null} onPick={(t, mode) => startFriendDuel(friendSheet, t, mode)} onCancel={() => setFriendSheet(null)} />}
       {oxySheet && <OxygenSheet wallet={wallet} at={walletAt} partner={oxySheet.partner} onRefill={refill} onDue={refreshWallet} onClose={() => setOxySheet(null)} />}
       {playWho && <PlayWhoSheet topic={playWho} online={online && !!social.social} hasFriends={(social.social?.friends || []).length > 0}
         onPick={(k) => {
