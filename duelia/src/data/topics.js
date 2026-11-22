@@ -24,6 +24,7 @@ import x_quel_animal from './extra/quel-animal.js'
 import x_voitures from './extra/voitures.js'
 import x_hunger from './extra/hunger-games.js'
 import x_popgirlies from './extra/pop-girlies.js'
+import x_petitemaison from './extra/petite-maison.js'
 import x_dessins_animes from './extra/dessins-animes.js'
 import x_c_series_cultes from './extra/c-series-cultes.js'
 import x_c_espace from './extra/c-espace.js'
@@ -73,6 +74,7 @@ const EXTRA = {
   'voitures': x_voitures,
   'hunger-games': x_hunger,
   'pop-girlies': x_popgirlies,
+  'petite-maison': x_petitemaison,
   'dessins-animes': x_dessins_animes,
   'c-series-cultes': x_c_series_cultes,
   'c-espace': x_c_espace,
@@ -316,6 +318,7 @@ export const OFFICIAL_TOPICS = [
   T('orthographe', 'Orthographe', '✍️', '#ff9f43', 'Langue', 'Mots pièges, accords, pluriels et homophones', 16580, []),
   T('hunger-games', 'Hunger Games', '🏹', '#e8553d', 'Cinéma & TV', 'Panem, les districts et le geai moqueur', 21480, []),
   T('pop-girlies', 'Pop girlies', '💅', '#ff5fb8', 'Musique', 'Divas, tubes et albums cultes', 23790, []),
+  T('petite-maison', 'La Petite Maison dans la prairie', '🌾', '#c98a4b', 'Cinéma & TV', 'Walnut Grove, les Ingalls et les Oleson', 16930, []),
   T('voitures', 'Voitures', '🏎️', '#ff4d4d', 'Sport', 'Marques, modèles, mécanique et sport auto', 17260, []),
   T('quel-animal', 'Quel est cet animal ?', '📸', '#3ddc84', 'Nature', 'Reconnais l\'animal sur la photo', 18240, []),
   T('dessins-animes', 'Dessins animés', '📺', '#ffb648', 'Cinéma & TV', 'Des Simpson à Miyazaki', 22640, []),

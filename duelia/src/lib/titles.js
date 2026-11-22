@@ -25,6 +25,7 @@ const LADDERS = {
   monuments: ['Touriste', 'Routard', 'Guide', 'Archéologue', 'Architecte', 'Explorateur', 'Bâtisseur', 'Gardien des merveilles'],
   'hunger-games': ['Habitant du 12', 'Tribut', 'Survivant', 'Carrière', 'Mentor', 'Vainqueur', 'Geai moqueur', 'Fille du feu'],
   'pop-girlies': ['Fan', 'Stan', 'Choriste', 'Danseuse', 'Popstar', 'Diva', 'Icône', 'Queen'],
+  'petite-maison': ['Voyageur', 'Pionnier', 'Écolier', 'Fermier', 'Voisin', 'Habitant de Walnut Grove', 'Ami des Ingalls', 'Demi-portion'],
   voitures: ['Piéton', 'Apprenti conducteur', 'Jeune permis', 'Copilote', 'Mécano', 'Pilote', 'Champion de rallye', 'Légende des circuits'],
   'quel-animal': ['Promeneur', 'Curieux', 'Observateur', 'Photographe', 'Naturaliste', 'Explorateur', 'Zoologiste', 'Maître des bêtes'],
   orthographe: ['Faute de frappe', 'Écolier', 'Bon élève', 'Relecteur', 'Plume habile', 'Correcteur', 'Grammairien', 'Académicien'],
