@@ -204,10 +204,18 @@ export default function App() {
   const update = useCallback((fn) => setSt(s => fn(s) ?? emptyState()), [])
   // Les thèmes du joueur sont signés de son pseudo actuel
   const myName = st.profile?.name
+  // Thèmes à sortie programmée : ils apparaissent d'eux-mêmes à l'heure prévue, appli ouverte ou non
+  const [releaseClock, setReleaseClock] = useState(() => Date.now())
+  useEffect(() => {
+    const next = Math.min(...OFFICIAL_TOPICS.map(t => t.releaseAt || Infinity).filter(at => at > releaseClock))
+    if (!Number.isFinite(next)) return
+    const id = setTimeout(() => setReleaseClock(Date.now()), Math.min(next - releaseClock + 500, 2 ** 31 - 1))
+    return () => clearTimeout(id)
+  }, [releaseClock])
   const topics = useMemo(() => [
-    ...OFFICIAL_TOPICS, ...COMMUNITY_SEED,
+    ...OFFICIAL_TOPICS.filter(t => !t.releaseAt || t.releaseAt <= releaseClock), ...COMMUNITY_SEED,
     ...st.custom.map(t => (t.own && myName ? { ...t, by: myName } : t)),
-  ], [st.custom, myName])
+  ], [st.custom, myName, releaseClock])
   const byId = useCallback((id) => topics.find(t => t.id === id), [topics])
 
   // Animation du classement quand on quitte un thème : rangs au moment où l'on y entre
