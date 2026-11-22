@@ -1,7 +1,10 @@
 // « Le Butin » : mode coopératif à deux (logique sans interface).
 // Le duo partage un trésor de lingots et le répartit sur les réponses ; le serveur arbitre.
 import { seeded, shuffle } from './rng.js'
-import BANK from '../data/butin-questions.js'
+import BANK1 from '../data/butin-questions.js'
+import BANK2 from '../data/butin-questions-2.js'
+// Les nouvelles questions vont toujours à la fin : les numéros des questions déjà vues ne bougent pas
+const BANK = [...BANK1, ...BANK2]
 
 export const START = 20 // lingots au départ
 export const ROUNDS = 8
@@ -16,7 +19,7 @@ export const gold = (n) => `${n} lingot${n > 1 ? 's' : ''}`
 // au plus une question « capitale » par partie, et en évitant les questions vues récemment.
 const ICONS = { 'Géographie': '🌍', 'Histoire': '📜', 'Sciences': '🧪', 'Nature': '🦊', 'Pop culture': '🍿', 'Culture générale': '🧠',
   'Culture': '🎨', 'Littérature': '📚', 'Musique': '🎧', 'Sport': '🏅', 'Faits insolites': '🤯', 'Cinéma': '🎬', 'Télévision': '📺',
-  'Gastronomie': '🧀', 'Vie quotidienne': '🏠', 'Inventions': '💡' }
+  'Gastronomie': '🧀', 'Vie quotidienne': '🏠', 'Inventions': '💡', 'Arts': '🎨' }
 export const BUTIN_BANK = BANK.map(([cat, q, good, ...rest], id) => ({ id, cat, q, a: [good, ...rest.slice(0, 3)], expl: rest[3] }))
 
 export function buildButin(recent = [], seed = Date.now() + ':' + Math.random()) {
