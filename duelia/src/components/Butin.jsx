@@ -201,7 +201,12 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [view?.status])
 
-  const send = (fn) => { queue.current = queue.current.then(fn).then(v => { if (v) setView({ ...v, at: Date.now() }) }).catch(() => {}) }
+  const send = (fn) => { queue.current = queue.current.then(fn).then(v => {
+    if (!v) return
+    // La révélation peut arriver directement en réponse à « Valider » : le suspense démarre avant tout affichage
+    if (v.status === 'playing' && v.phase === 'reveal') setSuspense(x => (x && x.round === v.round ? x : { round: v.round, at: Date.now() }))
+    setView({ ...v, at: Date.now() })
+  }).catch(() => {}) }
 
   if (!view) {
     return <div className="screen butin-game center"><Mascot pose="attente" size={200} /><p className="muted">{failed > 3 ? 'Connexion difficile…' : 'Connexion au trésor…'}</p><button className="btn btn-ghost" onClick={onExit}>Retour</button></div>
@@ -279,7 +284,7 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
   // En jeu
   const q = view.question
   // Révélation en deux temps : d'abord le suspense (lingots qui tremblent), puis le verdict
-  const suspending = view.phase === 'reveal' && suspense?.round === view.round && now - suspense.at < SUSPENSE_MS
+  const suspending = view.phase === 'reveal' && view.status === 'playing' && (suspense?.round !== view.round || now - suspense.at < SUSPENSE_MS)
   const reveal = view.phase === 'reveal' && !suspending
   const locked = view.phase === 'reveal'
   const useDraft = draft && draft.round === view.round && !locked && now - draft.at < 1500
