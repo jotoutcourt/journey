@@ -6,7 +6,7 @@ import QuestionText from './QuestionText.jsx'
 import ConfirmButton from './ConfirmButton.jsx'
 import * as api from '../lib/account.js'
 import { gold, move, placed, rankFor, RANKS, START, ROUNDS } from '../lib/butin.js'
-import { sfx, SUSPENSE_MS } from '../lib/sound.js'
+import { sfx, SUSPENSE_MS, krakenSays, preloadVoices } from '../lib/sound.js'
 import { useDuoVoice } from '../lib/voice.js'
 
 const LETTERS = ['A', 'B', 'C', 'D']
@@ -181,6 +181,9 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
     return () => { alive = false; clearInterval(a); clearInterval(b) }
   }, [gameId])
 
+  // Répliques du Kraken : chargées dès le début de la partie
+  useEffect(() => { preloadVoices() }, [])
+
   // Sons : révélation et fin
   const phaseKey = view ? `${view.status}:${view.round}:${view.phase}` : ''
   useEffect(() => {
@@ -193,7 +196,9 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
       if (h.kept < h.before) sfx.drop()
       setTimeout(() => (h.kept > 0 ? sfx.good : sfx.bad)(), h.kept < h.before ? 450 : 0)
     }, SUSPENSE_MS)
-    return () => clearTimeout(id)
+    // puis le Kraken réagit : il a tout repris, une partie, ou rien du tout
+    const say = setTimeout(() => krakenSays(h.kept === 0 ? 'tout' : h.kept < h.before ? 'partie' : 'rien'), SUSPENSE_MS + 750)
+    return () => { clearTimeout(id); clearTimeout(say) }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phaseKey])
   useEffect(() => {

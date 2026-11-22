@@ -68,3 +68,23 @@ export const sfx = {
   lose: () => [392, 330, 262].forEach((f, i) => tone(f, 0.25, 'sine', 0.08, i * 0.14)),
   levelUp: () => [784, 988, 1175, 1568].forEach((f, i) => tone(f, 0.18, 'square', 0.04, i * 0.08)),
 }
+
+// Répliques du Kraken (fichiers audio), décodées une fois puis rejouées par Web Audio
+const VOICES = { tout: '/voix/ciao-les-minables.mp3', partie: '/voix/pauvre-idiot.mp3', rien: '/voix/non-pas-mes-lingots.mp3' }
+const voiceCache = {}
+function loadVoice(key) {
+  const c = audioFor()
+  if (!c || !VOICES[key]) return Promise.resolve(null)
+  voiceCache[key] = voiceCache[key] || fetch(VOICES[key]).then(r => r.arrayBuffer())
+    .then(b => new Promise((ok, ko) => c.decodeAudioData(b, ok, ko))).catch(() => { delete voiceCache[key]; return null })
+  return voiceCache[key]
+}
+export const preloadVoices = () => { Object.keys(VOICES).forEach(loadVoice) }
+export function krakenSays(key, gain = 0.9) {
+  loadVoice(key).then(buf => {
+    const c = audioFor()
+    if (!buf || !c) return
+    const src = c.createBufferSource(), g = c.createGain()
+    g.gain.value = gain; src.buffer = buf; src.connect(g).connect(c.destination); src.start()
+  })
+}
