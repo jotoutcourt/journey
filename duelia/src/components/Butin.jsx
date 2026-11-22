@@ -6,7 +6,7 @@ import QuestionText from './QuestionText.jsx'
 import ConfirmButton from './ConfirmButton.jsx'
 import * as api from '../lib/account.js'
 import { gold, move, placed, rankFor, RANKS, START, ROUNDS } from '../lib/butin.js'
-import { sfx } from '../lib/sound.js'
+import { sfx, SUSPENSE_MS } from '../lib/sound.js'
 import { useDuoVoice } from '../lib/voice.js'
 
 const LETTERS = ['A', 'B', 'C', 'D']
@@ -149,6 +149,7 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
   // canal vocal : celui de la première partie avec ce coéquipier, conservé quand on rejoue ensemble
   const [room, setRoom] = useState(null)
   const [countStart, setCountStart] = useState(null) // début du décompte (première fois qu'on voit la partie en cours)
+  const [suspense, setSuspense] = useState(null) // début du suspense de la révélation courante
   const [now, setNow] = useState(0)
   const [draft, setDraft] = useState(null) // { round, placement, at } : ce que je viens de faire, avant confirmation
   const [failed, setFailed] = useState(0)
@@ -168,6 +169,7 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
         if (alive && v) {
           setView({ ...v, at: Date.now() }); setFailed(0)
           if (v.status === 'playing' && v.round === 0 && v.phase === 'place' && v.left_ms > 38000) setCountStart(c => c ?? Date.now())
+          if (v.status === 'playing' && v.phase === 'reveal') setSuspense(x => (x && x.round === v.round ? x : { round: v.round, at: Date.now() }))
           if (v.status === 'done' && v.wallet != null) onWalletRef.current?.(v.wallet)
           if (!v.solo && ['playing', 'done'].includes(v.status) && v.voice_id) setRoom(r => (r && r.id === v.voice_id ? r : { id: v.voice_id, host: !!v.voice_host }))
         }
@@ -184,7 +186,14 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
   useEffect(() => {
     if (!view || view.phase !== 'reveal' || view.status !== 'playing') return
     const h = view.history?.[view.round]
-    if (h) (h.kept === h.before ? sfx.good : h.kept > 0 ? sfx.good : sfx.bad)()
+    if (!h) return
+    // suspense (sans compte à rebours affiché), puis le verdict
+    sfx.suspense()
+    const id = setTimeout(() => {
+      if (h.kept < h.before) sfx.drop()
+      setTimeout(() => (h.kept > 0 ? sfx.good : sfx.bad)(), h.kept < h.before ? 450 : 0)
+    }, SUSPENSE_MS)
+    return () => clearTimeout(id)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phaseKey])
   useEffect(() => {
@@ -269,8 +278,11 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
 
   // En jeu
   const q = view.question
-  const reveal = view.phase === 'reveal'
-  const useDraft = draft && draft.round === view.round && !reveal && now - draft.at < 1500
+  // Révélation en deux temps : d'abord le suspense (lingots qui tremblent), puis le verdict
+  const suspending = view.phase === 'reveal' && suspense?.round === view.round && now - suspense.at < SUSPENSE_MS
+  const reveal = view.phase === 'reveal' && !suspending
+  const locked = view.phase === 'reveal'
+  const useDraft = draft && draft.round === view.round && !locked && now - draft.at < 1500
   const placement = useDraft ? draft.placement : view.placement
   const free = view.bank - placed(placement)
   const left = Math.max(0, view.left_ms - (now - view.at))
@@ -279,7 +291,7 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
   const lost = h ? h.before - h.kept : 0
 
   const edit = (idx, delta) => {
-    if (reveal) return
+    if (locked) return
     const next = move(placement, idx, delta, view.bank)
     if (next === placement) { navigator.vibrate?.(30); return }
     sfx.tap()
@@ -298,14 +310,14 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
       : (voice.mic === 'on' || voice.mic === 'muted') && voice.link !== 'connected' ? (voice.partnerMic ? 'Connexion de la voix…' : `En attente du micro de ${partner.name}…`) : null
 
   return (
-    <div className={`butin-game loot ${reveal ? 'reveal' : ''}`}>
+    <div className={`butin-game loot ${reveal ? 'reveal' : ''} ${suspending ? 'suspense' : ''}`}>
       <header className="lt-top">
         <ConfirmButton className="lt-quit" onConfirm={() => { api.leaveDuo(gameId).catch(() => {}); onExit() }} confirmLabel="Quitter ?">✕</ConfirmButton>
         <div className="lt-bank">
           <small>Votre butin</small>
-          <b><i className="lt-coin" aria-hidden="true" />{gold(view.bank)}</b>
+          <b><i className="lt-coin" aria-hidden="true" />{gold(suspending ? (view.history?.[view.round]?.before ?? view.bank) : view.bank)}</b>
         </div>
-        <div className={`lt-timer ${secs <= 10 && !reveal ? 'hurry' : ''}`}>{reveal ? '⏸' : secs}</div>
+        <div className={`lt-timer ${secs <= 10 && !locked ? 'hurry' : ''}`}>{locked ? '⏸' : secs}</div>
       </header>
 
       {!solo && <div className="lt-team">
@@ -349,10 +361,10 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
         </div>
           {q?.options.map((o, i) => {
             const n = placement[i] || 0
-            const cls = reveal ? (i === q.correct ? 'ok' : n ? 'sunk' : 'open') : n ? 'has' : ''
+            const cls = reveal ? (i === q.correct ? 'ok' : n ? 'sunk' : 'open') : suspending ? (n ? 'has shaking' : '') : n ? 'has' : ''
             return (
               <div key={i} className={`lt-card ${cls}`}>
-                <button className="lt-card-main" onClick={() => edit(i, 1)} disabled={reveal} aria-label={`${LETTERS[i]} : ${o}, ${n} lingots. Toucher pour ajouter un lingot`}>
+                <button className="lt-card-main" onClick={() => edit(i, 1)} disabled={locked} aria-label={`${LETTERS[i]} : ${o}, ${n} lingots. Toucher pour ajouter un lingot`}>
                   <span className="lt-head"><span className="lt-letter">{LETTERS[i]}</span><span className="lt-text">{o}</span></span>
                   <span className="lt-tray">
                     <span className="lt-gold" aria-hidden="true">
@@ -362,7 +374,7 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
                     <Tentacle />
                   </span>
                 </button>
-                {!reveal && <>
+                {!locked && <>
                   <button className="lt-step minus" onClick={() => edit(i, -1)} disabled={!n} aria-label="Retirer un lingot">−</button>
                   <button className="lt-step plus" onClick={() => edit(i, 5)} disabled={!free} aria-label="Ajouter cinq lingots">+5</button>
                 </>}
@@ -373,7 +385,10 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
       </div>
 
       <div className="lt-dock">
-          {reveal ? (() => {
+          {suspending ? <>
+            <p className="lt-free">&nbsp;</p>
+            <button className="btn btn-ghost wide lt-suspense-btn" disabled>Le Kraken ouvre les caisses…</button>
+          </> : reveal ? (() => {
             const last = view.bank <= 0 || view.round + 1 >= view.rounds
             const label = last ? 'Voir le résultat' : 'Suivant'
             return <>

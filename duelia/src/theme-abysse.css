@@ -1008,3 +1008,24 @@ button.wallet-pill { border: 0; cursor: pointer; }
 .friend-profile .pf-note.center, .friend-profile .center { text-align: center; }
 .pf-topic-x { width: 40px; height: 40px; display: grid; place-items: center; font-size: 22px; }
 .friend-profile { padding-bottom: 110px; }
+
+/* Suspense avant la révélation : les lingots tremblent de plus en plus fort */
+.loot.suspense .lt-card.shaking .lt-gold { animation: ingotShake 0.12s linear infinite, ingotShakeGrow 2.6s ease-in forwards; }
+.loot.suspense .lt-card.shaking .lt-card-main { animation: cardShake 2.6s ease-in forwards; }
+.loot.suspense .lt-card.shaking .lt-count { animation: countPulse 0.5s ease-in-out infinite; }
+.loot.suspense .lt-grid { animation: suspenseDim 2.6s ease-in forwards; }
+@keyframes ingotShake { 0% { translate: -1px 0; } 25% { translate: 1px -1px; } 50% { translate: -1px 1px; } 75% { translate: 1px 0; } 100% { translate: -1px 0; } }
+@keyframes ingotShakeGrow { 0% { scale: 1; } 80% { scale: 1.04; } 100% { scale: 1.08; } }
+@keyframes cardShake {
+  0%, 30% { transform: none; }
+  35% { transform: translateX(-1px); } 40% { transform: translateX(1px); }
+  55% { transform: translateX(-2px) rotate(-0.4deg); } 60% { transform: translateX(2px) rotate(0.4deg); }
+  70% { transform: translateX(-2px); } 74% { transform: translateX(3px) rotate(0.6deg); } 78% { transform: translateX(-3px) rotate(-0.6deg); }
+  84% { transform: translateX(3px); } 88% { transform: translateX(-4px) rotate(-0.8deg); } 92% { transform: translateX(4px) rotate(0.8deg); }
+  96% { transform: translateX(-4px); } 100% { transform: none; }
+}
+@keyframes countPulse { 50% { transform: scale(1.18); } }
+@keyframes suspenseDim { 0% { filter: none; } 100% { filter: brightness(0.92) saturate(1.15); } }
+.lt-suspense-btn { opacity: 1 !important; animation: btnBreath 0.9s ease-in-out infinite; }
+@keyframes btnBreath { 50% { opacity: 0.65; } }
+@media (prefers-reduced-motion: reduce) { .loot.suspense .lt-card.shaking .lt-gold, .loot.suspense .lt-card.shaking .lt-card-main { animation: none; } }

@@ -4,7 +4,7 @@ import { POKEMON_TOPIC } from './data/pokemon.js'
 import { loadState, saveState, emptyState, encodeTopic, decodeTopic } from './lib/store.js'
 import { findOpponent, getCommunity, leaderboard } from './lib/bots.js'
 import { meEntry } from './lib/profile.js'
-import { setSound, setMusic } from './lib/sound.js'
+import { setSound, setMusic, sfx } from './lib/sound.js'
 import Duel from './components/Duel.jsx'
 import { buildQuestions } from './lib/duel.js'
 import Results from './components/Results.jsx'
@@ -167,6 +167,16 @@ export default function App() {
 
   useEffect(() => { saveState(st) }, [st])
   useEffect(() => { setSound(st.settings.sound) }, [st.settings.sound])
+  // Un petit son sur chaque bouton (sauf ceux qui ont déjà le leur : caisses du Kraken, réponses en partie)
+  useEffect(() => {
+    const onClick = (e) => {
+      const b = e.target.closest?.('button, [role="button"], .tabbar button')
+      if (!b || b.disabled || b.closest('.lt-card, .party-game .options, .options, [data-nosfx]')) return
+      sfx.click()
+    }
+    document.addEventListener('click', onClick, true)
+    return () => document.removeEventListener('click', onClick, true)
+  }, [])
   useEffect(() => { setMusic(st.settings.music !== false) }, [st.settings.music])
 
   const update = useCallback((fn) => setSt(s => fn(s) ?? emptyState()), [])

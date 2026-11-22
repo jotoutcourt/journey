@@ -15,7 +15,7 @@ export function audioFor(kind = 'sfx') {
   } catch { return null }
 }
 
-function tone(freq, dur = 0.12, type = 'sine', gain = 0.12, delay = 0) {
+function tone(freq, dur = 0.12, type = 'sine', gain = 0.12, delay = 0, to = null) {
   if (!enabled) return
   try {
     ctx = ctx || new (window.AudioContext || window.webkitAudioContext)()
@@ -24,6 +24,7 @@ function tone(freq, dur = 0.12, type = 'sine', gain = 0.12, delay = 0) {
     const o = ctx.createOscillator(), g = ctx.createGain()
     o.type = type
     o.frequency.setValueAtTime(freq, t0)
+    if (to) o.frequency.exponentialRampToValueAtTime(to, t0 + dur)
     g.gain.setValueAtTime(0.0001, t0)
     g.gain.exponentialRampToValueAtTime(gain, t0 + 0.01)
     g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur)
@@ -33,7 +34,25 @@ function tone(freq, dur = 0.12, type = 'sine', gain = 0.12, delay = 0) {
   } catch { /* audio indisponible */ }
 }
 
+// Durée du suspense avant la révélation du Kraken (ms)
+export const SUSPENSE_MS = 2600
+
 export const sfx = {
+  // Petit « pop » doux sur chaque bouton
+  click: () => { tone(560, 0.07, 'sine', 0.07, 0, 340); tone(1200, 0.03, 'triangle', 0.02) },
+  // Suspense : battements de cœur qui accélèrent sur un grondement qui monte, puis silence avant le verdict
+  suspense: () => {
+    tone(55, 2.4, 'sawtooth', 0.035, 0, 95)
+    tone(110, 2.4, 'triangle', 0.03, 0, 190)
+    let t = 0, gap = 0.5
+    while (t < 2.25) {
+      tone(70, 0.12, 'sine', 0.22, t, 45); tone(62, 0.1, 'sine', 0.16, t + 0.13, 40)
+      tone(1500, 0.03, 'square', 0.018, t + gap / 2)
+      t += gap; gap = Math.max(0.17, gap * 0.8)
+    }
+  },
+  // Les lingots tombent dans les abysses
+  drop: () => { tone(700, 0.5, 'triangle', 0.07, 0, 120); tone(90, 0.35, 'sine', 0.2, 0.42, 40) },
   tap: () => tone(660, 0.05, 'triangle', 0.06),
   tick: () => tone(880, 0.04, 'square', 0.03),
   good: () => { tone(740, 0.1, 'triangle'); tone(1110, 0.16, 'triangle', 0.1, 0.08) },
