@@ -1018,7 +1018,8 @@ export default function App() {
       onRespond={(f, yes) => api.respondFriend(f.player_id, yes).then(social.refreshFriends).catch(() => setToast('Pas de connexion.'))}
       onRemove={(f) => api.removeFriend(f.player_id).then(social.refreshFriends).catch(() => setToast('Pas de connexion.'))}
       onChallenge={setFriendSheet} onShareCode={shareMyCode} onOpen={(f) => go({ name: 'friend', friend: f })} />; break
-    case 'friend': view = route.friend ? <FriendProfile friend={route.friend} topics={topics} onChallenge={setFriendSheet} onBack={() => go({ name: 'friends' })} /> : null; break
+    case 'friend': view = route.friend ? <FriendProfile friend={route.friend} topics={topics} onChallenge={setFriendSheet} onBack={() => go({ name: 'friends' })}
+      onRemove={(f) => api.removeFriend(f.player_id).then(() => { social.refreshFriends(); setToast(`${f.name} n'est plus dans tes amis.`); go({ name: 'friends' }) }).catch(() => setToast('Pas de connexion.'))} /> : null; break
     case 'invite': view = topic ? <InviteWaiting key={route.startedAt} friend={route.friend} topic={topic} status={route.status} startedAt={route.startedAt}
       onCancel={cancelInvite} onAsync={() => startFriendDuel(route.friend, topic, 'async')} /> : null; break
     case 'friendsent': view = topic ? <FriendSent friend={route.friend} topic={topic} score={route.score} failed={route.failed}

@@ -115,11 +115,11 @@ export function FriendsScreen({ online, social, code, initialCode, now, push, on
                 <Avatar seed={f.avatar} photo={f.photo} size={44} />
                 <i className={`dot ${f.online ? 'on' : 'off'}`} aria-hidden="true" />
               </span>
-              <span className="ch-info"><b>{f.flag} {f.name}</b><small>{seenLabel(f, now)} · voir le profil ›</small></span>
+              <span className="ch-info"><b>{f.flag} {f.name}</b><small>{seenLabel(f, now)}</small></span>
             </button>
             <div className="ch-actions">
               <button className="btn btn-small btn-primary" onClick={() => onChallenge(f)}>Défier</button>
-              <ConfirmButton className="btn btn-small btn-ghost danger" onConfirm={() => onRemove(f)} confirmLabel="Retirer ?">✕</ConfirmButton>
+              <button className="btn btn-small btn-ghost" onClick={() => onOpen?.(f)}>Profil</button>
             </div>
           </li>
         ))}
@@ -365,7 +365,7 @@ export function SharedTopics({ online, installed, onOpen, onList }) {
 }
 
 /* ---------- Profil d'un ami ---------- */
-export function FriendProfile({ friend, topics, onChallenge, onBack }) {
+export function FriendProfile({ friend, topics, onChallenge, onRemove, onBack }) {
   const [p, setP] = useState(undefined)
   useEffect(() => {
     let alive = true
@@ -420,6 +420,7 @@ export function FriendProfile({ friend, topics, onChallenge, onBack }) {
           </ul>
         </>}
       </>}
+      {onRemove && <ConfirmButton className="btn btn-ghost danger wide fp-remove" onConfirm={() => onRemove(card)} confirmLabel={`Retirer ${card.name} ? Appuie encore pour confirmer`}>Retirer de mes amis</ConfirmButton>}
       <div className="results-dock"><button className="btn btn-primary wide" style={{ gridColumn: '1 / -1' }} onClick={() => onChallenge(card)}>⚔️ Défier {card.name}</button></div>
     </div>
   )

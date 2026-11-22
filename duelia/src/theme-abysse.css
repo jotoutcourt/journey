@@ -1109,3 +1109,4 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
 .na-later { color: #b7a6e6; font-size: 14px; padding: 8px; }
 .na-list li p { margin: 0; flex: 1; min-width: 0; }
 .notif-ask .na-yes { font-size: 18px; height: 56px; background: linear-gradient(180deg, #b47bff, #7a3ae6); color: #fff; }
+.fp-remove { margin-top: 18px; }
