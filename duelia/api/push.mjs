@@ -8,9 +8,9 @@ const PUBLIC_KEY = 'sb_publishable_7MZtPO9jkhzhLVYSFaKLFA_dqK3drPi'
 export default async function handler(req, res) {
   const secret = process.env.PUSH_SECRET
   if (req.method !== 'POST' || !secret || req.headers['x-push-secret'] !== secret) return res.status(403).json({ ok: false })
-  const { subscriptions = [], title, body, url } = req.body || {}
+  const { subscriptions = [], title, body, url, badge } = req.body || {}
   webpush.setVapidDetails('https://duelia.vercel.app', process.env.VAPID_PUBLIC_KEY, process.env.VAPID_PRIVATE_KEY)
-  const payload = JSON.stringify({ title: String(title || 'Kraken').slice(0, 80), body: String(body || '').slice(0, 200), url: String(url || '/').slice(0, 100) })
+  const payload = JSON.stringify({ title: String(title || 'Kraken').slice(0, 80), body: String(body || '').slice(0, 200), url: String(url || '/').slice(0, 100), ...(Number.isInteger(badge) && badge >= 0 ? { badge: Math.min(badge, 99) } : {}) })
   const gone = []
   const results = await Promise.all(subscriptions.slice(0, 10).map(async (s) => {
     try { await webpush.sendNotification(s, payload, { TTL: 3600, urgency: 'high' }); return 'ok' } catch (e) {

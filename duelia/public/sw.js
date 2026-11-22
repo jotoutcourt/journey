@@ -1,6 +1,6 @@
 // Kraken hors ligne : l'appli se lance même sans réseau (duels contre l'IA, ascension, thèmes).
 // Les échanges avec le serveur (comptes, classements, duels en direct) ne passent jamais par le cache.
-const CACHE = 'duelia-v85'
+const CACHE = 'duelia-v86'
 // Médias lourds qui ne changent pas d'une version à l'autre (musique, voix, photos) : cache séparé, gardé entre les mises à jour
 const MEDIA = 'kraken-media-v1'
 const isMedia = (p) => p.startsWith('/musique/') || p.startsWith('/voix/') || p.startsWith('/animaux/')
@@ -47,9 +47,12 @@ self.addEventListener('fetch', (e) => {
 self.addEventListener('push', (e) => {
   let d
   try { d = e.data.json() } catch { d = { title: 'Kraken', body: e.data?.text() || '' } }
-  e.waitUntil(self.registration.showNotification(d.title || 'Kraken', {
+  // pastille sur l'icône de l'appli (nombre de choses qui attendent le joueur)
+  const badge = Number.isInteger(d.badge) && self.navigator.setAppBadge
+    ? (d.badge ? self.navigator.setAppBadge(d.badge) : self.navigator.clearAppBadge()).catch(() => {}) : Promise.resolve()
+  e.waitUntil(badge.then(() => self.registration.showNotification(d.title || 'Kraken', {
     body: d.body || '', icon: '/icon-192.png', badge: '/icon-192.png', data: { url: d.url || '/' }, tag: d.url || 'duelia',
-  }))
+  })))
 })
 self.addEventListener('notificationclick', (e) => {
   e.notification.close()

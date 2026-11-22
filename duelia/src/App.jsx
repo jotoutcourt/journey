@@ -660,6 +660,12 @@ export default function App() {
       .catch(() => { setNotifAsk(false); notifAskLater(); pushStatus().then(setPush).catch(() => setPush('off')) })
   }
   const notifLater = () => { notifAskLater(); setNotifAsk(false) }
+  // Pastille sur l'icône de l'appli (iPhone et Android, appli installée avec notifications) : ce qui attend le joueur
+  const waiting = pendingCount(st) + (social.counts?.challenges || 0) + (social.counts?.requests || 0)
+  useEffect(() => {
+    if (!('setAppBadge' in navigator)) return
+    ;(waiting > 0 ? navigator.setAppBadge(Math.min(waiting, 99)) : navigator.clearAppBadge()).catch(() => {})
+  }, [waiting])
   const refreshUnlocks = useCallback(() => api.getUnlocks().then(u => { if (u) setUnlocks(u) }).catch(() => {}), [])
   useEffect(() => { if (account.status === 'online') refreshUnlocks() }, [account.status, refreshUnlocks])
   // anciens joueurs : on garde les thèmes suivis ou joués avant l'ouverture de la boutique (une fois)
