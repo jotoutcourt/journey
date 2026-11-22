@@ -168,8 +168,8 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
         const v = await api.getDuo(gameId)
         if (alive && v) {
           setView({ ...v, at: Date.now() }); setFailed(0)
-          if (v.status === 'playing' && v.round === 0 && v.phase === 'place' && v.left_ms > 38000) setCountStart(c => c ?? Date.now())
-          if (v.status === 'playing' && v.phase === 'reveal') setSuspense(x => (x && x.round === v.round ? x : { round: v.round, at: Date.now() }))
+          if (v.status === 'playing' && v.round === 0 && v.phase === 'place' && v.left_ms > 38000) setCountStart(c => (c && c.game === v.id ? c : { game: v.id, at: Date.now() }))
+          if (v.status === 'playing' && v.phase === 'reveal') setSuspense(x => (x && x.game === v.id && x.round === v.round ? x : { game: v.id, round: v.round, at: Date.now() }))
           if (v.status === 'done' && v.wallet != null) onWalletRef.current?.(v.wallet)
           if (!v.solo && ['playing', 'done'].includes(v.status) && v.voice_id) setRoom(r => (r && r.id === v.voice_id ? r : { id: v.voice_id, host: !!v.voice_host }))
         }
@@ -209,12 +209,12 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
   const send = (fn) => { queue.current = queue.current.then(fn).then(v => {
     if (!v) return
     // La révélation peut arriver directement en réponse à « Valider » : le suspense démarre avant tout affichage
-    if (v.status === 'playing' && v.phase === 'reveal') setSuspense(x => (x && x.round === v.round ? x : { round: v.round, at: Date.now() }))
+    if (v.status === 'playing' && v.phase === 'reveal') setSuspense(x => (x && x.game === v.id && x.round === v.round ? x : { game: v.id, round: v.round, at: Date.now() }))
     setView({ ...v, at: Date.now() })
   }).catch(() => {}) }
 
   if (!view) {
-    return <div className="screen butin-game center"><Mascot pose="attente" size={200} /><p className="muted">{failed > 3 ? 'Connexion difficile…' : 'Connexion au trésor…'}</p><button className="btn btn-ghost" onClick={onExit}>Retour</button></div>
+    return <div className="screen butin-game loot center"><Mascot pose="attente" size={200} /><p className="muted">{failed > 3 ? 'Connexion difficile…' : 'Connexion au trésor…'}</p><button className="btn btn-ghost" onClick={onExit}>Retour</button></div>
   }
   const solo = !!view.solo
   const partner = view.partner || { name: solo ? 'Le Kraken' : 'Ton coéquipier' }
@@ -275,8 +275,10 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
   }
 
   // Décompte 3, 2, 1, GO avant la première question
-  if (view.status === 'playing' && view.round === 0 && view.phase === 'place' && countStart && now - countStart < 3400) {
-    const n = 3 - Math.floor((now - countStart) / 850)
+  // (le décompte appartient à la partie affichée : rien ne se mélange quand on rejoue)
+  const countAt = countStart?.game === gameId ? countStart.at : null
+  if (view.status === 'playing' && view.round === 0 && view.phase === 'place' && countAt && now - countAt < 3400) {
+    const n = Math.min(3, 3 - Math.floor(Math.max(0, now - countAt) / 850))
     return (
       <div className="butin-game loot countdown kraken-count">
         <img className="kc-kraken" src="/mascotte/pirate-anim.webp" alt="" aria-hidden="true" />
@@ -289,7 +291,7 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
   // En jeu
   const q = view.question
   // Révélation en deux temps : d'abord le suspense (lingots qui tremblent), puis le verdict
-  const suspending = view.phase === 'reveal' && view.status === 'playing' && (suspense?.round !== view.round || now - suspense.at < SUSPENSE_MS)
+  const suspending = view.phase === 'reveal' && view.status === 'playing' && (suspense?.game !== view.id || suspense.round !== view.round || now - suspense.at < SUSPENSE_MS)
   const reveal = view.phase === 'reveal' && !suspending
   const locked = view.phase === 'reveal'
   // Joker : caisse retirée à cette manche (-1 sinon)
