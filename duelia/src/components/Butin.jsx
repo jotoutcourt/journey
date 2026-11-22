@@ -196,8 +196,9 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
       if (h.kept < h.before) sfx.drop()
       setTimeout(() => (h.kept > 0 ? sfx.good : sfx.bad)(), h.kept < h.before ? 450 : 0)
     }, SUSPENSE_MS)
-    // puis le Kraken se moque s'il a repris de l'or (tout ou une partie)
-    const say = h.kept < h.before ? setTimeout(() => krakenSays(h.kept === 0 ? 'tout' : 'partie'), SUSPENSE_MS + 750) : null
+    // puis le Kraken se moque : s'il a tout repris, ou s'il a repris la majorité des lingots de la manche
+    const line = h.kept === 0 && h.before > 0 ? 'tout' : h.before - h.kept > h.before / 2 ? 'partie' : null
+    const say = line ? setTimeout(() => krakenSays(line), SUSPENSE_MS + 750) : null
     return () => { clearTimeout(id); clearTimeout(say) }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phaseKey])
