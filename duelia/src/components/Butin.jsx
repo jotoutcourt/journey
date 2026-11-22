@@ -50,7 +50,7 @@ export function ButinHome({ online, friends, onInvite, onBack, onAddFriend, onSo
         <ol className="butin-rules">
           <li>À chaque question, cachez ensemble vos lingots dans les caisses des réponses. Chacun voit en direct ce que fait l'autre.</li>
           <li>Il faut <b>toujours laisser au moins une caisse vide</b>. Les lingots non cachés sont repris.</li>
-          <li>Ses tentacules fouillent les caisses des mauvaises réponses et reprennent l'or. Tenez {ROUNDS} questions pour repartir avec le butin !</li>
+          <li>Ses tentacules fouillent les caisses des mauvaises réponses et reprennent l'or. Tenez {ROUNDS} questions pour repartir avec le butin, que vous vous partagez à la fin !</li>
         </ol>
       </section>
 
@@ -252,7 +252,7 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
           <div className="butin-final"><small>Butin final</small><b><i className="ingot" /> {gold(view.bank)}</b><span>{rank ? `${rank.icon} ${rank.name}` : 'Rien à ramener cette fois…'}</span></div>
           {view.reward?.length > 0 && (
             <div className="butin-reward">
-              {view.reward.map((r, i) => <span key={i}>+{r.delta} {r.reason === 'butin' ? 'lingots volés' : r.reason === 'bonus_jour' ? 'bonus du jour 🎁' : r.reason === 'parfait' ? 'casse parfait 💎' : ''}</span>)}
+              {view.reward.map((r, i) => <span key={i}>+{r.delta} {r.reason === 'butin' ? (solo ? 'lingots volés' : 'lingots : ta moitié du butin') : r.reason === 'bonus_jour' ? 'bonus du jour 🎁' : r.reason === 'parfait' ? 'casse parfait 💎' : ''}</span>)}
               {view.wallet != null && <b>Ton trésor : <i className="lt-coin" aria-hidden="true" />{view.wallet} lingots</b>}
             </div>
           )}
