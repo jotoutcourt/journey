@@ -333,6 +333,18 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
       {/* Les tentacules du Kraken rôdent derrière les caisses */}
       <div className="lt-stage">
         <div className={`lt-grid n${q?.options.length || 4}`}>
+          {reveal && (
+        <div className="lt-reveal-dock over">
+        {q?.expl && <p className="lt-expl"><b>💡 {q.options[q.correct]}</b> {q.expl}</p>}
+        <div className={`lt-dock lt-bubble ${lost ? 'happy' : 'sad'}`} role="status">
+          <Mascot pose={lost ? 'pirate' : 'defaite'} size={86} className="lt-bubble-kraken" />
+          <div>
+            <b>{lost === 0 ? 'Rien repris ! Bien joué 🎉' : h.kept === 0 ? <>Le Kraken reprend <em>tout</em></> : <>Le Kraken reprend <em>{gold(lost)}</em></>}</b>
+            <small>« {(lost === 0 ? SAD : h.kept === 0 ? GLEE : HAPPY)[view.round % 4]} »</small>
+          </div>
+        </div>
+        </div>
+          )}
           <div className="lt-tentacles" aria-hidden="true">
           <img className="real-tentacle tl" src="/decor/tentacule-anim.webp" alt="" draggable="false" />
           <img className="real-tentacle tr" src="/decor/tentacule-anim-d.webp" alt="" draggable="false" />
@@ -362,8 +374,7 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
         </div>
       </div>
 
-      {!reveal ? (
-        <div className="lt-dock">
+      <div className={`lt-dock ${reveal ? 'ghost' : ''}`} aria-hidden={reveal || undefined}>
           <p className={`lt-free ${free ? 'warn' : ''}`}>
             {free ? <>Encore <b>{free} lingot{free > 1 ? 's' : ''}</b> à cacher, sinon le Kraken les reprend.</> : 'Tous les lingots sont cachés.'}
             {placed(placement) > 0 && <button className="link-btn" onClick={clearAll}>tout reprendre</button>}
@@ -372,18 +383,6 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
             {solo ? 'Valider ✓' : view.ready_me ? (view.ready_partner ? 'C\'est parti…' : `En attente de ${partner.name}… (annuler)`) : view.ready_partner ? `${partner.name} est prêt·e : on valide !` : 'On valide ✓'}
           </button>
         </div>
-      ) : (
-        <div className="lt-reveal-dock">
-        {q?.expl && <p className="lt-expl"><b>💡 {q.options[q.correct]}</b> {q.expl}</p>}
-        <div className={`lt-dock lt-bubble ${lost ? 'happy' : 'sad'}`} role="status">
-          <Mascot pose={lost ? 'pirate' : 'defaite'} size={86} className="lt-bubble-kraken" />
-          <div>
-            <b>{lost === 0 ? 'Rien repris ! Bien joué 🎉' : h.kept === 0 ? <>Le Kraken reprend <em>tout</em></> : <>Le Kraken reprend <em>{gold(lost)}</em></>}</b>
-            <small>« {(lost === 0 ? SAD : h.kept === 0 ? GLEE : HAPPY)[view.round % 4]} »</small>
-          </div>
-        </div>
-        </div>
-      )}
     </div>
   )
 }

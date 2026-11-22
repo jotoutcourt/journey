@@ -984,3 +984,8 @@ button.wallet-pill { border: 0; cursor: pointer; }
 /* photo de profil ronde, jamais étirée */
 .lt-player .avatar, .lt-player > :first-child { flex: none; width: 30px !important; height: 30px !important; border-radius: 50%; overflow: hidden; }
 .lt-player img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+/* révélation : explication + Kraken au-dessus des caisses ; le bas garde sa place pour que rien ne bouge */
+.lt-reveal-dock.over { position: absolute; z-index: 4; left: 0; right: 0; bottom: calc(100% + 10px); display: flex; flex-direction: column; gap: 8px; }
+.lt-reveal-dock.over .lt-bubble { margin: 0; }
+.lt-reveal-dock.over .lt-expl { background: #0b0420f0; }
+.lt-dock.ghost { visibility: hidden; }
