@@ -374,7 +374,17 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
         </div>
       </div>
 
-      <div className={`lt-dock ${reveal ? 'ghost' : ''}`} aria-hidden={reveal || undefined}>
+      <div className="lt-dock">
+          {reveal ? (() => {
+            const last = view.bank <= 0 || view.round + 1 >= view.rounds
+            const label = last ? 'Voir le résultat' : 'Suivant'
+            return <>
+              <p className="lt-free">{solo || !view.ready_partner ? '\u00a0' : `${partner.name} est prêt·e pour la suite`}</p>
+              <button className={`btn ${view.ready_me ? 'btn-ghost' : 'btn-gold'} wide`} disabled={view.ready_me} onClick={() => send(() => api.duoNext(gameId, view.round))}>
+                {view.ready_me && !solo ? `En attente de ${partner.name}…` : `${label} →`}
+              </button>
+            </>
+          })() : <>
           <p className={`lt-free ${free ? 'warn' : ''}`}>
             {free ? <>Encore <b>{free} lingot{free > 1 ? 's' : ''}</b> à cacher, sinon le Kraken les reprend.</> : 'Tous les lingots sont cachés.'}
             {placed(placement) > 0 && <button className="link-btn" onClick={clearAll}>tout reprendre</button>}
@@ -382,6 +392,7 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
           <button className={`btn ${view.ready_me ? 'btn-ghost' : 'btn-gold'} wide`} onClick={() => send(() => api.duoReady(gameId, view.round, !view.ready_me))}>
             {solo ? 'Valider ✓' : view.ready_me ? (view.ready_partner ? 'C\'est parti…' : `En attente de ${partner.name}… (annuler)`) : view.ready_partner ? `${partner.name} est prêt·e : on valide !` : 'On valide ✓'}
           </button>
+          </>}
         </div>
     </div>
   )
