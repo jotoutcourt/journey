@@ -101,6 +101,7 @@ export const liveResult = (matchId) => rpc('live_result', { p_match: matchId })
 // ===== Amis, défis entre amis, notifications, thèmes partagés =====
 export const myFriendCode = () => rpc('my_friend_code')
 export const getFriends = () => rpc('get_friends')
+export const getFriendProfile = (id) => rpc('get_friend_profile', { p_friend: id })
 export const addFriend = (code) => rpc('add_friend', { p_code: code })
 export const befriendByLink = (code) => rpc('befriend_by_link', { p_code: code })
 export const respondFriend = (playerId, accept) => rpc('respond_friend', { p_player: playerId, p_accept: accept })

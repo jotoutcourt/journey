@@ -3,6 +3,8 @@ import Avatar from './Avatar.jsx'
 import TopicIcon from './TopicIcon.jsx'
 import ConfirmButton from './ConfirmButton.jsx'
 import Mascot from './Mascot.jsx'
+import * as api from '../lib/account.js'
+import { levelInfo } from '../lib/levels.js'
 
 const fmtCode = (c) => (c ? `${c.slice(0, 4)}-${c.slice(4)}` : '…')
 
@@ -47,7 +49,7 @@ export function PushCard({ status, onEnable, onDisable }) {
 }
 
 /* ---------- Écran Amis ---------- */
-export function FriendsScreen({ online, social, code, initialCode, now, push, onPush, onAdd, onRespond, onRemove, onChallenge, onShareCode, onBack }) {
+export function FriendsScreen({ online, social, code, initialCode, now, push, onPush, onAdd, onRespond, onRemove, onChallenge, onShareCode, onBack, onOpen }) {
   const [input, setInput] = useState(initialCode || '')
   const [msg, setMsg] = useState(null)
   const [busy, setBusy] = useState(false)
@@ -108,11 +110,13 @@ export function FriendsScreen({ online, social, code, initialCode, now, push, on
       <ul className="ch-list">
         {friends.map(f => (
           <li key={f.player_id} className="ch-item">
-            <span className="friend-av">
-              <Avatar seed={f.avatar} photo={f.photo} size={44} />
-              <i className={`dot ${f.online ? 'on' : 'off'}`} aria-hidden="true" />
-            </span>
-            <div className="ch-info"><b>{f.flag} {f.name}</b><small>{seenLabel(f, now)}</small></div>
+            <button className="friend-open" onClick={() => onOpen?.(f)} aria-label={`Voir le profil de ${f.name}`}>
+              <span className="friend-av">
+                <Avatar seed={f.avatar} photo={f.photo} size={44} />
+                <i className={`dot ${f.online ? 'on' : 'off'}`} aria-hidden="true" />
+              </span>
+              <span className="ch-info"><b>{f.flag} {f.name}</b><small>{seenLabel(f, now)} · voir le profil ›</small></span>
+            </button>
             <div className="ch-actions">
               <button className="btn btn-small btn-primary" onClick={() => onChallenge(f)}>Défier</button>
               <ConfirmButton className="btn btn-small btn-ghost danger" onConfirm={() => onRemove(f)} confirmLabel="Retirer ?">✕</ConfirmButton>
@@ -357,5 +361,66 @@ export function SharedTopics({ online, installed, onOpen, onList }) {
         })}
       </div>
     </section>
+  )
+}
+
+/* ---------- Profil d'un ami ---------- */
+export function FriendProfile({ friend, topics, onChallenge, onBack }) {
+  const [p, setP] = useState(undefined)
+  useEffect(() => {
+    let alive = true
+    api.getFriendProfile(friend.player_id).then(v => { if (alive) setP(v) }).catch(() => { if (alive) setP(null) })
+    return () => { alive = false }
+  }, [friend.player_id])
+  const card = p?.card || friend
+  const lvl = levelInfo(p?.xp || 0)
+  const h2h = p?.h2h || { me: 0, them: 0, draws: 0 }
+  const fights = h2h.me + h2h.them + h2h.draws
+  const byId = (id) => topics.find(t => t.id === id)
+  const since = p?.since ? new Date(p.since).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }) : null
+  return (
+    <div className="screen profile friend-profile">
+      <header className="top"><button className="icon-btn" onClick={onBack} aria-label="Retour">←</button><h1>Profil</h1></header>
+      <div className="pf-cover">
+        <Avatar seed={card.avatar} photo={card.photo} size={112} ring={card.online ? 'var(--good, #3ddc84)' : 'var(--opp)'} />
+        <h1 className="pf-name">{card.name}{p && <span className="pf-level">{lvl.level}</span>}</h1>
+        {p && <span className="pf-title">{lvl.title}</span>}
+        <span className="pf-country">{card.flag} {card.online ? '● En ligne' : since ? `Joue depuis ${since}` : ''}</span>
+      </div>
+      {card.bio && <p className="pf-bio">{card.bio}</p>}
+      {p === undefined && <p className="muted center">Chargement…</p>}
+      {p === null && <Offline text="Impossible de charger ce profil pour l'instant." />}
+      {p && <>
+        <h3 className="sec-title">Vos défis</h3>
+        <div className="tp-stats pf-counts">
+          <div><small>Toi</small><b className="c-green">{h2h.me}</b></div>
+          <div><small>Nuls</small><b className="c-blue">{h2h.draws}</b></div>
+          <div><small>{card.name}</small><b className="c-red">{h2h.them}</b></div>
+        </div>
+        <p className="pf-note center">{fights ? `${fights} défi${fights > 1 ? 's' : ''} terminé${fights > 1 ? 's' : ''} entre vous` : 'Aucun défi terminé entre vous pour l\'instant.'}</p>
+        <div className="pf-tiles">
+          <div><small>Parties du Kraken</small><b>{p.kraken.games}</b><span>terminées</span></div>
+          <div><small>Lingots volés</small><b>{p.kraken.earned}</b><span>au total</span></div>
+          <div><small>Votre record à deux</small><b>{p.duo?.best ?? '–'}</b><span>{p.duo ? `en ${p.duo.games} partie${p.duo.games > 1 ? 's' : ''}` : 'jouez ensemble !'}</span></div>
+        </div>
+        {p.top.length > 0 && <>
+          <h3 className="sec-title">Ses thèmes favoris</h3>
+          <ul className="pf-topics">
+            {p.top.map(t => {
+              const topic = byId(t.topic_id)
+              const l = levelInfo(t.xp)
+              return (
+                <li key={t.topic_id}>
+                  {topic ? <TopicIcon topic={topic} size={40} /> : <span className="pf-topic-x">🎯</span>}
+                  <div><b>{topic?.name || 'Thème perso'}</b><small>Niveau {l.level} · {l.title}</small></div>
+                  <span>{t.xp} XP</span>
+                </li>
+              )
+            })}
+          </ul>
+        </>}
+      </>}
+      <div className="results-dock"><button className="btn btn-primary wide" style={{ gridColumn: '1 / -1' }} onClick={() => onChallenge(card)}>⚔️ Défier {card.name}</button></div>
+    </div>
   )
 }

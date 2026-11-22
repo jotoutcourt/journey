@@ -19,7 +19,7 @@ import { OxygenInline, OxygenSheet } from './components/Oxygen.jsx'
 import { Shop, StarterPick } from './components/Shop.jsx'
 import { priceOf, isLockable } from './lib/shop.js'
 import { buildButin } from './lib/butin.js'
-import { FriendsScreen, FriendChallengeSheet, PickFriendSheet, PlayWhoSheet, InviteWaiting, LiveInviteBanner, FriendSent, SharedTopics, ChallengeMessage } from './components/Social.jsx'
+import { FriendsScreen, FriendChallengeSheet, PickFriendSheet, PlayWhoSheet, InviteWaiting, LiveInviteBanner, FriendSent, SharedTopics, ChallengeMessage, FriendProfile } from './components/Social.jsx'
 import * as api from './lib/account.js'
 import TopicRequestSheet from './components/TopicRequest.jsx'
 import { useSocial, friendOpponent, fromPlain, logFrom } from './lib/useSocial.js'
@@ -956,7 +956,8 @@ export default function App() {
       onAdd={(c) => api.addFriend(c).then(r => { social.refreshFriends(); return r })}
       onRespond={(f, yes) => api.respondFriend(f.player_id, yes).then(social.refreshFriends).catch(() => setToast('Pas de connexion.'))}
       onRemove={(f) => api.removeFriend(f.player_id).then(social.refreshFriends).catch(() => setToast('Pas de connexion.'))}
-      onChallenge={setFriendSheet} onShareCode={shareMyCode} />; break
+      onChallenge={setFriendSheet} onShareCode={shareMyCode} onOpen={(f) => go({ name: 'friend', friend: f })} />; break
+    case 'friend': view = route.friend ? <FriendProfile friend={route.friend} topics={topics} onChallenge={setFriendSheet} onBack={() => go({ name: 'friends' })} /> : null; break
     case 'invite': view = topic ? <InviteWaiting key={route.startedAt} friend={route.friend} topic={topic} status={route.status} startedAt={route.startedAt}
       onCancel={cancelInvite} onAsync={() => startFriendDuel(route.friend, topic, 'async')} /> : null; break
     case 'friendsent': view = topic ? <FriendSent friend={route.friend} topic={topic} score={route.score} failed={route.failed}
@@ -1023,7 +1024,7 @@ export default function App() {
       {!fullscreen && (
         <nav className="tabbar">
           {TABS.map(t => (
-            <button key={t.name} className={route.name === t.name || (t.name === 'topics' && ['topic', 'ranking'].includes(route.name)) ? 'on' : ''}
+            <button key={t.name} className={route.name === t.name || (t.name === 'topics' && ['topic', 'ranking'].includes(route.name)) || (t.name === 'friends' && route.name === 'friend') ? 'on' : ''}
               onClick={() => go({ name: t.name })}>
               <svg viewBox="0 0 24 24">{t.icon}</svg>
               <span>{t.label}</span>

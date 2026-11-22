@@ -992,3 +992,19 @@ button.wallet-pill { border: 0; cursor: pointer; }
 .lt-reveal-dock.over { bottom: calc(100% + 24px); }
 .loot .lt-grid > .lt-tentacles .real-tentacle.tr { bottom: -150px; }
 .loot .lt-grid > .lt-tentacles .real-tentacle.tr { bottom: -84px; }
+/* Tentacule de droite : rythme décalé pour ne pas bouger en même temps que la gauche */
+.loot .lt-grid > .lt-tentacles .real-tentacle.tr { animation-duration: 6.1s; animation-delay: -2.3s; }
+
+/* Typographie de l'accueil : textes descriptifs en Nunito Sans 600, petites infos et navigation en 500 */
+.home .kh-pitch, .home .kh-pitch b { font-family: 'Nunito Sans', var(--body); font-weight: 600; }
+.home .bh-bonus, .home .oxy-inline small, .home .oxy-inline .link-btn, .home .wallet-pill,
+.tabbar span { font-family: 'Nunito Sans', var(--body); font-weight: 500; }
+
+/* Liste d'amis : la ligne ouvre le profil */
+.friend-open { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; background: none; border: 0; padding: 0; color: inherit; text-align: left; font: inherit; cursor: pointer; }
+.friend-open:active { opacity: 0.7; }
+.friend-profile .pf-cover { padding-top: 18px; }
+.friend-profile .pf-tiles { grid-template-columns: repeat(3, 1fr); }
+.friend-profile .pf-note.center, .friend-profile .center { text-align: center; }
+.pf-topic-x { width: 40px; height: 40px; display: grid; place-items: center; font-size: 22px; }
+.friend-profile { padding-bottom: 110px; }
