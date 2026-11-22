@@ -14,6 +14,7 @@ const LETTERS = ['A', 'B', 'C', 'D']
 // Ce que dit le Kraken à la révélation
 const HAPPY = ['Hé hé, ça c\'est à moi !', 'Merci pour l\'or, petits voleurs !', 'Une caisse de plus pour moi !', 'Je savais que vous vous tromperiez !']
 const GLEE = ['Mwahaha ! Tout est à moi !', 'Rendez-moi tout… voilà, c\'est fait !', 'Vous pensiez vraiment m\'avoir ?', 'Mon trésor, mon précieux trésor !']
+const BONUS = ['Quoi ?! Tout sur une seule caisse… et c\'était la bonne ?!', 'Bon… tant de culot mérite une récompense.', 'Grrr… prends ces 10 lingots et file !']
 const SAD = ['Grrr… rien dans mes tentacules !', 'Comment ont-ils su ?!', 'Ce n\'est que partie remise…', 'Rendez-moi mon or, voleurs !']
 
 // Tentacule qui surgit du pont pour reprendre les lingots d'une mauvaise réponse
@@ -254,7 +255,7 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
           {!solo && <VoiceBar voice={voice} partner={partner} hangUp />}
           <ol className="butin-history">
             {view.history.map((h, i) => (
-              <li key={i}><span>Q{i + 1}</span><i style={{ width: `${(h.kept / START) * 100}%` }} /><b className={h.kept === h.before ? 'ok' : h.kept ? 'mid' : 'ko'}>{h.kept}/{h.before}</b></li>
+              <li key={i}><span>Q{i + 1}</span><i style={{ width: `${Math.min(100, (h.kept / START) * 100)}%` }} /><b className={h.kept >= h.before ? 'ok' : h.kept ? 'mid' : 'ko'}>{h.kept}/{h.before}{h.bonus ? ' 🎁' : ''}</b></li>
             ))}
           </ol>
           <p className="butin-ranks">{RANKS.map(r => <span key={r.min} className={view.bank >= r.min ? 'on' : ''}>{r.icon}</span>)}</p>
@@ -287,17 +288,23 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
   const suspending = view.phase === 'reveal' && view.status === 'playing' && (suspense?.round !== view.round || now - suspense.at < SUSPENSE_MS)
   const reveal = view.phase === 'reveal' && !suspending
   const locked = view.phase === 'reveal'
-  const useDraft = draft && draft.round === view.round && !locked && now - draft.at < 1500
+  // Joker : caisse retirée à cette manche (-1 sinon)
+  const blocked = view.joker?.round === view.round ? view.joker.option : -1
+  const jokerOk = !locked && !view.joker?.used && (q?.options.length || 0) >= 3
+  const useDraft = draft && draft.round === view.round && !locked && now - draft.at < 1500 && !(blocked >= 0 && draft.placement[blocked] > 0)
   const placement = useDraft ? draft.placement : view.placement
   const free = view.bank - placed(placement)
   const left = Math.max(0, view.left_ms - (now - view.at))
   const secs = Math.ceil(left / 1000)
   const h = reveal ? view.history?.[view.round] : null
-  const lost = h ? h.before - h.kept : 0
+  const lost = h ? Math.max(0, h.before - h.kept) : 0
+  const bonus = h?.bonus || 0
+  const openCount = (q?.options.length || 0) - (blocked >= 0 ? 1 : 0)
+  const allIn = view.bank > 0 && placement.filter(v => v > 0).length === 1 && placed(placement) === view.bank && openCount >= 3
 
   const edit = (idx, delta) => {
     if (locked) return
-    const next = move(placement, idx, delta, view.bank)
+    const next = move(placement, idx, delta, view.bank, blocked)
     if (next === placement) { navigator.vibrate?.(30); return }
     sfx.tap()
     setDraft({ round: view.round, placement: next, at: now })
@@ -351,11 +358,11 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
           {reveal && (
         <div className="lt-reveal-dock over">
         {q?.expl && <p className="lt-expl"><b>💡 {q.options[q.correct]}</b> {q.expl}</p>}
-        <div className={`lt-dock lt-bubble ${lost ? 'happy' : 'sad'}`} role="status">
+        <div className={`lt-dock lt-bubble ${lost ? 'happy' : 'sad'} ${bonus ? 'bonus' : ''}`} role="status">
           <Mascot pose={lost ? 'pirate' : 'defaite'} size={86} className="lt-bubble-kraken" />
           <div>
-            <b>{lost === 0 ? 'Rien repris ! Bien joué 🎉' : h.kept === 0 ? <>Le Kraken reprend <em>tout</em></> : <>Le Kraken reprend <em>{gold(lost)}</em></>}</b>
-            <small>« {(lost === 0 ? SAD : h.kept === 0 ? GLEE : HAPPY)[view.round % 4]} »</small>
+            <b>{bonus ? <>Quitte ou double réussi ! <em>+{gold(bonus)}</em> 🎁</> : lost === 0 ? 'Rien repris ! Bien joué 🎉' : h.kept === 0 ? <>Le Kraken reprend <em>tout</em></> : <>Le Kraken reprend <em>{gold(lost)}</em></>}</b>
+            <small>« {bonus ? BONUS[view.round % BONUS.length] : (lost === 0 ? SAD : h.kept === 0 ? GLEE : HAPPY)[view.round % 4]} »</small>
           </div>
         </div>
         </div>
@@ -366,10 +373,12 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
         </div>
           {q?.options.map((o, i) => {
             const n = placement[i] || 0
+            const gone = i === blocked
             const cls = reveal ? (i === q.correct ? 'ok' : n ? 'sunk' : 'open') : suspending ? (n ? 'has shaking' : '') : n ? 'has' : ''
             return (
-              <div key={i} className={`lt-card ${cls}`}>
-                <button className="lt-card-main" onClick={() => edit(i, 1)} disabled={locked} aria-label={`${LETTERS[i]} : ${o}, ${n} lingots. Toucher pour ajouter un lingot`}>
+              <div key={i} className={`lt-card ${cls} ${gone ? 'jokered' : ''}`}>
+                {gone && <span className="lt-joker-mark" aria-label="Retirée par le joker">🃏<b>Retirée</b></span>}
+                <button className="lt-card-main" onClick={() => edit(i, 1)} disabled={locked || gone} aria-label={`${LETTERS[i]} : ${o}, ${n} lingots. Toucher pour ajouter un lingot`}>
                   <span className="lt-head"><span className="lt-letter">{LETTERS[i]}</span><span className="lt-text">{o}</span></span>
                   <span className="lt-tray">
                     <span className="lt-gold" aria-hidden="true">
@@ -379,7 +388,7 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
                     <Tentacle />
                   </span>
                 </button>
-                {!locked && <>
+                {!locked && !gone && <>
                   <button className="lt-step minus" onClick={() => edit(i, -1)} disabled={!n} aria-label="Retirer un lingot">−</button>
                   <button className="lt-step plus" onClick={() => edit(i, 5)} disabled={!free} aria-label="Ajouter cinq lingots">+5</button>
                 </>}
@@ -404,12 +413,17 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
             </>
           })() : <>
           <p className={`lt-free ${free ? 'warn' : ''}`}>
-            {free ? <>Encore <b>{free} lingot{free > 1 ? 's' : ''}</b> à cacher, sinon le Kraken les reprend.</> : 'Tous les lingots sont cachés.'}
+            {free ? <>Encore <b>{free} lingot{free > 1 ? 's' : ''}</b> à cacher, sinon le Kraken les reprend.</>
+              : allIn ? <>🎲 <b>Quitte ou double</b> : +10 lingots si c'est la bonne !</> : 'Tous les lingots sont cachés.'}
             {placed(placement) > 0 && <button className="link-btn" onClick={clearAll}>tout reprendre</button>}
           </p>
+          <div className="lt-actions">
+          {jokerOk && <button className="lt-joker" onClick={() => { setDraft(null); send(() => api.duoJoker(gameId, view.round)) }}
+            aria-label="Joker : retirer une mauvaise réponse (une fois par partie)"><span aria-hidden="true">🃏</span> Joker</button>}
           <button className={`btn ${view.ready_me ? 'btn-ghost' : 'btn-gold'} wide`} onClick={() => send(() => api.duoReady(gameId, view.round, !view.ready_me))}>
             {solo ? 'Valider ✓' : view.ready_me ? (view.ready_partner ? 'C\'est parti…' : `En attente de ${partner.name}… (annuler)`) : view.ready_partner ? `${partner.name} est prêt·e : on valide !` : 'On valide ✓'}
           </button>
+          </div>
           </>}
         </div>
     </div>

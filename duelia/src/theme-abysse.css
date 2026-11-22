@@ -1029,3 +1029,19 @@ button.wallet-pill { border: 0; cursor: pointer; }
 .lt-suspense-btn { opacity: 1 !important; animation: btnBreath 0.9s ease-in-out infinite; }
 @keyframes btnBreath { 50% { opacity: 0.65; } }
 @media (prefers-reduced-motion: reduce) { .loot.suspense .lt-card.shaking .lt-gold, .loot.suspense .lt-card.shaking .lt-card-main { animation: none; } }
+
+/* Joker : une mauvaise caisse retirée (une fois par partie) */
+.lt-actions { display: flex; gap: 10px; align-items: stretch; }
+.lt-actions .btn { flex: 1; }
+.lt-joker { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; padding: 0 16px; border-radius: 16px; border: 0;
+  font: 700 16px/1 var(--display); color: #fff; background: linear-gradient(180deg, #9d6bff, #6a35d8); box-shadow: inset 0 0 0 2px #c9a8ff88, 0 4px 0 #3d1a8a, 0 0 18px #8b5cff66; }
+.lt-joker span { font-size: 20px; }
+.lt-joker:active { transform: translateY(3px); box-shadow: inset 0 0 0 2px #c9a8ff88, 0 1px 0 #3d1a8a; }
+.lt-card.jokered { position: relative; }
+.lt-card.jokered .lt-card-main { filter: grayscale(1) brightness(0.45); opacity: 0.7; }
+.lt-joker-mark { position: absolute; inset: 0; z-index: 3; display: grid; place-content: center; justify-items: center; gap: 2px; pointer-events: none;
+  font-size: 30px; animation: pop 0.4s both; }
+.lt-joker-mark b { font: 700 13px/1 var(--display); color: #e6d8ff; letter-spacing: 0.06em; text-transform: uppercase; text-shadow: 0 1px 6px #000; }
+/* Quitte ou double réussi */
+.lt-bubble.bonus { box-shadow: inset 0 0 0 2px #ffc940, 0 0 26px #ffc94099; }
+.lt-bubble.bonus em { color: #ffd84a; }

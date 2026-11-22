@@ -44,22 +44,26 @@ export function buildButin(recent = [], seed = Date.now() + ':' + Math.random())
 }
 
 // Répartition jouable : entiers positifs, pas plus que le trésor, au moins une réponse vide
-export function validPlacement(placement, bank) {
+// (blocked : caisse retirée par le joker, qui doit rester vide et ne compte plus parmi les caisses ouvertes)
+export function validPlacement(placement, bank, blocked = -1) {
   if (!Array.isArray(placement) || placement.some(v => !Number.isInteger(v) || v < 0)) return false
+  if (blocked >= 0 && placement[blocked] > 0) return false
   const total = placement.reduce((a, b) => a + b, 0)
-  return total <= bank && placement.filter(v => v > 0).length < placement.length
+  const open = placement.length - (blocked >= 0 ? 1 : 0)
+  return total <= bank && placement.filter(v => v > 0).length < open
 }
 
 export const placed = (placement) => (placement || []).reduce((a, b) => a + b, 0)
 
 // Ajoute (ou retire) des lingots sur une réponse, en respectant les règles ; renvoie la nouvelle répartition
-export function move(placement, idx, delta, bank) {
+export function move(placement, idx, delta, bank, blocked = -1) {
+  if (idx === blocked) return placement
   const next = [...placement]
   const free = bank - placed(placement)
   const d = delta > 0 ? Math.min(delta, free) : Math.max(delta, -next[idx])
   if (!d) return placement
   next[idx] += d
-  return validPlacement(next, bank) ? next : placement
+  return validPlacement(next, bank, blocked) ? next : placement
 }
 
 // Titre du duo de voleurs selon le butin final

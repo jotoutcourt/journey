@@ -47,4 +47,10 @@ describe('Le Butin', () => {
     expect(rankFor(0)).toBeNull()
     expect(rankFor(20).name).toBe('Fléaux du Kraken')
   })
+  it('joker : la caisse retirée reste vide et ne compte plus parmi les caisses ouvertes', () => {
+    expect(move([0, 0, 0, 0], 2, 5, START, 2)).toEqual([0, 0, 0, 0]) // impossible de miser sur la caisse retirée
+    expect(validPlacement([5, 5, 0, 0], START, 3)).toBe(true) // reste une caisse ouverte vide (la 3e)
+    expect(validPlacement([5, 5, 5, 0], START, 3)).toBe(false) // les trois caisses ouvertes sont couvertes
+    expect(validPlacement([20, 0, 0, 0], START, 1)).toBe(true) // quitte ou double possible
+  })
 })
