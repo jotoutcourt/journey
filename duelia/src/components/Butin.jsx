@@ -45,19 +45,11 @@ export function ButinHome({ online, friends, onInvite, onBack, onAddFriend, onSo
     <div className="screen butin-home">
       <header className="top"><button className="back" onClick={onBack} aria-label="Retour">←</button><h1>L'Appât du Kraken</h1></header>
       <section className="butin-hero">
-        <Mascot pose="pirate-anim" size={230} className="butin-pirate" />
+        <Mascot pose="pirate-anim" size={200} className="butin-pirate" />
         <p><b>Volez le trésor du Kraken, à deux !</b> Vous venez de lui dérober <b>{START} lingots d'or</b>… mais il veut les récupérer.</p>
-        <ol className="butin-rules">
-          <li>À chaque question, cachez ensemble vos lingots dans les caisses des réponses. Chacun voit en direct ce que fait l'autre.</li>
-          <li>Il faut <b>toujours laisser au moins une caisse vide</b>. Les lingots non cachés sont repris.</li>
-          <li>Ses tentacules fouillent les caisses des mauvaises réponses et reprennent l'or. Tenez {ROUNDS} questions pour repartir avec le butin, que vous vous partagez à la fin !</li>
-        </ol>
       </section>
 
-      <button className="btn btn-gold wide butin-solo-btn" onClick={onSolo} disabled={!online}>🏴‍☠️ Jouer seul contre le Kraken</button>
-      {wallet && <p className="butin-wallet">Ton trésor : <i className="lt-coin" aria-hidden="true" /><b>{wallet.lingots} lingots</b>{wallet.daily_bonus ? ' · 🎁 +5 sur ta première partie du jour' : ''}</p>}
-
-      <h3 className="sec-title">Ou à deux : choisis ton coéquipier</h3>
+      <h3 className="sec-title">Choisis ton coéquipier</h3>
       {!online && <p className="inbox-empty">Ce mode se joue en ligne : vérifie ta connexion.</p>}
       {online && list.length === 0 && (
         <div className="inbox-empty">
@@ -78,6 +70,16 @@ export function ButinHome({ online, friends, onInvite, onBack, onAddFriend, onSo
           ))}
         </ul>
       )}
+
+      {wallet && <p className="butin-wallet">Ton trésor : <i className="lt-coin" aria-hidden="true" /><b>{wallet.lingots} lingots</b>{wallet.daily_bonus ? ' · 🎁 +5 sur ta première partie du jour' : ''}</p>}
+
+      <h3 className="sec-title">Comment ça marche ?</h3>
+      <ol className="butin-rules butin-rules-card">
+        <li>À chaque question, cachez ensemble vos lingots dans les caisses des réponses. Chacun voit en direct ce que fait l'autre.</li>
+        <li>Il faut <b>toujours laisser au moins une caisse vide</b>. Les lingots non cachés sont repris.</li>
+        <li>Ses tentacules fouillent les caisses des mauvaises réponses et reprennent l'or. Tenez {ROUNDS} questions pour repartir avec le butin, que vous vous partagez à la fin !</li>
+      </ol>
+      <button className="link-btn butin-solo-link" onClick={onSolo} disabled={!online}>Plutôt seul ? Jouer contre le Kraken en solo ›</button>
 
       {board?.mine?.length > 0 && <>
         <h3 className="sec-title">Tes meilleurs butins</h3>
