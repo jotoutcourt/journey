@@ -3,6 +3,8 @@ import Mascot from './Mascot.jsx'
 import { useEffect, useState } from 'react'
 import Avatar from './Avatar.jsx'
 import AiTag from './AiTag.jsx'
+import TierIcon from './TierIcon.jsx'
+import { tierOf, PLACEMENT } from '../lib/rating.js'
 import { levelInfo } from '../lib/levels.js'
 import { topicTitle } from '../lib/titles.js'
 import { sfx } from '../lib/sound.js'
@@ -127,11 +129,22 @@ export default function Results({ data, me, onRematch, onAnother, onTopic, onSha
 
       {!data.noXp && <LevelRing before={before} after={after} topic={topic} />}
 
+      {data.rating && (
+        <div className="result-rating">
+          <div><small>Points de la partie</small><b>{data.pts}</b><em>tes 10 meilleures comptent</em></div>
+          <div>
+            <small>Cote de niveau</small>
+            <b><TierIcon rating={data.rating.after} /> {data.rating.after.toLocaleString('fr-FR')}</b>
+            <em className={data.rating.after >= data.rating.before ? 'up' : 'down'}>
+              {data.rating.after >= data.rating.before ? '▲ +' : '▼ −'}{Math.abs(data.rating.after - data.rating.before)}
+              {data.rating.rated < PLACEMENT ? ` · placement ${data.rating.rated}/${PLACEMENT}` : ` · ${tierOf(data.rating.after).name}`}
+            </em>
+          </div>
+        </div>
+      )}
       {data.ranks && (
         <div className="result-ranks">
-          <div><small>Semaine</small><b>#{data.ranks.week}</b></div>
-          <div><small>Mois</small><b>#{data.ranks.month}</b></div>
-          <div><small>Toujours</small><b>#{data.ranks.all}</b></div>
+          {[['week', 'Semaine'], ['month', 'Mois'], ['all', 'Toujours']].map(([k, l]) => <div key={k}><small>{l}</small><b>{data.ranks[k] ? `#${data.ranks[k]}` : '–'}</b></div>)}
         </div>
       )}
 

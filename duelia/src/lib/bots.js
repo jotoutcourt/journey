@@ -50,16 +50,19 @@ export function setRealRows(topicId, kind, rows) { realRows.set(`${topicId}:${ki
 export const getRealRows = (topicId, kind) => realRows.get(`${topicId}:${kind}`) || []
 export const hasRealRows = (topicId) => realRows.has(`${topicId}:all`)
 
-// Classement complet (vrais joueurs uniquement) avec le joueur inséré à sa place.
+// Classement complet (vrais joueurs uniquement, valeur classée dans xp) avec le joueur inséré à sa place.
 // kind : 'all' (depuis toujours), 'week' ou 'month'. Les adversaires simulés ne servent plus qu'aux duels contre l'IA.
 export function leaderboard(topic, me, myXp, kind = 'all') {
   const all = getRealRows(topic.id, 'all')
   const rows = getRealRows(topic.id, kind)
     .filter(r => !(me.playerId && r.playerId === me.playerId) && r.xp > 0)
     .map(r => ({ ...r, allXp: kind === 'all' ? r.xp : (all.find(x => x.playerId === r.playerId)?.xp ?? r.xp), ai: false }))
-  rows.push({ id: 'me', playerId: me.playerId, name: me.name, avatar: me.avatar, photo: me.photo, flag: me.flag || '🇫🇷', xp: myXp, allXp: me.allXp ?? myXp, isMe: true })
+  // myXp vaut null quand le joueur n'est pas encore classé sur la période : il apparaît en bas, sans rang
+  const meRow = { id: 'me', playerId: me.playerId, name: me.name, avatar: me.avatar, photo: me.photo, flag: me.flag || '🇫🇷', xp: myXp ?? 0, allXp: me.allXp ?? myXp, isMe: true, unranked: myXp == null }
+  if (!meRow.unranked) rows.push(meRow)
   rows.sort((a, b) => b.xp - a.xp || (a.isMe ? -1 : 1))
   rows.forEach((r, i) => { r.rank = i + 1; r.champion = i === 0 && r.xp > 0 })
+  if (meRow.unranked) rows.push({ ...meRow, rank: null, champion: false })
   return rows
 }
 

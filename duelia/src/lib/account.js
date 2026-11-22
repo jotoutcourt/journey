@@ -78,6 +78,9 @@ export async function fetchBoard(topicId, period) {
 
 export const makeRecoveryCode = () => rpc('make_recovery_code')
 
+// Fait classer une partie par le serveur ; renvoie { rating, games } (null si refusée)
+export const recordGame = (g) => rpc('record_game', { p_topic: g.topic, p_my: Math.round(g.my), p_opp: Math.round(g.opp), p_opp_rating: Math.round(g.oppRating), p_match: g.match, p_challenge: g.challenge })
+
 // Retrouver son compte avec un code : renvoie { me, state } ou null si le code est faux
 export async function recoverWith(code) {
   await ensureSession()

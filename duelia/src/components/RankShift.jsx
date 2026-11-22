@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react'
 import Avatar from './Avatar.jsx'
 import TopicIcon from './TopicIcon.jsx'
 import { leaderboard } from '../lib/bots.js'
-import { myPeriodXp, PERIODS } from '../lib/periods.js'
+import { myPeriodScore, PERIODS } from '../lib/periods.js'
 import { meEntry } from '../lib/profile.js'
 import { sfx } from '../lib/sound.js'
+import { tierOf, PLACEMENT } from '../lib/rating.js'
 
 const ROW = 48 // hauteur d'une ligne du mini-classement, en px
 const fmt = (n) => n.toLocaleString('fr-FR')
@@ -31,16 +32,27 @@ function useCount(from, to, delay) {
   return [shown, done]
 }
 
-function RankTile({ id, before, after, total, delay }) {
-  const climbed = before - after
-  const [shown, done] = useCount(before, after, delay)
-  const dir = climbed > 0 ? 'up' : climbed < 0 ? 'down' : 'same'
+function RankTile({ id, before, after, total, delay, foot }) {
+  const fresh = before == null && after != null // vient d'entrer dans le classement
+  const from = before ?? total
+  const climbed = after == null ? 0 : from - after
+  const [shown, done] = useCount(from, after ?? 0, delay)
+  const dir = fresh || climbed > 0 ? 'up' : climbed < 0 ? 'down' : 'same'
+  if (after == null) {
+    return (
+      <div className="rs-tile same">
+        <small>{SHORT[id]}</small>
+        <b className="rs-none">–</b>
+        <em>{foot}</em>
+      </div>
+    )
+  }
   return (
     <div className={`rs-tile ${dir} ${done ? 'done' : ''} ${after === 1 ? 'first' : ''}`}>
       <small>{SHORT[id]}</small>
       <b>{after === 1 && done ? '👑' : `#${shown}`}</b>
-      <span className="rs-delta">{climbed > 0 ? `▲ ${climbed}` : climbed < 0 ? `▼ ${-climbed}` : '='}</span>
-      <em>sur {total}</em>
+      <span className="rs-delta">{fresh ? 'Nouveau' : climbed > 0 ? `▲ ${climbed}` : climbed < 0 ? `▼ ${-climbed}` : '='}</span>
+      <em>{foot}</em>
     </div>
   )
 }
@@ -61,7 +73,7 @@ function Board({ rows, before, after }) {
           <span className="rk">{r.rank}</span>
           <Avatar seed={r.avatar} photo={r.photo} size={32} ring={r.champion ? 'var(--gold)' : undefined} />
           <span className="rs-name">{r.isMe ? 'Toi' : `${r.flag} ${r.name}`}</span>
-          <span className="rs-xp">{fmt(r.xp)} <small>XP</small></span>
+          <span className="rs-xp">{fmt(r.xp)} <small>pts</small></span>
         </li>
       ))}
     </ol>
@@ -70,7 +82,7 @@ function Board({ rows, before, after }) {
 
 export default function RankShift({ shift, profile, onClose }) {
   const { topic, before, after, stats } = shift
-  const anyUp = PERIODS.some(p => after[p.id] < before[p.id])
+  const anyUp = PERIODS.some(p => after[p.id] != null && (before[p.id] == null || after[p.id] < before[p.id]))
 
   useEffect(() => {
     if (anyUp) sfx.levelUp()
@@ -79,11 +91,18 @@ export default function RankShift({ shift, profile, onClose }) {
   }, [anyUp, onClose])
 
   const meRow = { ...meEntry(profile), allXp: stats?.xp || 0 }
-  const boards = Object.fromEntries(PERIODS.map(p => [p.id, leaderboard(topic, meRow, myPeriodXp(stats, p.id), p.id)]))
+  const boards = Object.fromEntries(PERIODS.map(p => [p.id, leaderboard(topic, meRow, myPeriodScore(stats, p.id), p.id)]))
   const week = boards.week
-  const climbed = before.week - after.week
-  const alone = week.length === 1
-  const title = after.week === 1 ? 'Numéro 1 de la semaine !' : climbed > 0 ? `+${climbed} place${climbed > 1 ? 's' : ''} cette semaine` : 'Ton classement'
+  const climbed = (before.week ?? week.length) - after.week
+  const alone = week.filter(r => r.rank).length === 1
+  const rating = stats?.rating ?? 1000
+  const tier = tierOf(rating)
+  const placed = (stats?.rated || 0) >= PLACEMENT
+  const tierUp = placed && stats?.ratingFrom != null && tierOf(stats.ratingFrom) !== tier && rating > stats.ratingFrom
+  const title = tierUp ? `Nouveau rang : ${tier.name} ${tier.icon}` : after.week === 1 ? 'Numéro 1 de la semaine !' : climbed > 0 ? `+${climbed} place${climbed > 1 ? 's' : ''} cette semaine` : 'Ton classement'
+  const foot = (id) => (id === 'all'
+    ? (placed ? `${tier.icon} ${tier.name}` : `placement ${Math.min(stats?.rated || 0, PLACEMENT)}/${PLACEMENT}`)
+    : `sur ${boards[id].filter(r => r.rank).length}`)
 
   return (
     <div className="shift-backdrop" onClick={onClose}>
@@ -94,13 +113,13 @@ export default function RankShift({ shift, profile, onClose }) {
         </div>
         <div className="rs-tiles">
           {PERIODS.map((p, i) => (
-            <RankTile key={p.id} id={p.id} before={before[p.id]} after={after[p.id]} total={boards[p.id].length} delay={250 + i * 300} />
+            <RankTile key={p.id} id={p.id} before={before[p.id]} after={after[p.id]} total={boards[p.id].filter(r => r.rank).length} delay={250 + i * 300} foot={foot(p.id)} />
           ))}
         </div>
         {alone
           ? <p className="rs-alone">Tu es le seul joueur classé sur ce thème pour l'instant. Invite tes amis à te détrôner !</p>
           : <>
-            <p className="rs-sub">Cette semaine · {week.length} joueurs</p>
+            <p className="rs-sub">Cette semaine · tes 10 meilleures parties comptent</p>
             <Board rows={week} before={before.week} after={after.week} />
           </>}
         <button className="btn btn-primary wide" onClick={onClose}>Continuer</button>

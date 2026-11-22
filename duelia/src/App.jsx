@@ -35,6 +35,7 @@ import { applyLinkReply, rowToReply } from './lib/linkresults.js'
 import { submitLinkResult, fetchLinkResults } from './lib/server.js'
 import { connect, pushProfile, saveRemoteState, pushXp, fetchBoard, makeRecoveryCode, recoverWith, findLiveMatch, leaveLiveQueue, sendLiveAnswer, getLiveAnswers, liveResult } from './lib/account.js'
 import { setRealRows } from './lib/bots.js'
+import { myPeriodScore } from './lib/periods.js'
 import { TIME } from './lib/duel.js'
 
 // Un thème partagé par lien (#t=…) est importé au chargement.
@@ -233,7 +234,7 @@ export default function App() {
       const t = byId(session.topicId)
       const stats = st.topicStats[session.topicId]
       if (t && stats && (stats.played || 0) > session.played) {
-        setShift({ topic: t, before: ranksFor(st.profile, t, session.startStats), after: ranksFor(st.profile, t, stats), stats })
+        setShift({ topic: t, before: ranksFor(st.profile, t, session.startStats), after: ranksFor(st.profile, t, stats), stats: { ...stats, ratingFrom: session.startStats?.rating ?? 1000 } })
       }
       setSession(null)
     }
@@ -257,7 +258,7 @@ export default function App() {
       }
       opponent ??= findOpponent(topic, xp, { forceChampion: r.forceChampion })
       // Rang mondial (classement « depuis toujours » du thème) des deux joueurs, pour l'intro du duel
-      const rows = leaderboard(topic, { ...meEntry(st.profile), allXp: xp }, xp, 'all')
+      const rows = leaderboard(topic, { ...meEntry(st.profile), allXp: xp }, myPeriodScore(st.topicStats[r.id], 'all'), 'all')
       const ranks = { me: rows.find(x => x.isMe)?.rank, opp: rows.find(x => x.id === opponent.id)?.rank }
       r = { ...r, opponent, ranks, searchLive }
     }
@@ -283,9 +284,9 @@ export default function App() {
       const t = topics.find(x => x.id === r.id)
       const pid = m.opponent.player_id
       const xp = st.topicStats[r.id]?.xp || 0
-      const rows = leaderboard(t, { ...meEntry(st.profile), allXp: xp }, xp, 'all')
+      const rows = leaderboard(t, { ...meEntry(st.profile), allXp: xp }, myPeriodScore(st.topicStats[r.id], 'all'), 'all')
       const real = rows.find(x => x.playerId === pid)
-      const opponent = { id: 'p:' + pid, playerId: pid, name: m.opponent.name, avatar: m.opponent.avatar, flag: m.opponent.flag || '🏳️', photo: m.opponent.photo, xp: real?.xp || 0, champion: real?.rank === 1, ai: false }
+      const opponent = { id: 'p:' + pid, playerId: pid, name: m.opponent.name, avatar: m.opponent.avatar, flag: m.opponent.flag || '🏳️', photo: m.opponent.photo, xp: real?.xp || 0, rating: real?.xp, champion: real?.rank === 1, ai: false }
       return { ...r, name: 'duel', mode: 'remote', matchId: m.id, opponent, questions: m.questions, ranks: { me: rows.find(x => x.isMe)?.rank, opp: real?.rank } }
     })
   }, [topics, st.topicStats, st.profile])
@@ -387,7 +388,7 @@ export default function App() {
       setRoute({ name: 'sent', id: t.id, challengeId: ch.id })
       return
     }
-    const { state, data } = settleDuel(st, { topic: t, opponent: r.opponent, myScore, oppScore, log, questions, ranks: r.ranks })
+    const { state, data } = settleDuel(st, { topic: t, opponent: r.opponent, myScore, oppScore, log, questions, ranks: r.ranks, ref: { matchId: r.mode === 'remote' ? r.matchId : null } })
     const challenges = ch
       ? state.challenges.map(c => (c.id === ch.id ? { ...c, status: 'done', myScore, result: data, unseen: false } : c))
       : state.challenges
@@ -448,6 +449,17 @@ export default function App() {
         const synced = s.sync?.xp || {}
         const next = await pushXp(s.topicStats, synced)
         if (JSON.stringify(next) !== JSON.stringify(synced)) update(x => ({ ...x, sync: { ...(x.sync || {}), xp: next } }))
+        // parties à classer : le serveur renvoie la cote officielle, qui remplace la nôtre
+        for (const g of s.pendingGames || []) {
+          const res = await api.recordGame(g).catch(() => undefined)
+          if (res === undefined) break
+          update(x => {
+            const rest = (x.pendingGames || []).filter(p => p.at !== g.at)
+            const ts = x.topicStats[g.topic]
+            if (!res || res.dup || !ts) return { ...x, pendingGames: rest }
+            return { ...x, pendingGames: rest, topicStats: { ...x.topicStats, [g.topic]: { ...ts, rating: res.rating, rated: res.games } } }
+          })
+        }
         await saveRemoteState({ ...stRef.current, sync: { ...(stRef.current.sync || {}), xp: next } })
       } catch { /* hors ligne : on réessaiera au prochain changement */ }
     }, 3000)
@@ -552,7 +564,7 @@ export default function App() {
     if (base.friendResults?.[c.id]) return { ...base.friendResults[c.id], topic: t }
     let data, next
     if (known) {
-      const res = settleDuel(base, { topic: known, opponent, myScore, oppScore, log, questions: c.questions })
+      const res = settleDuel(base, { topic: known, opponent, myScore, oppScore, log, questions: c.questions, ref: { challengeId: c.id } })
       data = res.data; next = res.state
     } else {
       data = { outcome: myScore > oppScore ? 'win' : myScore < oppScore ? 'lose' : 'draw', myScore, oppScore, opponent, bonuses: {}, total: 0, before: 0, after: 0, log, questions: c.questions, noXp: true }

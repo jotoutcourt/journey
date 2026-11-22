@@ -1,3 +1,4 @@
+import { START_RATING, BEST_OF, isPlaced } from './rating.js'
 // Périodes de classement : semaine (lundi 0 h), mois (le 1er à 0 h), et depuis toujours.
 export const PERIODS = [
   { id: 'week', label: 'Semaine', champ: 'Champion de la semaine' },
@@ -20,14 +21,17 @@ export function periodBounds(kind, now = new Date()) {
   return { start: new Date(0), end: null, key: 'all' }
 }
 
-// XP gagné par le joueur depuis le début de la période.
-export function myPeriodXp(stats, kind, now = new Date()) {
-  if (!stats) return 0
-  if (kind === 'all') return stats.xp || 0
+// Score classé du joueur sur une période, ou null s'il n'est pas (encore) classé :
+//  · semaine / mois : total de ses 10 meilleures parties de la période ;
+//  · depuis toujours : sa cote de niveau, une fois les parties de placement jouées.
+export function myPeriodScore(stats, kind, now = new Date()) {
+  if (!stats) return null
+  if (kind === 'all') return isPlaced(stats) ? (stats.rating ?? START_RATING) : null
   const from = periodBounds(kind, now).start.getTime()
-  return (stats.log || []).filter(e => e.at >= from).reduce((s, e) => s + e.xp, 0)
+  const pts = (stats.log || []).filter(e => e.pts != null && e.at >= from).map(e => e.pts)
+  if (!pts.length) return null
+  return pts.sort((a, b) => b - a).slice(0, BEST_OF).reduce((s, p) => s + p, 0)
 }
-
 // « dans 3 j 4 h » avant la remise à zéro
 export function resetIn(kind, now = new Date()) {
   const { end } = periodBounds(kind, now)

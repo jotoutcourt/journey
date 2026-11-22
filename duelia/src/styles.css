@@ -1013,3 +1013,15 @@ img { -webkit-user-drag: none; }
 .duel .question:has(.q-photo) { margin-bottom: 6px; }
 
 @keyframes bob { 50% { transform: translateY(-3px); } }
+
+/* ---------- cote de niveau ---------- */
+.tier-icon { display: inline-block; font-size: .95em; line-height: 1; }
+.result-rating { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0; }
+.result-rating > div { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 12px 8px; border-radius: 16px; background: var(--card); border: 1px solid var(--line); text-align: center; }
+.result-rating small { color: var(--muted); font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+.result-rating b { font-family: var(--display); font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.result-rating em { font-style: normal; font-size: 12px; font-weight: 600; color: var(--muted); }
+.result-rating em.up { color: var(--ok); }
+.result-rating em.down { color: var(--ko); }
+.rank-row.unranked { opacity: .85; border-style: dashed; }
+.rs-none { color: var(--muted); }

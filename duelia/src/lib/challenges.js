@@ -2,6 +2,7 @@
 // En attendant de vrais joueurs, les adversaires simulés répondent au bout de quelques dizaines de secondes.
 import { seeded, pick, shuffle } from './rng.js'
 import { getCommunity, leaderboard, botAnswer } from './bots.js'
+import { myPeriodScore } from './periods.js'
 import { buildQuestions, TIME, pointsFor } from './duel.js'
 import { meEntry } from './profile.js'
 import { settleDuel } from './rewards.js'
@@ -26,7 +27,7 @@ export function lastSeenLabel(min) {
 // Rang mondial (classement « depuis toujours ») des deux joueurs au moment du défi.
 function ranksAt(st, topic, opponent) {
   const xp = st.topicStats[topic.id]?.xp || 0
-  const rows = leaderboard(topic, { ...meEntry(st.profile), allXp: xp }, xp, 'all')
+  const rows = leaderboard(topic, { ...meEntry(st.profile), allXp: xp }, myPeriodScore(st.topicStats[topic.id], 'all'), 'all')
   return { me: rows.find(x => x.isMe)?.rank, opp: rows.find(x => x.id === opponent.id)?.rank }
 }
 

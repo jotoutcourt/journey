@@ -6,7 +6,9 @@ import ConfirmButton from './ConfirmButton.jsx'
 import { CATEGORIES } from '../data/topics.js'
 import { levelInfo } from '../lib/levels.js'
 import { leaderboard } from '../lib/bots.js'
-import { PERIODS, myPeriodXp, resetIn } from '../lib/periods.js'
+import { PERIODS, myPeriodScore, resetIn } from '../lib/periods.js'
+import { tierOf, PLACEMENT, BEST_OF } from '../lib/rating.js'
+import TierIcon from './TierIcon.jsx'
 import { meEntry, resizeImage } from '../lib/profile.js'
 import { topicTitle, nextTitle, ladderFor, TITLE_LEVELS } from '../lib/titles.js'
 import { RecoverForm } from './AccountCard.jsx'
@@ -166,8 +168,8 @@ export function TopicPage({ st, topic, go, toggleFollow, shareTopic, deleteTopic
   const lvl = levelInfo(stats.xp)
   const following = st.follows.includes(topic.id)
   const meRow = { ...meEntry(st.profile), allXp: stats.xp }
-  const board = leaderboard(topic, meRow, stats.xp)
-  const ranks = PERIODS.map(p => { const xp = myPeriodXp(stats, p.id); return { ...p, rank: xp > 0 ? leaderboard(topic, meRow, xp, p.id).find(r => r.isMe).rank : null } })
+  const board = leaderboard(topic, meRow, myPeriodScore(stats, 'all'))
+  const ranks = PERIODS.map(p => ({ ...p, rank: leaderboard(topic, meRow, myPeriodScore(stats, p.id), p.id).find(r => r.isMe).rank }))
   const champ = board[0]
   const champFriend = friends.find(f => f.player_id === champ.playerId)
   const followers = (topic.followers || 0) + (following ? 1 : 0)
@@ -220,7 +222,7 @@ export function TopicPage({ st, topic, go, toggleFollow, shareTopic, deleteTopic
           <div className="champ-info">
             <small>👑 Champion du thème</small>
             <b>{champ.isMe ? 'C\'est toi !' : `${champ.flag} ${champ.name}`}</b>
-            <small>{fmt(champ.xp)} XP · niveau {levelInfo(champ.xp).level}</small>
+            <small><TierIcon rating={champ.xp} /> {tierOf(champ.xp).name} · cote {fmt(champ.xp)}</small>
           </div>
           {!champ.isMe && champFriend && onChallengeFriend && <button className="btn btn-small btn-gold" onClick={() => onChallengeFriend(champFriend)}>Défier</button>}
         </div>
@@ -243,10 +245,13 @@ export function TopicPage({ st, topic, go, toggleFollow, shareTopic, deleteTopic
 export function Ranking({ st, topic, go, friends = [], onChallenge }) {
   const stats = st.topicStats[topic.id] || { xp: 0 }
   const [kind, setKind] = useState('week')
-  const rows = leaderboard(topic, { ...meEntry(st.profile), allXp: stats.xp }, myPeriodXp(stats, kind), kind)
+  const rows = leaderboard(topic, { ...meEntry(st.profile), allXp: stats.xp }, myPeriodScore(stats, kind), kind)
   const reset = resetIn(kind)
   const friendOf = (r) => friends.find(f => f.player_id === r.playerId)
-  const ranked = rows.filter(r => r.xp > 0)
+  const ranked = rows.filter(r => r.rank && r.xp > 0)
+  const isAll = kind === 'all'
+  const unit = (r) => (isAll ? <><TierIcon rating={r.xp} /> {fmt(r.xp)}</> : <>{fmt(r.xp)}<small> pts</small></>)
+  const meStats = stats
   const podium = ranked.length >= 2 ? ranked.slice(0, 3) : []
   const rest = rows.slice(podium.length)
   useEffect(() => {
@@ -265,7 +270,9 @@ export function Ranking({ st, topic, go, friends = [], onChallenge }) {
         ))}
       </div>
       <p className="rank-note">
-        {ranked.length} joueur{ranked.length > 1 ? 's' : ''} classé{ranked.length > 1 ? 's' : ''} · {reset ? <>remise à zéro dans <b>{reset}</b></> : <>tout l'XP du thème</>}
+        {isAll
+          ? <>Cote de niveau : elle monte quand tu gagnes, surtout contre plus fort que toi. Classé après {PLACEMENT} parties.</>
+          : <>Total de tes {BEST_OF} meilleures parties {kind === 'week' ? 'de la semaine' : 'du mois'} · remise à zéro dans <b>{reset}</b></>}
       </p>
       {podium.length > 0 && (
         <div className={`podium n${podium.length}`}>
@@ -274,27 +281,29 @@ export function Ranking({ st, topic, go, friends = [], onChallenge }) {
               {r.rank === 1 && <span className="pod-crown">👑</span>}
               <Avatar seed={r.avatar} photo={r.photo} size={r.rank === 1 ? 64 : 52} ring={r.rank === 1 ? 'var(--gold)' : r.rank === 2 ? '#d7dcef' : '#e3a06b'} />
               <b className="ellipsis">{r.isMe ? 'Toi' : r.name}</b>
-              <small>{fmt(r.xp)} XP</small>
+              <small>{unit(r)}</small>
               <div className="pod-step">{r.rank}</div>
             </div>
           ))}
         </div>
       )}
       {ranked.length < 2 && (
-        <p className="rank-empty">{ranked.length === 1 && rows[0].isMe ? 'Tu es seul en tête pour l\'instant.' : 'Personne n\'a encore marqué de points sur cette période.'} Invite tes amis à jouer ce thème pour remplir le classement !</p>
+        <p className="rank-empty">{ranked.length === 1 && rows[0].isMe ? 'Tu es seul en tête pour l\'instant.' : isAll ? 'Personne n\'a encore fini ses parties de placement.' : 'Personne n\'a encore joué sur cette période.'} Invite tes amis à jouer ce thème pour remplir le classement !</p>
       )}
       <ol className="ranking">
         {rest.map(r => {
           const l = levelInfo(r.allXp ?? r.xp)
           return (
-            <li key={r.id} className={`rank-row ${r.isMe ? 'me' : ''}`}>
-              <span className="rk">{r.rank}</span>
+            <li key={r.id} className={`rank-row ${r.isMe ? 'me' : ''} ${r.unranked ? 'unranked' : ''}`}>
+              <span className="rk">{r.rank ?? '–'}</span>
               <Avatar seed={r.avatar} photo={r.photo} size={40} />
               <div className="rk-info">
                 <b>{r.flag} {r.isMe ? `${r.name} (toi)` : r.name}</b>
-                <small>Niv. {l.level} · {topicTitle(topic, l.level)}</small>
+                <small>{r.unranked
+                  ? (isAll ? `En placement · ${Math.min(meStats.rated || 0, PLACEMENT)}/${PLACEMENT} parties` : 'Pas encore de partie sur cette période')
+                  : isAll ? `${tierOf(r.xp).name} · Niv. ${l.level}` : `Niv. ${l.level} · ${topicTitle(topic, l.level)}`}</small>
               </div>
-              <span className="rk-xp">{fmt(r.xp)}<small> XP</small></span>
+              {!r.unranked && <span className="rk-xp">{unit(r)}</span>}
               {!r.isMe && challenge(r)}
             </li>
           )
