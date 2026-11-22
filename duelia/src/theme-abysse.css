@@ -990,3 +990,5 @@ button.wallet-pill { border: 0; cursor: pointer; }
 .lt-reveal-dock.over .lt-expl { background: #0b0420f0; }
 .lt-dock.ghost { visibility: hidden; }
 .lt-reveal-dock.over { bottom: calc(100% + 24px); }
+.loot .lt-grid > .lt-tentacles .real-tentacle.tr { bottom: -150px; }
+.loot .lt-grid > .lt-tentacles .real-tentacle.tr { bottom: -84px; }
