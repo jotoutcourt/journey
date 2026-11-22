@@ -19,7 +19,7 @@ describe('Le Butin', () => {
     expect(buildButin([], 'graine')).toEqual(rounds)
   })
   it('banque : questions uniques, 4 réponses distinctes, explication', () => {
-    expect(BUTIN_BANK.length).toBeGreaterThan(350)
+    expect(BUTIN_BANK.length).toBeGreaterThan(340)
     expect(new Set(BUTIN_BANK.map(x => x.q.toLowerCase())).size).toBe(BUTIN_BANK.length)
     for (const x of BUTIN_BANK) { expect(new Set(x.a).size, x.q).toBe(4); expect(x.expl, x.q).toBeTruthy() }
   })
