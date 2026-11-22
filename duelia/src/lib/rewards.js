@@ -39,7 +39,9 @@ export function settleDuel(st, { topic, opponent, myScore, oppScore, log, questi
   const total = myScore + bonuses.finish + bonuses.victory + bonuses.perfect + bonuses.exploit + bonuses.defense
 
   const prev = st.topicStats[topic.id] || { xp: 0, played: 0, wins: 0, seen: [] }
-  const seen = [...new Set([...(prev.seen || []), ...questions.map(q => q.idx)])]
+  // questions vues, de la plus ancienne à la plus récente : celles de cette partie passent à la fin
+  const played = new Set(questions.map(q => q.idx))
+  const seen = [...(prev.seen || []).filter(i => !played.has(i)), ...played]
   // Classement : points de la partie (10 meilleures de la période) et cote de niveau du thème
   const pts = gamePoints(myScore, oppScore)
   const oppRating = opponentRating(opponent)

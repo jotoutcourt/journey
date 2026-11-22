@@ -55,3 +55,20 @@ describe('règlement d\'un duel', () => {
     expect(r.data.total).toBeLessThanOrEqual(520)
   })
 })
+
+describe('tirage des questions', () => {
+  it('reprend d\'abord les questions vues il y a le plus longtemps', () => {
+    const t = { questions: Array.from({ length: 30 }, (_, i) => ({ q: 'q' + i, a: ['a', 'b', 'c', 'd'] })) }
+    const seen = Array.from({ length: 30 }, (_, i) => i) // 0 = la plus ancienne, 29 = la plus récente
+    for (let k = 0; k < 20; k++) {
+      const picked = buildQuestions(t, seen).map(q => q.idx)
+      expect(Math.max(...picked)).toBeLessThan(15)
+    }
+  })
+  it('les questions jamais vues passent en premier', () => {
+    const t = { questions: Array.from({ length: 30 }, (_, i) => ({ q: 'q' + i, a: ['a', 'b', 'c', 'd'] })) }
+    const seen = Array.from({ length: 25 }, (_, i) => i)
+    const picked = buildQuestions(t, seen).map(q => q.idx)
+    for (const i of [25, 26, 27, 28, 29]) expect(picked).toContain(i)
+  })
+})

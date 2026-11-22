@@ -715,7 +715,7 @@ export default function App() {
   // questions de l'Appât du Kraken : on mémorise les 120 dernières vues pour ne pas les reproposer trop vite
   const nextButin = () => {
     const rounds = buildButin(stRef.current.butinSeen || [])
-    update(s => ({ ...s, butinSeen: [...(s.butinSeen || []), ...rounds.map(r => r.id)].slice(-120) }))
+    update(s => ({ ...s, butinSeen: [...(s.butinSeen || []), ...rounds.map(r => r.id)].slice(-240) }))
     return rounds.map(({ id, ...r }) => r) // eslint-disable-line no-unused-vars
   }
   const startSolo = async () => {

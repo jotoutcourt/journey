@@ -101,9 +101,13 @@ const EXTRA = {
 }
 
 // Fusionne les questions de base et les supplémentaires, sans doublon d'énoncé.
+// Questions ajoutées ensuite (src/data/more/<id du thème>.js) : toujours à la fin, pour garder les numéros
+// des questions déjà vues par les joueurs.
+const MORE = Object.fromEntries(Object.entries(import.meta.glob('./more/*.js', { eager: true, import: 'default' }))
+  .map(([path, rows]) => [path.slice(7, -3), rows]))
 const merge = (id, base) => {
   const seen = new Set()
-  return [...base, ...(EXTRA[id] || [])].filter(([q]) => !seen.has(q) && seen.add(q)).map(([q, ...a]) => ({ q, a }))
+  return [...base, ...(EXTRA[id] || []), ...(MORE[id] || [])].filter(([q]) => !seen.has(q) && seen.add(q)).map(([q, ...a]) => ({ q, a }))
 }
 
 // Un thème peut avoir une sortie programmée : { ...T(…), releaseAt: Date.parse('AAAA-MM-JJTHH:MM:SSZ') }

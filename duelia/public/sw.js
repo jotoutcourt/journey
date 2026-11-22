@@ -1,6 +1,6 @@
 // Kraken hors ligne : l'appli se lance même sans réseau (duels contre l'IA, ascension, thèmes).
 // Les échanges avec le serveur (comptes, classements, duels en direct) ne passent jamais par le cache.
-const CACHE = 'duelia-v106'
+const CACHE = 'duelia-v107'
 // Médias lourds qui ne changent pas d'une version à l'autre (musique, voix, photos) : cache séparé, gardé entre les mises à jour
 const MEDIA = 'kraken-media-v1'
 const isMedia = (p) => p.startsWith('/musique/') || p.startsWith('/voix/') || p.startsWith('/animaux/')

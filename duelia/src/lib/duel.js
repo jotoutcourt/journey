@@ -3,11 +3,17 @@ import { shuffle } from './rng.js'
 export const ROUNDS = 7
 export const TIME = 10000
 
-// Tire 7 questions en privilégiant celles jamais vues, et mélange les réponses.
+// Tire 7 questions : d'abord celles jamais vues, puis celles vues il y a le plus longtemps
+// (« seen » est rangé de la plus ancienne à la plus récente), et mélange les réponses.
 export function buildQuestions(topic, seen = []) {
   const all = topic.questions.map((q, i) => ({ ...q, idx: i }))
-  const fresh = shuffle(all.filter(q => !seen.includes(q.idx)))
-  const old = shuffle(all.filter(q => seen.includes(q.idx)))
+  const seenSet = new Set(seen)
+  const fresh = shuffle(all.filter(q => !seenSet.has(q.idx)))
+  const byIdx = new Map(all.map(q => [q.idx, q]))
+  const oldest = seen.filter(i => byIdx.has(i)).map(i => byIdx.get(i))
+  // un peu de hasard parmi la moitié la plus ancienne, jamais parmi les toutes dernières vues
+  const half = Math.max(ROUNDS * 2, Math.floor(oldest.length / 2))
+  const old = [...shuffle(oldest.slice(0, half)), ...oldest.slice(half)]
   const chosen = [...fresh, ...old].slice(0, ROUNDS)
   return chosen.map(q => {
     const order = shuffle([0, 1, 2, 3])
