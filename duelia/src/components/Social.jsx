@@ -153,8 +153,12 @@ export function FriendsScreen({ online, social, code, initialCode, now, push, on
 }
 
 /* ---------- Défier un ami : choix du thème et du mode ---------- */
-export function FriendChallengeSheet({ friend, topics, initialTopic, onPick, onCancel }) {
+const STAKES = [0, 5, 10, 20, 50]
+export function FriendChallengeSheet({ friend, topics, initialTopic, onPick, onCancel, lingots }) {
   const [topic, setTopic] = useState(initialTopic || null)
+  const [stake, setStake] = useState(0)
+  const max = Math.min(lingots ?? 0, 1000)
+  const bump = (d) => setStake(s => Math.max(0, Math.min(max, s + d)))
   return (
     <div className="sheet-backdrop" onClick={onCancel}>
       <div className="sheet friend-sheet" role="dialog" aria-labelledby="fsheet-title" onClick={e => e.stopPropagation()}>
@@ -171,9 +175,21 @@ export function FriendChallengeSheet({ friend, topics, initialTopic, onPick, onC
           </div>
         </> : <>
           <div className="sheet-topic"><TopicIcon topic={topic} size={28} /> {topic.name} <button className="link-btn" onClick={() => setTopic(null)}>changer</button></div>
-          {friend.online && <button className="btn btn-primary wide" onClick={() => onPick(topic, 'live')}>⚡ Duel en direct <small>({friend.name} est en ligne)</small></button>}
-          <button className={`btn ${friend.online ? 'btn-secondary' : 'btn-primary'} wide`} onClick={() => onPick(topic, 'async')}>📨 Défi différé</button>
-          {!friend.online && <button className="btn btn-secondary wide" onClick={() => onPick(topic, 'live')}>⚡ Demander un duel en direct</button>}
+          <div className="stake-box">
+            <p className="stake-title">💰 Miser des lingots en direct <small>(même somme chacun, le gagnant rafle tout)</small></p>
+            <div className="stake-chips">
+              {STAKES.map(v => <button key={v} className={`stake-chip ${stake === v ? 'on' : ''}`} disabled={v > max} onClick={() => setStake(v)}>{v ? v : 'Sans mise'}</button>)}
+            </div>
+            <div className="stake-step">
+              <button className="stake-btn" onClick={() => bump(-1)} disabled={!stake} aria-label="Miser un lingot de moins">−</button>
+              <b><i className="lt-coin" aria-hidden="true" /> {stake} {stake > 1 ? 'lingots' : 'lingot'}</b>
+              <button className="stake-btn" onClick={() => bump(1)} disabled={stake >= max} aria-label="Miser un lingot de plus">+</button>
+            </div>
+            <small className="stake-wallet">Ton trésor : {lingots ?? '…'} lingots{stake > 0 ? ` · ${friend.name} devra aussi en avoir ${stake}` : ''}</small>
+          </div>
+          {friend.online && <button className="btn btn-primary wide" onClick={() => onPick(topic, 'live', stake)}>⚡ Duel en direct{stake > 0 ? ` · mise ${stake}` : ''} <small>({friend.name} est en ligne)</small></button>}
+          <button className={`btn ${friend.online ? 'btn-secondary' : 'btn-primary'} wide`} onClick={() => onPick(topic, 'async')}>📨 Défi différé <small>(sans mise)</small></button>
+          {!friend.online && <button className="btn btn-secondary wide" onClick={() => onPick(topic, 'live', stake)}>⚡ Demander un duel en direct{stake > 0 ? ` · mise ${stake}` : ''}</button>}
           <p className="sheet-note">{friend.online
             ? 'En direct : vous jouez en même temps. Différé : tu joues maintenant, il joue quand il veut.'
             : `${friend.name} n'est pas en ligne. Différé : tu joues maintenant, il jouera quand il voudra. En direct : il reçoit une notification et a 2 minutes pour te rejoindre.`}</p>
@@ -249,7 +265,7 @@ export function PickFriendSheet({ topic, friends, online, onPick, onLink, onAdd,
 }
 
 /* ---------- En attente que l'ami accepte le duel en direct ---------- */
-export function InviteWaiting({ friend, topic, status, startedAt, onCancel, onAsync }) {
+export function InviteWaiting({ friend, topic, status, startedAt, onCancel, onAsync, stake = 0, error }) {
   const [now, setNow] = useState(() => Date.now())
   useEffect(() => { const id = setInterval(() => setNow(Date.now()), 500); return () => clearInterval(id) }, [])
   const left = Math.max(0, 120 - Math.floor((now - startedAt) / 1000))
@@ -262,10 +278,11 @@ export function InviteWaiting({ friend, topic, status, startedAt, onCancel, onAs
         <span /><span /><span />
         <Avatar seed={friend.avatar} photo={friend.photo} size={96} className="found-av" />
       </div>
+      {stake > 0 && <p className="stake-badge"><i className="lt-coin" aria-hidden="true" /> Mise : {stake} lingots chacun</p>}
       {!over && <p className="mm-status">En attente de <b>{friend.name}</b>… <b>{left} s</b></p>}
       {status === 'declined' && <p className="mm-status">{friend.name} ne peut pas jouer maintenant.</p>}
       {status === 'expired' && <p className="mm-status">{friend.name} n'a pas répondu à temps.</p>}
-      {status === 'failed' && <p className="mm-status">Invitation impossible (connexion ?).</p>}
+      {status === 'failed' && <p className="mm-status">{error || 'Invitation impossible (connexion ?).'}</p>}
       {over && <button className="btn btn-primary" onClick={onAsync}>📨 Lui envoyer un défi différé</button>}
       <button className="btn btn-ghost" onClick={onCancel}>{over ? 'Retour' : 'Annuler'}</button>
     </div>
@@ -281,7 +298,8 @@ export function LiveInviteBanner({ invite, onAccept, onDecline }) {
         <Avatar seed={invite.from.avatar} photo={invite.from.photo} size={80} ring="var(--opp)" />
         <h2 id="inv-title">⚡ {invite.from.name} t'invite en direct</h2>
         <div className="sheet-topic"><TopicIcon topic={{ id: invite.topic_id, ...invite.topic }} size={28} /> {invite.topic.name}</div>
-        <button className="btn btn-primary wide" disabled={busy} onClick={async () => { setBusy(true); await onAccept(invite); setBusy(false) }}>{busy ? 'Connexion…' : 'Jouer maintenant'}</button>
+        {invite.stake > 0 && <p className="stake-badge"><i className="lt-coin" aria-hidden="true" /> Mise : {invite.stake} lingots chacun · le gagnant rafle {invite.stake * 2}</p>}
+        <button className="btn btn-primary wide" disabled={busy} onClick={async () => { setBusy(true); await onAccept(invite); setBusy(false) }}>{busy ? 'Connexion…' : invite.stake > 0 ? `Relever le défi (${invite.stake} lingots)` : 'Jouer maintenant'}</button>
         <button className="btn btn-ghost wide" onClick={() => onDecline(invite)}>Pas maintenant</button>
       </div>
     </div>
@@ -334,6 +352,34 @@ export function LiveMatchMessage({ matchId, name, quickOnly }) {
   if (!msgs) return null
   return <ChallengeMessage key={matchId} name={name} theirMsg={msgs.theirs} myMsg={msgs.mine} quickOnly={quickOnly}
     onSend={(m) => api.setMatchMessage(matchId, m)} />
+}
+
+// Résultat de la mise d'un duel en direct : le serveur règle le pot, on attend sa réponse
+export function LiveBetResult({ matchId, stake, name, onWallet }) {
+  const [bet, setBet] = useState(null)
+  useEffect(() => {
+    let alive = true, iv
+    const load = () => api.myMatchBet(matchId).then(b => {
+      if (!alive || !b) return
+      setBet(b)
+      if (b.settled) { clearInterval(iv); if (b.wallet != null) onWallet?.() }
+    }).catch(() => {})
+    load()
+    iv = setInterval(load, 2500)
+    const stop = setTimeout(() => clearInterval(iv), 300000)
+    return () => { alive = false; clearInterval(iv); clearTimeout(stop) }
+  }, [matchId, onWallet])
+  const s = bet?.stake ?? stake
+  if (!s) return null
+  return (
+    <section className={`bet-result ${bet?.settled ? (bet.won ? 'won' : bet.draw ? 'draw' : 'lost') : ''}`}>
+      {!bet?.settled ? <p>💰 Mise de {s} lingots chacun · en attente de la fin du duel de {name}…</p>
+        : bet.won ? <p>🏆 Tu rafles le pot : <b>+{s * 2} lingots</b> !</p>
+          : bet.draw ? <p>🤝 Égalité : chacun récupère sa mise de {s} lingots.</p>
+            : <p>💸 {name} rafle le pot : tu perds ta mise de <b>{s} lingots</b>.</p>}
+      {bet?.settled && bet.wallet != null && <small>Ton trésor : {bet.wallet} lingots</small>}
+    </section>
+  )
 }
 
 /* ---------- Défi envoyé à un ami ---------- */

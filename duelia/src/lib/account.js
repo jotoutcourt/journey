@@ -123,7 +123,9 @@ export const playChallenge = (id, answers) => rpc('play_challenge', { p_id: id, 
 export const declineChallenge = (id) => rpc('decline_challenge', { p_id: id })
 export const cancelChallenge = (id) => rpc('cancel_challenge', { p_id: id })
 
-export const inviteLive = (friendId, topic, questions) => rpc('invite_live', { p_to: friendId, p_topic_id: topic.id, p_topic: topicMeta(topic), p_questions: questions.map(slimQuestion) })
+export const inviteLive = (friendId, topic, questions, stake = 0) => rpc('invite_live', { p_to: friendId, p_topic_id: topic.id, p_topic: topicMeta(topic), p_questions: questions.map(slimQuestion), p_stake: stake })
+// Mise d'un duel en direct : réglée par le serveur ({ stake, settled, won, draw, wallet })
+export const myMatchBet = (matchId) => rpc('my_match_bet', { p_match: matchId })
 export const getLiveInvite = (id) => rpc('get_live_invite', { p_id: id })
 export const cancelLiveInvite = (id) => rpc('cancel_live_invite', { p_id: id })
 export const respondLiveInvite = (id, accept) => rpc('respond_live_invite', { p_id: id, p_accept: accept })

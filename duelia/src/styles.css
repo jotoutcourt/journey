@@ -1026,3 +1026,24 @@ img { -webkit-user-drag: none; }
 .rank-row.unranked { opacity: .85; border-style: dashed; }
 .rs-none { color: var(--muted); }
 .push-test { margin: 6px 0 0; font-size: 13.5px; font-weight: 600; color: var(--muted); text-align: center; }
+/* ---------- mises en duel direct ---------- */
+.stake-box { width: 100%; padding: 12px; border-radius: 14px; background: var(--card); border: 1px solid #ffc94044; display: flex; flex-direction: column; gap: 8px; }
+.stake-title { margin: 0; font-weight: 700; font-size: 14px; }
+.stake-title small { display: block; color: var(--muted); font-weight: 500; font-size: 12px; }
+.stake-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.stake-chips .chip:disabled { opacity: .35; }
+.stake-step { display: flex; align-items: center; justify-content: center; gap: 14px; }
+.stake-step b { font-family: var(--display); font-size: 20px; display: inline-flex; align-items: center; gap: 6px; min-width: 120px; justify-content: center; }
+.stake-wallet { color: var(--muted); text-align: center; }
+.stake-badge { margin: 4px 0; padding: 6px 12px; border-radius: 999px; background: #ffc94022; color: var(--gold); font-weight: 700; display: inline-flex; align-items: center; gap: 6px; }
+.bet-result { margin: 10px 0; padding: 12px 14px; border-radius: 14px; background: var(--card); text-align: center; font-weight: 600; }
+.bet-result p { margin: 0 0 4px; }
+.bet-result small { color: var(--muted); }
+.bet-result.won { background: linear-gradient(120deg, #ffc94033, var(--card)); border: 1px solid #ffc94077; }
+.bet-result.lost { background: linear-gradient(120deg, #ff5d7322, var(--card)); }
+.stake-chips { justify-content: center; }
+.stake-chip { padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--card2); color: var(--text); font-weight: 700; font-size: 14px; }
+.stake-chip.on { background: #ffc940; border-color: #ffc940; color: #2a1a00; }
+.stake-chip:disabled { opacity: .35; }
+.stake-btn { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--line); background: var(--card2); color: var(--text); font-size: 20px; font-weight: 800; display: grid; place-items: center; }
+.stake-btn:disabled { opacity: .35; }

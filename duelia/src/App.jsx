@@ -21,7 +21,7 @@ import { OxygenInline, OxygenSheet } from './components/Oxygen.jsx'
 import { Shop, StarterPick } from './components/Shop.jsx'
 import { priceOf, isLockable } from './lib/shop.js'
 import { buildButin } from './lib/butin.js'
-import { FriendsScreen, FriendChallengeSheet, PickFriendSheet, PlayWhoSheet, InviteWaiting, LiveInviteBanner, FriendSent, SharedTopics, ChallengeMessage, FriendProfile, LiveMatchMessage } from './components/Social.jsx'
+import { FriendsScreen, FriendChallengeSheet, PickFriendSheet, PlayWhoSheet, InviteWaiting, LiveInviteBanner, FriendSent, SharedTopics, ChallengeMessage, FriendProfile, LiveMatchMessage, LiveBetResult } from './components/Social.jsx'
 import * as api from './lib/account.js'
 import TopicRequestSheet from './components/TopicRequest.jsx'
 import { useSocial, friendOpponent, fromPlain, logFrom } from './lib/useSocial.js'
@@ -296,7 +296,7 @@ export default function App() {
       const rows = leaderboard(t, { ...meEntry(st.profile), allXp: xp }, myPeriodScore(st.topicStats[r.id], 'all'), 'all')
       const real = rows.find(x => x.playerId === pid)
       const opponent = { id: 'p:' + pid, playerId: pid, name: m.opponent.name, avatar: m.opponent.avatar, flag: m.opponent.flag || '🏳️', photo: m.opponent.photo, xp: real?.xp || 0, rating: real?.xp, champion: real?.rank === 1, ai: false }
-      return { ...r, name: 'duel', mode: 'remote', matchId: m.id, opponent, questions: m.questions, ranks: { me: rows.find(x => x.isMe)?.rank, opp: real?.rank } }
+      return { ...r, name: 'duel', mode: 'remote', matchId: m.id, opponent, questions: m.questions, stake: m.stake || 0, ranks: { me: rows.find(x => x.isMe)?.rank, opp: real?.rank } }
     })
   }, [topics, st.topicStats, st.profile])
   const liveLink = useMemo(() => (route.matchId ? {
@@ -608,14 +608,14 @@ export default function App() {
     return [...fav, ...ok.filter(t => t.official && !fav.includes(t))]
   }
 
-  const startFriendDuel = (friend, topic, mode) => {
+  const startFriendDuel = (friend, topic, mode, stake = 0) => {
     setFriendSheet(null)
     const questions = buildQuestions(topic, st.topicStats[topic.id]?.seen)
     if (mode === 'live') {
-      setRoute({ name: 'invite', id: topic.id, friend, inviteId: null, status: 'pending', startedAt: Date.now(), questions })
-      api.inviteLive(friend.player_id, topic, questions)
+      setRoute({ name: 'invite', id: topic.id, friend, inviteId: null, status: 'pending', startedAt: Date.now(), questions, stake })
+      api.inviteLive(friend.player_id, topic, questions, stake)
         .then(inviteId => setRoute(cur => (cur.name === 'invite' && !cur.inviteId ? { ...cur, inviteId } : cur)))
-        .catch(() => setRoute(cur => (cur.name === 'invite' ? { ...cur, status: 'failed' } : cur)))
+        .catch((e) => setRoute(cur => (cur.name === 'invite' ? { ...cur, status: 'failed', error: /lingots/.test(e?.message || '') ? 'Tu n\'as pas assez de lingots pour cette mise.' : null } : cur)))
       return
     }
     go({ name: 'duel', id: topic.id, opponent: { ...friendOpponent(friend), id: 'ami' }, mode: 'blind', friendSend: friend, questions })
@@ -647,13 +647,14 @@ export default function App() {
   const acceptInvite = async (inv) => {
     setDismissedInvites(d => [...d, inv.id])
     let m
-    try { m = await api.respondLiveInvite(inv.id, true) } catch { m = null }
-    if (!m) { setToast('Trop tard : l\'invitation a expiré.'); return }
+    let err = null
+    try { m = await api.respondLiveInvite(inv.id, true) } catch (e) { m = null; err = e }
+    if (!m) { setToast(/lingots/.test(err?.message || '') ? `💰 Pas assez de lingots pour cette mise (${inv.stake}).` : 'Trop tard : l\'invitation a expiré.'); return }
     const known = byId(inv.topic_id)
     const opponent = { ...friendOpponent(inv.from) }
     setRoute({
       name: 'duel', id: known ? known.id : inv.topic_id, topicObj: known ? null : { id: inv.topic_id, icon: '❓', color: '#7c5cff', category: 'Culture', ...inv.topic, questions: [] },
-      mode: 'remote', matchId: m.id, opponent, questions: m.questions, ranks: {}, friend: inv.from,
+      mode: 'remote', matchId: m.id, opponent, questions: m.questions, ranks: {}, friend: inv.from, stake: m.stake || 0,
     })
   }
   // Le Butin : inviter un ami, ou rejoindre une partie à laquelle on est invité
@@ -663,6 +664,7 @@ export default function App() {
   const [walletAt, setWalletAt] = useState(0) // moment de réception (pour le compte à rebours de l'oxygène)
   const [oxySheet, setOxySheet] = useState(null) // { partner? } quand une partie est refusée faute d'oxygène
   const refreshWallet = useCallback(() => api.getWallet().then(w => { if (w) { setWallet(w); setWalletAt(Date.now()) } }).catch(() => {}), [])
+  useEffect(() => { if (friendSheet && account.status === 'online') refreshWallet() }, [friendSheet, account.status, refreshWallet])
   const refill = async () => {
     try { const w = await api.refillOxygen(); setWallet(w); setWalletAt(Date.now()); setToast('🫧 Réserve d\'oxygène pleine !'); return true }
     catch { setToast('Recharge impossible.'); return false }
@@ -1045,7 +1047,7 @@ export default function App() {
       onChallenge={setFriendSheet} onShareCode={shareMyCode} onOpen={(f) => go({ name: 'friend', friend: f })} />; break
     case 'friend': view = route.friend ? <FriendProfile friend={route.friend} topics={topics} onChallenge={setFriendSheet} onBack={() => go({ name: 'friends' })}
       onRemove={(f) => api.removeFriend(f.player_id).then(() => { social.refreshFriends(); setToast(`${f.name} n'est plus dans tes amis.`); go({ name: 'friends' }) }).catch(() => setToast('Pas de connexion.'))} /> : null; break
-    case 'invite': view = topic ? <InviteWaiting key={route.startedAt} friend={route.friend} topic={topic} status={route.status} startedAt={route.startedAt}
+    case 'invite': view = topic ? <InviteWaiting key={route.startedAt} friend={route.friend} topic={topic} status={route.status} startedAt={route.startedAt} stake={route.stake} error={route.error}
       onCancel={cancelInvite} onAsync={() => startFriendDuel(route.friend, topic, 'async')} /> : null; break
     case 'friendsent': view = topic ? <FriendSent friend={route.friend} topic={topic} score={route.score} failed={route.failed}
       onMessage={route.challengeId ? (m) => api.setChallengeMessage(route.challengeId, m) : null}
@@ -1059,8 +1061,11 @@ export default function App() {
       <Results data={route.data} me={me}
         extra={route.friendMsg ? <ChallengeMessage key={route.friendMsg.id} name={route.friendMsg.name} theirMsg={route.friendMsg.theirMsg} myMsg={route.friendMsg.myMsg}
           onSend={(m) => api.setChallengeMessage(route.friendMsg.id, m).then(social.refreshChallenges)} />
-          : route.mode === 'remote' && route.matchId ? <LiveMatchMessage matchId={route.matchId} name={route.opponent?.name || route.data?.opponent?.name}
-            quickOnly={!route.friend && !(social.social?.friends || []).some(f => f.player_id === (route.opponent?.playerId || route.data?.opponent?.playerId))} /> : null}
+          : route.mode === 'remote' && route.matchId ? <>
+            <LiveBetResult matchId={route.matchId} stake={route.stake} name={route.opponent?.name || route.data?.opponent?.name} onWallet={refreshWallet} />
+            <LiveMatchMessage matchId={route.matchId} name={route.opponent?.name || route.data?.opponent?.name}
+              quickOnly={!route.friend && !(social.social?.friends || []).some(f => f.player_id === (route.opponent?.playerId || route.data?.opponent?.playerId))} />
+          </> : null}
         onRematch={() => {
           const linkish = route.data.link || route.data.fromLink
           if (route.friendRematch) return setFriendSheet({ ...route.friendRematch, online: social.social?.friends?.find(f => f.player_id === route.friendRematch.player_id)?.online })
@@ -1090,7 +1095,7 @@ export default function App() {
       )}
       {sheet && <ChallengeSheet sheet={sheet} onSend={sendChallenge} onCancel={() => setSheet(null)} />}
       {requestSheet && <TopicRequestSheet online={online} api={requestApi} onClose={() => setRequestSheet(false)} />}
-      {friendSheet && <FriendChallengeSheet friend={friendSheet} topics={friendTopicsFor()} initialTopic={friendSheet.topic && !lockPrice(friendSheet.topic) ? friendSheet.topic : null} onPick={(t, mode) => startFriendDuel(friendSheet, t, mode)} onCancel={() => setFriendSheet(null)} />}
+      {friendSheet && <FriendChallengeSheet friend={friendSheet} topics={friendTopicsFor()} initialTopic={friendSheet.topic && !lockPrice(friendSheet.topic) ? friendSheet.topic : null} onPick={(t, mode, stake) => startFriendDuel(friendSheet, t, mode, stake)} onCancel={() => setFriendSheet(null)} lingots={wallet?.lingots} />}
       {oxySheet && <OxygenSheet wallet={wallet} at={walletAt} partner={oxySheet.partner} onRefill={refill} onDue={refreshWallet} onClose={() => setOxySheet(null)} />}
       {playWho && <PlayWhoSheet topic={playWho} online={online && !!social.social} hasFriends={(social.social?.friends || []).length > 0}
         onPick={(k) => {
