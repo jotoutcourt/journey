@@ -956,3 +956,9 @@ button.wallet-pill { border: 0; cursor: pointer; }
 .loot .lt-grid > .lt-tentacles .real-tentacle.tl { top: auto; bottom: 0; }
 .loot .lt-grid > .lt-tentacles .real-tentacle.tr { top: auto; bottom: 0; }
 .loot .lt-tray, .loot .lt-step { height: clamp(66px, 13vh, 120px); }
+/* explication de la bonne réponse, à la révélation */
+.lt-reveal-dock { display: flex; flex-direction: column; gap: 8px; }
+.lt-expl { margin: 0; padding: 10px 14px; border-radius: 16px; background: #0b0420e6; box-shadow: inset 0 0 0 1.5px #3ddc8488; color: #efe8ff; font-size: 14px; line-height: 1.4; animation: fadeUp 0.35s 0.3s both; }
+.lt-expl b { color: #7df5b4; margin-right: 4px; }
+.lt-reveal-dock .lt-bubble { margin-top: 0; }
+.real-tentacle { -webkit-mask-image: linear-gradient(90deg, #000 78%, transparent 99%); mask-image: linear-gradient(90deg, #000 78%, transparent 99%); }

@@ -1,21 +1,31 @@
 import { describe, it, expect } from 'vitest'
 import { buildButin, validPlacement, move, ROUNDS, OPTIONS, START, rankFor } from '../src/lib/butin.js'
-import { OFFICIAL_TOPICS } from '../src/data/topics.js'
+import { BUTIN_BANK } from '../src/lib/butin.js'
 
 describe('Le Butin', () => {
   it('prépare 8 manches avec de moins en moins de réponses, la bonne réponse toujours présente', () => {
-    const rounds = buildButin(OFFICIAL_TOPICS, 'graine')
+    const rounds = buildButin([], 'graine')
     expect(rounds).toHaveLength(ROUNDS)
     rounds.forEach((r, i) => {
       expect(r.options).toHaveLength(OPTIONS[i])
       expect(new Set(r.options).size).toBe(OPTIONS[i])
-      expect(r.correct).toBeGreaterThanOrEqual(0)
-      expect(r.correct).toBeLessThan(OPTIONS[i])
-      const src = OFFICIAL_TOPICS.flatMap(t => t.questions).find(q => q.q === r.q)
+      const src = BUTIN_BANK.find(x => x.id === r.id)
       expect(r.options[r.correct]).toBe(src.a[0])
-      if (i) expect(r.topic.name === rounds[i - 1].topic.name && r.q === rounds[i - 1].q).toBe(false)
+      expect(r.expl).toBeTruthy()
+      if (i) expect(r.topic.name).not.toBe(rounds[i - 1].topic.name)
     })
-    expect(buildButin(OFFICIAL_TOPICS, 'graine')).toEqual(rounds) // même graine, même partie
+    expect(new Set(rounds.map(r => r.id)).size).toBe(ROUNDS)
+    expect(rounds.filter(r => /capitale/i.test(r.q)).length).toBeLessThanOrEqual(1)
+    expect(buildButin([], 'graine')).toEqual(rounds)
+  })
+  it('banque : questions uniques, 4 réponses distinctes, explication', () => {
+    expect(BUTIN_BANK.length).toBeGreaterThan(350)
+    expect(new Set(BUTIN_BANK.map(x => x.q.toLowerCase())).size).toBe(BUTIN_BANK.length)
+    for (const x of BUTIN_BANK) { expect(new Set(x.a).size, x.q).toBe(4); expect(x.expl, x.q).toBeTruthy() }
+  })
+  it('évite les questions vues récemment', () => {
+    const first = buildButin([], 'a').map(r => r.id)
+    expect(buildButin(first, 'a').some(r => first.includes(r.id))).toBe(false)
   })
   it('refuse de couvrir toutes les réponses ou de miser plus que le trésor', () => {
     expect(validPlacement([5, 5, 5, 5], START)).toBe(false)

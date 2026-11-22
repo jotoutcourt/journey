@@ -636,16 +636,22 @@ export default function App() {
   // solde rechargé à chaque arrivée sur l'accueil, les thèmes ou la boutique
   const walletScreen = ['home', 'shop', 'topics', 'topic'].includes(route.name) ? route.name + (route.id || '') : null
   useEffect(() => { if (account.status === 'online' && walletScreen) refreshWallet() }, [account.status, refreshWallet, walletScreen])
+  // questions de l'Appât du Kraken : on mémorise les 120 dernières vues pour ne pas les reproposer trop vite
+  const nextButin = () => {
+    const rounds = buildButin(stRef.current.butinSeen || [])
+    update(s => ({ ...s, butinSeen: [...(s.butinSeen || []), ...rounds.map(r => r.id)].slice(-120) }))
+    return rounds.map(({ id, ...r }) => r) // eslint-disable-line no-unused-vars
+  }
   const startSolo = async () => {
     try {
-      const id = await api.startSoloButin(buildButin(topics))
+      const id = await api.startSoloButin(nextButin())
       setRoute({ name: 'butingame', gameId: id })
       refreshWallet()
     } catch (e) { if (noOxygen(e)) { refreshWallet(); setOxySheet({}) } else setToast('Impossible de lancer la partie : vérifie ta connexion.') }
   }
   const startButin = async (friend, voiceRoom = null) => {
     try {
-      const id = await api.inviteDuo(friend.player_id, buildButin(topics), voiceRoom)
+      const id = await api.inviteDuo(friend.player_id, nextButin(), voiceRoom)
       setRoute({ name: 'butingame', gameId: id })
     } catch (e) { if (noOxygen(e)) { refreshWallet(); setOxySheet({}) } else setToast('Invitation impossible : vérifie ta connexion.') }
   }

@@ -1,6 +1,7 @@
 // « Le Butin » : mode coopératif à deux (logique sans interface).
 // Le duo partage un trésor de lingots et le répartit sur les réponses ; le serveur arbitre.
 import { seeded, shuffle } from './rng.js'
+import BANK from '../data/butin-questions.js'
 
 export const START = 20 // lingots au départ
 export const ROUNDS = 8
@@ -11,23 +12,32 @@ export const PLACE_MS = 45000
 // Affichage : on compte simplement en lingots
 export const gold = (n) => `${n} lingot${n > 1 ? 's' : ''}`
 
-// Prépare les 8 manches : thèmes officiels variés (jamais deux fois de suite), réponses réduites selon la manche
-export function buildButin(topics, seed = Date.now() + ':' + Math.random()) {
+// Questions dédiées au Butin (avec explication), tirées au hasard : jamais deux fois la même catégorie de suite,
+// au plus une question « capitale » par partie, et en évitant les questions vues récemment.
+const ICONS = { 'Géographie': '🌍', 'Histoire': '📜', 'Sciences': '🧪', 'Nature': '🦊', 'Pop culture': '🍿', 'Culture générale': '🧠',
+  'Culture': '🎨', 'Littérature': '📚', 'Musique': '🎧', 'Sport': '🏅', 'Faits insolites': '🤯', 'Cinéma': '🎬', 'Télévision': '📺',
+  'Gastronomie': '🧀', 'Vie quotidienne': '🏠', 'Inventions': '💡' }
+export const BUTIN_BANK = BANK.map(([cat, q, good, ...rest], id) => ({ id, cat, q, a: [good, ...rest.slice(0, 3)], expl: rest[3] }))
+
+export function buildButin(recent = [], seed = Date.now() + ':' + Math.random()) {
   const rnd = seeded('butin|' + seed)
-  const pool = topics.filter(t => t.official && t.questions.length >= 20 && !t.questions.some(q => q.img)).sort((a, b) => (a.id < b.id ? -1 : 1))
+  const avoid = new Set(recent)
+  let pool = BUTIN_BANK.filter(x => !avoid.has(x.id))
+  if (pool.length < 40) pool = BUTIN_BANK
+  pool = shuffle(pool, rnd)
   const rounds = []
-  let prev = null
+  let prevCat = null, capitals = 0
   for (let i = 0; i < ROUNDS; i++) {
-    const choices = pool.filter(t => t.id !== prev)
-    const topic = choices[Math.floor(rnd() * choices.length)]
-    prev = topic.id
-    const raw = topic.questions[Math.floor(rnd() * topic.questions.length)]
+    const k = pool.findIndex(x => x.cat !== prevCat && !(capitals && /capitale/i.test(x.q)))
+    const raw = pool.splice(k < 0 ? 0 : k, 1)[0]
+    prevCat = raw.cat
+    if (/capitale/i.test(raw.q)) capitals++
     // la bonne réponse (a[0]) et des mauvaises tirées au hasard, puis mélangées
-    const wrong = shuffle(raw.a.slice(1).map((_, k) => k + 1), rnd).slice(0, OPTIONS[i] - 1)
+    const wrong = shuffle([1, 2, 3], rnd).slice(0, OPTIONS[i] - 1)
     const order = shuffle([0, ...wrong], rnd)
     rounds.push({
-      q: raw.q, options: order.map(k => raw.a[k]), correct: order.indexOf(0),
-      topic: { name: topic.name, icon: topic.icon, color: topic.color },
+      id: raw.id, q: raw.q, options: order.map(n => raw.a[n]), correct: order.indexOf(0), expl: raw.expl,
+      topic: { name: raw.cat, icon: ICONS[raw.cat] || '❓', color: '#7c5cff' },
     })
   }
   return rounds

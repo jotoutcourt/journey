@@ -373,12 +373,15 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
           </button>
         </div>
       ) : (
+        <div className="lt-reveal-dock">
+        {q?.expl && <p className="lt-expl"><b>💡 {q.options[q.correct]}</b> {q.expl}</p>}
         <div className={`lt-dock lt-bubble ${lost ? 'happy' : 'sad'}`} role="status">
           <Mascot pose={lost ? 'pirate' : 'defaite'} size={86} className="lt-bubble-kraken" />
           <div>
             <b>{lost === 0 ? 'Rien repris ! Bien joué 🎉' : h.kept === 0 ? <>Le Kraken reprend <em>tout</em></> : <>Le Kraken reprend <em>{gold(lost)}</em></>}</b>
             <small>« {(lost === 0 ? SAD : h.kept === 0 ? GLEE : HAPPY)[view.round % 4]} »</small>
           </div>
+        </div>
         </div>
       )}
     </div>
