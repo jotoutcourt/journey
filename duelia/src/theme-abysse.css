@@ -1082,3 +1082,9 @@ button.wallet-pill { border: 0; cursor: pointer; }
 .ii-install { align-self: center; margin-top: 4px; }
 .ii-dock { margin-top: auto; padding-top: 10px; }
 .install-intro { background: linear-gradient(180deg, #0b0420cc, #0b0420ee 55%, #0b0420), #0b0420 url(/decor/accueil-fond.webp) center / cover no-repeat; }
+
+/* Défi différé / duel en direct : la notice a sa propre rangée en bas (plus de superposition, quel que soit le navigateur) */
+html.abysse .vs-screen.has-async { grid-template-rows: 1fr clamp(120px, 34vw, 160px) 1fr auto; padding-bottom: calc(env(safe-area-inset-bottom) + 18px); }
+html.abysse .vs-screen.has-async > .vs-async { position: relative; left: auto; bottom: auto; transform: none; grid-row: 4; grid-column: 1 / -1; justify-self: center; margin-top: 14px; width: 100%; }
+html.abysse .vs-screen.has-async > .vs-async { animation: asyncIn2 0.4s 1.1s both; }
+@keyframes asyncIn2 { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
