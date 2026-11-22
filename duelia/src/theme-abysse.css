@@ -925,3 +925,4 @@ button.wallet-pill { border: 0; cursor: pointer; }
 .sp-dock { position: sticky; top: 0; left: auto; right: auto; bottom: auto; width: calc(100% + 32px); margin: 0 -16px 8px; z-index: 5;
   padding: calc(env(safe-area-inset-top) + 8px) 16px 18px; background: linear-gradient(180deg, #120a26 70%, transparent); pointer-events: auto; }
 .sp-dock { background: linear-gradient(180deg, #120a26 0%, #120a26 78%, #120a2600 100%); padding-bottom: 22px; }
+.home-bg { background: linear-gradient(180deg, #0b042088 0%, #0b042055 35%, #0b042066 70%, #0b0420aa 100%), #0b0420 url(/decor/accueil-fond.webp) center bottom / cover no-repeat; }
