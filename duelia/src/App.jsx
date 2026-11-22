@@ -46,12 +46,13 @@ const SHARED = (() => {
   return decodeTopic(m[1])
 })()
 
-// Raccourcis ouverts par une notification ou un lien d'ami : #defis, #amis, #ami=CODE
+// Raccourcis ouverts par une notification ou un lien d'ami : #defis, #amis, #ami=CODE, #theme=ID
 function readNavHash() {
-  const m = location.hash.match(/^#(defis|amis|ami=([A-Za-z0-9-]{8,9}))$/)
+  const m = location.hash.match(/^#(defis|amis|ami=([A-Za-z0-9-]{8,9})|theme=([a-z0-9-]{1,60}))$/)
   if (!m) return null
   history.replaceState(null, '', location.pathname + location.search)
   if (m[1] === 'defis') return { name: 'inbox' }
+  if (m[3]) return { name: 'topic', id: m[3] } // annonce d'un nouveau thème
   return { name: 'friends', code: m[2] ? m[2].replace('-', '').toUpperCase() : undefined }
 }
 const NAV = readNavHash()
