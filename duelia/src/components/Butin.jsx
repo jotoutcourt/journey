@@ -394,7 +394,8 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
                   <span className="lt-head"><span className="lt-letter">{LETTERS[i]}</span><span className="lt-text">{o}</span></span>
                   <span className="lt-tray">
                     <span className="lt-gold" aria-hidden="true">
-                      {Array.from({ length: n }, (_, k) => <i key={k} className="lt-ingot" style={{ '--k': k }} />)}
+                      {/* au-delà de 20, la caisse est pleine : on n'en dessine pas plus (le nombre exact reste affiché) */}
+                      {Array.from({ length: Math.min(n, START) }, (_, k) => <i key={k} className="lt-ingot" style={{ '--k': k }} />)}
                     </span>
                     {n > 0 && <span className="lt-count">{n}</span>}
                     <Tentacle />
