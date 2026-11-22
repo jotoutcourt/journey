@@ -1090,3 +1090,10 @@ html.abysse .vs-screen.has-async > .vs-async { animation: asyncIn2 0.4s 1.1s bot
 @keyframes asyncIn2 { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 html.abysse .vs-side::after { content: none; } /* petits traits néon retirés */
 .home.immersive .kraken-hero { margin-bottom: 26px; } /* bloc remonté un peu au-dessus de la barre du bas */
+/* Safari iPhone : flèche qui montre le bouton ≡ de la barre d'adresse, juste sous la page */
+.install-intro.safari { padding-bottom: calc(env(safe-area-inset-bottom) + 64px); }
+.ii-arrow { position: fixed; z-index: 20; bottom: 4px; left: 27%; transform: translateX(-50%); font-size: 40px; line-height: 1; color: #ffd94a;
+  filter: drop-shadow(0 0 10px #ffc940cc); animation: iiBounce 1s ease-in-out infinite; pointer-events: none; }
+@keyframes iiBounce { 0%, 100% { translate: 0 -6px; } 50% { translate: 0 6px; } }
+.ii-old { text-align: center; margin-top: -2px; }
+@media (prefers-reduced-motion: reduce) { .ii-arrow { animation: none; } }

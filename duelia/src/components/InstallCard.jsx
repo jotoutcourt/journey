@@ -11,6 +11,8 @@ const standalone = () => window.matchMedia?.('(display-mode: standalone)').match
 const isIos = () => /iphone|ipad|ipod/i.test(navigator.userAgent)
 const isAndroid = () => /android/i.test(navigator.userAgent)
 // Mini-navigateurs intégrés aux applis (Instagram, Snapchat, Messenger…) : ils ne savent pas installer d'appli
+// Safari lui-même sur iPhone (pas Chrome, Firefox… ni le navigateur intégré d'une appli)
+const iosSafari = () => isIos() && /safari/i.test(navigator.userAgent) && !/crios|fxios|edgios|opios|gsa\//i.test(navigator.userAgent) && !inAppBrowser()
 const inAppBrowser = () => /Instagram|FBAN|FBAV|FB_IAB|Snapchat|TikTok|musical_ly|Line\/|Twitter|LinkedInApp|Pinterest/i.test(navigator.userAgent)
 
 export default function InstallCard() {
@@ -101,6 +103,9 @@ export function InstallBanner() {
 const ShareIcon = () => (
   <svg className="ii-glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5" /><path d="M8 11H6.5A1.5 1.5 0 0 0 5 12.5v7A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5v-7a1.5 1.5 0 0 0-1.5-1.5H16" /></svg>
 )
+const MenuIcon = () => (
+  <svg className="ii-glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h9" /></svg>
+)
 const PlusBox = () => (
   <svg className="ii-glyph" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4" /><path d="M12 8.5v7M8.5 12h7" /></svg>
 )
@@ -127,6 +132,7 @@ export function InstallIntro({ onDone }) {
   }
   const guess = isIos() ? 'ios' : isAndroid() ? 'android' : null
   const embedded = inAppBrowser()
+  const inSafari = iosSafari()
 
   if (!os) {
     return (
@@ -149,7 +155,7 @@ export function InstallIntro({ onDone }) {
 
   const ios = os === 'ios'
   return (
-    <div className="screen install-intro steps">
+    <div className={`screen install-intro steps ${ios && inSafari ? 'safari' : ''}`}>
       <button className="back ii-back" onClick={() => setOs(null)} aria-label="Changer de téléphone">←</button>
       <h1>{ios ? 'Sur iPhone' : 'Sur Android'}</h1>
       {embedded && (
@@ -163,11 +169,15 @@ export function InstallIntro({ onDone }) {
         </>
       ) : (
         <ol className="ii-steps">
-          {ios ? <>
+          {ios && inSafari ? <>
+            <li><i>1</i><span>Appuie sur <MenuIcon />, à gauche de l'adresse, en bas de l'écran (la flèche te montre où).</span></li>
+            <li><i>2</i><span>Choisis <b>Partager</b> <ShareIcon />.</span></li>
+            <li><i>3</i><span>Fais défiler, choisis <b>Sur l'écran d'accueil</b> <PlusBox />, puis <b>Ajouter</b>.</span></li>
+          </> : ios ? <>
             <li><i>1</i><span>Ouvre <b>duelia.vercel.app</b> dans <b>Safari</b>, l'appli boussole.</span></li>
-            <li><i>2</i><span>Appuie sur <b>Partager</b> <ShareIcon />, en bas de l'écran. Tu ne le vois pas ? Appuie d'abord sur <b>⋯</b>.</span></li>
-            <li><i>3</i><span>Fais défiler et choisis <b>Sur l'écran d'accueil</b> <PlusBox />.</span></li>
-            <li><i>4</i><span>Appuie sur <b>Ajouter</b>, puis ouvre <b>Kraken</b> depuis ton écran d'accueil.</span></li>
+            <li><i>2</i><span>Appuie sur <MenuIcon />, à gauche de l'adresse, en bas de l'écran.</span></li>
+            <li><i>3</i><span>Choisis <b>Partager</b> <ShareIcon />.</span></li>
+            <li><i>4</i><span>Fais défiler, choisis <b>Sur l'écran d'accueil</b> <PlusBox />, puis <b>Ajouter</b>.</span></li>
           </> : <>
             <li><i>1</i><span>Ouvre <b>duelia.vercel.app</b> dans <b>Chrome</b>.</span></li>
             <li><i>2</i><span>Appuie sur <b>⋮</b>, en haut à droite.</span></li>
@@ -176,6 +186,8 @@ export function InstallIntro({ onDone }) {
           </>}
         </ol>
       )}
+      {ios && inSafari && <p className="ii-sub small ii-old">Sur un iPhone plus ancien, le bouton <b>Partager</b> <ShareIcon /> est directement en bas de l'écran.</p>}
+      {ios && inSafari && <span className="ii-arrow" aria-hidden="true">⬇</span>}
       <div className="ii-dock">
         <button className="btn btn-ghost wide" onClick={finish}>C'est fait, ou plus tard : continuer ici</button>
       </div>
