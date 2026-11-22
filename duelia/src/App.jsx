@@ -559,6 +559,10 @@ export default function App() {
     if (!online) return
     pushStatus().then(setPush).catch(() => setPush('unsupported'))
     refreshPush().catch(() => {})
+    // et à chaque retour dans l'appli : l'appareil se réinscrit (abonnement perdu, changé ou jamais enregistré)
+    const onVisible = () => { if (document.visibilityState === 'visible') refreshPush().catch(() => {}) }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
   }, [online])
   const onPush = (on) => {
     setPush('busy')

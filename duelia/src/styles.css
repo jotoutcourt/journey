@@ -1025,3 +1025,4 @@ img { -webkit-user-drag: none; }
 .result-rating em.down { color: var(--ko); }
 .rank-row.unranked { opacity: .85; border-style: dashed; }
 .rs-none { color: var(--muted); }
+.push-test { margin: 6px 0 0; font-size: 13.5px; font-weight: 600; color: var(--muted); text-align: center; }

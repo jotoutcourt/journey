@@ -128,6 +128,7 @@ export const respondLiveInvite = (id, accept) => rpc('respond_live_invite', { p_
 
 export const savePushSubscription = (endpoint, p256dh, auth) => rpc('save_push_subscription', { p_endpoint: endpoint, p_p256dh: p256dh, p_auth: auth })
 export const deletePushSubscription = (endpoint) => rpc('delete_push_subscription', { p_endpoint: endpoint })
+export const testPush = () => rpc('test_push')
 
 export const publishTopic = (topic, publishedId) => rpc('publish_topic', {
   p_id: publishedId || null,

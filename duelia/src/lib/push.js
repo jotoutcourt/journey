@@ -1,6 +1,6 @@
 // Notifications sur le téléphone (Web Push). Sur iPhone, il faut d'abord ajouter Kraken à l'écran d'accueil.
 // Clé PUBLIQUE d'envoi (VAPID) : faite pour être dans l'appli ; la clé privée reste chez Vercel.
-import { savePushSubscription, deletePushSubscription } from './account.js'
+import { savePushSubscription, deletePushSubscription, testPush } from './account.js'
 
 const VAPID_PUBLIC = 'BO9MJx4LtwvBoDnyivpdVoDv718tlq_kZxZIe8yJfmanyAtsESbG9Bw9-qhz1A-Hl4FXN57eSOyObzeuu1yeZr4'
 
@@ -31,7 +31,13 @@ export async function enablePush() {
   await navigator.serviceWorker.ready
   const sub = (await reg.pushManager.getSubscription()) || (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: toBytes(VAPID_PUBLIC) }))
   const j = sub.toJSON()
-  await savePushSubscription(j.endpoint, j.keys.p256dh, j.keys.auth)
+  // l'inscription côté serveur est retentée : sans elle, le téléphone se croit abonné mais ne reçoit rien
+  for (let i = 0; ; i++) {
+    try { await savePushSubscription(j.endpoint, j.keys.p256dh, j.keys.auth); break } catch (e) {
+      if (i >= 2) throw e
+      await new Promise(r => setTimeout(r, 1500 * (i + 1)))
+    }
+  }
   return 'on'
 }
 
@@ -49,3 +55,6 @@ export async function refreshPush() {
   const j = (await reg.pushManager.getSubscription()).toJSON()
   await savePushSubscription(j.endpoint, j.keys.p256dh, j.keys.auth)
 }
+
+// Envoie une notification de test sur ses appareils : nombre d'appareils inscrits, -1 si trop tôt
+export const sendTestPush = () => testPush()

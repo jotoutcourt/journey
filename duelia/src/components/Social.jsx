@@ -4,6 +4,7 @@ import TopicIcon from './TopicIcon.jsx'
 import ConfirmButton from './ConfirmButton.jsx'
 import Mascot from './Mascot.jsx'
 import * as api from '../lib/account.js'
+import { sendTestPush } from '../lib/push.js'
 import { levelInfo } from '../lib/levels.js'
 
 const fmtCode = (c) => (c ? `${c.slice(0, 4)}-${c.slice(4)}` : '…')
@@ -29,7 +30,13 @@ export function Offline({ text }) {
 
 /* ---------- Notifications ---------- */
 export function PushCard({ status, onEnable, onDisable }) {
+  const [test, setTest] = useState(null)
   if (!status || status === 'unsupported') return null
+  const runTest = () => {
+    setTest('…')
+    sendTestPush().then(n => setTest(n === -1 ? 'Attends une minute avant un nouveau test.' : n > 0 ? 'Envoyée ! Elle doit arriver dans quelques secondes.' : 'Ce téléphone n\'est pas inscrit : désactive puis réactive les notifications.'))
+      .catch(() => setTest('Envoi impossible : vérifie ta connexion.'))
+  }
   return (
     <section className="install-card push-card">
       <h3 className="push-title"><Mascot pose="notification" size={40} /> Notifications</h3>
@@ -41,6 +48,8 @@ export function PushCard({ status, onEnable, onDisable }) {
       </>}
       {status === 'on' && <>
         <p>✓ Activées sur cet appareil.</p>
+        <button className="btn btn-secondary wide" onClick={runTest} disabled={test === '…'}>M'envoyer une notification test</button>
+        {test && test !== '…' && <p className="push-test" role="status">{test}</p>}
         <button className="btn btn-ghost wide" onClick={onDisable}>Désactiver</button>
       </>}
       {status === 'busy' && <p>Un instant…</p>}
