@@ -260,8 +260,6 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
     const n = 3 - Math.floor((now - countStart) / 850)
     return (
       <div className="butin-game loot countdown kraken-count">
-        <img className="kc-tentacle l" src="/decor/tentacule-anim.webp" alt="" aria-hidden="true" />
-        <img className="kc-tentacle r" src="/decor/tentacule-anim-d.webp" alt="" aria-hidden="true" />
         <img className="kc-kraken" src="/mascotte/pirate-anim.webp" alt="" aria-hidden="true" />
         <p className="kc-label">{solo ? 'Le Kraken se réveille…' : `${partner.name} et toi, préparez-vous…`}</p>
         <div key={n} className={`count-num ${n <= 0 ? 'go' : ''}`}>{n <= 0 ? 'GO !' : n}</div>
