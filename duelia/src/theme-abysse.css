@@ -1052,3 +1052,33 @@ button.wallet-pill { border: 0; cursor: pointer; }
 .shop-chips .chip small { margin-left: 4px; opacity: 0.6; font-weight: 600; }
 .shop-cat-title { margin: 14px 2px 8px; font: 700 13px/1 var(--display); letter-spacing: 0.08em; text-transform: uppercase; color: #b9a6ff; }
 .shop-cat:first-of-type .shop-cat-title { margin-top: 4px; }
+
+/* Premier lancement : installer l'appli */
+.install-intro { min-height: 100%; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 14px;
+  padding: calc(env(safe-area-inset-top) + 28px) 20px calc(env(safe-area-inset-bottom) + 20px); }
+.install-intro h1 { font-size: 30px; line-height: 1.1; color: #fff; text-shadow: 0 2px 12px #8b3dff88; }
+.ii-mascot { width: min(52vw, 210px); filter: drop-shadow(0 10px 26px #8b3dffaa); animation: chestBob 3.2s ease-in-out infinite; }
+.ii-sub { margin: 0; color: #d9ccff; font: 600 15px/1.45 'Nunito Sans', var(--body); max-width: 360px; }
+.ii-sub.small { font-size: 13px; color: #b7a6e6; }
+.ii-choices { width: 100%; max-width: 360px; display: grid; gap: 12px; margin-top: 8px; }
+.ii-os { display: flex; align-items: center; gap: 14px; height: 68px; padding: 0 20px; border-radius: 22px; border: 0; color: #fff; text-align: left;
+  background: linear-gradient(180deg, #2a1660, #1a0b3d); box-shadow: inset 0 0 0 1.5px #a37dff66, 0 6px 18px #0007; font: 700 19px/1 var(--display); }
+.ii-os span { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 14px; background: #ffffff14; font-size: 26px; }
+.ii-os.guess { background: linear-gradient(180deg, #a866ff, #6a2bd1); box-shadow: inset 0 0 0 2px #e2c6ff88, 0 6px 22px #8b3dff77; }
+.ii-os:active { transform: translateY(2px); }
+.ii-skip { margin-top: auto; color: #b7a6e6; font-size: 14px; padding: 10px; }
+.install-intro.steps { align-items: stretch; text-align: left; }
+.install-intro.steps h1 { text-align: center; margin-top: 4px; }
+.ii-back { position: absolute; top: calc(env(safe-area-inset-top) + 18px); left: 14px; }
+.install-intro { position: relative; }
+.ii-steps { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 12px; }
+.ii-steps li { display: flex; gap: 14px; align-items: flex-start; padding: 14px 16px; border-radius: 18px; background: #1a0b3dcc; box-shadow: inset 0 0 0 1px #6a4fb888; }
+.ii-steps li i { flex: none; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; font: 700 16px/1 var(--display); font-style: normal;
+  color: #2a1600; background: linear-gradient(180deg, #ffd94a, #f29a0c); }
+.ii-steps li span { color: #eee6ff; font: 600 15.5px/1.45 'Nunito Sans', var(--body); }
+.ii-steps b { color: #fff; }
+.ii-glyph { display: inline-block; vertical-align: -5px; width: 22px; height: 22px; margin: 0 2px; fill: none; stroke: #6fb6ff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.ii-warn { margin: 0; padding: 12px 14px; border-radius: 14px; background: #ff9f4322; box-shadow: inset 0 0 0 1px #ff9f4366; color: #ffe2c2; font: 600 14px/1.4 'Nunito Sans', var(--body); }
+.ii-install { align-self: center; margin-top: 4px; }
+.ii-dock { margin-top: auto; padding-top: 10px; }
+.install-intro { background: linear-gradient(180deg, #0b0420cc, #0b0420ee 55%, #0b0420), #0b0420 url(/decor/accueil-fond.webp) center / cover no-repeat; }

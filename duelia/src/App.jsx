@@ -5,6 +5,8 @@ import { findOpponent, getCommunity, leaderboard } from './lib/bots.js'
 import { meEntry } from './lib/profile.js'
 import { setSound, setMusic, sfx } from './lib/sound.js'
 import { setMenuMusic } from './lib/menuMusic.js'
+import { InstallIntro } from './components/InstallCard.jsx'
+import { needsInstallIntro } from './lib/installIntro.js'
 import Duel from './components/Duel.jsx'
 import { buildQuestions } from './lib/duel.js'
 import Results from './components/Results.jsx'
@@ -169,6 +171,9 @@ const TABS = [
 export default function App() {
   const [st, setSt] = useState(initialState)
   const viewRef = useRef(null)
+  // Tout premier lancement dans le navigateur : on explique d'abord comment installer l'appli
+  // (sauf si on arrive par un lien de défi : on joue tout de suite)
+  const [installIntro, setInstallIntro] = useState(() => !LINK && needsInstallIntro())
   const [route, setRoute] = useState(() => (
     LINK?.kind === 'short' ? { name: 'linkload' }
       : LINK?.kind === 'challenge' ? { name: 'linkintro' }
@@ -914,6 +919,9 @@ export default function App() {
     shareText(`Viens me défier sur mon thème « ${t.name} » !`, url)
   }
 
+  if (!me && installIntro) {
+    return <div className="app"><main className="view"><div><InstallIntro onDone={() => setInstallIntro(false)} /></div></main></div>
+  }
   if (!me) {
     return (
       <div className="app">
