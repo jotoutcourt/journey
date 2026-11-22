@@ -3,6 +3,7 @@ import { useState } from 'react'
 import TopicIcon from './TopicIcon.jsx'
 import Mascot from './Mascot.jsx'
 import { priceOf, isLockable } from '../lib/shop.js'
+import { CATEGORIES } from '../data/topics.js'
 
 export function Shop({ topics, wallet, isLocked, onUnlock, onOpen, onBack, online }) {
   const [busy, setBusy] = useState(null)
@@ -10,6 +11,11 @@ export function Shop({ topics, wallet, isLocked, onUnlock, onOpen, onBack, onlin
   const lockable = topics.filter(isLockable)
   const locked = lockable.filter(isLocked).sort((a, b) => priceOf(a.id) - priceOf(b.id) || a.name.localeCompare(b.name))
   const owned = lockable.filter(t => !isLocked(t))
+  // Classement par catégorie : filtre en haut, et en « Tous » la liste est rangée par catégorie
+  const [cat, setCat] = useState('Tous')
+  const order = (c) => { const i = CATEGORIES.indexOf(c); return i < 0 ? 99 : i }
+  const cats = [...new Set(locked.map(t => t.category))].sort((a, b) => order(a) - order(b))
+  const shown = cat === 'Tous' ? cats : cats.includes(cat) ? [cat] : cats
   return (
     <div className="screen shop">
       <header className="top">
@@ -24,8 +30,20 @@ export function Shop({ topics, wallet, isLocked, onUnlock, onOpen, onBack, onlin
       {online && locked.length === 0 && <p className="inbox-empty">Tu as débloqué tous les thèmes ! 🏆</p>}
       {locked.length > 0 && <>
         <h3 className="sec-title">À débloquer <small>({locked.length})</small></h3>
-        <ul className="shop-list">
-          {locked.map(t => {
+        {cats.length > 1 && (
+          <div className="chips shop-chips" role="tablist" aria-label="Catégories">
+            {['Tous', ...cats].map(c => (
+              <button key={c} role="tab" aria-selected={c === cat} className={`chip ${c === cat ? 'on' : ''}`} onClick={() => setCat(c)}>
+                {c} <small>{c === 'Tous' ? locked.length : locked.filter(t => t.category === c).length}</small>
+              </button>
+            ))}
+          </div>
+        )}
+        {shown.map(c => (
+          <section key={c} className="shop-cat">
+            {(cat === 'Tous' && cats.length > 1) && <h4 className="shop-cat-title">{c}</h4>}
+            <ul className="shop-list">
+          {locked.filter(t => t.category === c).map(t => {
             const price = priceOf(t.id)
             const can = lingots >= price
             return (
@@ -41,7 +59,9 @@ export function Shop({ topics, wallet, isLocked, onUnlock, onOpen, onBack, onlin
               </li>
             )
           })}
-        </ul>
+            </ul>
+          </section>
+        ))}
         {locked.some(t => lingots < priceOf(t.id)) && <p className="shop-note">Il te manque des lingots ? Une partie de l'Appât du Kraken en rapporte jusqu'à 20, et +5 pour la première du jour.</p>}
       </>}
       {owned.length > 0 && <>

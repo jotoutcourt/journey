@@ -1047,3 +1047,8 @@ button.wallet-pill { border: 0; cursor: pointer; }
 .lt-bubble.bonus em { color: #ffd84a; }
 .lt-bubble .lt-saved { color: #3ddc84; }
 .lt-bubble small em { color: #ff6fae; font-style: normal; font-weight: 700; }
+/* Boutique : filtres par catégorie */
+.shop-chips { position: sticky; top: 0; z-index: 5; margin-top: 4px; padding-top: 8px; padding-bottom: 10px; background: linear-gradient(180deg, var(--bg, #0b0420) 75%, transparent); }
+.shop-chips .chip small { margin-left: 4px; opacity: 0.6; font-weight: 600; }
+.shop-cat-title { margin: 14px 2px 8px; font: 700 13px/1 var(--display); letter-spacing: 0.08em; text-transform: uppercase; color: #b9a6ff; }
+.shop-cat:first-of-type .shop-cat-title { margin-top: 4px; }

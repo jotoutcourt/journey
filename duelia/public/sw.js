@@ -1,6 +1,6 @@
 // Kraken hors ligne : l'appli se lance même sans réseau (duels contre l'IA, ascension, thèmes).
 // Les échanges avec le serveur (comptes, classements, duels en direct) ne passent jamais par le cache.
-const CACHE = 'duelia-v75'
+const CACHE = 'duelia-v76'
 const SHELL = ['/', '/manifest.webmanifest', '/favicon.png', '/icon-192.png', '/apple-touch-icon.png', '/mascotte/logo.webp', '/splash/kraken-splash.webp', '/mascotte/victoire.webp', '/mascotte/defaite.webp', '/mascotte/neutre.webp', '/mascotte/neutre-anim.webp', '/mascotte/egalite.webp', '/mascotte/combat.webp', '/mascotte/hors-ligne.webp', '/mascotte/notification.webp', '/mascotte/combat-anim.webp', '/mascotte/attente-anim.webp', '/mascotte/pirate.webp', '/mascotte/pirate-anim.webp', '/decor/vs-fond-debut.webp', '/decor/butin-fond.webp', '/decor/accueil-fond.webp', '/decor/pancarte.webp', '/decor/bouteille.webp', '/decor/tentacule-anim.webp', '/decor/tentacule-anim-d.webp', '/decor/tentacules.webp']
 
 self.addEventListener('install', (e) => {
