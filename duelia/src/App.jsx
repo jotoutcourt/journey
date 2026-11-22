@@ -233,7 +233,7 @@ export default function App() {
       const t = byId(session.topicId)
       const stats = st.topicStats[session.topicId]
       if (t && stats && (stats.played || 0) > session.played) {
-        setShift({ topic: t, before: session.before, after: ranksFor(st.profile, t, stats), stats })
+        setShift({ topic: t, before: ranksFor(st.profile, t, session.startStats), after: ranksFor(st.profile, t, stats), stats })
       }
       setSession(null)
     }
@@ -241,7 +241,7 @@ export default function App() {
       const t = byId(r.id)
       if (t && st.profile && (!session || session.topicId !== r.id)) {
         const stats = st.topicStats[r.id]
-        setSession({ topicId: r.id, before: ranksFor(st.profile, t, stats), played: stats?.played || 0 })
+        setSession({ topicId: r.id, startStats: stats, played: stats?.played || 0 })
       }
     }
     if (r.name === 'match') {
@@ -975,9 +975,9 @@ export default function App() {
     view = <StarterPick topics={topics} onDone={pickStarters} />
   } else switch (route.name) {
     case 'topics': view = <Topics topics={topics} go={go} lockPrice={lockPrice} importTopic={importTopic} onRequest={() => setRequestSheet(true)} extra={<SharedTopics online={online} installed={new Set(st.custom.filter(t => t.shared).map(t => t.id))} onOpen={installShared} onList={listShared} />} />; break
-    case 'topic': view = topic ? <TopicPage st={st} topic={topic} go={go} toggleFollow={toggleFollow} shareTopic={shareTopic} deleteTopic={deleteTopic} online={online} onPublish={publishTopic} onUnpublish={unpublishTopic} onPlay={(t) => { social.refreshFriends?.(); setPlayWho(t) }}
+    case 'topic': view = topic ? <TopicPage st={st} topic={topic} go={go} friends={social.social?.friends || []} onChallengeFriend={(f) => setFriendSheet({ ...f, topic })} toggleFollow={toggleFollow} shareTopic={shareTopic} deleteTopic={deleteTopic} online={online} onPublish={publishTopic} onUnpublish={unpublishTopic} onPlay={(t) => { social.refreshFriends?.(); setPlayWho(t) }}
       lockPrice={lockPrice(topic)} lingots={wallet?.lingots || 0} onUnlock={unlock} /> : null; break
-    case 'ranking': view = <Ranking st={st} topic={topic} go={go} />; break
+    case 'ranking': view = <Ranking st={st} topic={topic} go={go} friends={social.social?.friends || []} onChallenge={(f) => setFriendSheet({ ...f, topic })} />; break
     case 'create': view = <CreateTopic key={route.id || 'new'} st={st} existing={route.id ? topic : null} onSave={saveTopic} go={go} />; break
     case 'profile': view = <Profile st={st} topics={topics} update={update} go={go} account={account} onMakeCode={getRecoveryCode} onRecover={recoverAccount} push={push} onPush={onPush} onFriends={() => go({ name: 'friends' })} friendCount={social.social?.friends?.length} />; break
     case 'shop': view = <Shop topics={topics} wallet={wallet} online={online && account.status === 'online'} isLocked={(t) => lockPrice(t) > 0}

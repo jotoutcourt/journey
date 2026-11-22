@@ -1,6 +1,5 @@
 // Adversaires : chaque thème a sa propre communauté de joueurs, stable d'une partie à l'autre.
 import { seeded, pick, clamp } from './rng.js'
-import { periodBounds } from './periods.js'
 
 const PSEUDOS = [
   'Lunaire', 'MaxiQuiz', 'Zébulon', 'Nina_K', 'Toto42', 'Pixelle', 'Rodrigue', 'Sam.B', 'Inès', 'KevDu59',
@@ -45,45 +44,20 @@ export function getCommunity(topic) {
   return cache.get(topic.id)
 }
 
-// XP d'un joueur simulé sur la période en cours. Son rythme est fixé pour la période
-// (graine = thème + période) et l'XP grimpe à mesure que la période avance : le classement
-// bouge pendant la semaine, et repart de zéro à chaque nouvelle période.
-// Un duel rapporte 100 à 300 XP : le plus actif d'un thème populaire en joue une dizaine par semaine.
-function botPeriodXp(bot, topic, kind, key, frac, champXp) {
-  const r = seeded(`${topic.id}:${key}:${bot.id}`)
-  const idle = r() < (kind === 'week' ? 0.4 : 0.2)
-  if (idle) return 0
-  const pop = clamp(champXp / 6000, 0.3, 1.2)
-  const perWeek = (120 + 1700 * Math.sqrt(bot.xp / champXp) * (0.3 + 1.4 * r())) * pop
-  const weeks = kind === 'week' ? 1 : 4.35
-  return Math.round(perWeek * weeks * frac)
-}
-
 // Vrais joueurs (comptes) récupérés sur le serveur, par thème et par période.
 const realRows = new Map()
 export function setRealRows(topicId, kind, rows) { realRows.set(`${topicId}:${kind}`, rows) }
 export const getRealRows = (topicId, kind) => realRows.get(`${topicId}:${kind}`) || []
+export const hasRealRows = (topicId) => realRows.has(`${topicId}:all`)
 
-// Classement complet avec le joueur inséré à sa place.
-// kind : 'all' (depuis toujours), 'week' ou 'month'.
+// Classement complet (vrais joueurs uniquement) avec le joueur inséré à sa place.
+// kind : 'all' (depuis toujours), 'week' ou 'month'. Les adversaires simulés ne servent plus qu'aux duels contre l'IA.
 export function leaderboard(topic, me, myXp, kind = 'all') {
-  let rows
-  if (kind === 'all') {
-    rows = getCommunity(topic).map(b => ({ ...b, allXp: b.xp }))
-  } else {
-    const { start, end, key } = periodBounds(kind)
-    const frac = Math.max(0.02, Math.min(1, (Date.now() - start) / (end - start)))
-    const community = getCommunity(topic)
-    rows = community
-      .map(b => ({ ...b, allXp: b.xp, xp: botPeriodXp(b, topic, kind, key, frac, community[0].xp) }))
-      .filter(b => b.xp > 0)
-  }
-  // Vrais joueurs (sans badge IA) ; le joueur lui-même est ajouté à part avec sa progression locale
-  for (const r of getRealRows(topic.id, kind)) {
-    if (me.playerId && r.playerId === me.playerId) continue
-    rows.push({ ...r, allXp: kind === 'all' ? r.xp : (getRealRows(topic.id, 'all').find(x => x.playerId === r.playerId)?.xp ?? r.xp), ai: false })
-  }
-  rows.push({ id: 'me', name: me.name, avatar: me.avatar, photo: me.photo, flag: me.flag || '🇫🇷', xp: myXp, allXp: me.allXp ?? myXp, isMe: true })
+  const all = getRealRows(topic.id, 'all')
+  const rows = getRealRows(topic.id, kind)
+    .filter(r => !(me.playerId && r.playerId === me.playerId) && r.xp > 0)
+    .map(r => ({ ...r, allXp: kind === 'all' ? r.xp : (all.find(x => x.playerId === r.playerId)?.xp ?? r.xp), ai: false }))
+  rows.push({ id: 'me', playerId: me.playerId, name: me.name, avatar: me.avatar, photo: me.photo, flag: me.flag || '🇫🇷', xp: myXp, allXp: me.allXp ?? myXp, isMe: true })
   rows.sort((a, b) => b.xp - a.xp || (a.isMe ? -1 : 1))
   rows.forEach((r, i) => { r.rank = i + 1; r.champion = i === 0 && r.xp > 0 })
   return rows

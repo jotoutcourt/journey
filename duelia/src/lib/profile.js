@@ -1,4 +1,4 @@
-import { leaderboard } from './bots.js'
+import { leaderboard, hasRealRows } from './bots.js'
 import { myPeriodXp } from './periods.js'
 
 // Pays proposés dans le profil (drapeau + nom).
@@ -61,7 +61,7 @@ export function bestBadge(st, topics) {
   const order = { all: 0, month: 1, week: 2 }
   for (const [id, stats] of Object.entries(st.topicStats)) {
     const topic = topics.find(x => x.id === id)
-    if (!topic || !stats.played) continue
+    if (!topic || !stats.played || !hasRealRows(id)) continue
     for (const kind of ['all', 'month', 'week']) {
       const xp = myPeriodXp(stats, kind)
       if (!xp) continue

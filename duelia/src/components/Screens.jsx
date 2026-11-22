@@ -161,14 +161,15 @@ export function Topics({ topics, go, importTopic, extra, onRequest, lockPrice = 
 }
 
 /* ---------------- Page d'un thème ---------------- */
-export function TopicPage({ st, topic, go, toggleFollow, shareTopic, deleteTopic, online, onPublish, onUnpublish, onPlay, lockPrice = 0, lingots = 0, onUnlock }) {
+export function TopicPage({ st, topic, go, toggleFollow, shareTopic, deleteTopic, online, onPublish, onUnpublish, onPlay, lockPrice = 0, lingots = 0, onUnlock, friends = [], onChallengeFriend }) {
   const stats = st.topicStats[topic.id] || { xp: 0, played: 0, wins: 0, seen: [] }
   const lvl = levelInfo(stats.xp)
   const following = st.follows.includes(topic.id)
   const meRow = { ...meEntry(st.profile), allXp: stats.xp }
   const board = leaderboard(topic, meRow, stats.xp)
-  const ranks = PERIODS.map(p => ({ ...p, rank: leaderboard(topic, meRow, myPeriodXp(stats, p.id), p.id).find(r => r.isMe).rank }))
+  const ranks = PERIODS.map(p => { const xp = myPeriodXp(stats, p.id); return { ...p, rank: xp > 0 ? leaderboard(topic, meRow, xp, p.id).find(r => r.isMe).rank : null } })
   const champ = board[0]
+  const champFriend = friends.find(f => f.player_id === champ.playerId)
   const followers = (topic.followers || 0) + (following ? 1 : 0)
   const seenPct = Math.round(((stats.seen?.length || 0) / topic.questions.length) * 100)
 
@@ -210,18 +211,20 @@ export function TopicPage({ st, topic, go, toggleFollow, shareTopic, deleteTopic
         <div><small>Questions</small><b>{topic.questions.length}</b></div>
       </div>
       <button className="tp-stats tp-ranks" onClick={() => go({ name: 'ranking', id: topic.id })}>
-        {ranks.map(r => <div key={r.id}><small>{r.id === 'all' ? 'Toujours' : r.label}</small><b>#{r.rank}</b></div>)}
+        {ranks.map(r => <div key={r.id}><small>{r.id === 'all' ? 'Toujours' : r.label}</small><b>{r.rank ? `#${r.rank}` : '–'}</b></div>)}
       </button>
 
-      <div className={`champ-card ${champ.isMe ? 'mine' : ''}`}>
-        <Avatar seed={champ.avatar} photo={champ.photo} size={56} ring="var(--gold)" />
-        <div className="champ-info">
-          <small>👑 Champion du thème</small>
-          <b>{champ.isMe ? 'C\'est toi !' : `${champ.flag} ${champ.name}`}<AiTag on={!champ.isMe && champ.ai} /></b>
-          <small>{fmt(champ.xp)} XP · niveau {levelInfo(champ.xp).level}</small>
+      {champ.champion && (
+        <div className={`champ-card ${champ.isMe ? 'mine' : ''}`}>
+          <Avatar seed={champ.avatar} photo={champ.photo} size={56} ring="var(--gold)" />
+          <div className="champ-info">
+            <small>👑 Champion du thème</small>
+            <b>{champ.isMe ? 'C\'est toi !' : `${champ.flag} ${champ.name}`}</b>
+            <small>{fmt(champ.xp)} XP · niveau {levelInfo(champ.xp).level}</small>
+          </div>
+          {!champ.isMe && champFriend && onChallengeFriend && <button className="btn btn-small btn-gold" onClick={() => onChallengeFriend(champFriend)}>Défier</button>}
         </div>
-        {!champ.isMe && <button className="btn btn-small btn-gold" onClick={() => go({ name: 'match', id: topic.id, forceChampion: true })}>Défier</button>}
-      </div>
+      )}
 
       {!topic.official && (
         <div className="tp-owner">
@@ -237,17 +240,21 @@ export function TopicPage({ st, topic, go, toggleFollow, shareTopic, deleteTopic
 }
 
 /* ---------------- Classement ---------------- */
-export function Ranking({ st, topic, go }) {
+export function Ranking({ st, topic, go, friends = [], onChallenge }) {
   const stats = st.topicStats[topic.id] || { xp: 0 }
   const [kind, setKind] = useState('week')
-  const period = PERIODS.find(p => p.id === kind)
   const rows = leaderboard(topic, { ...meEntry(st.profile), allXp: stats.xp }, myPeriodXp(stats, kind), kind)
   const reset = resetIn(kind)
+  const friendOf = (r) => friends.find(f => f.player_id === r.playerId)
+  const ranked = rows.filter(r => r.xp > 0)
+  const podium = ranked.length >= 2 ? ranked.slice(0, 3) : []
+  const rest = rows.slice(podium.length)
   useEffect(() => {
     document.querySelector('.rank-row.me')?.scrollIntoView({ block: 'center', behavior: 'smooth' })
   }, [kind])
+  const challenge = (r) => { const f = friendOf(r); return f && onChallenge ? <button className="btn btn-small btn-secondary" onClick={() => onChallenge(f)}>Défier</button> : null }
   return (
-    <div className="screen">
+    <div className="screen ranking-screen" style={{ '--c': topic.color }}>
       <header className="top">
         <button className="icon-btn" onClick={() => go({ name: 'topic', id: topic.id })} aria-label="Retour">←</button>
         <h1 className="ellipsis">Classement · {topic.name}</h1>
@@ -258,22 +265,37 @@ export function Ranking({ st, topic, go }) {
         ))}
       </div>
       <p className="rank-note">
-        {reset ? <>XP gagné depuis le début {kind === 'week' ? 'de la semaine' : 'du mois'} · remise à zéro dans <b>{reset}</b></> : <>Tout l'XP gagné dans ce thème</>}
+        {ranked.length} joueur{ranked.length > 1 ? 's' : ''} classé{ranked.length > 1 ? 's' : ''} · {reset ? <>remise à zéro dans <b>{reset}</b></> : <>tout l'XP du thème</>}
       </p>
+      {podium.length > 0 && (
+        <div className={`podium n${podium.length}`}>
+          {podium.map(r => (
+            <div key={r.id} className={`pod pod${r.rank} ${r.isMe ? 'me' : ''}`}>
+              {r.rank === 1 && <span className="pod-crown">👑</span>}
+              <Avatar seed={r.avatar} photo={r.photo} size={r.rank === 1 ? 64 : 52} ring={r.rank === 1 ? 'var(--gold)' : r.rank === 2 ? '#d7dcef' : '#e3a06b'} />
+              <b className="ellipsis">{r.isMe ? 'Toi' : r.name}</b>
+              <small>{fmt(r.xp)} XP</small>
+              <div className="pod-step">{r.rank}</div>
+            </div>
+          ))}
+        </div>
+      )}
+      {ranked.length < 2 && (
+        <p className="rank-empty">{ranked.length === 1 && rows[0].isMe ? 'Tu es seul en tête pour l\'instant.' : 'Personne n\'a encore marqué de points sur cette période.'} Invite tes amis à jouer ce thème pour remplir le classement !</p>
+      )}
       <ol className="ranking">
-        {rows.map(r => {
+        {rest.map(r => {
           const l = levelInfo(r.allXp ?? r.xp)
           return (
-            <li key={r.id} className={`rank-row ${r.isMe ? 'me' : ''} ${r.champion ? 'champ' : ''}`}>
-              <span className="rk">{r.champion ? '👑' : r.rank}</span>
-              <Avatar seed={r.avatar} photo={r.photo} size={40} ring={r.champion ? 'var(--gold)' : undefined} />
+            <li key={r.id} className={`rank-row ${r.isMe ? 'me' : ''}`}>
+              <span className="rk">{r.rank}</span>
+              <Avatar seed={r.avatar} photo={r.photo} size={40} />
               <div className="rk-info">
-                <b>{r.flag} {r.isMe ? `${r.name} (toi)` : r.name}<AiTag on={r.ai} /></b>
-                <small>{r.champion ? period.champ : `Niv. ${l.level} · ${topicTitle(topic, l.level)}`}</small>
-
+                <b>{r.flag} {r.isMe ? `${r.name} (toi)` : r.name}</b>
+                <small>Niv. {l.level} · {topicTitle(topic, l.level)}</small>
               </div>
               <span className="rk-xp">{fmt(r.xp)}<small> XP</small></span>
-              {!r.isMe && <button className="btn btn-small btn-secondary" onClick={() => go({ name: 'match', id: topic.id, opponentId: r.id })}>Défier</button>}
+              {!r.isMe && challenge(r)}
             </li>
           )
         })}
