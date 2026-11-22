@@ -1089,3 +1089,4 @@ html.abysse .vs-screen.has-async > .vs-async { position: relative; left: auto; b
 html.abysse .vs-screen.has-async > .vs-async { animation: asyncIn2 0.4s 1.1s both; }
 @keyframes asyncIn2 { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 html.abysse .vs-side::after { content: none; } /* petits traits néon retirés */
+.home.immersive .kraken-hero { margin-bottom: 26px; } /* bloc remonté un peu au-dessus de la barre du bas */
