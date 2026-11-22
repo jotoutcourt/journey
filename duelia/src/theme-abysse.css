@@ -926,3 +926,33 @@ button.wallet-pill { border: 0; cursor: pointer; }
   padding: calc(env(safe-area-inset-top) + 8px) 16px 18px; background: linear-gradient(180deg, #120a26 70%, transparent); pointer-events: auto; }
 .sp-dock { background: linear-gradient(180deg, #120a26 0%, #120a26 78%, #120a2600 100%); padding-bottom: 22px; }
 .home-bg { background: linear-gradient(180deg, #0b042088 0%, #0b042055 35%, #0b042066 70%, #0b0420aa 100%), #0b0420 url(/decor/accueil-fond.webp) center bottom / cover no-repeat; }
+
+/* ===== Partie du Kraken : décompte et mise en page équilibrée ===== */
+.kraken-count { align-items: center; justify-content: center; gap: 6px; overflow: hidden; }
+.kraken-count .kc-kraken { width: min(70vw, 300px); height: auto; z-index: 1; filter: drop-shadow(0 12px 30px #000a) drop-shadow(0 0 30px #a866ff66); animation: mascotIn 0.5s cubic-bezier(.2,1.4,.4,1) both; }
+.kraken-count .kc-tentacle { position: absolute; top: 18%; width: 62%; z-index: 0; filter: drop-shadow(0 0 18px #8b3dffaa); opacity: 0.9; }
+.kraken-count .kc-tentacle.l { left: -6%; } .kraken-count .kc-tentacle.r { right: -6%; transform: scaleX(-1); }
+.kraken-count .kc-label { z-index: 1; margin: 0; color: #fff; font-family: var(--display); font-size: 17px; text-shadow: 0 2px 10px #000; }
+.kraken-count .count-num { z-index: 1; }
+/* les caisses occupent l'espace disponible, centrées entre la question et le bouton */
+.butin-game.loot { display: flex; flex-direction: column; }
+.loot .lt-stage { flex: 1; display: flex; flex-direction: column; justify-content: center; padding-top: 70px; padding-bottom: 8px; }
+.loot .lt-tentacles { inset: 0 -16px auto; height: 260px; }
+.loot .lt-dock { margin-top: 0; }
+.loot .lt-question { margin-top: 4px; }
+.loot .lt-question .q-flag { margin-top: 6px; }
+.kraken-count .count-num { background: none; color: #fff; -webkit-text-stroke: 5px #3a0f8a; paint-order: stroke fill; margin-top: 4px;
+  filter: none; text-shadow: 0 6px 0 #2a0870, 0 0 24px #a866ffcc; font-size: clamp(96px, 28vw, 130px); }
+.kraken-count .count-num.go { background: none; color: #ffd94a; -webkit-text-stroke-color: #6b3b00; text-shadow: 0 6px 0 #6b3b00, 0 0 26px #ffc940cc; }
+/* caisses plus grandes pour remplir l'écran */
+.loot .lt-tray, .loot .lt-step { height: clamp(66px, 12vh, 112px); }
+.loot .lt-grid { gap: 12px; }
+.loot .lt-grid.n3 .lt-tray, .loot .lt-grid.n3 .lt-step { height: clamp(54px, 9vh, 84px); }
+.loot .lt-gold { inset: 8px 34px 6px; }
+.loot .lt-ingot { width: 22px; height: 12px; }
+/* caisses posées en bas, tentacules accrochées juste au-dessus d'elles */
+.loot .lt-stage { justify-content: flex-end; padding-top: 0; padding-bottom: 14px; }
+.loot .lt-grid > .lt-tentacles { position: absolute; inset: auto -16px calc(100% - 50px); height: 240px; z-index: -1; }
+.loot .lt-grid > .lt-tentacles .real-tentacle.tl { top: auto; bottom: 0; }
+.loot .lt-grid > .lt-tentacles .real-tentacle.tr { top: auto; bottom: 0; }
+.loot .lt-tray, .loot .lt-step { height: clamp(66px, 13vh, 120px); }

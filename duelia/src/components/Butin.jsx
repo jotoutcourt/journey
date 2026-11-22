@@ -148,6 +148,7 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
   const view = state && state.id === gameId ? state : null
   // canal vocal : celui de la première partie avec ce coéquipier, conservé quand on rejoue ensemble
   const [room, setRoom] = useState(null)
+  const [countStart, setCountStart] = useState(null) // début du décompte (première fois qu'on voit la partie en cours)
   const [now, setNow] = useState(0)
   const [draft, setDraft] = useState(null) // { round, placement, at } : ce que je viens de faire, avant confirmation
   const [failed, setFailed] = useState(0)
@@ -166,6 +167,7 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
         const v = await api.getDuo(gameId)
         if (alive && v) {
           setView({ ...v, at: Date.now() }); setFailed(0)
+          if (v.status === 'playing' && v.round === 0 && v.phase === 'place' && v.left_ms > 38000) setCountStart(c => c ?? Date.now())
           if (v.status === 'done' && v.wallet != null) onWalletRef.current?.(v.wallet)
           if (!v.solo && ['playing', 'done'].includes(v.status) && v.voice_id) setRoom(r => (r && r.id === v.voice_id ? r : { id: v.voice_id, host: !!v.voice_host }))
         }
@@ -253,6 +255,20 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
     )
   }
 
+  // Décompte 3, 2, 1, GO avant la première question
+  if (view.status === 'playing' && view.round === 0 && view.phase === 'place' && countStart && now - countStart < 3400) {
+    const n = 3 - Math.floor((now - countStart) / 850)
+    return (
+      <div className="butin-game loot countdown kraken-count">
+        <img className="kc-tentacle l" src="/decor/tentacule-anim.webp" alt="" aria-hidden="true" />
+        <img className="kc-tentacle r" src="/decor/tentacule-anim.webp" alt="" aria-hidden="true" />
+        <img className="kc-kraken" src="/mascotte/pirate-anim.webp" alt="" aria-hidden="true" />
+        <p className="kc-label">{solo ? 'Le Kraken se réveille…' : `${partner.name} et toi, préparez-vous…`}</p>
+        <div key={n} className={`count-num ${n <= 0 ? 'go' : ''}`}>{n <= 0 ? 'GO !' : n}</div>
+      </div>
+    )
+  }
+
   // En jeu
   const q = view.question
   const reveal = view.phase === 'reveal'
@@ -294,7 +310,7 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
         <div className={`lt-timer ${secs <= 10 && !reveal ? 'hurry' : ''}`}>{reveal ? '⏸' : secs}</div>
       </header>
 
-      <div className="lt-team">
+      {!solo && <div className="lt-team">
         <div className={`lt-player me ${view.ready_me ? 'ready' : ''} ${voice.speaking.me ? 'speaking' : ''}`}>
           <Avatar seed={me.avatar} photo={me.photo} size={30} />
           <span>Toi{view.ready_me ? ' ✓' : ''}</span>
@@ -306,7 +322,7 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
           <span>{partner.name}{view.ready_partner ? ' ✓' : ''}</span>
           {voice.partnerMic && <i className="lt-mic-on" aria-label="Micro ouvert">🎙️</i>}
         </div>}
-      </div>
+      </div>}
       {(voiceNote || voice.needTap) && (
         <p className="lt-voice-note">{voiceNote}{voice.needTap && <button className="link-btn" onClick={voice.unlock}>🔊 entendre {partner.name}</button>}</p>
       )}
@@ -316,11 +332,11 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
 
       {/* Les tentacules du Kraken rôdent derrière les caisses */}
       <div className="lt-stage">
-        <div className="lt-tentacles" aria-hidden="true">
+        <div className={`lt-grid n${q?.options.length || 4}`}>
+          <div className="lt-tentacles" aria-hidden="true">
           <img className="real-tentacle tl" src="/decor/tentacule-anim.webp" alt="" draggable="false" />
           <img className="real-tentacle tr" src="/decor/tentacule-anim.webp" alt="" draggable="false" />
         </div>
-        <div className={`lt-grid n${q?.options.length || 4}`}>
           {q?.options.map((o, i) => {
             const n = placement[i] || 0
             const cls = reveal ? (i === q.correct ? 'ok' : n ? 'sunk' : 'open') : n ? 'has' : ''
