@@ -26,6 +26,8 @@ import * as api from './lib/account.js'
 import TopicRequestSheet from './components/TopicRequest.jsx'
 import { useSocial, friendOpponent, fromPlain, logFrom } from './lib/useSocial.js'
 import { pushStatus, enablePush, disablePush, refreshPush } from './lib/push.js'
+import NotifAsk from './components/NotifAsk.jsx'
+import { shouldAskNotif, notifAskLater } from './lib/notifAsk.js'
 import RankShift from './components/RankShift.jsx'
 import { readLinkFromHash, challengeUrl, replyUrl, LINK_TTL, shortenUrl, resolveShort, baseUrl } from './lib/linkduel.js'
 import { LinkReady, LinkIntro, LinkReplyIntro } from './components/LinkDuel.jsx'
@@ -644,6 +646,20 @@ export default function App() {
 
   // Boutique : thèmes débloqués (le serveur fait foi). Tant qu'on ne sait pas, rien n'est verrouillé.
   const [unlocks, setUnlocks] = useState(null)
+  // Appli installée : on propose d'activer les notifications dès l'accueil (au plus 3 fois, espacées)
+  const [notifAsk, setNotifAsk] = useState(false)
+  const askReady = route.name === 'home' && !!st.profile && unlocks && !unlocks.needs_pick
+  useEffect(() => {
+    if (!askReady || !shouldAskNotif(push)) return
+    const id = setTimeout(() => setNotifAsk(true), 1500)
+    return () => clearTimeout(id)
+  }, [askReady, push])
+  const notifYes = () => {
+    setPush('busy')
+    enablePush().then(r => { setPush(r); setNotifAsk(false); if (r !== 'on') notifAskLater() })
+      .catch(() => { setNotifAsk(false); notifAskLater(); pushStatus().then(setPush).catch(() => setPush('off')) })
+  }
+  const notifLater = () => { notifAskLater(); setNotifAsk(false) }
   const refreshUnlocks = useCallback(() => api.getUnlocks().then(u => { if (u) setUnlocks(u) }).catch(() => {}), [])
   useEffect(() => { if (account.status === 'online') refreshUnlocks() }, [account.status, refreshUnlocks])
   // anciens joueurs : on garde les thèmes suivis ou joués avant l'ouverture de la boutique (une fois)
@@ -1053,6 +1069,7 @@ export default function App() {
       {partyInvite && !invite && !['duel', 'match', 'invite', 'butingame', 'party'].includes(route.name) && <PartyInviteBanner key={partyInvite.id} invite={partyInvite} onAccept={acceptParty} onDecline={declineParty} />}
       {duoInvite && !invite && !['duel', 'match', 'invite', 'butingame'].includes(route.name) && <DuoInviteBanner key={duoInvite.id} invite={duoInvite} onAccept={acceptDuo} onDecline={declineDuo} />}
       {shift && <RankShift shift={shift} profile={me} onClose={closeShift} />}
+      {notifAsk && route.name === 'home' && <NotifAsk busy={push === 'busy'} onYes={notifYes} onLater={notifLater} />}
       {!fullscreen && (
         <nav className="tabbar">
           {TABS.map(t => (

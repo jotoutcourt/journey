@@ -1097,3 +1097,15 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
 @keyframes iiBounce { 0%, 100% { translate: 0 -6px; } 50% { translate: 0 6px; } }
 .ii-old { text-align: center; margin-top: -2px; }
 @media (prefers-reduced-motion: reduce) { .ii-arrow { animation: none; } }
+
+/* Demande d'activer les notifications (appli installée) */
+.notif-ask { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; padding-bottom: calc(env(safe-area-inset-bottom) + 18px); }
+.notif-ask h2 { font-size: 24px; }
+.na-list { list-style: none; margin: 4px 0 6px; padding: 0; display: grid; gap: 10px; text-align: left; width: 100%; }
+.na-list li { display: flex; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 14px; background: #ffffff0d; font: 600 14.5px/1.35 'Nunito Sans', var(--body); color: #e6dcff; }
+.na-list li span { flex: none; font-size: 22px; }
+.na-list b { color: #fff; }
+.notif-ask .na-yes { width: 100%; margin-top: 4px; }
+.na-later { color: #b7a6e6; font-size: 14px; padding: 8px; }
+.na-list li p { margin: 0; flex: 1; min-width: 0; }
+.notif-ask .na-yes { font-size: 18px; height: 56px; background: linear-gradient(180deg, #b47bff, #7a3ae6); color: #fff; }
