@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { OFFICIAL_TOPICS, COMMUNITY_SEED, STARTER_CREATION, STARTER_CREATIONS, MADE_OFFICIAL } from './data/topics.js'
-import { POKEMON_TOPIC } from './data/pokemon.js'
 import { loadState, saveState, emptyState, encodeTopic, decodeTopic } from './lib/store.js'
 import { findOpponent, getCommunity, leaderboard } from './lib/bots.js'
 import { meEntry } from './lib/profile.js'
@@ -148,6 +147,11 @@ function initialState() {
     s.custom = s.custom.filter(t => !MADE_OFFICIAL.includes(t.id))
     s.starterVersion = 9
   }
+  // Mise à jour unique (v10) : le thème « Qui est ce Pokémon ? » est retiré du jeu
+  if (s.starterVersion < 10) {
+    s.follows = s.follows.filter(id => id !== 'pokemon')
+    s.starterVersion = 10
+  }
   return s
 }
 
@@ -193,7 +197,7 @@ export default function App() {
   // Les thèmes du joueur sont signés de son pseudo actuel
   const myName = st.profile?.name
   const topics = useMemo(() => [
-    ...OFFICIAL_TOPICS, POKEMON_TOPIC, ...COMMUNITY_SEED,
+    ...OFFICIAL_TOPICS, ...COMMUNITY_SEED,
     ...st.custom.map(t => (t.own && myName ? { ...t, by: myName } : t)),
   ], [st.custom, myName])
   const byId = useCallback((id) => topics.find(t => t.id === id), [topics])

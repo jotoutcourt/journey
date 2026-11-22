@@ -29,7 +29,6 @@ const LADDERS = {
   anglais: ['Beginner', 'Débutant', 'Élève appliqué', 'Bilingue en herbe', 'Voyageur', 'Interprète', 'Traducteur', 'Native speaker'],
   'dessins-animes': ['Spectateur du mercredi', 'Fan de génériques', 'Collectionneur de DVD', 'Dessinateur', 'Animateur', 'Réalisateur', 'Créateur de studio', 'Légende de l\'animation'],
   mythologie: ['Simple mortel', 'Héros', 'Demi-dieu', 'Oracle', 'Titan', 'Dieu mineur', 'Olympien', 'Roi de l\'Olympe'],
-  pokemon: ['Dresseur débutant', 'Dresseur', 'Éleveur', 'Collectionneur', 'Expert du Pokédex', 'Professeur', 'Champion', 'Maître des dresseurs'],
   'c-series-cultes': ['Téléspectateur', 'Binge-watcheur', 'Sériephile', 'Critique', 'Scénariste', 'Producteur', 'Showrunner', 'Légende du petit écran'],
   'c-desperate': ['Nouvelle arrivante', 'Voisine', 'Commère du quartier', 'Reine du barbecue', 'Joueuse de poker', 'Pilier de Wisteria Lane', 'Gardienne des secrets', 'Reine de Wisteria Lane'],
   'c-greys': ['Externe', 'Interne', 'Résident', 'Résident en chef', 'Titulaire', 'Chef de service', 'Chef de la chirurgie', 'Légende du Grey Sloan'],

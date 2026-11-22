@@ -9,7 +9,6 @@ describe('boutique de thèmes', () => {
   })
   it('prix : thèmes officiels à 40, Pokémon et thèmes pop à 60', () => {
     expect(priceOf('histoire')).toBe(40)
-    expect(priceOf('pokemon')).toBe(60)
   })
   it('les créations des joueurs ne se verrouillent jamais', () => {
     expect(isLockable({ id: 'x1', official: false, own: true })).toBe(false)

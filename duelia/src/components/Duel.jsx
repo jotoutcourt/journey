@@ -12,19 +12,6 @@ import { TIME, pointsFor } from '../lib/duel.js'
 import { sfx } from '../lib/sound.js'
 import { intro as introMusic, thinking } from '../lib/music.js'
 
-// Question à image (silhouette noire jusqu'au dévoilement). Si l'image ne charge pas,
-// on bascule sur une question écrite qui garde la même réponse.
-function PictureQuestion({ q, revealed }) {
-  const [failed, setFailed] = useState(false)
-  if (failed) return <h2 className="question">Quel Pokémon porte le n° {q.dex} du Pokédex national ?</h2>
-  return (
-    <div className="pic-q">
-      <h2 className="question small">{q.q}</h2>
-      <img src={q.img} alt="" className={revealed ? 'shown' : 'silhouette'} onError={() => setFailed(true)} draggable="false" />
-    </div>
-  )
-}
-
 // Intitulé du duel quand un joueur du top 10 mondial est en jeu
 function bigMatch(ranks) {
   if (!ranks) return null
@@ -377,7 +364,7 @@ export default function Duel({ topic, me, opponent, ranks, questions, onFinish, 
         </div>
       ) : (
         <div className="qa" key={'q' + round}>
-          {q.img ? <PictureQuestion q={q} revealed={reveal} /> : <h2 className="question"><QuestionText text={q.q} /></h2>}
+          <h2 className="question"><QuestionText text={q.q} /></h2>
           <div className="options">
             {q.options.map((opt, i) => {
               let cls = 'opt'
