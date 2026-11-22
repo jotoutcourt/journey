@@ -12,7 +12,6 @@ import { useDuoVoice } from '../lib/voice.js'
 const LETTERS = ['A', 'B', 'C', 'D']
 
 // Ce que dit le Kraken à la révélation
-const HAPPY = ['Hé hé, ça c\'est à moi !', 'Merci pour l\'or, petits voleurs !', 'Une caisse de plus pour moi !', 'Je savais que vous vous tromperiez !']
 const GLEE = ['Mwahaha ! Tout est à moi !', 'Rendez-moi tout… voilà, c\'est fait !', 'Vous pensiez vraiment m\'avoir ?', 'Mon trésor, mon précieux trésor !']
 const BONUS = ['Quoi ?! Tout sur une seule caisse… et c\'était la bonne ?!', 'Bon… tant de culot mérite une récompense.', 'Grrr… prends ces 10 lingots et file !']
 const SAD = ['Grrr… rien dans mes tentacules !', 'Comment ont-ils su ?!', 'Ce n\'est que partie remise…', 'Rendez-moi mon or, voleurs !']
@@ -361,8 +360,13 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
         <div className={`lt-dock lt-bubble ${lost ? 'happy' : 'sad'} ${bonus ? 'bonus' : ''}`} role="status">
           <Mascot pose={lost ? 'pirate' : 'defaite'} size={86} className="lt-bubble-kraken" />
           <div>
-            <b>{bonus ? <>Quitte ou double réussi ! <em>+{gold(bonus)}</em> 🎁</> : lost === 0 ? 'Rien repris ! Bien joué 🎉' : h.kept === 0 ? <>Le Kraken reprend <em>tout</em></> : <>Le Kraken reprend <em>{gold(lost)}</em></>}</b>
-            <small>« {bonus ? BONUS[view.round % BONUS.length] : (lost === 0 ? SAD : h.kept === 0 ? GLEE : HAPPY)[view.round % 4]} »</small>
+            <b>{bonus ? <>Quitte ou double réussi ! <em>+{gold(bonus)}</em> 🎁</>
+              : lost === 0 ? 'Rien repris ! Bien joué 🎉'
+              : h.kept === 0 ? <>Le Kraken reprend <em>tout</em></>
+              : <>Bonne réponse ! <span className="lt-saved">{gold(h.kept)}</span> {h.kept > 1 ? 'sauvés' : 'sauvé'}</>}</b>
+            {lost > 0 && h.kept > 0 && !bonus
+              ? <small>Le Kraken reprend les <em>{gold(lost)}</em> posés sur les autres caisses.</small>
+              : <small>« {bonus ? BONUS[view.round % BONUS.length] : (lost === 0 ? SAD : GLEE)[view.round % 4]} »</small>}
           </div>
         </div>
         </div>

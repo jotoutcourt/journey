@@ -1045,3 +1045,5 @@ button.wallet-pill { border: 0; cursor: pointer; }
 /* Quitte ou double réussi */
 .lt-bubble.bonus { box-shadow: inset 0 0 0 2px #ffc940, 0 0 26px #ffc94099; }
 .lt-bubble.bonus em { color: #ffd84a; }
+.lt-bubble .lt-saved { color: #3ddc84; }
+.lt-bubble small em { color: #ff6fae; font-style: normal; font-weight: 700; }
