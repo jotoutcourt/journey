@@ -278,6 +278,11 @@ export default function Profile({ st, topics, update, go, account, onMakeCode, o
           onChange={e => update(s => ({ ...s, settings: { ...s.settings, music: e.target.checked } }))} />
         <span>Musique pendant les duels{!st.settings.sound ? ' (active d\'abord les effets sonores)' : ''}</span>
       </label>
+      <label className="toggle">
+        <input type="checkbox" checked={st.settings.menuMusic !== false} disabled={!st.settings.sound}
+          onChange={e => update(s => ({ ...s, settings: { ...s.settings, menuMusic: e.target.checked } }))} />
+        <span>Musique de l'accueil et des menus{!st.settings.sound ? ' (active d\'abord les effets sonores)' : ''}</span>
+      </label>
       <ConfirmButton className="btn btn-ghost danger wide" onConfirm={() => update(() => null)}
         confirmLabel="Tout effacer ? Appuie encore pour confirmer">Réinitialiser ma progression</ConfirmButton>
     </div>

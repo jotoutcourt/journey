@@ -63,6 +63,10 @@ export default function Duel({ topic, me, opponent, ranks, questions, onFinish, 
   const [log, setLog] = useState({ me: [], opp: [] })
 
   const rounds = questions.length
+  // Photos (thème « Quel est cet animal ? ») : on les charge toutes dès le début du duel
+  useEffect(() => {
+    for (const x of questions) { const m = /\[photo:([^\]]+)\]/.exec(x.q || ''); if (m) new Image().src = m[1] }
+  }, [questions])
   const q = questions[round]
   const last = round === rounds - 1
   const mult = last ? 2 : 1

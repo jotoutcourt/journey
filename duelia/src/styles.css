@@ -974,3 +974,13 @@ img { -webkit-user-drag: none; }
 .lt-question .q-flag { font-size: clamp(60px, 18vw, 84px); margin-top: 4px; }
 .who-icon { width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; font-size: 24px; background: #ffffff10; flex: none; }
 .who-list .pick-friend:disabled { opacity: 0.45; }
+/* Question avec photo (thème « Quel est cet animal ? ») */
+.q-photo { display: block; margin: 10px auto 0; width: min(100%, 420px); animation: pop 0.35s both; }
+.q-photo img { display: block; width: 100%; height: clamp(170px, 30vh, 280px); object-fit: cover; border-radius: 18px; box-shadow: 0 0 0 2px #ffffff22, 0 10px 26px #000a; background: #0002; }
+.q-photo small { display: block; margin-top: 4px; font: 500 9.5px/1.2 var(--body); color: #ffffff80; text-shadow: none; letter-spacing: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lt-question .q-photo img { height: clamp(140px, 24vh, 220px); }
+.recap .q-photo { width: 120px; margin: 6px 0 0; } .recap .q-photo img { height: 80px; border-radius: 10px; } .recap .q-photo small { display: none; }
+.duel .q-photo { margin-top: 6px; }
+.duel .q-photo img { height: clamp(120px, 19vh, 210px); }
+.duel .q-photo small { margin-top: 2px; }
+.duel .question:has(.q-photo) { margin-bottom: 6px; }

@@ -23,6 +23,8 @@ const LADDERS = {
   inventions: ['Bricoleur', 'Curieux', 'Apprenti inventeur', 'Ingénieur', 'Chercheur', 'Breveté', 'Génie', 'Léonard de Vinci'],
   sports: ['Supporter', 'Sportif du dimanche', 'Licencié', 'Athlète', 'Champion régional', 'Champion national', 'Médaillé olympique', 'Légende olympique'],
   monuments: ['Touriste', 'Routard', 'Guide', 'Archéologue', 'Architecte', 'Explorateur', 'Bâtisseur', 'Gardien des merveilles'],
+  voitures: ['Piéton', 'Apprenti conducteur', 'Jeune permis', 'Copilote', 'Mécano', 'Pilote', 'Champion de rallye', 'Légende des circuits'],
+  'quel-animal': ['Promeneur', 'Curieux', 'Observateur', 'Photographe', 'Naturaliste', 'Explorateur', 'Zoologiste', 'Maître des bêtes'],
   orthographe: ['Faute de frappe', 'Écolier', 'Bon élève', 'Relecteur', 'Plume habile', 'Correcteur', 'Grammairien', 'Académicien'],
   anglais: ['Beginner', 'Débutant', 'Élève appliqué', 'Bilingue en herbe', 'Voyageur', 'Interprète', 'Traducteur', 'Native speaker'],
   'dessins-animes': ['Spectateur du mercredi', 'Fan de génériques', 'Collectionneur de DVD', 'Dessinateur', 'Animateur', 'Réalisateur', 'Créateur de studio', 'Légende de l\'animation'],

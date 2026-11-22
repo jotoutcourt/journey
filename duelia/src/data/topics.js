@@ -20,6 +20,8 @@ import x_sports from './extra/sports.js'
 import x_monuments from './extra/monuments.js'
 import x_anglais from './extra/anglais.js'
 import x_orthographe from './extra/orthographe.js'
+import x_quel_animal from './extra/quel-animal.js'
+import x_voitures from './extra/voitures.js'
 import x_dessins_animes from './extra/dessins-animes.js'
 import x_c_series_cultes from './extra/c-series-cultes.js'
 import x_c_espace from './extra/c-espace.js'
@@ -65,6 +67,8 @@ const EXTRA = {
   'monuments': x_monuments,
   'anglais': x_anglais,
   'orthographe': x_orthographe,
+  'quel-animal': x_quel_animal,
+  'voitures': x_voitures,
   'dessins-animes': x_dessins_animes,
   'c-series-cultes': x_c_series_cultes,
   'c-espace': x_c_espace,
@@ -306,6 +310,8 @@ export const OFFICIAL_TOPICS = [
   T('monuments', 'Monuments du monde', '🗽', '#2ec4ff', 'Géographie', 'Merveilles, tours et temples', 18090, []),
   T('anglais', 'Anglais', '🇬🇧', '#5b7cff', 'Langue', 'Vocabulaire, faux amis et expressions', 19570, []),
   T('orthographe', 'Orthographe', '✍️', '#ff9f43', 'Langue', 'Mots pièges, accords, pluriels et homophones', 16580, []),
+  T('voitures', 'Voitures', '🏎️', '#ff4d4d', 'Sport', 'Marques, modèles, mécanique et sport auto', 17260, []),
+  T('quel-animal', 'Quel est cet animal ?', '📸', '#3ddc84', 'Nature', 'Reconnais l\'animal sur la photo', 18240, []),
   T('dessins-animes', 'Dessins animés', '📺', '#ffb648', 'Cinéma & TV', 'Des Simpson à Miyazaki', 22640, []),
 ]
 
@@ -376,7 +382,7 @@ const SEED = [
   },
   {
     id: 'c-desperate', name: 'Desperate Housewives', icon: '🏡', color: '#7cbf5a', category: 'Cinéma & TV',
-    tagline: 'Les secrets de Wisteria Lane', by: 'Jo', followers: 0, community: true, questions: [],
+    tagline: 'Les secrets de Wisteria Lane', by: 'Jo', followers: 14820, community: true, questions: [],
   },
   {
     id: 'c-villa', name: 'La Villa des cœurs brisés', icon: '💔', color: '#ff5d8f', category: 'Cinéma & TV',
@@ -384,19 +390,19 @@ const SEED = [
   },
   {
     id: 'c-eras', name: 'The Eras Tour', icon: '✨', color: '#b57edc', category: 'Musique',
-    tagline: 'Taylor Swift, 149 concerts et des bracelets d\'amitié', by: 'Jo', followers: 0, community: true, questions: [],
+    tagline: 'Taylor Swift, 149 concerts et des bracelets d\'amitié', by: 'Jo', followers: 22390, community: true, questions: [],
   },
   {
     id: 'c-greys', name: "Grey's Anatomy", icon: '🩺', color: '#3e9bd6', category: 'Cinéma & TV',
-    tagline: 'Seattle Grace, McDreamy et chirurgies impossibles', by: 'Jo', followers: 0, community: true, questions: [],
+    tagline: 'Seattle Grace, McDreamy et chirurgies impossibles', by: 'Jo', followers: 19640, community: true, questions: [],
   },
   {
     id: 'c-friends', name: 'Friends', icon: '☕', color: '#e8a93a', category: 'Cinéma & TV',
-    tagline: 'Central Perk, six amis et un canapé orange', by: 'Jo', followers: 0, community: true, questions: [],
+    tagline: 'Central Perk, six amis et un canapé orange', by: 'Jo', followers: 25110, community: true, questions: [],
   },
   {
     id: 'c-potter', name: 'Harry Potter', icon: '⚡', color: '#9b5de5', category: 'Cinéma & TV',
-    tagline: 'Poudlard, sortilèges et Quidditch', by: 'Jo', followers: 0, community: true, questions: [],
+    tagline: 'Poudlard, sortilèges et Quidditch', by: 'Jo', followers: 31870, community: true, questions: [],
   },
   {
     id: 'c-gossip', name: 'Gossip Girl', icon: '💋', color: '#d4a017', category: 'Cinéma & TV',
@@ -408,12 +414,14 @@ const SEED = [
   },
   {
     id: 'c-disney', name: 'Disney', icon: '🏰', color: '#4f7bff', category: 'Cinéma & TV',
-    tagline: 'Un siècle de films, de personnages et de parcs', by: 'Jo', followers: 0, community: true, questions: [],
+    tagline: 'Un siècle de films, de personnages et de parcs', by: 'Jo', followers: 28450, community: true, questions: [],
   },
 ].map(t => ({ ...t, questions: merge(t.id, t.questions) }))
 
 // Thèmes communautaires livrés avec l'appli
-const MINE = ['c-calzona', 'c-desperate', 'c-disney', 'c-villa', 'c-eras', 'c-greys', 'c-friends', 'c-potter', 'c-gossip', 'c-pop2000']
+// Thèmes devenus officiels (ils ne sont plus rangés dans les créations du joueur)
+export const MADE_OFFICIAL = ['c-potter', 'c-eras', 'c-friends', 'c-greys', 'c-disney', 'c-desperate']
+const MINE = ['c-calzona', 'c-villa', 'c-gossip', 'c-pop2000']
 // Anciens thèmes « de la communauté » (attribués à des joueurs simulés) : ce sont désormais des thèmes officiels
 export const COMMUNITY_SEED = SEED.filter(t => !MINE.includes(t.id)).map(({ by, community, ...t }) => ({ ...t, official: true })) // eslint-disable-line no-unused-vars
 

@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { OFFICIAL_TOPICS, COMMUNITY_SEED, STARTER_CREATION, STARTER_CREATIONS } from './data/topics.js'
+import { OFFICIAL_TOPICS, COMMUNITY_SEED, STARTER_CREATION, STARTER_CREATIONS, MADE_OFFICIAL } from './data/topics.js'
 import { POKEMON_TOPIC } from './data/pokemon.js'
 import { loadState, saveState, emptyState, encodeTopic, decodeTopic } from './lib/store.js'
 import { findOpponent, getCommunity, leaderboard } from './lib/bots.js'
 import { meEntry } from './lib/profile.js'
 import { setSound, setMusic, sfx } from './lib/sound.js'
+import { setMenuMusic } from './lib/menuMusic.js'
 import Duel from './components/Duel.jsx'
 import { buildQuestions } from './lib/duel.js'
 import Results from './components/Results.jsx'
@@ -141,6 +142,12 @@ function initialState() {
     }
     s.starterVersion = 8
   }
+  // Mise à jour unique (v9) : Harry Potter, The Eras Tour, Friends, Grey's Anatomy, Disney et Desperate Housewives
+  // deviennent des thèmes officiels : on retire leurs anciennes copies des créations du joueur (l'XP et les abonnements restent).
+  if (s.starterVersion < 9) {
+    s.custom = s.custom.filter(t => !MADE_OFFICIAL.includes(t.id))
+    s.starterVersion = 9
+  }
   return s
 }
 
@@ -178,6 +185,9 @@ export default function App() {
     return () => document.removeEventListener('click', onClick, true)
   }, [])
   useEffect(() => { setMusic(st.settings.music !== false) }, [st.settings.music])
+  // Musique d'ambiance : seulement dans les menus et à l'accueil, jamais pendant une partie
+  const inGame = ['match', 'duel', 'butingame', 'party', 'invite', 'linkload', 'linkready'].includes(route.name)
+  useEffect(() => { setMenuMusic(st.settings.sound && st.settings.menuMusic !== false && !inGame) }, [st.settings.sound, st.settings.menuMusic, inGame])
 
   const update = useCallback((fn) => setSt(s => fn(s) ?? emptyState()), [])
   // Les thèmes du joueur sont signés de son pseudo actuel

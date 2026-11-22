@@ -1,3 +1,4 @@
+import QuestionText from './QuestionText.jsx'
 import Mascot from './Mascot.jsx'
 import { useEffect, useState } from 'react'
 import Avatar from './Avatar.jsx'
@@ -162,7 +163,7 @@ export default function Results({ data, me, onRematch, onAnother, onTopic, onSha
             const m = log.me[i], o = log.opp[i]
             return (
               <li key={i}>
-                <p>{q.q}</p>
+                <p><QuestionText text={q.q} /></p>
                 <div className="recap-row">
                   <span className={m?.pts ? 'ok' : 'ko'}>Toi {m?.pts ? `+${m.pts}` : '✗'}</span>
                   <span className="recap-ans">{q.options[q.correct]}</span>
