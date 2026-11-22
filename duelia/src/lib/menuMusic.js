@@ -18,7 +18,8 @@ function load() {
 function element() {
   if (!el) {
     el = new Audio(); el.loop = true; el.preload = 'auto'
-    load().then(u => { el.src = u; if (want) start() })
+    // si le fichier complet arrive avant que la musique ait démarré, on le prend (lecture plus fluide)
+    load().then(u => { if (!el.src) el.src = u; if (want && el.paused) start() })
   }
   return el
 }
@@ -39,12 +40,14 @@ function fade(to, secs) {
 function start() {
   if (!want || document.hidden) return
   element()
-  if (!el.src) return // le fichier arrive : on relancera dès qu'il est là
+  // fichier pas encore téléchargé : on le lit directement depuis le serveur, sans attendre
+  // (indispensable sur iPhone : la lecture doit démarrer pendant le geste du joueur)
+  if (!el.src) el.src = FILE
   route()
   clearTimeout(stopTimer)
   if (!el.paused) { fade(VOL, 1.5); return }
   if (gain) gain.gain.value = 0; else el.volume = 0
-  el.play().then(() => fade(VOL, 2.2)).catch(() => { /* lecture bloquée : on réessaie au premier toucher */ })
+  el.play().then(() => fade(VOL, 1.2)).catch(() => { /* lecture bloquée : on réessaie au premier toucher */ })
 }
 function stop() {
   if (!el) return
