@@ -27,6 +27,7 @@ const LADDERS = {
   'pop-girlies': ['Fan', 'Stan', 'Choriste', 'Danseuse', 'Popstar', 'Diva', 'Icône', 'Queen'],
   'petite-maison': ['Voyageur', 'Pionnier', 'Écolier', 'Fermier', 'Voisin', 'Habitant de Walnut Grove', 'Ami des Ingalls', 'Demi-portion'],
   'ici-tout-commence': ['Plongeur', 'Commis', 'Élève de première année', 'Chef de partie', 'Second', 'Chef de cuisine', 'Professeur à l\'Institut', 'Chef étoilé'],
+  'secret-story': ['Téléspectateur', 'Nominé', 'Habitant', 'Buzzeur', 'Complice de La Voix', 'Finaliste', 'Gagnant', 'Gardien des secrets'],
   voitures: ['Piéton', 'Apprenti conducteur', 'Jeune permis', 'Copilote', 'Mécano', 'Pilote', 'Champion de rallye', 'Légende des circuits'],
   'quel-animal': ['Promeneur', 'Curieux', 'Observateur', 'Photographe', 'Naturaliste', 'Explorateur', 'Zoologiste', 'Maître des bêtes'],
   orthographe: ['Faute de frappe', 'Écolier', 'Bon élève', 'Relecteur', 'Plume habile', 'Correcteur', 'Grammairien', 'Académicien'],
