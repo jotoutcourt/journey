@@ -913,3 +913,10 @@ button.wallet-pill { border: 0; cursor: pointer; }
 /* texte d'explication : blanc franc */
 .home .kh-pitch { color: #ffffff; opacity: 1; font-weight: 500; text-shadow: 0 1px 3px #000000b3, 0 0 14px #0b0420; }
 .home .kh-pitch b { color: #ffffff; font-weight: 700; }
+/* écran des 5 thèmes : la dernière ligne n'est plus cachée par le bouton */
+.starter-pick { padding-bottom: 150px; }
+.sp-dock { bottom: 0; padding: 26px 16px calc(env(safe-area-inset-bottom) + 84px); background: linear-gradient(180deg, transparent, #120a26 45%); }
+.sp-dock .kh-play { width: min(84vw, 320px); }
+.sp-dock .kh-play:disabled { background: #2a1a57; color: #cbbdf0; box-shadow: inset 0 0 0 1.5px #5a3fa0; }
+.sp-dock .kh-play:not(:disabled) { background: radial-gradient(120% 140% at 50% 0%, #c590ff 0%, #8a3dff 45%, #4b16a8 100%); box-shadow: inset 0 2px 0 #e7d2ff, 0 0 0 2px #ffcf5a, 0 8px 24px -6px #000c, 0 0 34px -4px #a866ffcc; }
+.sp-dock .kh-play::before { background: none; padding: 0; }
