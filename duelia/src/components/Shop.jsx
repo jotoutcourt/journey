@@ -64,6 +64,13 @@ export function StarterPick({ topics, count = 5, onDone }) {
       <Mascot pose="pirate" size={110} />
       <h1>Choisis tes {count} thèmes</h1>
       <p className="sp-sub">Ils sont à toi, gratuitement. Les autres se débloquent plus tard avec les lingots volés au Kraken.</p>
+      <div className="sp-dock">
+        <button className="kh-play sp-go" disabled={picked.length !== count || busy} onClick={async () => {
+          setBusy(true); setErr(null)
+          try { await onDone(picked) } catch { setErr('Impossible d\'enregistrer ton choix : vérifie ta connexion.') }
+          setBusy(false)
+        }}>{picked.length === count ? (busy ? '…' : 'C\'est parti !') : `${picked.length} / ${count} choisis`}</button>
+      </div>
       <div className="grid sp-grid">
         {list.map(t => (
           <button key={t.id} className={`topic-tile pickable ${picked.includes(t.id) ? 'picked' : ''}`} onClick={() => toggle(t.id)}>
@@ -72,13 +79,6 @@ export function StarterPick({ topics, count = 5, onDone }) {
         ))}
       </div>
       {err && <p className="recover-err">{err}</p>}
-      <div className="sp-dock">
-        <button className="kh-play sp-go" disabled={picked.length !== count || busy} onClick={async () => {
-          setBusy(true); setErr(null)
-          try { await onDone(picked) } catch { setErr('Impossible d\'enregistrer ton choix : vérifie ta connexion.') }
-          setBusy(false)
-        }}>{picked.length === count ? (busy ? '…' : 'C\'est parti !') : `${picked.length} / ${count} choisis`}</button>
-      </div>
     </div>
   )
 }

@@ -920,3 +920,8 @@ button.wallet-pill { border: 0; cursor: pointer; }
 .sp-dock .kh-play:disabled { background: #2a1a57; color: #cbbdf0; box-shadow: inset 0 0 0 1.5px #5a3fa0; }
 .sp-dock .kh-play:not(:disabled) { background: radial-gradient(120% 140% at 50% 0%, #c590ff 0%, #8a3dff 45%, #4b16a8 100%); box-shadow: inset 0 2px 0 #e7d2ff, 0 0 0 2px #ffcf5a, 0 8px 24px -6px #000c, 0 0 34px -4px #a866ffcc; }
 .sp-dock .kh-play::before { background: none; padding: 0; }
+/* compteur / bouton de validation ancré en haut pendant le défilement */
+.starter-pick { padding-bottom: 24px; }
+.sp-dock { position: sticky; top: 0; left: auto; right: auto; bottom: auto; width: calc(100% + 32px); margin: 0 -16px 8px; z-index: 5;
+  padding: calc(env(safe-area-inset-top) + 8px) 16px 18px; background: linear-gradient(180deg, #120a26 70%, transparent); pointer-events: auto; }
+.sp-dock { background: linear-gradient(180deg, #120a26 0%, #120a26 78%, #120a2600 100%); padding-bottom: 22px; }
