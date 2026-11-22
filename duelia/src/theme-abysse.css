@@ -962,3 +962,25 @@ button.wallet-pill { border: 0; cursor: pointer; }
 .lt-expl b { color: #7df5b4; margin-right: 4px; }
 .lt-reveal-dock .lt-bubble { margin-top: 0; }
 .real-tentacle { -webkit-mask-image: linear-gradient(90deg, #000 78%, transparent 99%); mask-image: linear-gradient(90deg, #000 78%, transparent 99%); }
+
+/* ===== Tentacules : chacune sort de son bord d'écran (image miroir pour la droite), sans se chevaucher ===== */
+.loot .lt-grid > .lt-tentacles .real-tentacle { width: 58%; max-width: 290px; transform: none; }
+.loot .lt-grid > .lt-tentacles .real-tentacle.tl { left: 0; right: auto; bottom: 34px; transform-origin: 0% 60%; animation: tentL 4.6s ease-in-out infinite;
+  -webkit-mask-image: linear-gradient(90deg, #000 80%, transparent 99%); mask-image: linear-gradient(90deg, #000 80%, transparent 99%); }
+.loot .lt-grid > .lt-tentacles .real-tentacle.tr { right: 0; left: auto; bottom: -26px; transform-origin: 100% 60%; animation: tentR 5.2s ease-in-out infinite;
+  -webkit-mask-image: linear-gradient(270deg, #000 80%, transparent 99%); mask-image: linear-gradient(270deg, #000 80%, transparent 99%); }
+@keyframes tentL { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(4deg) translateY(-6px); } }
+@keyframes tentR { 0%, 100% { transform: rotate(3deg); } 50% { transform: rotate(-4deg) translateY(-6px); } }
+.loot.reveal .lt-grid > .lt-tentacles .real-tentacle.tl { animation: tentLungeL2 1.4s 0.15s ease-in-out both; }
+.loot.reveal .lt-grid > .lt-tentacles .real-tentacle.tr { animation: tentLungeR2 1.4s 0.25s ease-in-out both; }
+@keyframes tentLungeL2 { 45% { transform: rotate(9deg) scale(1.06); } }
+@keyframes tentLungeR2 { 45% { transform: rotate(-9deg) scale(1.06); } }
+.kraken-count .kc-tentacle.r { transform: none; }
+/* haut de l'écran aéré */
+.butin-game.loot { padding-top: calc(env(safe-area-inset-top) + 22px); }
+.loot .lt-team { margin-top: 12px; }
+.loot .lt-topic { margin-top: 14px; }
+.loot .lt-question { margin-top: 6px; }
+/* photo de profil ronde, jamais étirée */
+.lt-player .avatar, .lt-player > :first-child { flex: none; width: 30px !important; height: 30px !important; border-radius: 50%; overflow: hidden; }
+.lt-player img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }

@@ -39,7 +39,7 @@ export function ButinHome({ online, friends, onInvite, onBack, onAddFriend, onSo
     api.getDuoBoard().then(b => { if (alive) setBoard(b) }).catch(() => {})
     return () => { alive = false }
   }, [online])
-  useEffect(() => { ['/decor/butin-fond.webp', '/decor/tentacule-anim.webp'].forEach(src => { new Image().src = src }) }, [])
+  useEffect(() => { ['/decor/butin-fond.webp', '/decor/tentacule-anim.webp', '/decor/tentacule-anim-d.webp'].forEach(src => { new Image().src = src }) }, [])
   const list = [...(friends || [])].sort((a, b) => (b.online - a.online) || a.name.localeCompare(b.name))
   return (
     <div className="screen butin-home">
@@ -261,7 +261,7 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
     return (
       <div className="butin-game loot countdown kraken-count">
         <img className="kc-tentacle l" src="/decor/tentacule-anim.webp" alt="" aria-hidden="true" />
-        <img className="kc-tentacle r" src="/decor/tentacule-anim.webp" alt="" aria-hidden="true" />
+        <img className="kc-tentacle r" src="/decor/tentacule-anim-d.webp" alt="" aria-hidden="true" />
         <img className="kc-kraken" src="/mascotte/pirate-anim.webp" alt="" aria-hidden="true" />
         <p className="kc-label">{solo ? 'Le Kraken se réveille…' : `${partner.name} et toi, préparez-vous…`}</p>
         <div key={n} className={`count-num ${n <= 0 ? 'go' : ''}`}>{n <= 0 ? 'GO !' : n}</div>
@@ -335,7 +335,7 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
         <div className={`lt-grid n${q?.options.length || 4}`}>
           <div className="lt-tentacles" aria-hidden="true">
           <img className="real-tentacle tl" src="/decor/tentacule-anim.webp" alt="" draggable="false" />
-          <img className="real-tentacle tr" src="/decor/tentacule-anim.webp" alt="" draggable="false" />
+          <img className="real-tentacle tr" src="/decor/tentacule-anim-d.webp" alt="" draggable="false" />
         </div>
           {q?.options.map((o, i) => {
             const n = placement[i] || 0
