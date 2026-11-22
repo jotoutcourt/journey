@@ -33,7 +33,7 @@ export default [
   ['Quelle maladie Meredith contracte-t-elle dans la saison 17 ?', 'Le Covid-19', 'La tuberculose', 'Une méningite', 'La grippe aviaire'],
 
   // Derek et les Shepherd
-  ['Quel surnom donne-t-on à Derek Shepherd ?', 'McDreamy', 'McSteamy', 'McArmy', 'McHottie'],
+  ['Quel surnom donne-t-on à Derek Shepherd en VF ?', 'Docteur Mamour', 'Docteur Glamour', 'Docteur Canon', 'Docteur Charme'],
   ['Quelle est la spécialité de Derek Shepherd ?', 'La neurochirurgie', 'La chirurgie cardiaque', 'L\'orthopédie', 'La chirurgie plastique'],
   ['Comment Derek meurt-il ?', 'Après un accident de voiture', 'Dans le crash d\'avion', 'Lors de la fusillade', 'D\'une tumeur au cerveau'],
   ['Qui est la première femme de Derek ?', 'Addison Montgomery', 'Rose', 'Lexie Grey', 'Teddy Altman'],
@@ -67,7 +67,7 @@ export default [
   ['Quel poste Miranda Bailey finit-elle par occuper ?', 'Cheffe de la chirurgie', 'Cheffe des urgences', 'Directrice des infirmières', 'Doyenne de l\'université'],
   ['Qui est le chef de la chirurgie au début de la série ?', 'Richard Webber', 'Derek Shepherd', 'Owen Hunt', 'Miranda Bailey'],
   ['Contre quelle addiction Richard Webber lutte-t-il ?', 'L\'alcool', 'Les jeux d\'argent', 'Les antidouleurs', 'Le tabac'],
-  ['Quel surnom donne-t-on à Mark Sloan ?', 'McSteamy', 'McDreamy', 'McArmy', 'McWidow'],
+  ['Quel surnom donne-t-on à Mark Sloan en VF ?', 'Docteur Glamour', 'Docteur Mamour', 'Docteur Canon', 'Docteur Sexy'],
   ['Quelle est la spécialité de Mark Sloan ?', 'La chirurgie plastique', 'L\'orthopédie', 'La neurochirurgie', 'La chirurgie générale'],
   ['Comment s\'appelle la fille de Mark Sloan qui débarque à Seattle enceinte ?', 'Sloan Riley', 'Sofia Sloan', 'Lexie Riley', 'Harriet Sloan'],
   ['Quelle est la spécialité de Callie Torres ?', 'L\'orthopédie', 'La pédiatrie', 'La neurochirurgie', 'La cardiologie'],

@@ -32,7 +32,7 @@ export default [
   ['Dans « Dr House », quelle est la spécialité de Gregory House ?', 'Le diagnostic médical', 'La chirurgie cardiaque', 'La pédiatrie', 'La psychiatrie'],
   ['Dans « Dr House », de quoi le docteur House est-il dépendant ?', 'Des antidouleurs', 'Du café', 'De l\'alcool', 'Des jeux d\'argent'],
   ['Dans « Grey\'s Anatomy », quel est le prénom de Grey ?', 'Meredith', 'Cristina', 'Izzie', 'Miranda'],
-  ['Dans « Grey\'s Anatomy », quel est le surnom de Derek Shepherd ?', 'McDreamy', 'McSteamy', 'Le Nazi', 'Dr Love'],
+  ['Dans « Grey\'s Anatomy », quel est le surnom de Derek Shepherd ?', 'Docteur Mamour', 'Docteur Glamour', 'Le Nazi', 'Dr Love'],
   ['Dans quelle ville se déroule « Grey\'s Anatomy » ?', 'Seattle', 'Chicago', 'Boston', 'Los Angeles'],
   ['Dans « The Office » (US), qui est le directeur régional ?', 'Michael Scott', 'Dwight Schrute', 'Jim Halpert', 'Andy Bernard'],
   ['Dans quelle ville se trouve l\'agence de « The Office » (US) ?', 'Scranton', 'Philadelphie', 'Pittsburgh', 'Stamford'],
