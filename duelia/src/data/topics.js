@@ -29,6 +29,7 @@ import x_itc from './extra/ici-tout-commence.js'
 import x_secret from './extra/secret-story.js'
 import x_satc from './extra/sex-and-the-city.js'
 import x_1d from './extra/one-direction.js'
+import x_taylor from './extra/taylor-swift.js'
 import x_dessins_animes from './extra/dessins-animes.js'
 import x_c_series_cultes from './extra/c-series-cultes.js'
 import x_c_espace from './extra/c-espace.js'
@@ -82,6 +83,7 @@ const EXTRA = {
   'ici-tout-commence': x_itc,
   'sex-and-the-city': x_satc,
   'one-direction': x_1d,
+  'taylor-swift': x_taylor,
   'secret-story': x_secret,
   'dessins-animes': x_dessins_animes,
   'c-series-cultes': x_c_series_cultes,
@@ -331,6 +333,7 @@ export const OFFICIAL_TOPICS = [
   T('ici-tout-commence', 'Ici tout commence', '👨‍🍳', '#e0563b', 'Cinéma & TV', 'L\'institut Auguste Armand, ses chefs et ses élèves', 19840, []),
   T('sex-and-the-city', 'Sex and the City', '🍸', '#ff6fa8', 'Cinéma & TV', 'Carrie, Samantha, Charlotte, Miranda… et Mr. Big', 22460, []),
   T('one-direction', 'One Direction', '🎤', '#4aa8ff', 'Musique', 'Harry, Niall, Liam, Louis, Zayn et leurs tubes', 24870, []),
+  T('taylor-swift', 'Taylor Swift', '🫶', '#a77bd8', 'Musique', 'Douze albums, des Taylor\'s Version et des records', 31310, []),
   T('secret-story', 'Secret Story', '🤫', '#2f6fde', 'Cinéma & TV', 'Les secrets de la Maison, de 2007 à aujourd\'hui', 22610, []),
   T('voitures', 'Voitures', '🏎️', '#ff4d4d', 'Sport', 'Marques, modèles, mécanique et sport auto', 17260, []),
   T('quel-animal', 'Quel est cet animal ?', '📸', '#3ddc84', 'Nature', 'Reconnais l\'animal sur la photo', 18240, []),

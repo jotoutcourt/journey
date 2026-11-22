@@ -23,6 +23,7 @@ const LADDERS = {
   inventions: ['Bricoleur', 'Curieux', 'Apprenti inventeur', 'Ingénieur', 'Chercheur', 'Breveté', 'Génie', 'Léonard de Vinci'],
   sports: ['Supporter', 'Sportif du dimanche', 'Licencié', 'Athlète', 'Champion régional', 'Champion national', 'Médaillé olympique', 'Légende olympique'],
   monuments: ['Touriste', 'Routard', 'Guide', 'Archéologue', 'Architecte', 'Explorateur', 'Bâtisseur', 'Gardien des merveilles'],
+  'taylor-swift': ['Curieux', 'Fan de Fearless', 'Fan de Red', 'Swiftie', 'Chasseur d\'easter eggs', 'Porteur de bracelets', 'Mastermind', 'Taylor\'s Version'],
   'one-direction': ['Curieux', 'Auditionné', 'Directioner', 'Fan de la première heure', 'Up All Night', 'Midnight Memories', 'Membre honoraire', 'Sixième membre'],
   'sex-and-the-city': ['Célibataire', 'Lectrice du New York Star', 'Fan de Cosmo', 'Amie de Stanford', 'Accro aux Manolo', 'Reine du brunch', 'Icône de Manhattan', 'Carrie Bradshaw'],
   'hunger-games': ['Habitant du 12', 'Tribut', 'Survivant', 'Carrière', 'Mentor', 'Vainqueur', 'Geai moqueur', 'Fille du feu'],
