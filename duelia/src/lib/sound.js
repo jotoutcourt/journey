@@ -70,7 +70,7 @@ export const sfx = {
 }
 
 // Répliques du Kraken (fichiers audio), décodées une fois puis rejouées par Web Audio
-const VOICES = { tout: '/voix/ciao-les-minables.mp3', partie: '/voix/pauvre-idiot.mp3', rien: '/voix/non-pas-mes-lingots.mp3' }
+const VOICES = { tout: '/voix/ciao-les-minables.mp3', partie: '/voix/pauvre-idiot.mp3' }
 const voiceCache = {}
 function loadVoice(key) {
   const c = audioFor()
