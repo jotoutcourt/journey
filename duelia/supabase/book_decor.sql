@@ -20,7 +20,8 @@ declare pid uuid := current_player(); nid bigint;
 begin
   if pid is null then raise exception 'aucun joueur'; end if;
   if p_deco not in ('etoiles-rouges','appareil-photo','smiley','etoiles','nuage','soleil','washi','bisou','tulipes',
-    'boule-disco','couronne','coeur-fleche','cachet-coeur','chat','avion','van') then raise exception 'décor inconnu'; end if;
+    'boule-disco','couronne','coeur-fleche','cachet-coeur','chat','avion','van',
+    'arc-en-ciel','grenouille','chat-rieur','telephone','monstre-vert','piments','mygale','monstre-bleu','alien','dino','lettres','ticket','fantome','bulles') then raise exception 'décor inconnu'; end if;
   if (select count(*) from book_decor where player_id = pid and page = p_page) >= 40 then raise exception 'page pleine'; end if;
   insert into book_decor (player_id, deco, page, x, y, rot, size)
   values (pid, p_deco, greatest(0, least(19, p_page)), greatest(0, least(1, p_x)), greatest(0, least(1, p_y)),

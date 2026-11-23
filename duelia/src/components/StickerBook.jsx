@@ -179,7 +179,7 @@ export default function StickerBook({ playerId, title, editable, topics = [], on
       {editable && !draft && !picked && (
         <section className="sb-tray">
           <h3 className="sec-title">Décors</h3>
-          <div className="sb-tray-list">
+          <div className="sb-deco-list">
             {DECOR.map(d => <button key={d.id} className="sb-deco-item" onClick={() => startDecor(d.id)} aria-label="Poser ce décor"><img src={d.img} alt="" /></button>)}
           </div>
           <small>Gratuits et à volonté : touche un décor pour le poser sur la page.</small>
