@@ -110,7 +110,7 @@ export default function StickerBook({ playerId, title, editable, topics = [], on
       </div>
 
       <div className="sb-book">
-      <img className="sb-spine" src="/book/spine.webp" alt="" draggable="false" />
+      <img className="sb-spiral" src="/book/spirale.webp" alt="" draggable="false" />
       <div key={page} className={`sb-page ${draft ? 'placing' : ''} ${turn}`} ref={pageRef}
         onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp}>
         {placed.filter(p => p.page === page).map(p => {
