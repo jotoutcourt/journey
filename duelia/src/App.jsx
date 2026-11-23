@@ -65,7 +65,7 @@ const NAV = readNavHash()
 const LINK = readLinkFromHash()
 
 // La Chasse au Kraken est en cours de finition : ouverte seulement aux testeurs, « bientôt disponible » pour les autres
-const CHASSE_TESTERS = ['a74d38cf-eaaf-4ba7-a7ec-af1563a1ac93']
+const CHASSE_TESTERS = ['a74d38cf-eaaf-4ba7-a7ec-af1563a1ac93', 'ec682049-9eab-45ca-8bff-4ad866004bab', '3ec2c234-b3b4-415a-80cb-dd9f333470a2'] // jotoutcourt, Isa (x2)
 
 // Adversaire fictif quand on crée un défi par lien : l'ami jouera plus tard
 const FRIEND = { id: 'ami', name: 'Ton ami', avatar: 'ami-mystere', flag: '❔', xp: 0 }
