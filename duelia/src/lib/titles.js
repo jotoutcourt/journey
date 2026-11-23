@@ -27,6 +27,7 @@ const LADDERS = {
   'annees-80-90': ['Né trop tard', 'Collectionneur de Pogs', 'Fan du Club Dorothée', 'Roi du Walkman', 'Maître du Tamagotchi', 'Champion du Minitel', 'Enfant du Top 50', 'Légende des années 80'],
   'tele-realite': ['Téléspectateur', 'Candidat au casting', 'Nominé', 'Rescapé du conseil', 'Finaliste', 'Gagnant de la cagnotte', 'Star de la télé-réalité', 'Légende du Loft'],
   'marvel': ['Civil', 'Agent du S.H.I.E.L.D.', 'Recrue', 'Gardien de la Galaxie', 'Avenger', 'Sorcier suprême', 'Porteur du Gant', 'Je suis Iron Man'],
+  'one-piece': ['Mousse', 'Pirate d\'East Blue', 'Chasseur de primes', 'Supernova', 'Grand Corsaire', 'Commandant', 'Empereur', 'Roi des pirates'],
   'nintendo': ['Joueur du dimanche', 'Goomba', 'Toad', 'Champion de Mario Kart', 'Héros d\'Hyrule', 'Maître Pokémon', 'Smasheur', 'Shigeru Miyamoto'],
   'taylor-swift': ['Curieux', 'Fan de Fearless', 'Fan de Red', 'Swiftie', 'Chasseur d\'easter eggs', 'Porteur de bracelets', 'Mastermind', 'Taylor\'s Version'],
   'one-direction': ['Curieux', 'Auditionné', 'Directioner', 'Fan de la première heure', 'Up All Night', 'Midnight Memories', 'Membre honoraire', 'Sixième membre'],
