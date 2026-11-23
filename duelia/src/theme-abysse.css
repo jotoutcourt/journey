@@ -1373,3 +1373,9 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
 .tq-slot .tq-tile-topic { font-size: 22px; }
 /* Figurines posées au centre des cases, sans tremblement ni lueur */
 .tq-track .tq-figure, .tq-track .tq-figure.active { animation: none; filter: drop-shadow(0 4px 3px #000a); width: 10%; height: auto; margin: 0; transform: translate(-50%, -86%); transition: top .18s ease, left .18s ease; }
+/* Cases calées sur les emplacements peints du plateau HD : même taille, pas de halo qui déborde */
+.tq-slot { width: 5.6%; aspect-ratio: 1.62; font-size: 22px; }
+.tq-slot.t-truce, .tq-slot.t-chest, .tq-slot.t-shop { font-size: 18px; }
+.tq-slot:not(.t-general):not(.t-start) { box-shadow: inset 0 0 0 100px var(--sc), inset 0 -3px 0 #0003, inset 0 2px 0 #ffffff40; }
+.tq-slot.t-spec { --sc: color-mix(in srgb, var(--oc) 78%, transparent); }
+.tq-slot .tq-tile-topic { top: -48%; right: -22%; font-size: 17px; }
