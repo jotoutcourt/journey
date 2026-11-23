@@ -1,6 +1,6 @@
 // La Traque du Kraken : salon (invitations, robots, spécialités) puis plateau en direct.
 // Le serveur tient tout le jeu ; l'appli l'interroge chaque seconde et anime ce qui change.
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import Avatar from './Avatar.jsx'
 import TopicIcon from './TopicIcon.jsx'
 import QuestionText from './QuestionText.jsx'
@@ -12,7 +12,6 @@ import { BOARD_PTS, BOARD_RATIO } from '../lib/traqueBoard.js'
 import { SEAT_COLORS, GENERAL_TOPICS, ITEMS, ITEM_COST, CELL_ICON, CELL_LABEL, buildPool, topicMeta, randomTopics, PAWNS, pawnImg } from '../lib/traque.js'
 
 const errText = (e) => (e?.message || '').replace(/^.*?: /, '') || 'Pas de connexion.'
-const GLYPH = { general: '?', spec: '★', tentacle: '☠', shortcut: '⇈', current: '≋' }
 
 /* ---------- Invitation reçue ---------- */
 export function TraqueInviteBanner({ invite, onAccept, onDecline }) {
@@ -373,10 +372,14 @@ function PathBoard({ v, shown, topicOf, owners }) {
           const t = c.topic ? topicOf(c.topic) : null
           const own = c.t === 'spec' ? owners(c.topic) : []
           return (
-            <div key={i} className={`tq-slot t-${c.t}`} style={{ left: `${x * 100}%`, top: `${y * 100}%`, '--oc': own.length ? SEAT_COLORS[own[0]] : undefined }}
-              title={c.t === 'spec' || c.t === 'general' ? `${CELL_LABEL[c.t]} · ${t?.name}` : CELL_LABEL[c.t]}>
-              <span className="tq-ico">{GLYPH[c.t] ?? CELL_ICON[c.t] ?? '?'}</span>
-            </div>
+            <Fragment key={i}>
+              {/* teinte fondue dans la pierre peinte (garde les reflets et l'ombre de l'illustration) */}
+              {c.t !== 'general' && <i className={`tq-tint t-${c.t}`} style={{ left: `${x * 100}%`, top: `${y * 100}%`, '--oc': own.length ? SEAT_COLORS[own[0]] : undefined }} />}
+              <div className={`tq-slot t-${c.t}`} style={{ left: `${x * 100}%`, top: `${y * 100}%` }}
+                title={c.t === 'spec' || c.t === 'general' ? `${CELL_LABEL[c.t]} · ${t?.name}` : CELL_LABEL[c.t]}>
+                <span className="tq-ico">{c.t === 'spec' ? (t?.icon || '★') : c.t === 'general' ? '?' : CELL_ICON[c.t] ?? '?'}</span>
+              </div>
+            </Fragment>
           )
         })}
         {v.players.filter(p => p.status !== 'declined').map((p, _, all) => {

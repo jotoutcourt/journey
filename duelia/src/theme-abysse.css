@@ -1460,3 +1460,17 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
 .tq-frame .tq-intro-who.n3, .tq-frame .tq-intro-who.n4 { gap: 8px; }
 .tq-frame .tq-intro-who small { max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tq-intro-txt { font-size: clamp(12px, 3.4vw, 14px); font-weight: 700; color: #e6dcff; }
+/* ===== Cases : teinte fondue dans l'emplacement peint + emoji explicite ===== */
+.tq-slot, .tq-slot:not(.t-general):not(.t-start) { background: none; box-shadow: none; }
+.tq-tint { position: absolute; width: 5.5%; aspect-ratio: 1.5; transform: translate(-50%, -46%); border-radius: 50%; pointer-events: none;
+  mix-blend-mode: color; background: var(--sc); }
+.tq-tint.t-start { display: none; }
+.tq-tint.t-spec { --sc: var(--oc); }
+.tq-tint.t-truce { --sc: #18c46e; }
+.tq-tint.t-chest, .tq-tint.t-shop { --sc: #ffb800; }
+.tq-tint.t-current { --sc: #12a8ff; }
+.tq-tint.t-tentacle { --sc: #ff2244; }
+.tq-tint.t-shortcut { --sc: #ff7a1a; }
+.tq-tint.t-lair { display: none; }
+.tq-slot .tq-ico { font-size: clamp(16px, 4.6vw, 22px); filter: drop-shadow(0 1px 1px #0008); transform: translateY(-6%); }
+.tq-slot.t-general .tq-ico { font: 900 clamp(16px, 4.6vw, 22px) var(--display); color: #ffffffe0; }
