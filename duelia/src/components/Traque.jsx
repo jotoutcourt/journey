@@ -332,7 +332,7 @@ function TraqueBoard({ v, gameId, act, onExit }) {
       </div>}
 
       {/* Moments forts au centre de l'écran */}
-      {v.phase === 'show' && (d.dice || []).length > 0 && <div className="tq-center"><div className="tq-dice">{d.dice.map((n, i) => <span key={i} className="tq-die">{n}</span>)}</div></div>}
+      {v.phase === 'show' && (d.dice || []).length > 0 && <div className="tq-center"><div className="tq-dice">{d.dice.map((n, i) => <DieFace key={i} n={n} />)}</div></div>}
       {v.phase === 'event' && <div className="tq-center"><p className="tq-event">{d.text}</p></div>}
       {v.phase === 'duelroll' && <div className="tq-center"><p className="tq-event">
         ⚔️ {d.winner === v.me ? 'Tu gagnes' : `${bare(v.players.find(p => p.seat === d.winner)?.name)} gagne`} {(d.score || []).join('–')}{d.tie ? ' au temps (plus rapide sur les bonnes réponses)' : ''} !<br />
@@ -421,6 +421,12 @@ function PathBoard({ v, shown, topicOf, owners }) {
 const TITLE_IMG = { duel: '/traque/titre-duel.webp', truce: '/traque/titre-treve.webp', final: '/traque/titre-final2.webp' }
 const bare = (s) => (s || '').replace(/ \((facile|moyen|expert)\)/g, '')
 const Pearl = () => <img className="tq-pearl" src="/traque/perle.webp" alt="perles" />
+
+// Résultat du dé : la face vierge illustrée + les points
+const PIPS = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] }
+function DieFace({ n }) {
+  return <span className="tq-dieface" aria-label={`Dé : ${n}`}>{Array.from({ length: 9 }, (_, i) => <i key={i} className={PIPS[n]?.includes(i) ? 'on' : ''} />)}</span>
+}
 
 function Die() {
   return <img className="tq-die-img" src="/traque/de.webp" alt="" draggable="false" />
