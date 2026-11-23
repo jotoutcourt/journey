@@ -128,15 +128,12 @@ export function Topics({ topics, go, importTopic, extra, onRequest, lockPrice = 
         </div>
       </>}
 
-      <h3 className="sec-title">{mine.length ? 'Mes créations' : 'Un thème te manque ?'}</h3>
-      <div className="grid">
-        <button className="topic-tile create-tile" onClick={onRequest}>
-          <span className="topic-icon plus" style={{ width: 76, height: 76 }}>💡</span>
-          <b>Demander un thème</b>
-          <small>Propose un sujet, on le crée</small>
-        </button>
-        {mine.map(t => <TopicTile key={t.id} topic={t} onClick={() => go({ name: 'topic', id: t.id })} sub={`${t.questions.length} questions`} />)}
-      </div>
+      {mine.length > 0 && <>
+        <h3 className="sec-title">Mes créations</h3>
+        <div className="grid">
+          {mine.map(t => <TopicTile key={t.id} topic={t} onClick={() => go({ name: 'topic', id: t.id })} sub={`${t.questions.length} questions`} />)}
+        </div>
+      </>}
 
       {extra}
 
@@ -154,6 +151,15 @@ export function Topics({ topics, go, importTopic, extra, onRequest, lockPrice = 
           <button className="btn btn-small btn-primary" onClick={doImport} disabled={!code.trim()}>Ajouter</button>
         </div>
         {importErr && <p className="import-err">Ce lien ne contient pas de thème valide. Vérifie que tu l'as copié en entier.</p>}
+      </div>
+
+      {/* toujours visible en bas de l'écran Thèmes */}
+      <div className="idea-dock">
+        <button className="idea-btn" onClick={onRequest}>
+          <span aria-hidden="true">💡</span>
+          <span><b>Des idées de thème ?</b><small>Fais-le nous savoir !</small></span>
+          <i aria-hidden="true">›</i>
+        </button>
       </div>
     </div>
   )
