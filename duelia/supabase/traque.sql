@@ -54,8 +54,8 @@ revoke all on public.traque_games, public.traque_players from anon, authenticate
 -- Réglages
 create or replace function public.tq_const(k text) returns int language sql immutable as $$
   select case k
-    when 'cells' then 80 when 'answer' then 12 when 'hard' then 9 when 'reveal' then 3 when 'roll' then 30
-    when 'show' then 3 when 'event' then 4 when 'shop_max' then 3 end
+    when 'cells' then 80 when 'answer' then 12 when 'hard' then 9 when 'reveal' then 4 when 'roll' then 30
+    when 'show' then 3 when 'event' then 5 when 'shop_max' then 3 end
 $$;
 create or replace function public.tq_item_cost(k text) returns int language sql immutable as $$
   select case k when 'double' then 6 when 'ancre' then 5 when 'joker' then 4 when 'vol' then 5 when 'echange' then 8 end
@@ -98,10 +98,11 @@ language plpgsql as $$
 declare items jsonb := '[]'::jsonb; t text;
 begin
   foreach t in array p_topics loop items := items || jsonb_build_array(tq_pick(p_game, t)); end loop;
-  update traque_games set phase = 'quiz',
+  -- d'abord un écran « prépare-toi » : on voit ce qui arrive, chacun dit qu'il est prêt (12 s max)
+  update traque_games set phase = 'intro',
     data = jsonb_build_object('kind', p_kind, 'seats', to_jsonb(p_seats), 'items', items, 'idx', 0, 'reveal', false,
-      'ans', '{}'::jsonb, 'jokers', '{}'::jsonb, 'ctx', p_ctx, 'hard', p_hard, 'opened', extract(epoch from now())),
-    deadline = now() + make_interval(secs => case when p_hard then tq_const('hard') else tq_const('answer') end),
+      'ans', '{}'::jsonb, 'jokers', '{}'::jsonb, 'ctx', p_ctx, 'hard', p_hard, 'ready', '[]'::jsonb),
+    deadline = now() + interval '12 seconds',
     version = version + 1
   where id = p_game;
 end $$;
@@ -444,6 +445,15 @@ begin
       perform tq_event(p_game, '🎲 ' || s.name || ' fait ' || n || ' : ' || tq_name(p_game, (d ->> 'loser')::int) || ' recule de ' || n || ' cases !',
         jsonb_build_object('dice', jsonb_build_array(n), 'move', -n, 'seat', (d ->> 'loser')::int));
 
+    elsif g.phase = 'intro' then
+      select bool_and(to_jsonb(seat) <@ (d -> 'ready') or bot is not null or status <> 'joined') into all_in
+        from traque_players where game_id = p_game and to_jsonb(seat) <@ (d -> 'seats');
+      -- tout le monde prêt (petite pause pour lire), ou délai écoulé
+      exit when not (due or (coalesce(all_in, true) and now() >= g.deadline - interval '9 seconds'));
+      update traque_games set phase = 'quiz', data = data || jsonb_build_object('opened', extract(epoch from now())),
+        deadline = now() + make_interval(secs => case when (d ->> 'hard')::boolean then tq_const('hard') else tq_const('answer') end),
+        version = version + 1 where id = p_game;
+
     elsif g.phase = 'quiz' then
       idx := (d ->> 'idx')::int;
       if not (d ->> 'reveal')::boolean then
@@ -489,7 +499,10 @@ begin
   select seat into me from traque_players where game_id = p_game and player_id = p_pid;
   if me is null and g.host <> p_pid then return null; end if;
   d := g.data;
-  if g.phase = 'quiz' then
+  if g.phase = 'intro' then
+    d := d - 'items' || jsonb_build_object('count', jsonb_array_length(g.data -> 'items'), 'topic', g.data -> 'items' -> 0 ->> 'topic',
+      'left_ms', greatest(0, floor(extract(epoch from (g.deadline - now())) * 1000))::int);
+  elsif g.phase = 'quiz' then
     idx := (d ->> 'idx')::int; it := d -> 'items' -> idx;
     q := g.pool -> (it ->> 'topic') -> ((it ->> 'qi')::int);
     d := d - 'items' || jsonb_build_object(
@@ -738,6 +751,17 @@ begin
   return traque_view(p_game, current_player());
 end $$;
 
+create or replace function public.traque_ready(p_game uuid) returns json language plpgsql security definer set search_path = public as $$
+declare s int := tq_my_seat(p_game); g traque_games;
+begin
+  select * into g from traque_games where id = p_game for update;
+  if g.phase = 'intro' and to_jsonb(s) <@ (g.data -> 'seats') and not (to_jsonb(s) <@ (g.data -> 'ready')) then
+    update traque_games set data = jsonb_set(data, '{ready}', (data -> 'ready') || to_jsonb(s)), version = version + 1 where id = p_game;
+  end if;
+  perform traque_tick(p_game);
+  return traque_view(p_game, current_player());
+end $$;
+
 create or replace function public.traque_answer(p_game uuid, p_idx int, p_choice int) returns json language plpgsql security definer set search_path = public as $$
 declare s int := tq_my_seat(p_game); g traque_games;
 begin
@@ -766,11 +790,11 @@ $$;
 revoke all on function public.get_traque(uuid), public.create_traque(), public.invite_traque(uuid, uuid), public.add_traque_bot(uuid, text, jsonb),
   public.remove_traque_seat(uuid, int), public.respond_traque(uuid, boolean), public.set_traque_topics(uuid, jsonb), public.leave_traque(uuid),
   public.start_traque(uuid, jsonb, jsonb, jsonb), public.traque_roll(uuid), public.traque_buy(uuid, text), public.traque_use(uuid, text, int),
-  public.traque_answer(uuid, int, int), public.my_traque(), public.traque_shop_leave(uuid) from public, anon;
+  public.traque_answer(uuid, int, int), public.my_traque(), public.traque_shop_leave(uuid), public.traque_ready(uuid) from public, anon;
 grant execute on function public.get_traque(uuid), public.create_traque(), public.invite_traque(uuid, uuid), public.add_traque_bot(uuid, text, jsonb),
   public.remove_traque_seat(uuid, int), public.respond_traque(uuid, boolean), public.set_traque_topics(uuid, jsonb), public.leave_traque(uuid),
   public.start_traque(uuid, jsonb, jsonb, jsonb), public.traque_roll(uuid), public.traque_buy(uuid, text), public.traque_use(uuid, text, int),
-  public.traque_answer(uuid, int, int), public.my_traque(), public.traque_shop_leave(uuid) to authenticated;
+  public.traque_answer(uuid, int, int), public.my_traque(), public.traque_shop_leave(uuid), public.traque_ready(uuid) to authenticated;
 revoke all on function public.traque_tick(uuid), public.traque_view(uuid, uuid), public.tq_quiz(uuid, text, int[], text[], jsonb, boolean),
   public.tq_land(uuid, int), public.tq_next(uuid), public.tq_roll(uuid), public.tq_finish(uuid, int), public.tq_quiz_done(uuid),
   public.tq_put_answer(uuid, int, int), public.tq_pick(uuid, text), public.tq_event(uuid, text, jsonb), public.tq_shift(uuid, int, int),
