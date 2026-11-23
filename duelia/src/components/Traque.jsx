@@ -292,11 +292,12 @@ function TraqueBoard({ v, gameId, act, onExit }) {
           : v.phase === 'roll' ? (myTurn ? (
             <div className="tq-actions">
               <button className="kh-play" onClick={() => act(() => api.traqueRoll(gameId))}>🎲 Lancer le dé{left != null ? ` · ${Math.ceil(left / 1000)} s` : ''}</button>
-              <button className="btn btn-secondary" onClick={() => setBag(true)}>🎒 Objets ({me?.items?.length || 0}) · 🦪 {me?.pearls}</button>
+              <button className="btn btn-secondary" onClick={() => setBag(true)} disabled={!me?.items?.length}>🎒 Mon sac ({me?.items?.length || 0}/3) · 🦪 {me?.pearls}</button>
             </div>
           ) : <p className="tq-wait">⏳ Au tour de <b style={{ color: SEAT_COLORS[v.turn] }}>{turnP?.name}</b>…</p>)
           : v.phase === 'show' ? <div className="tq-dice">{(d.dice || []).map((n, i) => <span key={i} className="tq-die">{n}</span>)}</div>
           : v.phase === 'event' ? <p className="tq-event">{d.text}</p>
+          : v.phase === 'shop' ? <div className="tq-quiz-wrap"><Shop v={v} d={d} me={me} left={left} onBuy={(k) => act(() => api.traqueBuy(gameId, k))} onLeave={() => act(() => api.traqueShopLeave(gameId))} /></div>
           : v.phase === 'duelroll' ? (d.winner === v.me
             ? <button className="kh-play" onClick={() => act(() => api.traqueRoll(gameId))}>🎲 Lance le dé : {v.players.find(p => p.seat === d.loser)?.name} recule d'autant !</button>
             : <p className="tq-wait">🎲 {v.players.find(p => p.seat === d.winner)?.name} lance le dé du duel…</p>)
@@ -306,7 +307,6 @@ function TraqueBoard({ v, gameId, act, onExit }) {
       </div>
 
       {bag && <Bag me={me} v={v} onClose={() => setBag(false)}
-        onBuy={(k) => act(() => api.traqueBuy(gameId, k))}
         onUse={(k) => { if (ITEMS[k].target) { setTarget(k); setBag(false) } else { setBag(false); act(() => api.traqueUse(gameId, k)) } }} />}
       {target && (
         <div className="sheet-backdrop" onClick={() => setTarget(null)}>
@@ -408,22 +408,24 @@ function Quiz({ v, d, left, me, topicOf, onAnswer, onJoker }) {
   )
 }
 
-function Bag({ me, v, onClose, onBuy, onUse }) {
+function Bag({ me, v, onClose, onUse }) {
+  const mine = [...new Set(me?.items || [])]
   return (
     <div className="sheet-backdrop" onClick={onClose}>
       <div className="sheet tq-bag" onClick={e => e.stopPropagation()}>
-        <h2>🎒 Objets · 🦪 {me?.pearls} perles</h2>
-        <p className="sheet-sub">3 objets maximum dans ton sac. Utilise-les avant de lancer le dé (le joker, pendant une question).</p>
+        <h2>🎒 Mon sac · 🦪 {me?.pearls} perles</h2>
+        <p className="sheet-sub">Les objets s'achètent dans les boutiques 🏪 du plateau. Utilise-les avant de lancer le dé (le joker, pendant une question).</p>
         <ul>
-          {Object.entries(ITEMS).map(([k, it]) => {
+          {mine.length === 0 && <li><span className="tq-it-ico">🫙</span><div><b>Sac vide</b><small>Arrête-toi à une boutique pour acheter des objets.</small></div><span /></li>}
+          {mine.map(k => {
+            const it = ITEMS[k]
             const have = (me?.items || []).filter(x => x === k).length
             return (
               <li key={k}>
                 <span className="tq-it-ico">{it.icon}</span>
-                <div><b>{it.name}{have ? ` ×${have}` : ''}</b><small>{it.desc}</small></div>
+                <div><b>{it.name}{have > 1 ? ` ×${have}` : ''}</b><small>{it.desc}</small></div>
                 <div className="tq-it-btns">
-                  {have > 0 && k !== 'joker' && v.phase === 'roll' && v.turn === v.me && <button className="btn btn-small btn-gold" onClick={() => onUse(k)}>Utiliser</button>}
-                  <button className="btn btn-small btn-secondary" disabled={(me?.pearls || 0) < ITEM_COST[k] || (me?.items?.length || 0) >= 3} onClick={() => onBuy(k)}>🦪 {ITEM_COST[k]}</button>
+                  {k !== 'joker' && v.phase === 'roll' && v.turn === v.me ? <button className="btn btn-small btn-gold" onClick={() => onUse(k)}>Utiliser</button> : <small className="muted">{k === 'joker' ? 'en question' : ''}</small>}
                 </div>
               </li>
             )
@@ -431,6 +433,34 @@ function Bag({ me, v, onClose, onBuy, onUse }) {
         </ul>
         <button className="btn btn-ghost wide" onClick={onClose}>Fermer</button>
       </div>
+    </div>
+  )
+}
+
+function Shop({ v, d, me, left, onBuy, onLeave }) {
+  const cell = v.board[d.cell] || {}
+  const mine = d.seat === v.me
+  const who = v.players.find(p => p.seat === d.seat)
+  const price = (k) => { const base = ITEM_COST[k] + (cell.k || 0); return d.discount ? Math.ceil(base / 2) : base }
+  return (
+    <div className="tq-shop">
+      <div className="tq-shop-head">
+        <b>🏪 Boutique {['du récif', 'des épaves', 'des abysses', 'du Kraken'][cell.k] || ''}</b>
+        <small>{mine ? `🦪 ${me?.pearls} perles · sac ${me?.items?.length || 0}/3` : `${who?.name} fait ses courses…`}{left != null ? ` · ${Math.ceil(left / 1000)} s` : ''}</small>
+      </div>
+      {d.discount && mine && <p className="tq-shop-promo">🎯 Tombé pile dessus : ton premier achat est à moitié prix !</p>}
+      <ul>
+        {(cell.items || []).map(k => (
+          <li key={k}>
+            <span className="tq-it-ico">{ITEMS[k].icon}</span>
+            <div><b>{ITEMS[k].name}</b><small>{ITEMS[k].desc}</small></div>
+            {mine
+              ? <button className="btn btn-small btn-gold" disabled={(me?.pearls || 0) < price(k) || (me?.items?.length || 0) >= 3} onClick={() => onBuy(k)}>🦪 {price(k)}</button>
+              : <span className="tq-price">🦪 {price(k)}</span>}
+          </li>
+        ))}
+      </ul>
+      {mine && <button className="kh-play wide" onClick={onLeave}>{d.rest > 0 ? `Continuer (${d.rest} case${d.rest > 1 ? 's' : ''} restante${d.rest > 1 ? 's' : ''})` : 'Sortir de la boutique'}</button>}
     </div>
   )
 }

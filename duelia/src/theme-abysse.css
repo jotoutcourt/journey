@@ -1268,3 +1268,15 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
   background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--c) 45%, #fff), var(--c) 55%, color-mix(in srgb, var(--c) 55%, #000));
   box-shadow: 0 4px 0 color-mix(in srgb, var(--c) 40%, #000), 0 6px 8px #000a, 0 0 0 2px #fff; }
 .tq-token.active { z-index: 4; animation: tq-bob .8s ease-in-out infinite; box-shadow: 0 4px 0 color-mix(in srgb, var(--c) 40%, #000), 0 0 16px var(--c), 0 0 0 2px #fff; }
+.tq-tile.t-shop { width: 58px; height: 58px; margin: -29px 0 0 -29px; background: radial-gradient(circle at 35% 28%, #fff3b0, #f0b429 60%, #a86b08); box-shadow: 0 8px 0 #6b4305, 0 0 18px #ffc940aa, inset 0 2px 0 #ffffff80; }
+.tq-shop { display: grid; gap: 8px; padding: 12px; border-radius: 18px; background: #14082ef0; box-shadow: 0 0 0 2px var(--gold), 0 0 18px #ffc94055; }
+.tq-shop-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.tq-shop-head b { font: 700 16px var(--display); }
+.tq-shop-head small { color: var(--muted); font-size: 12px; text-align: right; }
+.tq-shop-promo { margin: 0; padding: 6px 10px; border-radius: 10px; background: #ffc94022; color: var(--gold); font-weight: 700; font-size: 13px; }
+.tq-shop ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.tq-shop li { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 14px; background: var(--card); }
+.tq-shop li small { display: block; color: var(--muted); font-size: 11.5px; }
+.tq-shop .kh-play { width: 100%; height: 50px; font-size: 17px; }
+.tq-price { color: var(--gold); font-weight: 800; }
+.tq-quiz-wrap .tq-shop { width: 100%; max-width: 520px; }

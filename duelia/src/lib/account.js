@@ -208,3 +208,4 @@ export const traqueAnswer = (id, idx, choice) => rpc('traque_answer', { p_game: 
 export const myTraque = () => rpc('my_traque')
 export const traqueSignal = (id, to, kind, payload) => rpc('traque_signal', { p_game: id, p_to: to, p_kind: kind, p_payload: payload })
 export const traqueSignalsSince = (id, after) => rpc('traque_signals_since', { p_game: id, p_after: after })
+export const traqueShopLeave = (id) => rpc('traque_shop_leave', { p_game: id })

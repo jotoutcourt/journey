@@ -11,9 +11,9 @@ export const ITEMS = {
   echange: { icon: '🔄', name: 'Échange', desc: 'Échange ta place avec un adversaire', target: true },
 }
 export const ITEM_COST = { double: 6, ancre: 5, joker: 4, vol: 5, echange: 8 }
-export const CELL_ICON = { start: '⚓', truce: '🤝', chest: '💰', current: '🌊', tentacle: '🐙', shortcut: '🚪', lair: '💀' }
+export const CELL_ICON = { shop: '🏪', start: '⚓', truce: '🤝', chest: '💰', current: '🌊', tentacle: '🐙', shortcut: '🚪', lair: '💀' }
 export const CELL_LABEL = {
-  start: 'Départ', general: 'Question', spec: 'Spécialité', truce: 'Trêve : défi commun pour remplir le trésor', chest: 'Coffre : des perles',
+  shop: 'Boutique : on s\'y arrête en passant pour acheter des objets', start: 'Départ', general: 'Question', spec: 'Spécialité', truce: 'Trêve : défi commun pour remplir le trésor', chest: 'Coffre : des perles',
   current: 'Courant : ±2 cases', tentacle: 'Tentacule : événement surprise', shortcut: 'Raccourci : question difficile, +5 cases', lair: 'Antre du Kraken',
 }
 
