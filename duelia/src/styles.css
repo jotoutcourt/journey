@@ -1047,3 +1047,54 @@ img { -webkit-user-drag: none; }
 .stake-chip:disabled { opacity: .35; }
 .stake-btn { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--line); background: var(--card2); color: var(--text); font-size: 20px; font-weight: 800; display: grid; place-items: center; }
 .stake-btn:disabled { opacity: .35; }
+
+/* ---------- Livre de stickers ---------- */
+.pf-book { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; width: 100%; text-align: left; margin: 4px 0 14px;
+  padding: 14px; border-radius: 16px; border: 1px solid var(--line); color: var(--text);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--gold) 22%, var(--card)), var(--card)); }
+.pf-book-cover { font-size: 30px; }
+.pf-book-txt { display: grid; gap: 2px; min-width: 0; }
+.pf-book-txt b { font-family: var(--display); font-size: 16px; }
+.pf-book-txt small { color: var(--muted); font-size: 12.5px; }
+.pf-book-peek { display: flex; }
+.pf-book-peek img { width: 38px; height: 38px; object-fit: contain; margin-left: -12px; filter: drop-shadow(0 2px 3px rgba(0,0,0,.35)); }
+.pf-book-peek img:first-child { margin-left: 0; }
+
+.sticker-book .sb-nav { display: flex; align-items: center; justify-content: center; gap: 18px; margin: 4px 0 10px; font-weight: 700; }
+.sb-page { position: relative; width: 100%; aspect-ratio: 3 / 4; border-radius: 6px 16px 16px 6px; overflow: hidden; touch-action: none; user-select: none;
+  background: #f6efe0 repeating-linear-gradient(#f6efe0 0 27px, #e4d8c0 27px 28px);
+  box-shadow: inset 14px 0 18px -12px rgba(80,50,10,.45), 0 10px 26px rgba(0,0,0,.35); }
+.sb-page::before { content: ''; position: absolute; left: 22px; top: 0; bottom: 0; width: 2px; background: rgba(214,90,90,.35); }
+.sb-page.placing { outline: 3px dashed var(--gold); outline-offset: -6px; cursor: grab; }
+.sb-sticker { position: absolute; padding: 0; border: 0; background: none; aspect-ratio: 1; }
+.sb-sticker img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(1px 3px 3px rgba(60,40,10,.35)); pointer-events: none; }
+.sb-sticker.draft { pointer-events: none; animation: sb-float 1.4s ease-in-out infinite; }
+.sb-sticker.draft img { filter: drop-shadow(4px 12px 10px rgba(60,40,10,.45)); }
+@keyframes sb-float { 50% { margin-top: -5px; } }
+.sb-empty { position: absolute; inset: auto 0 44% 0; text-align: center; color: #9b8b6c; font-size: 14px; padding: 0 30px; margin: 0; }
+.sb-draft-bar { display: grid; gap: 10px; margin-top: 12px; }
+.sb-draft-bar p { margin: 0; text-align: center; color: var(--muted); font-size: 13.5px; }
+.sb-rot { display: flex; justify-content: center; gap: 16px; }
+.sb-tray { margin-top: 14px; }
+.sb-tray small { color: var(--muted); font-size: 12.5px; }
+.sb-tray-list { display: flex; gap: 10px; overflow-x: auto; padding: 4px 0 8px; }
+.sb-tray-item { flex: 0 0 auto; display: grid; justify-items: center; gap: 4px; width: 96px; padding: 8px; border-radius: 14px; border: 1px solid var(--gold); background: var(--card); color: var(--text); font-size: 12px; font-weight: 700; }
+.sb-tray-item img { width: 72px; height: 72px; object-fit: contain; animation: sb-float 1.6s ease-in-out infinite; }
+.sb-collection { margin-top: 14px; }
+.sb-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; }
+.sb-card { display: grid; justify-items: center; gap: 4px; padding: 10px 6px; border-radius: 14px; border: 1px solid var(--line); background: var(--card); color: var(--text); text-align: center; }
+.sb-card img { width: 70px; height: 70px; object-fit: contain; }
+.sb-card b { font-size: 12.5px; }
+.sb-card small { color: var(--muted); font-size: 11px; line-height: 1.25; }
+.sb-card.locked img { filter: brightness(0) opacity(.35); }
+.sb-zoom { text-align: center; }
+.sb-zoom img { width: min(62vw, 240px); aspect-ratio: 1; object-fit: contain; margin: 0 auto 6px; display: block; filter: drop-shadow(0 6px 12px rgba(0,0,0,.4)); }
+.sb-zoom .btn { margin-top: 8px; }
+.sb-tip { display: block; color: var(--muted); font-size: 12px; margin-top: 8px; }
+
+.sticker-unlock { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 12px; width: 100%; text-align: left; margin: 10px 0; padding: 10px 14px;
+  border-radius: 16px; border: 1px solid var(--gold); color: var(--text); background: color-mix(in srgb, var(--gold) 16%, var(--card)); animation: sb-pop .6s 2.8s both; }
+.sticker-unlock img { width: 64px; height: 64px; object-fit: contain; transform: rotate(-8deg); }
+.sticker-unlock span { display: grid; gap: 2px; }
+.sticker-unlock small { color: var(--muted); }
+@keyframes sb-pop { from { opacity: 0; transform: scale(.8); } }

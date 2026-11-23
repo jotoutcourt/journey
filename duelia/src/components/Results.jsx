@@ -5,6 +5,7 @@ import Avatar from './Avatar.jsx'
 import AiTag from './AiTag.jsx'
 import TierIcon from './TierIcon.jsx'
 import { tierOf, PLACEMENT } from '../lib/rating.js'
+import { stickerFor, STICKER_LEVEL } from '../lib/stickers.js'
 import { levelInfo } from '../lib/levels.js'
 import { topicTitle } from '../lib/titles.js'
 import { sfx } from '../lib/sound.js'
@@ -71,7 +72,7 @@ function LevelRing({ before, after, topic }) {
   )
 }
 
-export default function Results({ data, me, onRematch, onAnother, onTopic, onShare, extra }) {
+export default function Results({ data, me, onRematch, onAnother, onTopic, onShare, extra, onBook }) {
   const { outcome, myScore, oppScore, opponent, topic, bonuses, total, before, after, log, questions } = data
   const [showRecap, setShowRecap] = useState(false)
   const [sent, setSent] = useState(null)
@@ -128,6 +129,16 @@ export default function Results({ data, me, onRematch, onAnother, onTopic, onSha
       {data.exploitMissed && <p className="bonus-note muted">Tu as déjà touché la prime d'exploit contre {data.opponent.name} aujourd'hui. Reviens demain pour la regagner.</p>}
 
       {!data.noXp && <LevelRing before={before} after={after} topic={topic} />}
+      {!data.noXp && (() => {
+        const s = stickerFor(topic?.id)
+        if (!s || levelInfo(before).level >= STICKER_LEVEL || levelInfo(after).level < STICKER_LEVEL) return null
+        return (
+          <button className="sticker-unlock" onClick={onBook}>
+            <img src={s.img} alt="" />
+            <span><b>Nouveau sticker : {s.name} !</b><small>Va le coller dans ton livre de stickers 📖</small></span>
+          </button>
+        )
+      })()}
 
       {data.rating && (
         <div className="result-rating">

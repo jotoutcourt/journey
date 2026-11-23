@@ -78,6 +78,10 @@ export async function fetchBoard(topicId, period) {
 
 export const makeRecoveryCode = () => rpc('make_recovery_code')
 
+// Livre de stickers : le sien (sans paramètre) ou celui d'un ami
+export const getStickerBook = (playerId) => rpc('get_sticker_book', playerId ? { p_player: playerId } : {})
+export const placeSticker = (id, page, x, y, rot) => rpc('place_sticker', { p_sticker: id, p_page: page, p_x: x, p_y: y, p_rot: rot })
+
 // Fait classer une partie par le serveur ; renvoie { rating, games } (null si refusée)
 export const recordGame = (g) => rpc('record_game', { p_topic: g.topic, p_my: Math.round(g.my), p_opp: Math.round(g.opp), p_opp_rating: Math.round(g.oppRating), p_match: g.match, p_challenge: g.challenge })
 

@@ -8,6 +8,7 @@ import { PushCard } from './Social.jsx'
 import { levelInfo } from '../lib/levels.js'
 import { topicTitle } from '../lib/titles.js'
 import { COUNTRIES, computeStats, bestBadge, resizeImage } from '../lib/profile.js'
+import { STICKERS, STICKER_LEVEL, unlockedLocally } from '../lib/stickers.js'
 
 const fmt = (n) => n.toLocaleString('fr-FR')
 const pct = (n, total) => (total ? Math.round((n / total) * 100) : 0)
@@ -162,7 +163,20 @@ function ProfileEditor({ profile, onSave, onCancel }) {
 }
 
 /* ---------- Page profil ---------- */
-export default function Profile({ st, topics, update, go, account, onMakeCode, onRecover, push, onPush, onFriends, friendCount }) {
+function BookCard({ st, topics, onOpen }) {
+  const got = unlockedLocally(st)
+  const next = STICKERS.find(s => !got.includes(s) && topics.some(t => t.id === s.topic))
+  return (
+    <button className="pf-book" onClick={onOpen}>
+      <span className="pf-book-cover">📖</span>
+      <span className="pf-book-txt"><b>Mon livre de stickers</b>
+        <small>{got.length ? `${got.length} / ${STICKERS.length} sticker${got.length > 1 ? 's' : ''} débloqué${got.length > 1 ? 's' : ''}` : next ? `Atteins le niveau ${STICKER_LEVEL} en ${topics.find(t => t.id === next.topic)?.name} pour ton premier sticker` : `Atteins le niveau ${STICKER_LEVEL} d'un thème pour ton premier sticker`}</small></span>
+      <span className="pf-book-peek">{got.slice(0, 3).map(s => <img key={s.id} src={s.img} alt="" />)}</span>
+    </button>
+  )
+}
+
+export default function Profile({ st, topics, update, go, account, onMakeCode, onRecover, push, onPush, onFriends, friendCount, onBook }) {
   const me = st.profile
   const lvl = levelInfo(st.xp)
   const [editing, setEditingRaw] = useState(false)
@@ -222,6 +236,8 @@ export default function Profile({ st, topics, update, go, account, onMakeCode, o
         <div className="xpbar-track"><i style={{ width: `${(lvl.into / lvl.need) * 100}%` }} /></div>
         <small>{lvl.need - lvl.into} XP avant le niveau {lvl.level + 1}</small>
       </div>
+
+      {onBook && <BookCard st={st} topics={topics} onOpen={onBook} />}
 
       <h3 className="sec-title">Statistiques</h3>
       {stats.played === 0 ? (

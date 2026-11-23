@@ -12,6 +12,7 @@ import { buildQuestions } from './lib/duel.js'
 import Results from './components/Results.jsx'
 import { Home, Topics, TopicPage, Ranking, Matchmaking, CreateTopic, Onboarding } from './components/Screens.jsx'
 import Profile from './components/Profile.jsx'
+import StickerBook from './components/StickerBook.jsx'
 import { settleDuel, ranksFor } from './lib/rewards.js'
 import { createOutgoing, tickChallenges, pendingCount, markPlayed } from './lib/challenges.js'
 import { Inbox, ChallengeSheet, NotifyBanner, SentScreen } from './components/Challenges.jsx'
@@ -1006,7 +1007,9 @@ export default function App() {
       lockPrice={lockPrice(topic)} lingots={wallet?.lingots || 0} onUnlock={unlock} /> : null; break
     case 'ranking': view = <Ranking st={st} topic={topic} go={go} friends={social.social?.friends || []} onChallenge={(f) => setFriendSheet({ ...f, topic })} />; break
     case 'create': view = <CreateTopic key={route.id || 'new'} st={st} existing={route.id ? topic : null} onSave={saveTopic} go={go} />; break
-    case 'profile': view = <Profile st={st} topics={topics} update={update} go={go} account={account} onMakeCode={getRecoveryCode} onRecover={recoverAccount} push={push} onPush={onPush} onFriends={() => go({ name: 'friends' })} friendCount={social.social?.friends?.length} />; break
+    case 'profile': view = <Profile st={st} topics={topics} update={update} go={go} account={account} onMakeCode={getRecoveryCode} onRecover={recoverAccount} push={push} onPush={onPush} onFriends={() => go({ name: 'friends' })} friendCount={social.social?.friends?.length} onBook={() => go({ name: 'book' })} />; break
+    case 'book': view = <StickerBook key={route.friend?.player_id || 'me'} playerId={route.friend?.player_id} editable={!route.friend} topics={topics} onToast={setToast}
+      title={route.friend ? `Livre de ${route.friend.name}` : 'Mon livre de stickers'} onBack={() => go(route.friend ? { name: 'friend', friend: route.friend } : { name: 'profile' })} />; break
     case 'shop': view = <Shop topics={topics} wallet={wallet} online={online && account.status === 'online'} isLocked={(t) => lockPrice(t) > 0}
       onUnlock={unlock} onOpen={(t) => go({ name: 'topic', id: t.id })} onBack={() => go({ name: 'home' })} />; break
     case 'party': view = <Party key={route.partyId} partyId={route.partyId} friends={social.social?.friends} onExit={() => go({ name: 'home' })} />; break
@@ -1045,7 +1048,7 @@ export default function App() {
       onRespond={(f, yes) => api.respondFriend(f.player_id, yes).then(social.refreshFriends).catch(() => setToast('Pas de connexion.'))}
       onRemove={(f) => api.removeFriend(f.player_id).then(social.refreshFriends).catch(() => setToast('Pas de connexion.'))}
       onChallenge={setFriendSheet} onShareCode={shareMyCode} onOpen={(f) => go({ name: 'friend', friend: f })} />; break
-    case 'friend': view = route.friend ? <FriendProfile friend={route.friend} topics={topics} onChallenge={setFriendSheet} onBack={() => go({ name: 'friends' })}
+    case 'friend': view = route.friend ? <FriendProfile friend={route.friend} topics={topics} onChallenge={setFriendSheet} onBook={(f) => go({ name: 'book', friend: f })} onBack={() => go({ name: 'friends' })}
       onRemove={(f) => api.removeFriend(f.player_id).then(() => { social.refreshFriends(); setToast(`${f.name} n'est plus dans tes amis.`); go({ name: 'friends' }) }).catch(() => setToast('Pas de connexion.'))} /> : null; break
     case 'invite': view = topic ? <InviteWaiting key={route.startedAt} friend={route.friend} topic={topic} status={route.status} startedAt={route.startedAt} stake={route.stake} error={route.error}
       onCancel={cancelInvite} onAsync={() => startFriendDuel(route.friend, topic, 'async')} /> : null; break
@@ -1058,7 +1061,7 @@ export default function App() {
       break
     }
     case 'results': view = (
-      <Results data={route.data} me={me}
+      <Results data={route.data} me={me} onBook={() => go({ name: 'book' })}
         extra={route.friendMsg ? <ChallengeMessage key={route.friendMsg.id} name={route.friendMsg.name} theirMsg={route.friendMsg.theirMsg} myMsg={route.friendMsg.myMsg}
           onSend={(m) => api.setChallengeMessage(route.friendMsg.id, m).then(social.refreshChallenges)} />
           : route.mode === 'remote' && route.matchId ? <>
@@ -1119,7 +1122,7 @@ export default function App() {
       {!fullscreen && (
         <nav className="tabbar">
           {TABS.map(t => (
-            <button key={t.name} className={route.name === t.name || (t.name === 'topics' && ['topic', 'ranking'].includes(route.name)) || (t.name === 'friends' && route.name === 'friend') ? 'on' : ''}
+            <button key={t.name} className={route.name === t.name || (t.name === 'topics' && ['topic', 'ranking'].includes(route.name)) || (t.name === 'friends' && route.name === 'friend') || (t.name === 'profile' && route.name === 'book') ? 'on' : ''}
               onClick={() => go({ name: t.name })}>
               <svg viewBox="0 0 24 24">{t.icon}</svg>
               <span>{t.label}</span>
