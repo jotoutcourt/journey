@@ -1474,3 +1474,15 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
 .tq-tint.t-lair { display: none; }
 .tq-slot .tq-ico { font-size: clamp(16px, 4.6vw, 22px); filter: drop-shadow(0 1px 1px #0008); transform: translateY(-6%); }
 .tq-slot.t-general .tq-ico { font: 900 clamp(16px, 4.6vw, 22px) var(--display); color: #ffffffe0; }
+/* ===== Visuels illustrés ===== */
+.tq-pearl { width: 1.25em; height: 1.25em; object-fit: contain; vertical-align: -0.3em; }
+.tq-intro-stack { display: grid; justify-items: center; gap: 0; pointer-events: auto; }
+.tq-title-img { width: min(92vw, 420px); margin-bottom: -6%; position: relative; z-index: 5; filter: drop-shadow(0 6px 10px #000a); animation: sb-pop .45s both; }
+.tq-intro-stack .tq-frame-title { font-size: clamp(14px, 4.4vw, 19px); }
+/* Bandeau d'info sur la plaque illustrée */
+.tq-hud .tq-banner { background: url(/traque/plaque.webp) center / 100% 100% no-repeat; box-shadow: none; border-radius: 0; padding: 12px 34px; min-height: 64px; display: grid; align-content: center; }
+.tq-hud .tq-banner small { color: #e6dcff; }
+/* Question dans le cadre néon */
+.tq-quiz { background: url(/traque/cadre-question.webp) center / 100% 100% no-repeat, linear-gradient(#1b0f45f0, #120a36f0) center / 88% 86% no-repeat; box-shadow: none !important; padding: 9% 8% 12%; border-radius: 0; }
+.tq-quiz-head { justify-content: center; flex-direction: column; gap: 2px; }
+.tq-hud img.tq-pearl, .tq-pearl { width: 1.25em !important; height: 1.25em !important; background: none !important; box-shadow: none !important; border-radius: 0 !important; filter: none !important; }
