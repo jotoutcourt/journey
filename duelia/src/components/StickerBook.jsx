@@ -2,7 +2,7 @@
 // Un sticker collé ne bouge plus. Les amis peuvent feuilleter le livre (lecture seule).
 import { useEffect, useRef, useState } from 'react'
 import * as api from '../lib/account.js'
-import { STICKERS, STICKER_LEVEL, stickerById, saveSticker } from '../lib/stickers.js'
+import { STICKERS, STICKER_LEVEL, stickerById, saveSticker, DECOR, decorById } from '../lib/stickers.js'
 
 const SIZE = 0.36 // largeur d'un sticker, en part de la largeur de la page
 
@@ -15,6 +15,7 @@ export default function StickerBook({ playerId, title, editable, topics = [], on
   const [saving, setSaving] = useState(false)
   const [cover, setCover] = useState('closed') // closed → opening → open
   const [turn, setTurn] = useState('')
+  const [picked, setPicked] = useState(null) // décor posé sélectionné (pour le retirer)
   const pageRef = useRef(null)
   const drag = useRef(null)
 
@@ -27,15 +28,24 @@ export default function StickerBook({ playerId, title, editable, topics = [], on
   }, [playerId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const placed = book?.placed || []
-  const pages = Math.max(2, ...placed.map(p => p.page + 2))
+  const decor = book?.decor || []
+  const pages = Math.max(2, ...placed.map(p => p.page + 2), ...decor.map(d => d.page + 2))
   const toPlace = editable ? (book?.unlocked || []).filter(id => !placed.some(p => p.id === id) && stickerById(id)) : []
   const owned = new Set([...placed.map(p => p.id), ...(book?.unlocked || [])])
 
   const start = (id) => {
-    setDraft({ id, x: 0.5, y: 0.45, rot: (id.charCodeAt(0) % 3 - 1) * 6 })
-    setZoom(null)
+    setDraft({ kind: 'sticker', id, x: 0.5, y: 0.45, rot: (id.charCodeAt(0) % 3 - 1) * 6 })
+    setZoom(null); setPicked(null)
     setCover('open')
   }
+  const startDecor = (id) => {
+    setDraft({ kind: 'decor', id, x: 0.5, y: 0.45, rot: 0, size: 0.3 })
+    setPicked(null)
+    setCover('open')
+  }
+  const isDecor = draft?.kind === 'decor'
+  const draftImg = draft ? (isDecor ? decorById(draft.id)?.img : stickerById(draft.id)?.img) : null
+  const draftW = isDecor ? draft.size : SIZE
   const pointFrom = (e) => {
     const r = pageRef.current.getBoundingClientRect()
     return { x: Math.min(0.92, Math.max(0.08, (e.clientX - r.left) / r.width)), y: Math.min(0.9, Math.max(0.1, (e.clientY - r.top) / r.height)) }
@@ -46,6 +56,17 @@ export default function StickerBook({ playerId, title, editable, topics = [], on
 
   const stick = async () => {
     setSaving(true)
+    if (isDecor) {
+      try {
+        const id = await api.placeDecor(draft.id, page, draft.x, draft.y, draft.rot, draft.size)
+        setBook(b => ({ ...b, decor: [...(b.decor || []), { ...draft, deco: draft.id, id, page }] }))
+        setDraft(null)
+      } catch (e) {
+        onToast?.(/pleine/.test(e?.message || '') ? 'Cette page est pleine de décors : passe à la suivante.' : 'Impossible de poser le décor : vérifie ta connexion.')
+      }
+      setSaving(false)
+      return
+    }
     try {
       await api.placeSticker(draft.id, page, draft.x, draft.y, draft.rot)
       setBook(b => ({ ...b, placed: [...b.placed, { ...draft, page }] }))
@@ -56,6 +77,12 @@ export default function StickerBook({ playerId, title, editable, topics = [], on
     }
     setSaving(false)
   }
+  const removePicked = async () => {
+    const d = picked
+    setPicked(null)
+    setBook(b => ({ ...b, decor: b.decor.filter(x => x.id !== d.id) }))
+    try { await api.removeDecor(d.id) } catch { onToast?.('Impossible de retirer le décor : vérifie ta connexion.'); load() }
+  }
   const download = async (s) => {
     try { const r = await saveSticker(s); if (r === 'downloaded') onToast?.('Sticker téléchargé 📥') } catch { onToast?.('Téléchargement impossible.') }
   }
@@ -65,6 +92,7 @@ export default function StickerBook({ playerId, title, editable, topics = [], on
     setTimeout(() => setCover('open'), 900)
   }
   const goPage = (d) => {
+    setPicked(null)
     setTurn(d > 0 ? 'turn-next' : 'turn-prev')
     setPage(p => Math.min(pages - 1, Math.max(0, p + d)))
   }
@@ -93,12 +121,20 @@ export default function StickerBook({ playerId, title, editable, topics = [], on
             <img src={s.img} alt={s.name} draggable="false" />
           </button>
         })}
-        {draft && (
-          <div className="sb-sticker draft" style={{ left: `${draft.x * 100}%`, top: `${draft.y * 100}%`, width: `${SIZE * 100}%`, transform: `translate(-50%, -50%) rotate(${draft.rot}deg)` }}>
-            <img src={stickerById(draft.id).img} alt="" draggable="false" />
+        {decor.filter(d => d.page === page).map(d => {
+          const dc = decorById(d.deco)
+          if (!dc) return null
+          return <button key={d.id} className={`sb-deco ${picked?.id === d.id ? 'picked' : ''}`} disabled={!editable || !!draft} onClick={() => setPicked(p => p?.id === d.id ? null : d)}
+            style={{ left: `${d.x * 100}%`, top: `${d.y * 100}%`, width: `${d.size * 100}%`, transform: `translate(-50%, -50%) rotate(${d.rot}deg)` }}>
+            <img src={dc.img} alt="" draggable="false" />
+          </button>
+        })}
+        {draft && draftImg && (
+          <div className={`${isDecor ? 'sb-deco' : 'sb-sticker'} draft`} style={{ left: `${draft.x * 100}%`, top: `${draft.y * 100}%`, width: `${draftW * 100}%`, transform: `translate(-50%, -50%) rotate(${draft.rot}deg)` }}>
+            <img src={draftImg} alt="" draggable="false" />
           </div>
         )}
-        {!draft && !placed.some(p => p.page === page) && <p className="sb-empty">{editable ? 'Page vierge : colle ici tes prochains stickers.' : 'Page vierge.'}</p>}
+        {!draft && !placed.some(p => p.page === page) && !decor.some(d => d.page === page) && <p className="sb-empty">{editable ? 'Page vierge : colle ici tes prochains stickers.' : 'Page vierge.'}</p>}
       </div>
       {cover !== 'open' && (
         <button className={`sb-cover ${cover}`} onClick={openBook} aria-label="Ouvrir le livre">
@@ -109,12 +145,16 @@ export default function StickerBook({ playerId, title, editable, topics = [], on
 
       {draft ? (
         <div className="sb-draft-bar">
-          <p>Fais glisser le sticker sur la page. Une fois collé, il ne bougera plus !</p>
+          <p>{isDecor ? 'Fais glisser le décor où tu veux. Tu pourras le retirer en le touchant.' : 'Fais glisser le sticker sur la page. Une fois collé, il ne bougera plus !'}</p>
           <div className="sb-rot">
-            <button className="stake-btn" onClick={() => setDraft(d => ({ ...d, rot: Math.max(-30, d.rot - 5) }))} aria-label="Tourner à gauche">↺</button>
-            <button className="stake-btn" onClick={() => setDraft(d => ({ ...d, rot: Math.min(30, d.rot + 5) }))} aria-label="Tourner à droite">↻</button>
+            <button className="stake-btn" onClick={() => setDraft(d => ({ ...d, rot: Math.max(isDecor ? -180 : -30, d.rot - (isDecor ? 15 : 5)) }))} aria-label="Tourner à gauche">↺</button>
+            <button className="stake-btn" onClick={() => setDraft(d => ({ ...d, rot: Math.min(isDecor ? 180 : 30, d.rot + (isDecor ? 15 : 5)) }))} aria-label="Tourner à droite">↻</button>
+            {isDecor && <>
+              <button className="stake-btn" onClick={() => setDraft(d => ({ ...d, size: Math.max(0.1, +(d.size - 0.05).toFixed(2)) }))} aria-label="Plus petit">−</button>
+              <button className="stake-btn" onClick={() => setDraft(d => ({ ...d, size: Math.min(0.7, +(d.size + 0.05).toFixed(2)) }))} aria-label="Plus grand">＋</button>
+            </>}
           </div>
-          <button className="btn btn-gold wide" onClick={stick} disabled={saving}>{saving ? 'Collage…' : 'Coller ici'}</button>
+          <button className="btn btn-gold wide" onClick={stick} disabled={saving}>{saving ? 'Collage…' : isDecor ? 'Poser ici' : 'Coller ici'}</button>
           <button className="btn btn-ghost wide" onClick={() => setDraft(null)}>Annuler</button>
         </div>
       ) : toPlace.length > 0 && (
@@ -126,6 +166,23 @@ export default function StickerBook({ playerId, title, editable, topics = [], on
             ) })}
           </div>
           <small>Choisis une page, touche un sticker puis place-le où tu veux.</small>
+        </section>
+      )}
+
+      {picked && !draft && (
+        <div className="sb-draft-bar">
+          <button className="btn btn-ghost danger wide" onClick={removePicked}>🗑 Retirer ce décor</button>
+          <button className="btn btn-ghost wide" onClick={() => setPicked(null)}>Annuler</button>
+        </div>
+      )}
+
+      {editable && !draft && !picked && (
+        <section className="sb-tray">
+          <h3 className="sec-title">Décors</h3>
+          <div className="sb-tray-list">
+            {DECOR.map(d => <button key={d.id} className="sb-deco-item" onClick={() => startDecor(d.id)} aria-label="Poser ce décor"><img src={d.img} alt="" /></button>)}
+          </div>
+          <small>Gratuits et à volonté : touche un décor pour le poser sur la page.</small>
         </section>
       )}
 

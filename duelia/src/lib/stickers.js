@@ -44,3 +44,8 @@ export async function saveSticker(s) {
   setTimeout(() => URL.revokeObjectURL(url), 2000)
   return 'downloaded'
 }
+
+// Décors du livre : gratuits et illimités, le joueur les pose (et les retire) où il veut
+export const DECOR = ['etoiles-rouges', 'appareil-photo', 'smiley', 'etoiles', 'nuage', 'soleil', 'washi', 'bisou', 'tulipes',
+  'boule-disco', 'couronne', 'coeur-fleche', 'cachet-coeur', 'chat', 'avion', 'van'].map(id => ({ id, img: `/book/deco/${id}.webp` }))
+export const decorById = (id) => DECOR.find(d => d.id === id)
