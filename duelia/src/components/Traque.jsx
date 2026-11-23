@@ -8,9 +8,13 @@ import ConfirmButton from './ConfirmButton.jsx'
 import * as api from '../lib/account.js'
 import { sfx } from '../lib/sound.js'
 import { useGroupVoice } from '../lib/groupVoice.js'
-import { SEAT_COLORS, GENERAL_TOPICS, ITEMS, ITEM_COST, CELL_ICON, CELL_LABEL, buildPool, topicMeta, randomTopics, spiral } from '../lib/traque.js'
+import { SEAT_COLORS, GENERAL_TOPICS, ITEMS, ITEM_COST, CELL_ICON, CELL_LABEL, buildPool, topicMeta, randomTopics } from '../lib/traque.js'
 
-const SPIRAL = spiral(9)
+// Plateau vertical : un chemin qui serpente du bas (départ) jusqu'à l'antre du Kraken (en haut)
+const STEP = 74, TOP = 250, BOTTOM = 70
+const TRACK_H = TOP + 79 * STEP + BOTTOM
+const cellXY = (i) => ({ x: 50 + 33 * Math.sin(i * 0.62), y: TRACK_H - BOTTOM - i * STEP })
+const PATH_D = Array.from({ length: 80 }, (_, i) => cellXY(i)).map((p, i) => `${i ? 'L' : 'M'}${p.x} ${p.y}`).join(' ')
 const errText = (e) => (e?.message || '').replace(/^.*?: /, '') || 'Pas de connexion.'
 
 /* ---------- Invitation reçue ---------- */
@@ -278,29 +282,7 @@ function TraqueBoard({ v, gameId, act, onExit }) {
         ))}
       </ul>
 
-      <div className="tq-board" style={{ '--bg': 'url(/traque/plateau.webp)' }}>
-        {v.board.map((c, i) => {
-          const [r, col] = SPIRAL[i]
-          const t = c.topic ? topicOf(c.topic) : null
-          const own = c.t === 'spec' ? owners(c.topic) : []
-          return (
-            <div key={i} className={`tq-cell t-${c.t}`} style={{ gridRow: r + 1, gridColumn: col + 1, '--oc': own.length ? SEAT_COLORS[own[0]] : undefined }}
-              title={c.t === 'spec' || c.t === 'general' ? `${CELL_LABEL[c.t]} · ${t?.name}` : CELL_LABEL[c.t]}>
-              <span className="tq-ico">{CELL_ICON[c.t] || t?.icon || '❔'}</span>
-            </div>
-          )
-        })}
-        <div className="tq-kraken" style={{ gridRow: SPIRAL[80][0] + 1, gridColumn: SPIRAL[80][1] + 1 }}>
-          <img src="/traque/kraken.webp" alt="" onError={e => { e.currentTarget.src = '/mascotte/pirate.webp' }} />
-        </div>
-        {v.players.filter(p => p.status !== 'declined').map(p => {
-          const pos = Math.min(79, Math.max(0, shown[p.seat] ?? p.pos))
-          const [r, col] = SPIRAL[pos]
-          const off = [[-22, -22], [22, -22], [-22, 22], [22, 22]][p.seat]
-          return <i key={p.seat} className={`tq-pawn ${p.seat === v.turn ? 'active' : ''}`}
-            style={{ '--c': SEAT_COLORS[p.seat], top: `calc(${(r + 0.5) / 9 * 100}% + ${off[1] / 9}%)`, left: `calc(${(col + 0.5) / 9 * 100}% + ${off[0] / 9}%)` }} />
-        })}
-      </div>
+      <PathBoard v={v} shown={shown} topicOf={topicOf} owners={owners} />
 
       {voice.needTap && <button className="link-btn tq-tap" onClick={voice.unlock}>🔊 Touche ici pour entendre les autres</button>}
       <div className="tq-log">{(v.log || []).slice(-2).map((l, i) => <p key={i}>{l.t}</p>)}</div>
@@ -339,6 +321,51 @@ function TraqueBoard({ v, gameId, act, onExit }) {
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+function PathBoard({ v, shown, topicOf, owners }) {
+  const ref = useRef(null)
+  const touchedAt = useRef(0)
+  const followSeat = v.phase === 'duelroll' ? v.data?.loser : v.data?.seat ?? v.turn
+  const followPos = shown[followSeat] ?? v.players.find(p => p.seat === followSeat)?.pos ?? 0
+  // la caméra suit le pion qui bouge, sauf si on vient de faire défiler soi-même
+  useEffect(() => {
+    const el = ref.current
+    if (!el || Date.now() - touchedAt.current < 4000) return
+    const y = cellXY(Math.min(79, Math.max(0, followPos))).y
+    el.scrollTo({ top: Math.max(0, y - el.clientHeight * 0.55), behavior: touchedAt.current ? 'smooth' : 'auto' })
+    if (!touchedAt.current) touchedAt.current = 1
+  }, [followPos, followSeat])
+  const mark = () => { touchedAt.current = Date.now() }
+  return (
+    <div className="tq-path" ref={ref} onTouchStart={mark} onWheel={mark} onPointerDown={mark}>
+      <div className="tq-track" style={{ height: TRACK_H }}>
+        <div className="tq-lair-art"><img src="/traque/kraken.webp" alt="" onError={e => { e.currentTarget.src = '/mascotte/pirate.webp' }} /></div>
+        <svg className="tq-trail" viewBox={`0 0 100 ${TRACK_H}`} preserveAspectRatio="none" aria-hidden="true">
+          <path d={PATH_D} vectorEffect="non-scaling-stroke" />
+        </svg>
+        {v.board.map((c, i) => {
+          const { x, y } = cellXY(i)
+          const t = c.topic ? topicOf(c.topic) : null
+          const own = c.t === 'spec' ? owners(c.topic) : []
+          return (
+            <div key={i} className={`tq-tile t-${c.t}`} style={{ left: `${x}%`, top: y, '--oc': own.length ? SEAT_COLORS[own[0]] : undefined }}
+              title={c.t === 'spec' || c.t === 'general' ? `${CELL_LABEL[c.t]} · ${t?.name}` : CELL_LABEL[c.t]}>
+              <span className="tq-ico">{CELL_ICON[c.t] || t?.icon || '❔'}</span>
+              {i % 10 === 0 && i > 0 && <small className="tq-num">{i}</small>}
+            </div>
+          )
+        })}
+        {v.players.filter(p => p.status !== 'declined').map(p => {
+          const pos = Math.min(79, Math.max(0, shown[p.seat] ?? p.pos))
+          const { x, y } = cellXY(pos)
+          const off = [[-16, -14], [16, -14], [-16, 12], [16, 12]][p.seat]
+          return <i key={p.seat} className={`tq-token ${p.seat === v.turn ? 'active' : ''}`}
+            style={{ '--c': SEAT_COLORS[p.seat], left: `calc(${x}% + ${off[0]}px)`, top: y + off[1] }} />
+        })}
+      </div>
     </div>
   )
 }

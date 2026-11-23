@@ -1240,3 +1240,31 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
 .kh-play.kh-trappes, .kh-play.kh-chasse { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; line-height: 1.05;
   width: min(84vw, 320px); height: 60px; font-size: 19px; letter-spacing: 0.02em; white-space: nowrap; }
 .kh-play.kh-trappes small { font: 700 11.5px var(--body); opacity: .85; letter-spacing: 0; }
+
+/* Plateau vertical en relief */
+.tq-path { position: relative; height: calc(100dvh - 330px); min-height: 300px; overflow-y: auto; overflow-x: hidden; border-radius: 20px; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+  background: radial-gradient(120% 60% at 50% 0%, #3a1258 0%, transparent 60%), linear-gradient(180deg, #120626 0%, #0b2a52 55%, #0a3b5c 100%);
+  box-shadow: inset 0 0 40px #000c, 0 0 0 1px #3a6bd655; scrollbar-width: none; }
+.tq-path::-webkit-scrollbar { display: none; }
+.tq-track { position: relative; width: 100%; background: url(/traque/plateau.webp) center top / 100% auto repeat-y; }
+.tq-trail { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.tq-trail path { fill: none; stroke: #ffffff2e; stroke-width: 10; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 2 14; }
+.tq-lair-art { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 230px; display: grid; place-items: center; pointer-events: none; }
+.tq-lair-art img { width: 100%; filter: drop-shadow(0 0 24px #ff4fd8aa); animation: sb-float 3s ease-in-out infinite; }
+.tq-tile { position: absolute; width: 50px; height: 50px; margin: -25px 0 0 -25px; border-radius: 50%; display: grid; place-items: center; font-size: 22px; line-height: 1;
+  background: radial-gradient(circle at 35% 28%, #6f8fd6, #2c4a8c 62%, #1c2f5e); box-shadow: 0 7px 0 #0f1d3d, 0 12px 14px #0008, inset 0 2px 0 #ffffff40; }
+.tq-tile .tq-num { position: absolute; bottom: -18px; font: 700 10px var(--body); color: #ffffff88; }
+.tq-tile.t-spec { background: radial-gradient(circle at 35% 28%, color-mix(in srgb, var(--oc) 75%, #fff), var(--oc) 60%, color-mix(in srgb, var(--oc) 55%, #000));
+  box-shadow: 0 7px 0 color-mix(in srgb, var(--oc) 45%, #000), 0 12px 14px #0008, 0 0 14px var(--oc), inset 0 2px 0 #ffffff60; }
+.tq-tile.t-truce { background: radial-gradient(circle at 35% 28%, #7ef0b5, #24a56b 62%, #157046); box-shadow: 0 7px 0 #0b4a2d, 0 12px 14px #0008, inset 0 2px 0 #ffffff50; }
+.tq-tile.t-chest { background: radial-gradient(circle at 35% 28%, #ffe28a, #d59a1c 62%, #8f6110); box-shadow: 0 7px 0 #5e3f08, 0 12px 14px #0008, inset 0 2px 0 #ffffff60; }
+.tq-tile.t-current { background: radial-gradient(circle at 35% 28%, #8fe3ff, #2a93c9 62%, #165d85); box-shadow: 0 7px 0 #0c3b56, 0 12px 14px #0008, inset 0 2px 0 #ffffff50; }
+.tq-tile.t-tentacle { background: radial-gradient(circle at 35% 28%, #e49bff, #8a2bb8 62%, #561a75); box-shadow: 0 7px 0 #360f4b, 0 12px 14px #0008, inset 0 2px 0 #ffffff50; }
+.tq-tile.t-shortcut { background: radial-gradient(circle at 35% 28%, #ffb38a, #d1582a 62%, #8a3415); box-shadow: 0 7px 0 #56200b, 0 12px 14px #0008, inset 0 2px 0 #ffffff50; }
+.tq-tile.t-start { width: 62px; height: 62px; margin: -31px 0 0 -31px; background: radial-gradient(circle at 35% 28%, #d8d8ff, #6a6ad6 62%, #3c3c8c); box-shadow: 0 8px 0 #24245a, 0 12px 14px #0008; }
+.tq-tile.t-lair { width: 66px; height: 66px; margin: -33px 0 0 -33px; background: radial-gradient(circle at 35% 28%, #ff9aa8, #c4213b 62%, #6e0f1f); box-shadow: 0 8px 0 #45060f, 0 0 26px #ff5d73, inset 0 2px 0 #ffffff50; }
+.tq-tile.t-general .tq-ico { opacity: .85; }
+.tq-token { position: absolute; width: 24px; height: 24px; margin: -12px 0 0 -12px; border-radius: 50%; z-index: 3; transition: top .16s linear, left .16s linear;
+  background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--c) 45%, #fff), var(--c) 55%, color-mix(in srgb, var(--c) 55%, #000));
+  box-shadow: 0 4px 0 color-mix(in srgb, var(--c) 40%, #000), 0 6px 8px #000a, 0 0 0 2px #fff; }
+.tq-token.active { z-index: 4; animation: tq-bob .8s ease-in-out infinite; box-shadow: 0 4px 0 color-mix(in srgb, var(--c) 40%, #000), 0 0 16px var(--c), 0 0 0 2px #fff; }
