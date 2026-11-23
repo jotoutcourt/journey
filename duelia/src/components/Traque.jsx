@@ -277,11 +277,11 @@ function TraqueBoard({ v, gameId, act, onExit }) {
       <div className="tq-hud">
       <div className="tq-hud-top">
         <div className="tq-me-card" style={{ '--c': SEAT_COLORS[v.me] }}>
-          <img src={pawnImg(me?.pawn, v.me)} alt="" />
+          <span className="tq-ring"><img src={pawnImg(me?.pawn, v.me)} alt="" /></span>
           <div><b>{me?.name}</b><small><Pearl /> {me?.pearls ?? 0} · case {me?.pos ?? 0}{me?.items?.length ? ` · 🎒 ${me.items.length}` : ''}</small></div>
         </div>
         <div className="tq-hud-right">
-          <div className="tq-treasure" title="Trésor du Kraken"><span>💰 <b>{v.treasure}</b></span></div>
+          <div className="tq-treasure" title="Trésor du Kraken"><span><img src="/traque/ico/case-chest.webp" alt="" /> <b>{v.treasure}</b></span></div>
           {peers.length > 0 && <button className={`tq-round-btn mic ${voice.mic}`} onClick={voice.toggleMic} disabled={voice.mic === 'asking' || voice.mic === 'unsupported'} aria-label="Micro">
             {{ on: '🎙️', muted: '🔇', asking: '⏳', denied: '🚫', unsupported: '🚫' }[voice.mic] || '🎙️'}</button>}
           <ConfirmButton className="tq-round-btn" onConfirm={() => { api.leaveTraque(gameId).catch(() => {}); onExit() }} confirmLabel="Quitter ?">✕</ConfirmButton>
@@ -308,7 +308,7 @@ function TraqueBoard({ v, gameId, act, onExit }) {
         <div className="tq-round-card"><img src="/mascotte/pirate.webp" alt="" /><span><b>Tour {v.round}</b><small>{v.players.length} joueurs</small></span></div>
         <div className="tq-hud-actions">
           {v.phase === 'roll' && myTurn && <>
-            <button className="tq-round-btn bag" onClick={() => setBag(true)} disabled={!me?.items?.length} aria-label="Mon sac">🎒<i>{me?.items?.length || 0}</i></button>
+            <button className="tq-round-btn bag" onClick={() => setBag(true)} disabled={!me?.items?.length} aria-label="Mon sac"><img src="/traque/ico/case-shop.webp" alt="" /><i>{me?.items?.length || 0}</i></button>
             <button className="tq-dice-btn" onClick={() => act(() => api.traqueRoll(gameId))}><Die /><b>Lancer le dé</b></button>
           </>}
           {v.phase === 'duelroll' && d.winner === v.me &&
@@ -331,7 +331,7 @@ function TraqueBoard({ v, gameId, act, onExit }) {
       {target && (
         <div className="sheet-backdrop" onClick={() => setTarget(null)}>
           <div className="sheet" onClick={e => e.stopPropagation()}>
-            <h2>{ITEMS[target].icon} {ITEMS[target].name} : sur qui ?</h2>
+            <h2><Obj k={target} /> {ITEMS[target].name} : sur qui ?</h2>
             {v.players.filter(p => p.seat !== v.me && ['joined', 'bot', 'left'].includes(p.status)).map(p => (
               <button key={p.seat} className="tq-level" style={{ '--c': SEAT_COLORS[p.seat] }} onClick={() => { const k = target; setTarget(null); act(() => api.traqueUse(gameId, k, p.seat)) }}>
                 <b>{p.name}</b><small>case {p.pos} · <Pearl /> {p.pearls}</small>
@@ -377,7 +377,8 @@ function PathBoard({ v, shown, topicOf, owners }) {
               {c.t !== 'general' && <i className={`tq-tint t-${c.t}`} style={{ left: `${x * 100}%`, top: `${y * 100}%`, '--oc': own.length ? SEAT_COLORS[own[0]] : undefined }} />}
               <div className={`tq-slot t-${c.t}`} style={{ left: `${x * 100}%`, top: `${y * 100}%` }}
                 title={c.t === 'spec' || c.t === 'general' ? `${CELL_LABEL[c.t]} · ${t?.name}` : CELL_LABEL[c.t]}>
-                <span className="tq-ico">{c.t === 'spec' ? (t?.icon || '★') : c.t === 'general' ? '?' : CELL_ICON[c.t] ?? '?'}</span>
+                {CASE_IMG.has(c.t) ? <img className="tq-cimg" src={`/traque/ico/case-${c.t}.webp`} alt="" draggable="false" /> : <span className="tq-ico">{CELL_ICON[c.t] ?? '?'}</span>}
+                {c.t === 'spec' && t?.icon && <span className="tq-tile-topic">{t.icon}</span>}
               </div>
             </Fragment>
           )
@@ -402,10 +403,11 @@ function PathBoard({ v, shown, topicOf, owners }) {
 const TITLE_IMG = { duel: '/traque/titre-duel.webp', truce: '/traque/titre-treve.webp', final: '/traque/titre-final2.webp' }
 const Pearl = () => <img className="tq-pearl" src="/traque/perle.webp" alt="perles" />
 
-function Die({ n = 5 }) {
-  const P = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] }[n]
-  return <span className="tq-die3d" aria-hidden="true">{Array.from({ length: 9 }, (_, i) => <i key={i} className={P.includes(i) ? 'on' : ''} />)}</span>
+function Die() {
+  return <img className="tq-die-img" src="/traque/de.webp" alt="" draggable="false" />
 }
+const CASE_IMG = new Set(['general', 'spec', 'truce', 'chest', 'current', 'tentacle', 'shortcut', 'shop'])
+const Obj = ({ k }) => <img className="tq-obj" src={`/traque/ico/obj-${k}.webp`} alt="" draggable="false" />
 
 function Frame({ img = '/traque/cadre-duel.webp', title, children, cta, onClose, className = '' }) {
   return (
@@ -486,7 +488,7 @@ function Quiz({ v, d, left, me, topicOf, onAnswer, onJoker }) {
         })}
       </div>
       <div className="tq-quiz-foot">
-        {inIt && !d.reveal && picked == null && d.kind !== 'truce' && me?.items?.includes('joker') && !d.removed && <button className="btn btn-small btn-secondary" onClick={onJoker}>🃏 Joker 50/50</button>}
+        {inIt && !d.reveal && picked == null && d.kind !== 'truce' && me?.items?.includes('joker') && !d.removed && <button className="btn btn-small btn-secondary" onClick={onJoker}><Obj k="joker" /> Joker 50/50</button>}
         {!d.reveal && <span className="tq-answered">{d.seats.map(s => <i key={s} title={v.players.find(p => p.seat === s)?.name} className={d.ans?.[s]?.[d.idx] ? 'ok' : ''} style={{ '--c': SEAT_COLORS[s] }} />)}</span>}
         {!inIt && !d.reveal && <small className="muted">Tu regardes…</small>}
       </div>
@@ -499,7 +501,7 @@ function Bag({ me, v, onClose, onUse }) {
   return (
     <div className="sheet-backdrop" onClick={onClose}>
       <div className="sheet tq-bag" onClick={e => e.stopPropagation()}>
-        <h2>🎒 Mon sac · <Pearl /> {me?.pearls} perles</h2>
+        <h2><img className="tq-obj" src="/traque/ico/case-shop.webp" alt="" /> Mon sac · <Pearl /> {me?.pearls} perles</h2>
         <p className="sheet-sub">Les objets s'achètent dans les boutiques 🏪 du plateau. Utilise-les avant de lancer le dé (le joker, pendant une question).</p>
         <ul>
           {mine.length === 0 && <li><span className="tq-it-ico">🫙</span><div><b>Sac vide</b><small>Arrête-toi à une boutique pour acheter des objets.</small></div><span /></li>}
@@ -508,7 +510,7 @@ function Bag({ me, v, onClose, onUse }) {
             const have = (me?.items || []).filter(x => x === k).length
             return (
               <li key={k}>
-                <span className="tq-it-ico">{it.icon}</span>
+                <span className="tq-it-ico"><Obj k={k} /></span>
                 <div><b>{it.name}{have > 1 ? ` ×${have}` : ''}</b><small>{it.desc}</small></div>
                 <div className="tq-it-btns">
                   {k !== 'joker' && v.phase === 'roll' && v.turn === v.me ? <button className="btn btn-small btn-gold" onClick={() => onUse(k)}>Utiliser</button> : <small className="muted">{k === 'joker' ? 'en question' : ''}</small>}
@@ -538,7 +540,7 @@ function Shop({ v, d, me, left, onBuy, onLeave }) {
           {(cell.items || []).map(k => (
             <div key={k} className="tq-shop-card">
               <b>{ITEMS[k].name}</b>
-              <span className="tq-shop-ico">{ITEMS[k].icon}</span>
+              <span className="tq-shop-ico"><Obj k={k} /></span>
               <small>{ITEMS[k].desc}</small>
               <button disabled={!mine || (me?.pearls || 0) < price(k) || (me?.items?.length || 0) >= 3} onClick={() => onBuy(k)}><Pearl /> {price(k)}</button>
             </div>
