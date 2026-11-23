@@ -491,7 +491,7 @@ export function FriendProfile({ friend, topics, onChallenge, onRemove, onBack, o
           </ul>
         </>}
       </>}
-      {p && onBook && <button className="btn btn-secondary wide" onClick={() => onBook(card)}>📖 Voir son livre de stickers</button>}
+      {p && onBook && <button className="btn btn-secondary wide fp-book" onClick={() => onBook(card)}>📖 Voir son livre de stickers</button>}
       {onRemove && <ConfirmButton className="btn btn-ghost danger wide fp-remove" onConfirm={() => onRemove(card)} confirmLabel={`Retirer ${card.name} ? Appuie encore pour confirmer`}>Retirer de mes amis</ConfirmButton>}
       <div className="results-dock"><button className="btn btn-primary wide" style={{ gridColumn: '1 / -1' }} onClick={() => onChallenge(card)}>⚔️ Défier {card.name}</button></div>
     </div>
