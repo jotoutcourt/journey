@@ -1,4 +1,4 @@
-// Biathlon : règles, formats de course, tir, Coupe du monde et grands champions. La bonne réponse est toujours la première.
+// Biathlon : règles, formats, Coupe du monde, Mondiaux, Jeux 2026 et grands champions (résultats d'après Wikipédia). La bonne réponse est toujours la première.
 export default [
  [
   "Quelles deux disciplines combine le biathlon ?",
@@ -1021,5 +1021,411 @@ export default [
   "1 minute",
   "30 secondes",
   "6 minutes"
+ ],
+ [
+  "Qui a remporté l'individuel masculin des Jeux olympiques de 2026 ?",
+  "Johan-Olav Botn",
+  "Éric Perrot",
+  "Sturla Holm Lægreid",
+  "Quentin Fillon Maillet"
+ ],
+ [
+  "Quel Français a pris l'argent de l'individuel olympique masculin en 2026 ?",
+  "Éric Perrot",
+  "Quentin Fillon Maillet",
+  "Émilien Jacquelin",
+  "Fabien Claude"
+ ],
+ [
+  "Qui a remporté le sprint masculin des Jeux olympiques de 2026 ?",
+  "Quentin Fillon Maillet",
+  "Vetle Sjåstad Christiansen",
+  "Sturla Holm Lægreid",
+  "Johannes Dale-Skjevdal"
+ ],
+ [
+  "Quel Suédois a remporté la poursuite masculine des Jeux de 2026 ?",
+  "Martin Ponsiluoma",
+  "Sebastian Samuelsson",
+  "Jesper Nelin",
+  "Viktor Brandt"
+ ],
+ [
+  "Quel Français a pris le bronze de la poursuite olympique en 2026 ?",
+  "Émilien Jacquelin",
+  "Quentin Fillon Maillet",
+  "Éric Perrot",
+  "Fabien Claude"
+ ],
+ [
+  "Qui a remporté la mass start masculine des Jeux de 2026 ?",
+  "Johannes Dale-Skjevdal",
+  "Sturla Holm Lægreid",
+  "Quentin Fillon Maillet",
+  "Johan-Olav Botn"
+ ],
+ [
+  "Quel Norvégien est monté sur quatre podiums individuels aux Jeux de 2026, sans gagner d'or individuel ?",
+  "Sturla Holm Lægreid",
+  "Johan-Olav Botn",
+  "Vetle Sjåstad Christiansen",
+  "Martin Uldal"
+ ],
+ [
+  "Quelle nation a remporté le relais masculin olympique en 2026 ?",
+  "La France",
+  "La Norvège",
+  "La Suède",
+  "L'Allemagne"
+ ],
+ [
+  "Qui composaient le relais masculin français champion olympique en 2026 ?",
+  "Claude, Jacquelin, Fillon Maillet, Perrot",
+  "Fourcade, Desthieux, Jacquelin, Fillon Maillet",
+  "Claude, Guigonnat, Jacquelin, Perrot",
+  "Lombardot, Claude, Jacquelin, Perrot"
+ ],
+ [
+  "Qui a remporté l'individuel féminin des Jeux olympiques de 2026 ?",
+  "Julia Simon",
+  "Lou Jeanmonnot",
+  "Lora Hristova",
+  "Franziska Preuß"
+ ],
+ [
+  "Quelle Bulgare a pris le bronze de l'individuel olympique féminin en 2026 ?",
+  "Lora Hristova",
+  "Milena Todorova",
+  "Maria Zdravkova",
+  "Valentina Dimitrova"
+ ],
+ [
+  "Quelle Norvégienne a remporté le sprint féminin des Jeux de 2026 ?",
+  "Maren Kirkeeide",
+  "Ingrid Tandrevold",
+  "Karoline Knotten",
+  "Juni Arnekleiv"
+ ],
+ [
+  "Quelle Française a pris l'argent du sprint olympique en 2026 ?",
+  "Océane Michelon",
+  "Lou Jeanmonnot",
+  "Julia Simon",
+  "Justine Braisaz-Bouchet"
+ ],
+ [
+  "Quelle Italienne a remporté la poursuite féminine des Jeux de 2026, à domicile ?",
+  "Lisa Vittozzi",
+  "Dorothea Wierer",
+  "Hannah Auchentaller",
+  "Rebecca Passler"
+ ],
+ [
+  "Quelle Finlandaise a pris le bronze de la poursuite olympique féminine en 2026 ?",
+  "Suvi Minkkinen",
+  "Mari Eder",
+  "Kaisa Mäkäräinen",
+  "Venla Lehtonen"
+ ],
+ [
+  "Quelle Française a remporté la mass start olympique féminine en 2026 ?",
+  "Océane Michelon",
+  "Julia Simon",
+  "Lou Jeanmonnot",
+  "Justine Braisaz-Bouchet"
+ ],
+ [
+  "Quelle Tchèque a pris le bronze de la mass start olympique féminine en 2026 ?",
+  "Tereza Voborníková",
+  "Markéta Davidová",
+  "Jessica Jislová",
+  "Lucie Charvátová"
+ ],
+ [
+  "Qui composaient le relais féminin français champion olympique en 2026 ?",
+  "Bened, Jeanmonnot, Michelon, Simon",
+  "Braisaz-Bouchet, Chevalier, Simon, Jeanmonnot",
+  "Richard, Michelon, Simon, Jeanmonnot",
+  "Bescond, Braisaz, Simon, Chevalier"
+ ],
+ [
+  "Quelle nation a pris l'argent du relais féminin olympique en 2026 ?",
+  "La Suède",
+  "La Norvège",
+  "L'Allemagne",
+  "L'Italie"
+ ],
+ [
+  "Quelle nation a remporté le relais mixte olympique en 2026 ?",
+  "La France",
+  "L'Italie",
+  "L'Allemagne",
+  "La Norvège"
+ ],
+ [
+  "Quelle nation a pris l'argent du relais mixte olympique en 2026, à domicile ?",
+  "L'Italie",
+  "La Norvège",
+  "L'Allemagne",
+  "La Suède"
+ ],
+ [
+  "Combien de médailles d'or la France a-t-elle remportées en biathlon aux Jeux de 2026 ?",
+  "6",
+  "3",
+  "9",
+  "4"
+ ],
+ [
+  "Combien de médailles au total la France a-t-elle remportées en biathlon aux Jeux de 2026 ?",
+  "13",
+  "8",
+  "11",
+  "16"
+ ],
+ [
+  "Combien de titres olympiques Julia Simon a-t-elle remportés aux Jeux de 2026 ?",
+  "3",
+  "1",
+  "2",
+  "4"
+ ],
+ [
+  "Combien d'épreuves de biathlon figuraient au programme des Jeux de 2026 ?",
+  "11",
+  "10",
+  "12",
+  "9"
+ ],
+ [
+  "À quelle altitude environ se trouve le stade de biathlon d'Antholz-Anterselva ?",
+  "1 640 m",
+  "900 m",
+  "2 300 m",
+  "1 100 m"
+ ],
+ [
+  "Comment s'appelle le stade de biathlon d'Antholz-Anterselva ?",
+  "La Südtirol Arena",
+  "L'Alto Adige Stadium",
+  "La Dolomiti Arena",
+  "La Rasen Arena"
+ ],
+ [
+  "Combien d'athlètes au total pouvaient participer au biathlon des Jeux de 2026 ?",
+  "210",
+  "120",
+  "300",
+  "160"
+ ],
+ [
+  "Dans quelle ville suisse se sont déroulés les championnats du monde 2025 ?",
+  "Lenzerheide",
+  "Davos",
+  "Saint-Moritz",
+  "Andermatt"
+ ],
+ [
+  "Combien de médailles la France a-t-elle remportées aux championnats du monde 2025 ?",
+  "13",
+  "6",
+  "9",
+  "18"
+ ],
+ [
+  "Quelle Française a été sacrée championne du monde du sprint en 2025 ?",
+  "Justine Braisaz-Bouchet",
+  "Julia Simon",
+  "Lou Jeanmonnot",
+  "Océane Michelon"
+ ],
+ [
+  "Quel Français a été sacré champion du monde de l'individuel en 2025 ?",
+  "Éric Perrot",
+  "Quentin Fillon Maillet",
+  "Émilien Jacquelin",
+  "Fabien Claude"
+ ],
+ [
+  "Quelle Française a remporté quatre titres aux championnats du monde 2025 ?",
+  "Julia Simon",
+  "Lou Jeanmonnot",
+  "Justine Braisaz-Bouchet",
+  "Océane Michelon"
+ ],
+ [
+  "Quelle nation a réalisé le triplé dans la mass start masculine des Mondiaux 2025 ?",
+  "La Norvège",
+  "La France",
+  "La Suède",
+  "L'Allemagne"
+ ],
+ [
+  "Quel record Johannes Thingnes Bø a-t-il battu aux Mondiaux 2025 ?",
+  "Le plus de titres mondiaux individuels (12)",
+  "Le plus de globes",
+  "La plus longue carrière",
+  "Le plus jeune champion"
+ ],
+ [
+  "Combien de titres mondiaux individuels Ole Einar Bjørndalen et Martin Fourcade comptaient-ils chacun ?",
+  "11",
+  "8",
+  "13",
+  "6"
+ ],
+ [
+  "Combien de titres mondiaux au total Johannes Thingnes Bø a-t-il remportés ?",
+  "23",
+  "12",
+  "20",
+  "15"
+ ],
+ [
+  "Combien de victoires individuelles Johannes Thingnes Bø a-t-il remportées lors de la saison record 2022-2023 ?",
+  "19",
+  "14",
+  "25",
+  "11"
+ ],
+ [
+  "Combien de victoires en Coupe du monde comptait Martin Fourcade, total dépassé par Johannes Bø en 2023-2024 ?",
+  "83",
+  "50",
+  "100",
+  "67"
+ ],
+ [
+  "Combien de gros globes de cristal Johannes Thingnes Bø a-t-il remportés ?",
+  "5",
+  "7",
+  "3",
+  "4"
+ ],
+ [
+  "Lors de quelle saison Johannes Thingnes Bø n'a-t-il PAS remporté le gros globe, entre 2019 et 2024 ?",
+  "2021-2022",
+  "2018-2019",
+  "2020-2021",
+  "2023-2024"
+ ],
+ [
+  "Quel Norvégien a remporté le gros globe de cristal en 2025 ?",
+  "Sturla Holm Lægreid",
+  "Johannes Thingnes Bø",
+  "Vetle Sjåstad Christiansen",
+  "Johan-Olav Botn"
+ ],
+ [
+  "Quelle Allemande a remporté le gros globe de cristal en 2025 ?",
+  "Franziska Preuß",
+  "Laura Dahlmeier",
+  "Vanessa Voigt",
+  "Selina Grotian"
+ ],
+ [
+  "Quelle Française a terminé deuxième du gros globe 2025 malgré huit victoires individuelles ?",
+  "Lou Jeanmonnot",
+  "Julia Simon",
+  "Justine Braisaz-Bouchet",
+  "Océane Michelon"
+ ],
+ [
+  "Quelle Italienne a remporté le gros globe de cristal en 2024 ?",
+  "Lisa Vittozzi",
+  "Dorothea Wierer",
+  "Hannah Auchentaller",
+  "Michela Carrara"
+ ],
+ [
+  "À combien de points Lou Jeanmonnot a-t-elle échoué derrière Lisa Vittozzi au classement général 2024 ?",
+  "23 points",
+  "2 points",
+  "100 points",
+  "57 points"
+ ],
+ [
+  "Quel a été le premier petit globe de cristal de Lou Jeanmonnot, en 2024 ?",
+  "Celui de la mass start",
+  "Celui du sprint",
+  "Celui de l'individuel",
+  "Celui de la poursuite"
+ ],
+ [
+  "Quels Français ont remporté les gros globes de cristal en 2026 ?",
+  "Lou Jeanmonnot et Éric Perrot",
+  "Julia Simon et Quentin Fillon Maillet",
+  "Océane Michelon et Émilien Jacquelin",
+  "Justine Braisaz-Bouchet et Fabien Claude"
+ ],
+ [
+  "Quel est le seul petit globe individuel de 2026 qui n'a pas été remporté par un Français ?",
+  "Le sprint masculin",
+  "La mass start féminine",
+  "La poursuite masculine",
+  "L'individuel féminin"
+ ],
+ [
+  "Quel Norvégien a enchaîné cinq victoires consécutives après les Jeux de 2026 ?",
+  "Sturla Holm Lægreid",
+  "Johan-Olav Botn",
+  "Johannes Dale-Skjevdal",
+  "Martin Uldal"
+ ],
+ [
+  "Quelle Française a remporté le petit globe de la mass start en 2026 ?",
+  "Julia Simon",
+  "Lou Jeanmonnot",
+  "Océane Michelon",
+  "Justine Braisaz-Bouchet"
+ ],
+ [
+  "Quel frère de Johannes Bø a terminé deuxième du classement général 2024, à 35 ans ?",
+  "Tarjei Bø",
+  "Lars Bø",
+  "Henrik Bø",
+  "Ole Bø"
+ ],
+ [
+  "Depuis quels championnats du monde les points des Mondiaux ne comptent-ils plus pour la Coupe du monde ?",
+  "Oberhof 2023",
+  "Östersund 2019",
+  "Pokljuka 2021",
+  "Nové Město 2024"
+ ],
+ [
+  "Pourquoi les biathlètes russes et biélorusses sont-ils absents de la Coupe du monde depuis 2022 ?",
+  "Une sanction de l'IBU après l'invasion de l'Ukraine",
+  "Une affaire de dopage seulement",
+  "Un boycott volontaire",
+  "Un problème de qualification"
+ ],
+ [
+  "Quelle station a accueilli la dernière étape de la saison 2023-2024 ?",
+  "Canmore (Canada)",
+  "Oslo-Holmenkollen",
+  "Östersund",
+  "Soldier Hollow"
+ ],
+ [
+  "Dans quelle station finlandaise a débuté la Coupe du monde 2024-2025 ?",
+  "Kontiolahti",
+  "Vuokatti",
+  "Lahti",
+  "Ruka"
+ ],
+ [
+  "Combien de titres mondiaux la France a-t-elle remportés aux Mondiaux de Nové Město en 2024 ?",
+  "6",
+  "2",
+  "10",
+  "4"
+ ],
+ [
+  "En quelle année Lou Jeanmonnot a-t-elle remporté son premier gros globe de cristal ?",
+  "2026",
+  "2024",
+  "2025",
+  "2023"
  ]
 ]
