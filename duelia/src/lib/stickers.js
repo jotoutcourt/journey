@@ -5,6 +5,21 @@ export const STICKER_LEVEL = 15
 export const STICKERS = [
   { id: 'swiftie', topic: 'taylor-swift', name: 'Kraken Swiftie' },
   { id: 'chirurgien', topic: 'c-greys', name: 'Kraken chirurgien' },
+  { id: 'tribut', topic: 'hunger-games', name: 'Kraken tribut' },
+  { id: 'chef', topic: 'ici-tout-commence', name: 'Kraken chef étoilé' },
+  { id: 'enchante', topic: 'c-disney', name: 'Kraken enchanté' },
+  { id: 'erudit', topic: 'culture-g', name: 'Kraken érudit' },
+  { id: 'artiste', topic: 'art', name: 'Kraken de la Renaissance' },
+  { id: 'tour-eiffel', topic: 'monuments', name: 'Kraken géant de Paris' },
+  { id: 'central-perk', topic: 'c-friends', name: 'Kraken de Central Perk' },
+  { id: 'pionniere', topic: 'petite-maison', name: 'Kraken de la prairie' },
+  { id: 'roi-animaux', topic: 'animaux', name: 'Kraken roi des animaux' },
+  { id: 'girlband', topic: 'pop-girlies', name: 'Kraken Pop Girlies' },
+  { id: 'wisteria', topic: 'c-desperate', name: 'Kraken de Wisteria Lane' },
+  { id: 'tapis-rouge', topic: 'cinema', name: 'Kraken du tapis rouge' },
+  { id: 'buteur', topic: 'foot', name: 'Kraken buteur' },
+  { id: 'labo', topic: 'sciences', name: 'Kraken de labo' },
+  { id: 'dictee', topic: 'orthographe', name: 'Kraken de la dictée' },
 ].map(s => ({ ...s, img: `/stickers/${s.id}.webp`, png: `/stickers/${s.id}.png` }))
 
 export const stickerFor = (topicId) => STICKERS.find(s => s.topic === topicId)
