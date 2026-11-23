@@ -346,7 +346,7 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
           <Avatar seed={me.avatar} photo={me.photo} size={30} />
           <span>Toi{view.ready_me ? ' ✓' : ''}</span>
           {!solo && <button className={`lt-mic ${voice.mic}`} onClick={voice.toggleMic} disabled={voice.mic === 'asking' || voice.mic === 'unsupported'}
-            aria-label={voice.mic === 'on' ? 'Couper mon micro' : 'Activer mon micro'}>{micIcon}</button>}
+            aria-label={voice.mic === 'on' ? 'Couper mon micro' : 'Activer mon micro'}>{micIcon}<b>{{ on: 'On', muted: 'Coupé', asking: '…', denied: 'Refusé', unsupported: '✕' }[voice.mic] || 'Micro'}</b></button>}
         </div>
         {!solo && <div className={`lt-player mate ${view.ready_partner ? 'ready' : ''} ${voice.speaking.partner ? 'speaking' : ''}`}>
           <Avatar seed={partner.avatar} photo={partner.photo} size={30} />

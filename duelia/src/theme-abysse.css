@@ -1114,3 +1114,13 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
 .fp-remove { margin-top: 18px; }
 .butin-rules-card { padding: 14px 14px 14px 32px; border-radius: 16px; background: var(--card); }
 .butin-solo-link { display: block; margin: 14px auto 6px; font-size: 14px; color: var(--muted); }
+
+/* Bouton micro plus visible dans L'Appât du Kraken à deux */
+.lt-mic { width: auto; height: 34px; padding: 0 12px 0 9px; border-radius: 99px; gap: 5px; display: inline-flex; align-items: center; font-size: 16px;
+  background: linear-gradient(135deg, #ffd45a, #ffb020); color: #2a1600; box-shadow: 0 0 0 2px #fff6, 0 0 14px #ffc940aa; }
+.lt-mic b { font-family: var(--display); font-size: 13px; font-weight: 800; }
+.lt-mic.off { animation: mic-call 1.4s ease-in-out infinite; }
+@keyframes mic-call { 50% { transform: scale(1.08); box-shadow: 0 0 0 3px #fff9, 0 0 22px #ffc940; } }
+.lt-mic.on { background: linear-gradient(135deg, #43f0cf, #1fbf9f); color: #04241d; box-shadow: 0 0 0 2px #2ee6c5, 0 0 14px #2ee6c588; }
+.lt-mic.muted { background: linear-gradient(135deg, #ff7d8f, #e0445a); color: #fff; box-shadow: 0 0 0 2px #ff5d73; }
+.lt-mic.denied, .lt-mic.unsupported { background: #ffffff1f; color: var(--muted); box-shadow: none; }

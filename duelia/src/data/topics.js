@@ -36,6 +36,7 @@ import x_telerea from './extra/tele-realite.js'
 import x_marvel from './extra/marvel.js'
 import x_nintendo from './extra/nintendo.js'
 import x_onepiece from './extra/one-piece.js'
+import x_biathlon from './extra/biathlon.js'
 import x_dessins_animes from './extra/dessins-animes.js'
 import x_c_series_cultes from './extra/c-series-cultes.js'
 import x_c_espace from './extra/c-espace.js'
@@ -96,6 +97,7 @@ const EXTRA = {
   'marvel': x_marvel,
   'nintendo': x_nintendo,
   'one-piece': x_onepiece,
+  'biathlon': x_biathlon,
   'secret-story': x_secret,
   'dessins-animes': x_dessins_animes,
   'c-series-cultes': x_c_series_cultes,
@@ -356,6 +358,7 @@ export const OFFICIAL_TOPICS = [
   T('marvel', 'Marvel', '🦸', '#e23636', 'Cinéma & TV', 'Avengers, rassemblement !', 0, []),
   T('nintendo', 'Nintendo', '🍄', '#e60012', 'Jeux vidéo', 'Mario, Zelda, Kirby et toute la bande', 0, []),
   T('one-piece', 'One Piece', '🏴‍☠️', '#e8a33a', 'Cinéma & TV', 'En route pour Grand Line avec Luffy et son équipage', 0, []),
+  T('biathlon', 'Biathlon', '🎿', '#3fa9f5', 'Sport', 'Ski de fond, carabine et nerfs d\'acier', 0, []),
   T('secret-story', 'Secret Story', '🤫', '#2f6fde', 'Cinéma & TV', 'Les secrets de la Maison, de 2007 à aujourd\'hui', 22610, []),
   T('voitures', 'Voitures', '🏎️', '#ff4d4d', 'Sport', 'Marques, modèles, mécanique et sport auto', 17260, []),
   T('quel-animal', 'Quel est cet animal ?', '📸', '#3ddc84', 'Nature', 'Reconnais l\'animal sur la photo', 18240, []),
