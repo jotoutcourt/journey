@@ -22,16 +22,16 @@ create or replace function public.mission_catalog()
 returns table (code text, tier int, target int, reward int, label text, icon text)
 language sql immutable as $$
   values
-    ('duels_2',     1, 2,   5,  'Joue 2 duels', '⚔️'),
-    ('xp_150',      1, 150, 5,  'Gagne 150 XP', '⭐'),
-    ('kraken_1',    1, 1,   5,  'Joue une partie de L''Appât du Kraken', '🐙'),
-    ('win_2',       2, 2,   10, 'Gagne 2 duels', '🏆'),
-    ('topics_2',    2, 2,   10, 'Joue dans 2 thèmes différents', '🎲'),
-    ('challenge_1', 2, 1,   10, 'Envoie un défi à un ami', '💌'),
-    ('win_4',       3, 4,   15, 'Gagne 4 duels', '👑'),
-    ('duels_6',     3, 6,   15, 'Joue 6 duels', '🔥'),
-    ('xp_600',      3, 600, 15, 'Gagne 600 XP', '🌟'),
-    ('live_1',      3, 1,   15, 'Joue un duel en direct contre un vrai joueur', '📡')
+    ('duels_2',     1, 2,   2,  'Joue 2 duels', '⚔️'),
+    ('xp_150',      1, 150, 2,  'Gagne 150 XP', '⭐'),
+    ('kraken_1',    1, 1,   2,  'Joue une partie de L''Appât du Kraken', '🐙'),
+    ('win_2',       2, 2,   4, 'Gagne 2 duels', '🏆'),
+    ('topics_2',    2, 2,   4, 'Joue dans 2 thèmes différents', '🎲'),
+    ('challenge_1', 2, 1,   4, 'Envoie un défi à un ami', '💌'),
+    ('win_4',       3, 4,   6, 'Gagne 4 duels', '👑'),
+    ('duels_6',     3, 6,   6, 'Joue 6 duels', '🔥'),
+    ('xp_600',      3, 600, 6, 'Gagne 600 XP', '🌟'),
+    ('live_1',      3, 1,   6, 'Joue un duel en direct contre un vrai joueur', '📡')
 $$;
 
 create or replace function public.mission_progress(p_player uuid, p_code text, p_day date) returns int
