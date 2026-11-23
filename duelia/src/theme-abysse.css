@@ -1526,8 +1526,13 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
 .tq-flash p b { color: #ffd76a; font-size: 14px; }
 /* ===== Retours visuels (haut d'écran, cadre question, dé, événements) ===== */
 /* voile sombre en haut pour que le HUD reste lisible, sans plaque derrière le texte */
-.traque.game::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: calc(env(safe-area-inset-top) + 230px); z-index: 9; pointer-events: none;
-  background: linear-gradient(180deg, #000000d9 0%, #000000a6 40%, #00000040 75%, transparent 100%); }
+/* le voile vit DANS le HUD (z-index -1) : toujours sous les infos, jamais par-dessus */
+.tq-hud { isolation: isolate; }
+.tq-hud::before { content: ''; position: absolute; z-index: -1; pointer-events: none; left: -10px; right: -10px;
+  top: calc(-8px - env(safe-area-inset-top)); bottom: -90px;
+  background: linear-gradient(180deg, #000 0%, #000000f2 calc(env(safe-area-inset-top) + 40%), #000000b3 70%, #00000059 85%, transparent 100%); }
+.tq-hud .tq-me-card, .tq-hud .tq-others li, .tq-hud-right .tq-treasure { background: linear-gradient(180deg, #3d22a0, #1f1060) !important; }
+.tq-hud .tq-banner b { font-size: 17px; }
 .tq-hud .tq-banner { background: none !important; box-shadow: none !important; min-height: 0; padding: 2px 8px; text-align: center; }
 .tq-hud .tq-banner b, .tq-hud .tq-banner small { text-shadow: 0 2px 6px #000, 0 0 2px #000; }
 .tq-hud .tq-banner small { color: #ece4ff; }
