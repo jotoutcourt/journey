@@ -1124,3 +1124,5 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
 .lt-mic.on { background: linear-gradient(135deg, #43f0cf, #1fbf9f); color: #04241d; box-shadow: 0 0 0 2px #2ee6c5, 0 0 14px #2ee6c588; }
 .lt-mic.muted { background: linear-gradient(135deg, #ff7d8f, #e0445a); color: #fff; box-shadow: 0 0 0 2px #ff5d73; }
 .lt-mic.denied, .lt-mic.unsupported { background: #ffffff1f; color: var(--muted); box-shadow: none; }
+.install-intro.in-app .ii-install { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; width: 100%; }
+.install-intro.in-app .ii-steps { text-align: left; width: 100%; }

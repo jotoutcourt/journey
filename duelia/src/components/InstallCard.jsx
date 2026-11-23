@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { INTRO_KEY } from '../lib/installIntro.js'
+import { INTRO_KEY, IN_APP_KEY, externalUrl, inAppBrowser } from '../lib/installIntro.js'
 
 // Proposition d'installer Kraken sur l'écran d'accueil (invisible si l'appli est déjà installée)
 let deferred = null
@@ -13,7 +13,6 @@ const isAndroid = () => /android/i.test(navigator.userAgent)
 // Mini-navigateurs intégrés aux applis (Instagram, Snapchat, Messenger…) : ils ne savent pas installer d'appli
 // Safari lui-même sur iPhone (pas Chrome, Firefox… ni le navigateur intégré d'une appli)
 const iosSafari = () => isIos() && /safari/i.test(navigator.userAgent) && !/crios|fxios|edgios|opios|gsa\//i.test(navigator.userAgent) && !inAppBrowser()
-const inAppBrowser = () => /Instagram|FBAN|FBAV|FB_IAB|Snapchat|TikTok|musical_ly|Line\/|Twitter|LinkedInApp|Pinterest/i.test(navigator.userAgent)
 
 export default function InstallCard() {
   const [installed, setInstalled] = useState(standalone)
@@ -190,6 +189,37 @@ export function InstallIntro({ onDone }) {
       {ios && inSafari && <span className="ii-arrow" aria-hidden="true">⬇</span>}
       <div className="ii-dock">
         <button className="btn btn-ghost wide" onClick={finish}>C'est fait, ou plus tard : continuer ici</button>
+      </div>
+    </div>
+  )
+}
+
+// Ouvert depuis Instagram, Snapchat, TikTok… : on invite à passer dans Safari / Chrome pour pouvoir installer Kraken
+export function InAppGate({ onContinue }) {
+  const ios = isIos()
+  const [copied, setCopied] = useState(false)
+  const app = /Instagram/i.test(navigator.userAgent) ? 'Instagram' : /Snapchat/i.test(navigator.userAgent) ? 'Snapchat'
+    : /TikTok|musical_ly|Bytedance/i.test(navigator.userAgent) ? 'TikTok' : /FBAN|FBAV|FB_IAB/i.test(navigator.userAgent) ? 'Facebook / Messenger'
+      : /Twitter/i.test(navigator.userAgent) ? 'X (Twitter)' : null
+  const browser = ios ? 'Safari' : 'Chrome'
+  async function copy() {
+    try { await navigator.clipboard.writeText(location.href); setCopied(true) } catch { window.prompt('Copie ce lien :', location.href) }
+  }
+  function continueHere() { try { sessionStorage.setItem(IN_APP_KEY, '1') } catch { /* rien */ } onContinue() }
+  return (
+    <div className="screen install-intro in-app">
+      <img className="ii-mascot" src="/mascotte/pirate-anim.webp" alt="" aria-hidden="true" />
+      <h1>Ouvre Kraken<br />dans {browser}</h1>
+      <p className="ii-sub">Tu es dans le navigateur {app ? <>d'<b>{app}</b></> : 'd\'une autre appli'} : d'ici, impossible d'installer le jeu ni de recevoir les défis de tes amis.</p>
+      <a className="kh-play ii-install" href={externalUrl()}>🧭 Ouvrir dans {browser}</a>
+      <ol className="ii-steps">
+        <li><i>1</i><span>Si rien ne se passe, appuie sur <b>⋯</b> (ou <b>⋮</b>) en haut à droite de l'écran.</span></li>
+        <li><i>2</i><span>Choisis <b>Ouvrir dans le navigateur</b> (ou <b>Ouvrir dans {browser}</b>).</span></li>
+        <li><i>3</i><span>Dans {browser}, Kraken t'explique comment l'ajouter à ton écran d'accueil.</span></li>
+      </ol>
+      <button className="btn btn-secondary wide" onClick={copy}>{copied ? '✓ Lien copié : colle-le dans ' + browser : '📋 Copier le lien'}</button>
+      <div className="ii-dock">
+        <button className="link-btn ii-skip" onClick={continueHere}>Continuer ici quand même</button>
       </div>
     </div>
   )
