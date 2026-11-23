@@ -1420,3 +1420,11 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
 .tq-frame .tq-intro-who img { width: clamp(50px, 15vw, 70px); }
 .tq-shop-card small { display: none; }
 .tq-shop-grid { margin-top: 2px; }
+/* Cadre boutique (auvent) : proportions propres */
+.tq-frame.shop { aspect-ratio: 760 / 800; }
+.tq-frame.shop .tq-frame-in { left: 12.5%; right: 10.5%; top: 37%; bottom: 17%; background: transparent; padding: 3% 3% 0; }
+.tq-frame.shop .tq-frame-title { left: 24%; right: 24%; top: 16.8%; height: 11%; }
+.tq-frame.shop .tq-frame-x { right: 3%; top: 14.5%; width: 12%; }
+.tq-frame.shop .tq-frame-cta { left: 20%; right: 18%; top: 84.5%; height: 9%; }
+.tq-frame.shop .tq-frame-cta button { border-radius: 99px; background: linear-gradient(180deg, #a77bff, #6a35e8); box-shadow: inset 0 1px 0 #ffffff66, 0 0 0 2px #d6c5ff, 0 4px 10px #0008; }
+.tq-frame.shop .tq-frame-in { z-index: 3; justify-content: center; }
