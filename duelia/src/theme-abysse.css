@@ -1364,3 +1364,4 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
 .tq-slot .tq-tile-topic { position: absolute; top: -40%; right: -14%; font-size: clamp(10px, 2vw, 15px); }
 .tq-track .tq-figure { width: 9.5%; height: auto; aspect-ratio: 1; margin: 0; transform: translate(-50%, -88%); }
 .tq-track .tq-figure.active { width: 11.5%; height: auto; margin: 0; }
+.kh-play.kh-chasse.soon { opacity: .6; filter: saturate(.5); cursor: default; }

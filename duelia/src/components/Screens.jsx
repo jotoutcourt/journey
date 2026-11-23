@@ -67,7 +67,9 @@ export function Home({ go, wallet, onSolo, oxygen, missions, onTraque, traqueRes
             <button className="kh-play kh-mode" onClick={() => { setChoose(false); onSolo() }}><span aria-hidden="true">🏴‍☠️</span>Solo</button>
             <button className="kh-play kh-mode" onClick={() => { setChoose(false); go({ name: 'butin' }) }}><span aria-hidden="true">👥</span>À deux</button>
           </div>}
-        {onTraque && <button className="kh-play kh-chasse" onClick={traqueResume || onTraque}>{traqueResume ? 'Reprendre la Chasse' : 'La Chasse au Kraken'}<small>{traqueResume ? 'Ta partie t\'attend' : 'Jeu de plateau · 2 à 4 joueurs'}</small></button>}
+        {onTraque
+          ? <button className="kh-play kh-chasse" onClick={traqueResume || onTraque}>{traqueResume ? 'Reprendre la Chasse' : 'La Chasse au Kraken'}<small>{traqueResume ? 'Ta partie t\'attend' : 'Jeu de plateau · 2 à 4 joueurs'}</small></button>
+          : <button className="kh-play kh-chasse soon" disabled>La Chasse au Kraken<small>🔒 Bientôt disponible</small></button>}
         {oxygen}
       </section>
 

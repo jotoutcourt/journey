@@ -64,6 +64,9 @@ const NAV = readNavHash()
 // Un défi par lien (#d=…) ou la réponse d'un ami (#r=…) ouvert au chargement
 const LINK = readLinkFromHash()
 
+// La Chasse au Kraken est en cours de finition : ouverte seulement aux testeurs, « bientôt disponible » pour les autres
+const CHASSE_TESTERS = ['a74d38cf-eaaf-4ba7-a7ec-af1563a1ac93']
+
 // Adversaire fictif quand on crée un défi par lien : l'ami jouera plus tard
 const FRIEND = { id: 'ami', name: 'Ton ami', avatar: 'ami-mystere', flag: '❔', xp: 0 }
 
@@ -1112,10 +1115,10 @@ export default function App() {
         onTopic={() => (byId(topic.id) ? go({ name: 'topic', id: topic.id }) : go({ name: 'topics' }))}
         onShare={() => shareText(`${route.data.outcome === 'win' ? 'Victoire' : 'Duel'} ${route.data.myScore}–${route.data.oppScore} contre ${route.opponent.name} sur « ${topic.name} » dans Kraken !`)} />
     ); break
-    default: view = <Home st={st} topics={topics} go={go} wallet={wallet} onSolo={startSolo} onTraque={startTraque} traqueResume={traqueResume ? () => go({ name: 'traque', gameId: traqueResume }) : null} missions={<MissionsChip data={missions} onOpen={() => setMissionsOpen(true)} />}
+    default: view = <Home st={st} topics={topics} go={go} wallet={wallet} onSolo={startSolo} onTraque={CHASSE_TESTERS.includes(account.playerId) ? startTraque : null} traqueResume={traqueResume ? () => go({ name: 'traque', gameId: traqueResume }) : null} missions={<MissionsChip data={missions} onOpen={() => setMissionsOpen(true)} />}
       oxygen={<OxygenInline wallet={wallet} at={walletAt} onRefill={refill} onDue={refreshWallet} />} />
   }
-  if (!view) view = <Home st={st} topics={topics} go={go} wallet={wallet} onSolo={startSolo} onTraque={startTraque} traqueResume={traqueResume ? () => go({ name: 'traque', gameId: traqueResume }) : null} missions={<MissionsChip data={missions} onOpen={() => setMissionsOpen(true)} />}
+  if (!view) view = <Home st={st} topics={topics} go={go} wallet={wallet} onSolo={startSolo} onTraque={CHASSE_TESTERS.includes(account.playerId) ? startTraque : null} traqueResume={traqueResume ? () => go({ name: 'traque', gameId: traqueResume }) : null} missions={<MissionsChip data={missions} onOpen={() => setMissionsOpen(true)} />}
     oxygen={<OxygenInline wallet={wallet} at={walletAt} onRefill={refill} onDue={refreshWallet} />} />
 
   return (
