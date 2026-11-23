@@ -13,6 +13,8 @@ export default function StickerBook({ playerId, title, editable, topics = [], on
   const [draft, setDraft] = useState(null) // sticker en cours de placement { id, x, y, rot }
   const [zoom, setZoom] = useState(null) // sticker affiché en grand
   const [saving, setSaving] = useState(false)
+  const [cover, setCover] = useState('closed') // closed → opening → open
+  const [turn, setTurn] = useState('')
   const pageRef = useRef(null)
   const drag = useRef(null)
 
@@ -32,6 +34,7 @@ export default function StickerBook({ playerId, title, editable, topics = [], on
   const start = (id) => {
     setDraft({ id, x: 0.5, y: 0.45, rot: (id.charCodeAt(0) % 3 - 1) * 6 })
     setZoom(null)
+    setCover('open')
   }
   const pointFrom = (e) => {
     const r = pageRef.current.getBoundingClientRect()
@@ -56,6 +59,15 @@ export default function StickerBook({ playerId, title, editable, topics = [], on
   const download = async (s) => {
     try { const r = await saveSticker(s); if (r === 'downloaded') onToast?.('Sticker téléchargé 📥') } catch { onToast?.('Téléchargement impossible.') }
   }
+  const openBook = () => {
+    if (cover !== 'closed') return
+    setCover('opening')
+    setTimeout(() => setCover('open'), 900)
+  }
+  const goPage = (d) => {
+    setTurn(d > 0 ? 'turn-next' : 'turn-prev')
+    setPage(p => Math.min(pages - 1, Math.max(0, p + d)))
+  }
   const topicName = (id) => topics.find(t => t.id === id)?.name || id
 
   return (
@@ -64,12 +76,14 @@ export default function StickerBook({ playerId, title, editable, topics = [], on
       {error && !book?.placed?.length && <p className="inbox-empty">Livre indisponible pour l'instant (connexion ?).</p>}
 
       <div className="sb-nav">
-        <button className="stake-btn" onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0 || !!draft} aria-label="Page précédente">‹</button>
+        <button className="stake-btn" onClick={() => goPage(-1)} disabled={page === 0 || !!draft || cover !== 'open'} aria-label="Page précédente">‹</button>
         <span>Page {page + 1} / {pages}</span>
-        <button className="stake-btn" onClick={() => setPage(p => Math.min(pages - 1, p + 1))} disabled={page >= pages - 1 || !!draft} aria-label="Page suivante">›</button>
+        <button className="stake-btn" onClick={() => goPage(1)} disabled={page >= pages - 1 || !!draft || cover !== 'open'} aria-label="Page suivante">›</button>
       </div>
 
-      <div className={`sb-page ${draft ? 'placing' : ''}`} ref={pageRef}
+      <div className="sb-book">
+      <img className="sb-spine" src="/book/spine.webp" alt="" draggable="false" />
+      <div key={page} className={`sb-page ${draft ? 'placing' : ''} ${turn}`} ref={pageRef}
         onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp}>
         {placed.filter(p => p.page === page).map(p => {
           const s = stickerById(p.id)
@@ -85,6 +99,12 @@ export default function StickerBook({ playerId, title, editable, topics = [], on
           </div>
         )}
         {!draft && !placed.some(p => p.page === page) && <p className="sb-empty">{editable ? 'Page vierge : colle ici tes prochains stickers.' : 'Page vierge.'}</p>}
+      </div>
+      {cover !== 'open' && (
+        <button className={`sb-cover ${cover}`} onClick={openBook} aria-label="Ouvrir le livre">
+          <span className="sb-cover-hint">Touche pour ouvrir</span>
+        </button>
+      )}
       </div>
 
       {draft ? (
