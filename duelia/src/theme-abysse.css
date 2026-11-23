@@ -1379,3 +1379,44 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
 .tq-slot:not(.t-general):not(.t-start) { box-shadow: inset 0 0 0 100px var(--sc), inset 0 -3px 0 #0003, inset 0 2px 0 #ffffff40; }
 .tq-slot.t-spec { --sc: color-mix(in srgb, var(--oc) 78%, transparent); }
 .tq-slot .tq-tile-topic { top: -48%; right: -22%; font-size: 17px; }
+/* ===== Cadres illustrés (duel, trêve, boutique…) ===== */
+.tq-frame { position: relative; width: min(94vw, 420px); aspect-ratio: 749 / 800; animation: sb-pop .35s both; pointer-events: auto; }
+.tq-frame-img { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; filter: drop-shadow(0 12px 24px #000c); }
+.tq-frame-in { position: absolute; left: 12%; right: 12%; top: 33%; bottom: 17%; z-index: 1; border-radius: 18px; padding: 4% 4% 10%;
+  background: radial-gradient(120% 90% at 50% 0%, #3a2a9e, #1c1265 60%, #120b45); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-align: center; overflow: hidden; }
+.tq-frame-title { position: absolute; left: 25%; right: 25%; top: 20.5%; height: 12.5%; z-index: 3; display: grid; place-items: center; font: 800 clamp(18px, 6vw, 26px) var(--display); color: #fff; text-shadow: 0 0 12px #ff9cf0, 0 2px 0 #3b1a8a; white-space: nowrap; }
+.tq-frame-cta { position: absolute; left: 22.5%; right: 20.5%; top: 80.8%; height: 11.5%; z-index: 3; display: grid; place-items: center; }
+.tq-frame-cta button, .tq-frame-cta span { width: 100%; height: 100%; border: 0; background: none; color: #fff; font: 800 clamp(15px, 4.6vw, 20px) var(--display); text-shadow: 0 2px 0 #3b1a8a; cursor: pointer; display: grid; place-items: center; }
+.tq-frame-cta span { font-size: clamp(13px, 3.8vw, 16px); opacity: .9; cursor: default; }
+.tq-frame-x { position: absolute; right: 2.5%; top: 20.5%; width: 12%; aspect-ratio: 1; z-index: 4; border: 0; background: none; border-radius: 50%; cursor: pointer; }
+.tq-frame .tq-intro-who img { width: clamp(54px, 18vw, 78px); height: auto; opacity: .6; }
+.tq-frame .tq-intro-who span.ok img { opacity: 1; }
+.tq-frame .tq-intro-who em { font-size: 22px; left: -26px; top: 30%; text-shadow: 0 0 10px #ff5d73; color: #fff; }
+.tq-frame .tq-intro-who { gap: 26px; }
+.tq-frame .tq-intro-topic { font-size: 13px; padding: 4px 12px; }
+.tq-intro-txt { margin: 0; color: #d8ccff; font-size: clamp(11px, 3.2vw, 13px); line-height: 1.3; }
+.tq-nope { margin: 0; color: #ffb0c0; font-weight: 800; font-size: 13px; }
+/* Boutique */
+.tq-shop-info { margin: 0; font-size: 12.5px; color: #d8ccff; }
+.tq-shop-promo { margin: 0; padding: 3px 10px; border-radius: 10px; background: #ffc94026; color: var(--gold); font-weight: 800; font-size: 12px; }
+.tq-shop-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 100%; }
+.tq-shop-card { display: grid; justify-items: center; gap: 3px; padding: 6px 4px; border-radius: 14px; background: linear-gradient(180deg, #3d2bb0, #22177a); box-shadow: inset 0 0 0 1.5px #8b7bff88, 0 4px 8px #0006; }
+.tq-shop-card b { font: 800 11.5px var(--display); line-height: 1.1; }
+.tq-shop-ico { font-size: clamp(24px, 8vw, 34px); line-height: 1; }
+.tq-shop-card small { font-size: 9.5px; color: #cbbcff; line-height: 1.15; min-height: 2.3em; }
+.tq-shop-card button { width: 100%; border: 0; border-radius: 99px; padding: 4px 0; font: 800 13px var(--display); color: #3a2200;
+  background: linear-gradient(180deg, #ffe27a, #f2a81d); box-shadow: 0 2px 0 #a86b08; }
+.tq-shop-card button:disabled { filter: grayscale(.8); opacity: .55; }
+/* ===== Cartes d'info du HUD, plus brillantes ===== */
+.tq-me-card, .tq-banner, .tq-others li, .tq-round-card { background: linear-gradient(180deg, #3a1f8ce6, #1d0f52e6);
+  box-shadow: inset 0 1px 0 #ffffff40, 0 0 0 2px #8b6bff, 0 0 14px #8b6bff88, 0 6px 16px #0009; }
+.tq-me-card img { background: radial-gradient(circle, #6b4bff, #2a1580); box-shadow: 0 0 0 2px #b8a4ff; }
+.tq-banner { border-radius: 20px; }
+.tq-banner b { color: #7af5ff !important; text-shadow: 0 0 10px #2ee6ff99; }
+.tq-others li { border-radius: 16px; padding: 3px 12px 3px 3px; }
+.tq-others li.turn { box-shadow: inset 0 1px 0 #ffffff40, 0 0 0 2.5px var(--c), 0 0 16px var(--c); }
+.tq-hud-right .tq-treasure { background: linear-gradient(180deg, #3a1f8ce6, #1d0f52e6); box-shadow: inset 0 1px 0 #ffffff40, 0 0 0 2px #ffc940, 0 0 12px #ffc94066; }
+.tq-frame-in { justify-content: flex-start; padding: 5% 4% 9%; gap: 6px; }
+.tq-frame .tq-intro-who img { width: clamp(50px, 15vw, 70px); }
+.tq-shop-card small { display: none; }
+.tq-shop-grid { margin-top: 2px; }

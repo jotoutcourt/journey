@@ -320,7 +320,7 @@ function TraqueBoard({ v, gameId, act, onExit }) {
       {v.phase === 'event' && <div className="tq-center"><p className="tq-event">{d.text}</p></div>}
       {v.phase === 'duelroll' && d.winner !== v.me && <div className="tq-center"><p className="tq-event">🎲 {v.players.find(p => p.seat === d.winner)?.name} lance le dé du duel… {v.players.find(p => p.seat === d.loser)?.name} va reculer !</p></div>}
       {v.phase === 'intro' && <Intro v={v} d={d} left={left} topicOf={topicOf} onReady={() => act(() => api.traqueReady(gameId))} />}
-      {v.phase === 'shop' && <div className="tq-quiz-wrap"><Shop v={v} d={d} me={me} left={left} onBuy={(k) => act(() => api.traqueBuy(gameId, k))} onLeave={() => act(() => api.traqueShopLeave(gameId))} /></div>}
+      {v.phase === 'shop' && <Shop v={v} d={d} me={me} left={left} onBuy={(k) => act(() => api.traqueBuy(gameId, k))} onLeave={() => act(() => api.traqueShopLeave(gameId))} />}
       {v.phase === 'quiz' && <div className="tq-quiz-wrap"><Quiz v={v} d={d} left={left} me={me} topicOf={topicOf} onAnswer={(i) => act(() => api.traqueAnswer(gameId, d.idx, i))}
         onJoker={() => act(() => api.traqueUse(gameId, 'joker'))} /></div>}
       {v.phase === 'done' && <div className="tq-quiz-wrap"><Finale v={v} onExit={onExit} /></div>}
@@ -393,6 +393,19 @@ function PathBoard({ v, shown, topicOf, owners }) {
   )
 }
 
+// Cadre illustré (coraux, bulles) : titre dans la plaque du haut, contenu au centre, bouton dans la plaque du bas
+function Frame({ img = '/traque/cadre-duel.webp', title, children, cta, onClose, className = '' }) {
+  return (
+    <div className={`tq-frame ${className}`}>
+      <div className="tq-frame-in">{children}</div>
+      <img className="tq-frame-img" src={img} alt="" draggable="false" />
+      <div className="tq-frame-title">{title}</div>
+      {cta && <div className="tq-frame-cta">{cta}</div>}
+      <button className="tq-frame-x" onClick={onClose} aria-label="Fermer" />
+    </div>
+  )
+}
+
 function Intro({ v, d, left, topicOf, onReady }) {
   const t = topicOf(d.topic)
   const who = (d.seats || []).map(s => v.players.find(p => p.seat === s)).filter(Boolean)
@@ -405,23 +418,24 @@ function Intro({ v, d, left, topicOf, onReady }) {
     : reason === 'own' ? ['⭐', 'Ta spécialité !', 'Question plus rapide (9 s). Réussis : +3 cases et +3 perles.']
     : reason === 'shortcut' ? ['🚪', 'Raccourci !', 'Question difficile (9 s). Réussis : tu sautes 5 cases.']
     : ['❓', 'Question !', 'Bonne réponse : +2 perles. Erreur : tu recules d\'une case.']
+  const [nope, setNope] = useState(false)
   return (
     <div className="tq-center dim">
-      <div className={`tq-intro k-${d.kind}`}>
-        <span className="tq-intro-ico">{info[0]}</span>
-        <h2>{info[1]}</h2>
-        <div className="tq-intro-topic"><TopicIcon topic={t} size={26} /> {t.name}</div>
+      <Frame className={`k-${d.kind}`} title={info[1]}
+        onClose={() => { setNope(true); setTimeout(() => setNope(false), 2200) }}
+        cta={mine && !ready.includes(v.me)
+          ? <button onClick={onReady}>Je suis prêt ! ⚡{left != null ? ` ${Math.ceil(left / 1000)} s` : ''}</button>
+          : <span>{mine ? 'En attente des autres…' : 'Tu regardes'}{left != null ? ` · ${Math.ceil(left / 1000)} s` : ''}</span>}>
+        <div className="tq-intro-topic"><TopicIcon topic={t} size={22} /> {t.name}</div>
         <div className="tq-intro-who">
           {who.map((p, i) => <span key={p.seat} style={{ '--c': SEAT_COLORS[p.seat] }} className={ready.includes(p.seat) || p.bot ? 'ok' : ''}>
             {i > 0 && d.kind === 'duel' && <em>VS</em>}
             <img src={pawnImg(p.pawn, p.seat)} alt="" /><small>{p.seat === v.me ? 'Toi' : p.name.replace(/ \((facile|moyen|expert)\)$/, '')}{ready.includes(p.seat) || p.bot ? ' ✓' : ''}</small>
           </span>)}
         </div>
-        <p>{info[2]}</p>
-        {mine && !ready.includes(v.me)
-          ? <button className="kh-play wide" onClick={onReady}>Je suis prêt !{left != null ? ` · ${Math.ceil(left / 1000)} s` : ''}</button>
-          : <p className="tq-wait">{mine ? 'En attente des autres…' : 'Tu regardes : prépare-toi à voir la réponse !'}{left != null ? ` · ${Math.ceil(left / 1000)} s` : ''}</p>}
-      </div>
+        <p className="tq-intro-txt">⏱ {info[2]}</p>
+        {nope && <p className="tq-nope">On ne fuit pas le Kraken 😈</p>}
+      </Frame>
     </div>
   )
 }
@@ -499,24 +513,22 @@ function Shop({ v, d, me, left, onBuy, onLeave }) {
   const who = v.players.find(p => p.seat === d.seat)
   const price = (k) => { const base = ITEM_COST[k] + (cell.k || 0); return d.discount ? Math.ceil(base / 2) : base }
   return (
-    <div className="tq-shop">
-      <div className="tq-shop-head">
-        <b>🏪 Boutique {['du récif', 'des épaves', 'des abysses', 'du Kraken'][cell.k] || ''}</b>
-        <small>{mine ? `🦪 ${me?.pearls} perles · sac ${me?.items?.length || 0}/3` : `${who?.name} fait ses courses…`}{left != null ? ` · ${Math.ceil(left / 1000)} s` : ''}</small>
-      </div>
-      {d.discount && mine && <p className="tq-shop-promo">🎯 Tombé pile dessus : ton premier achat est à moitié prix !</p>}
-      <ul>
-        {(cell.items || []).map(k => (
-          <li key={k}>
-            <span className="tq-it-ico">{ITEMS[k].icon}</span>
-            <div><b>{ITEMS[k].name}</b><small>{ITEMS[k].desc}</small></div>
-            {mine
-              ? <button className="btn btn-small btn-gold" disabled={(me?.pearls || 0) < price(k) || (me?.items?.length || 0) >= 3} onClick={() => onBuy(k)}>🦪 {price(k)}</button>
-              : <span className="tq-price">🦪 {price(k)}</span>}
-          </li>
-        ))}
-      </ul>
-      {mine && <button className="kh-play wide" onClick={onLeave}>{d.rest > 0 ? `Continuer (${d.rest} case${d.rest > 1 ? 's' : ''} restante${d.rest > 1 ? 's' : ''})` : 'Sortir de la boutique'}</button>}
+    <div className="tq-center dim">
+      <Frame img="/traque/cadre-boutique.webp" className="shop" title="Boutique" onClose={mine ? onLeave : () => {}}
+        cta={mine ? <button onClick={onLeave}>{d.rest > 0 ? `Continuer · ${d.rest} case${d.rest > 1 ? 's' : ''}` : 'Fermer'}</button> : <span>{who?.name} fait ses courses…</span>}>
+        <p className="tq-shop-info">{mine ? <>🦪 <b>{me?.pearls}</b> perles · sac {me?.items?.length || 0}/3</> : `${who?.name} choisit`}{left != null ? ` · ${Math.ceil(left / 1000)} s` : ''}</p>
+        {d.discount && mine && <p className="tq-shop-promo">🎯 Pile dessus : 1er achat à moitié prix !</p>}
+        <div className="tq-shop-grid">
+          {(cell.items || []).map(k => (
+            <div key={k} className="tq-shop-card">
+              <b>{ITEMS[k].name}</b>
+              <span className="tq-shop-ico">{ITEMS[k].icon}</span>
+              <small>{ITEMS[k].desc}</small>
+              <button disabled={!mine || (me?.pearls || 0) < price(k) || (me?.items?.length || 0) >= 3} onClick={() => onBuy(k)}>🦪 {price(k)}</button>
+            </div>
+          ))}
+        </div>
+      </Frame>
     </div>
   )
 }
