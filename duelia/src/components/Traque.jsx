@@ -231,6 +231,16 @@ function TraqueBoard({ v, gameId, act, onExit }) {
   const myTurn = v.turn === v.me
   const d = v.data || {}
   const left = useTicker(d.left_ms, [v.version, v.phase, d.idx, d.reveal])
+  // annonce en grand quand quelqu'un utilise un objet (vol, ancre, échange, double dé)
+  const [flash, setFlash] = useState(null)
+  const seenFlash = useRef(null)
+  const fl = d.flash
+  useEffect(() => {
+    if (!fl?.id || seenFlash.current === fl.id) return
+    seenFlash.current = fl.id
+    setTimeout(() => setFlash(fl), 0)
+    setTimeout(() => setFlash(x => (x?.id === fl.id ? null : x)), 4000)
+  }, [fl])
   // voix : une connexion vers chaque autre joueur humain encore là
   const peers = v.players.filter(p => p.player_id && p.seat !== v.me && p.status === 'joined').map(p => p.player_id)
   const voice = useGroupVoice(gameId, me?.player_id, peers, v.status === 'playing' && !!me && peers.length > 0)
@@ -315,6 +325,11 @@ function TraqueBoard({ v, gameId, act, onExit }) {
             <button className="tq-dice-btn" onClick={() => act(() => api.traqueRoll(gameId))}><Die /><b>Dé du duel</b></button>}
         </div>
       </div>
+
+      {flash && <div className="tq-flash" key={flash.id} onClick={() => setFlash(null)}>
+        <Obj k={flash.k} />
+        <p>{bare(flash.t).replace(/^\S+ /, '')}{flash.to === v.me && <b>{{ vol: 'On t\'a volé ! 😱', ancre: 'Tu passes ton prochain tour…', echange: 'Ta place a changé !' }[flash.k]}</b>}</p>
+      </div>}
 
       {/* Moments forts au centre de l'écran */}
       {v.phase === 'show' && (d.dice || []).length > 0 && <div className="tq-center"><div className="tq-dice">{d.dice.map((n, i) => <span key={i} className="tq-die">{n}</span>)}</div></div>}

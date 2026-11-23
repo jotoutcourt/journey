@@ -236,6 +236,14 @@ begin
     version = version + 1 where id = p_game;
 end $$;
 
+-- Annonce d'un objet utilisé, affichée en grand à tous les joueurs (en plus du journal)
+create or replace function public.tq_flash(p_game uuid, p_k text, p_by int, p_to int, p_text text) returns void language plpgsql as $$
+begin
+  perform tq_log(p_game, p_text);
+  update traque_games set data = data || jsonb_build_object('flash', jsonb_build_object('k', p_k, 'by', p_by, 'to', p_to, 't', p_text, 'id', gen_random_uuid())),
+    version = version + 1 where id = p_game;
+end $$;
+
 -- Lancer de dé du joueur actif
 create or replace function public.tq_roll(p_game uuid) returns void language plpgsql as $$
 declare g traque_games; me traque_players; d1 int; d2 int := 0; tot int; np int; shop int;
@@ -251,7 +259,7 @@ begin
   update traque_players set pos = coalesce(shop, np), updated_at = now() where game_id = p_game and seat = g.turn;
   perform tq_log(p_game, '🎲 ' || me.name || ' fait ' || tot || case when d2 > 0 then ' (' || d1 || ' + ' || d2 || ')' else '' end);
   update traque_games set phase = 'show', data = jsonb_build_object('dice', jsonb_build_array(d1) || case when d2 > 0 then jsonb_build_array(d2) else '[]'::jsonb end,
-    'from', me.pos, 'to', coalesce(shop, np), 'seat', g.turn) || case when shop is not null then jsonb_build_object('shop', shop, 'rest', np - shop) else '{}'::jsonb end,
+    'from', me.pos, 'to', coalesce(shop, np), 'seat', g.turn) || case when g.data ? 'flash' then jsonb_build_object('flash', g.data -> 'flash') else '{}'::jsonb end || case when shop is not null then jsonb_build_object('shop', shop, 'rest', np - shop) else '{}'::jsonb end,
     deadline = now() + make_interval(secs => tq_const('show')), version = version + 1 where id = p_game;
 end $$;
 
@@ -399,14 +407,15 @@ begin
         if leader.seat is not null and leader.pos - s.pos >= 12 and s.items ? 'echange' and random() < 0.6 then
           update traque_players set items = items - (select (ord - 1)::int from jsonb_array_elements_text(items) with ordinality e(v, ord) where v = 'echange' order by ord limit 1) where game_id = p_game and seat = s.seat;
           update traque_players t set pos = case when t.seat = s.seat then leader.pos else s.pos end where t.game_id = p_game and t.seat in (s.seat, leader.seat);
-          perform tq_log(p_game, '🔄 ' || s.name || ' échange sa place avec ' || leader.name || ' !');
+          perform tq_flash(p_game, 'echange', s.seat, leader.seat, '🔄 ' || s.name || ' échange sa place avec ' || leader.name || ' !');
         elsif leader.seat is not null and leader.pos > s.pos and s.items ? 'ancre' and random() < 0.5 then
           update traque_players set items = items - (select (ord - 1)::int from jsonb_array_elements_text(items) with ordinality e(v, ord) where v = 'ancre' order by ord limit 1) where game_id = p_game and seat = s.seat;
           update traque_players set skip = skip + 1 where game_id = p_game and seat = leader.seat;
-          perform tq_log(p_game, '⚓ ' || s.name || ' jette une ancre sur ' || leader.name || ' !');
+          perform tq_flash(p_game, 'ancre', s.seat, leader.seat, '⚓ ' || s.name || ' jette une ancre sur ' || leader.name || ' : tour suivant passé !');
         elsif s.items ? 'double' and random() < 0.6 then
           update traque_players set items = items - (select (ord - 1)::int from jsonb_array_elements_text(items) with ordinality e(v, ord) where v = 'double' order by ord limit 1) where game_id = p_game and seat = s.seat;
           update traque_games set data = data || '{"double": true}'::jsonb where id = p_game;
+          perform tq_flash(p_game, 'double', s.seat, null, '🎲 ' || s.name || ' sort le double dé !');
         end if;
         perform tq_roll(p_game);
       elsif due then perform tq_roll(p_game);
@@ -729,21 +738,21 @@ begin
     if g.phase <> 'roll' or g.turn <> s then raise exception 'seulement pendant ton tour, avant le dé'; end if;
     if p_item = 'double' then
       update traque_games set data = data || '{"double": true}'::jsonb where id = p_game;
-      perform tq_log(p_game, '🎲 ' || me.name || ' sort le double dé !');
+      perform tq_flash(p_game, 'double', s, null, '🎲 ' || me.name || ' sort le double dé !');
     else
       select * into tg from traque_players where game_id = p_game and seat = p_target and seat <> s and status in ('joined', 'bot', 'left');
       if not found then raise exception 'choisis un adversaire'; end if;
       if p_item = 'ancre' then
         update traque_players set skip = skip + 1 where game_id = p_game and seat = p_target;
-        perform tq_log(p_game, '⚓ ' || me.name || ' jette une ancre sur ' || tg.name || ' : il passera son tour.');
+        perform tq_flash(p_game, 'ancre', s, p_target, '⚓ ' || me.name || ' jette une ancre sur ' || tg.name || ' : tour suivant passé !');
       elsif p_item = 'vol' then
         amount := least(5, tg.pearls);
         update traque_players set pearls = pearls - amount where game_id = p_game and seat = p_target;
         update traque_players set pearls = pearls + amount where game_id = p_game and seat = s;
-        perform tq_log(p_game, '🦝 ' || me.name || ' vole ' || amount || ' perles à ' || tg.name || ' !');
+        perform tq_flash(p_game, 'vol', s, p_target, '🪝 ' || me.name || ' vole ' || amount || ' perle' || case when amount > 1 then 's' else '' end || ' à ' || tg.name || ' !');
       elsif p_item = 'echange' then
         update traque_players t set pos = case when t.seat = s then tg.pos else me.pos end where t.game_id = p_game and t.seat in (s, p_target);
-        perform tq_log(p_game, '🔄 ' || me.name || ' échange sa place avec ' || tg.name || ' !');
+        perform tq_flash(p_game, 'echange', s, p_target, '🔄 ' || me.name || ' échange sa place avec ' || tg.name || ' !');
       end if;
     end if;
   end if;
@@ -802,4 +811,4 @@ revoke all on function public.traque_tick(uuid), public.traque_view(uuid, uuid),
   public.tq_land(uuid, int), public.tq_next(uuid), public.tq_roll(uuid), public.tq_finish(uuid, int), public.tq_quiz_done(uuid),
   public.tq_put_answer(uuid, int, int), public.tq_pick(uuid, text), public.tq_event(uuid, text, jsonb), public.tq_shift(uuid, int, int),
   public.tq_final(uuid, int), public.tq_log(uuid, text), public.tq_general(uuid), public.tq_name(uuid, int), public.tq_free_seat(uuid),
-  public.traque_invites_for(uuid), public.tq_shop_buy(uuid, int, text), public.tq_shop_leave(uuid), public.tq_shop_price(uuid, text) from public, anon, authenticated;
+  public.traque_invites_for(uuid), public.tq_shop_buy(uuid, int, text), public.tq_shop_leave(uuid), public.tq_shop_price(uuid, text), public.tq_flash(uuid, text, int, int, text) from public, anon, authenticated;
