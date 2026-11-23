@@ -1,9 +1,12 @@
 // Stickers du livre : un par thème, débloqué au dernier titre du thème (niveau 15).
-import { levelInfo } from './levels.js'
+import { levelInfo, needFor } from './levels.js'
 
 export const STICKER_LEVEL = 15
+// XP de thème nécessaire pour débloquer le sticker (6 860 au niveau 15)
+export const STICKER_XP = Array.from({ length: STICKER_LEVEL - 1 }, (_, i) => needFor(i + 1)).reduce((a, b) => a + b, 0)
 export const STICKERS = [
   { id: 'swiftie', topic: 'taylor-swift', name: 'Kraken Swiftie' },
+  { id: 'directioner', topic: 'one-direction', name: 'Kraken Directioner' },
   { id: 'chirurgien', topic: 'c-greys', name: 'Kraken chirurgien' },
   { id: 'tribut', topic: 'hunger-games', name: 'Kraken tribut' },
   { id: 'chef', topic: 'ici-tout-commence', name: 'Kraken chef étoilé' },

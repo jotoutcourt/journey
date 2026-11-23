@@ -6,6 +6,7 @@ import AiTag from './AiTag.jsx'
 import TierIcon from './TierIcon.jsx'
 import { tierOf, PLACEMENT } from '../lib/rating.js'
 import { stickerFor, STICKER_LEVEL } from '../lib/stickers.js'
+import SurpriseBar from './Surprise.jsx'
 import { levelInfo } from '../lib/levels.js'
 import { topicTitle } from '../lib/titles.js'
 import { sfx } from '../lib/sound.js'
@@ -129,16 +130,12 @@ export default function Results({ data, me, onRematch, onAnother, onTopic, onSha
       {data.exploitMissed && <p className="bonus-note muted">Tu as déjà touché la prime d'exploit contre {data.opponent.name} aujourd'hui. Reviens demain pour la regagner.</p>}
 
       {!data.noXp && <LevelRing before={before} after={after} topic={topic} />}
-      {!data.noXp && (() => {
-        const s = stickerFor(topic?.id)
-        if (!s || levelInfo(before).level >= STICKER_LEVEL || levelInfo(after).level < STICKER_LEVEL) return null
-        return (
-          <button className="sticker-unlock" onClick={onBook}>
-            <img src={s.img} alt="" />
-            <span><b>Nouveau sticker : {s.name} !</b><small>Va le coller dans ton livre de stickers 📖</small></span>
+      {!data.noXp && (levelInfo(before).level < STICKER_LEVEL && levelInfo(after).level >= STICKER_LEVEL && stickerFor(topic?.id)
+        ? <button className="sticker-unlock" onClick={onBook}>
+            <img src={stickerFor(topic.id).img} alt="" />
+            <span><b>Surprise ! Nouveau sticker : {stickerFor(topic.id).name}</b><small>Va le coller dans ton livre de stickers 📖</small></span>
           </button>
-        )
-      })()}
+        : <SurpriseBar topicId={topic?.id} xp={after} fromXp={before} onOpen={onBook} delay={2900} />)}
 
       {data.rating && (
         <div className="result-rating">

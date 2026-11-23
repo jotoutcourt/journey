@@ -16,6 +16,7 @@ import Mascot from './Mascot.jsx'
 import { InstallBanner } from './InstallCard.jsx'
 import { decodeTopic } from '../lib/store.js'
 import { sfx } from '../lib/sound.js'
+import SurpriseBar from './Surprise.jsx'
 
 const fmt = (n) => n.toLocaleString('fr-FR')
 
@@ -206,6 +207,8 @@ export function TopicPage({ st, topic, go, toggleFollow, shareTopic, deleteTopic
           return <small>{nx ? <>Prochain titre : <b>{nx.title}</b> au niveau {nx.level}</> : 'Tu as atteint le titre le plus haut de ce thème.'}</small>
         })()}
       </div>
+
+      <SurpriseBar topicId={topic.id} xp={stats.xp} onOpen={() => go({ name: 'book' })} />
 
       <div className="tp-stats">
         <div><small>Ton niveau</small><b>{lvl.level}</b></div>

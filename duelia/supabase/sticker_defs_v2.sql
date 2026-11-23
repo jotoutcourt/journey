@@ -18,3 +18,4 @@ insert into public.sticker_defs (id, topic_id, name) values
   ('labo', 'sciences', 'Kraken de labo'),
   ('dictee', 'orthographe', 'Kraken de la dictée')
 on conflict (id) do update set topic_id = excluded.topic_id, name = excluded.name;
+insert into public.sticker_defs (id, topic_id, name) values ('directioner', 'one-direction', 'Kraken Directioner') on conflict (id) do nothing; -- image provisoire
