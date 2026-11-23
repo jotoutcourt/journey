@@ -1,672 +1,672 @@
 // Taylor Swift : les albums, les chansons, les réenregistrements, sa vie et ses records. La bonne réponse est toujours la première.
 export default [
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Tim McGraw » ?",
+  "De quel album vient « Tim McGraw » ?",
   "Taylor Swift (2006)",
   "Speak Now",
   "Red",
   "Fearless"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Teardrops on My Guitar » ?",
+  "« Teardrops on My Guitar » : c'est sur quel album ?",
   "Taylor Swift (2006)",
   "Red",
   "Fearless",
   "Speak Now"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Our Song » ?",
+  "Sur quel album trouve-t-on « Our Song » ?",
   "Taylor Swift (2006)",
   "Fearless",
   "Red",
   "Speak Now"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Picture to Burn » ?",
+  "Quel album contient « Picture to Burn » ?",
   "Taylor Swift (2006)",
   "Fearless",
   "Red",
   "Speak Now"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Should've Said No » ?",
+  "« Should've Said No » fait partie de quel album ?",
   "Taylor Swift (2006)",
   "Fearless",
   "Speak Now",
   "Red"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Cold as You » ?",
+  "Dans quelle ère sort « Cold as You » ?",
   "Taylor Swift (2006)",
   "Red",
   "Fearless",
   "Speak Now"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Stay Beautiful » ?",
+  "De quel album vient « Stay Beautiful » ?",
   "Taylor Swift (2006)",
   "Fearless",
   "Red",
   "Speak Now"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « A Place in This World » ?",
+  "« A Place in This World » : c'est sur quel album ?",
   "Taylor Swift (2006)",
   "Speak Now",
   "Red",
   "Fearless"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Love Story » ?",
+  "Sur quel album trouve-t-on « Love Story » ?",
   "Fearless",
   "Red",
   "Speak Now",
   "Taylor Swift (2006)"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « You Belong with Me » ?",
+  "Quel album contient « You Belong with Me » ?",
   "Fearless",
   "1989",
   "Red",
   "Speak Now"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Fifteen » ?",
+  "« Fifteen » fait partie de quel album ?",
   "Fearless",
   "Red",
   "Speak Now",
   "1989"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « White Horse » ?",
+  "Dans quelle ère sort « White Horse » ?",
   "Fearless",
   "Taylor Swift (2006)",
   "Speak Now",
   "Red"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Hey Stephen » ?",
+  "De quel album vient « Hey Stephen » ?",
   "Fearless",
   "1989",
   "Red",
   "Taylor Swift (2006)"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « The Way I Loved You » ?",
+  "« The Way I Loved You » : c'est sur quel album ?",
   "Fearless",
   "1989",
   "Red",
   "Speak Now"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Forever & Always » ?",
+  "Sur quel album trouve-t-on « Forever & Always » ?",
   "Fearless",
   "Speak Now",
   "1989",
   "Taylor Swift (2006)"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « The Best Day » ?",
+  "Quel album contient « The Best Day » ?",
   "Fearless",
   "Speak Now",
   "Red",
   "1989"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Mine » ?",
+  "« Mine » fait partie de quel album ?",
   "Speak Now",
   "Red",
   "Reputation",
   "Fearless"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Back to December » ?",
+  "Dans quelle ère sort « Back to December » ?",
   "Speak Now",
   "Red",
   "Reputation",
   "Fearless"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Mean » ?",
+  "De quel album vient « Mean » ?",
   "Speak Now",
   "Fearless",
   "1989",
   "Red"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « The Story of Us » ?",
+  "« The Story of Us » : c'est sur quel album ?",
   "Speak Now",
   "Fearless",
   "Reputation",
   "Taylor Swift (2006)"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Sparks Fly » ?",
+  "Sur quel album trouve-t-on « Sparks Fly » ?",
   "Speak Now",
   "Red",
   "Fearless",
   "Taylor Swift (2006)"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Enchanted » ?",
+  "Quel album contient « Enchanted » ?",
   "Speak Now",
   "1989",
   "Reputation",
   "Fearless"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Dear John » ?",
+  "« Dear John » fait partie de quel album ?",
   "Speak Now",
   "Taylor Swift (2006)",
   "1989",
   "Reputation"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Long Live » ?",
+  "Dans quelle ère sort « Long Live » ?",
   "Speak Now",
   "Fearless",
   "Reputation",
   "1989"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « We Are Never Ever Getting Back Together » ?",
+  "De quel album vient « We Are Never Ever Getting Back Together » ?",
   "Red",
   "Lover",
   "1989",
   "Speak Now"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « I Knew You Were Trouble » ?",
+  "« I Knew You Were Trouble » : c'est sur quel album ?",
   "Red",
   "Fearless",
   "1989",
   "Speak Now"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « 22 » ?",
+  "Sur quel album trouve-t-on « 22 » ?",
   "Red",
   "Speak Now",
   "Fearless",
   "Lover"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « All Too Well » ?",
+  "Quel album contient « All Too Well » ?",
   "Red",
   "Reputation",
   "Fearless",
   "Lover"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Begin Again » ?",
+  "« Begin Again » fait partie de quel album ?",
   "Red",
   "Lover",
   "1989",
   "Fearless"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « State of Grace » ?",
+  "Dans quelle ère sort « State of Grace » ?",
   "Red",
   "Reputation",
   "Taylor Swift (2006)",
   "Lover"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Treacherous » ?",
+  "De quel album vient « Treacherous » ?",
   "Red",
   "Speak Now",
   "Reputation",
   "Lover"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Holy Ground » ?",
+  "« Holy Ground » : c'est sur quel album ?",
   "Red",
   "Fearless",
   "Speak Now",
   "Lover"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Shake It Off » ?",
+  "Sur quel album trouve-t-on « Shake It Off » ?",
   "1989",
   "Speak Now",
   "Lover",
   "Fearless"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Blank Space » ?",
+  "Quel album contient « Blank Space » ?",
   "1989",
   "Speak Now",
   "Folklore",
   "Fearless"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Style » ?",
+  "« Style » fait partie de quel album ?",
   "1989",
   "Reputation",
   "Lover",
   "Fearless"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Bad Blood » ?",
+  "Dans quelle ère sort « Bad Blood » ?",
   "1989",
   "Reputation",
   "Red",
   "Fearless"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Wildest Dreams » ?",
+  "De quel album vient « Wildest Dreams » ?",
   "1989",
   "Lover",
   "Fearless",
   "Speak Now"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Out of the Woods » ?",
+  "« Out of the Woods » : c'est sur quel album ?",
   "1989",
   "Red",
   "Fearless",
   "Reputation"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Welcome to New York » ?",
+  "Sur quel album trouve-t-on « Welcome to New York » ?",
   "1989",
   "Red",
   "Folklore",
   "Fearless"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « New Romantics » ?",
+  "Quel album contient « New Romantics » ?",
   "1989",
   "Reputation",
   "Lover",
   "Red"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Look What You Made Me Do » ?",
+  "« Look What You Made Me Do » fait partie de quel album ?",
   "Reputation",
   "Speak Now",
   "Evermore",
   "1989"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « ...Ready for It? » ?",
+  "Dans quelle ère sort « ...Ready for It? » ?",
   "Reputation",
   "1989",
   "Red",
   "Lover"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « End Game » ?",
+  "De quel album vient « End Game » ?",
   "Reputation",
   "Folklore",
   "Evermore",
   "Lover"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Delicate » ?",
+  "« Delicate » : c'est sur quel album ?",
   "Reputation",
   "Red",
   "Evermore",
   "1989"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Gorgeous » ?",
+  "Sur quel album trouve-t-on « Gorgeous » ?",
   "Reputation",
   "Speak Now",
   "Lover",
   "Red"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Getaway Car » ?",
+  "Quel album contient « Getaway Car » ?",
   "Reputation",
   "Evermore",
   "Red",
   "1989"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Call It What You Want » ?",
+  "« Call It What You Want » fait partie de quel album ?",
   "Reputation",
   "Lover",
   "Red",
   "1989"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « New Year's Day » ?",
+  "Dans quelle ère sort « New Year's Day » ?",
   "Reputation",
   "Lover",
   "Folklore",
   "Red"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « ME! » ?",
+  "De quel album vient « ME! » ?",
   "Lover",
   "Reputation",
   "1989",
   "Midnights"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « You Need to Calm Down » ?",
+  "« You Need to Calm Down » : c'est sur quel album ?",
   "Lover",
   "Folklore",
   "1989",
   "Reputation"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « The Man » ?",
+  "Sur quel album trouve-t-on « The Man » ?",
   "Lover",
   "Folklore",
   "Red",
   "Reputation"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Cruel Summer » ?",
+  "Quel album contient « Cruel Summer » ?",
   "Lover",
   "Folklore",
   "Midnights",
   "Red"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « The Archer » ?",
+  "« The Archer » fait partie de quel album ?",
   "Lover",
   "Red",
   "Midnights",
   "Evermore"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Paper Rings » ?",
+  "Dans quelle ère sort « Paper Rings » ?",
   "Lover",
   "Midnights",
   "Reputation",
   "1989"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Cornelia Street » ?",
+  "De quel album vient « Cornelia Street » ?",
   "Lover",
   "Folklore",
   "Midnights",
   "Evermore"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « London Boy » ?",
+  "« London Boy » : c'est sur quel album ?",
   "Lover",
   "Reputation",
   "Red",
   "Midnights"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Cardigan » ?",
+  "Sur quel album trouve-t-on « Cardigan » ?",
   "Folklore",
   "Midnights",
   "Evermore",
   "Reputation"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Exile » ?",
+  "Quel album contient « Exile » ?",
   "Folklore",
   "Reputation",
   "1989",
   "Midnights"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « The 1 » ?",
+  "« The 1 » fait partie de quel album ?",
   "Folklore",
   "Lover",
   "Reputation",
   "Midnights"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Betty » ?",
+  "Dans quelle ère sort « Betty » ?",
   "Folklore",
   "Lover",
   "The Tortured Poets Department",
   "Evermore"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « August » ?",
+  "De quel album vient « August » ?",
   "Folklore",
   "Lover",
   "1989",
   "The Tortured Poets Department"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « The Last Great American Dynasty » ?",
+  "« The Last Great American Dynasty » : c'est sur quel album ?",
   "Folklore",
   "Reputation",
   "1989",
   "Lover"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « My Tears Ricochet » ?",
+  "Sur quel album trouve-t-on « My Tears Ricochet » ?",
   "Folklore",
   "Evermore",
   "The Tortured Poets Department",
   "Midnights"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Mirrorball » ?",
+  "Quel album contient « Mirrorball » ?",
   "Folklore",
   "1989",
   "Lover",
   "Midnights"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Willow » ?",
+  "« Willow » fait partie de quel album ?",
   "Evermore",
   "Lover",
   "Reputation",
   "Folklore"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Champagne Problems » ?",
+  "Dans quelle ère sort « Champagne Problems » ?",
   "Evermore",
   "Lover",
   "The Tortured Poets Department",
   "The Life of a Showgirl"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Gold Rush » ?",
+  "De quel album vient « Gold Rush » ?",
   "Evermore",
   "Reputation",
   "Lover",
   "The Tortured Poets Department"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « 'Tis the Damn Season » ?",
+  "« 'Tis the Damn Season » : c'est sur quel album ?",
   "Evermore",
   "Reputation",
   "Midnights",
   "Folklore"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Tolerate It » ?",
+  "Sur quel album trouve-t-on « Tolerate It » ?",
   "Evermore",
   "Reputation",
   "Folklore",
   "The Tortured Poets Department"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « No Body, No Crime » ?",
+  "Quel album contient « No Body, No Crime » ?",
   "Evermore",
   "Lover",
   "Reputation",
   "The Life of a Showgirl"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Coney Island » ?",
+  "« Coney Island » fait partie de quel album ?",
   "Evermore",
   "The Life of a Showgirl",
   "Lover",
   "Midnights"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Marjorie » ?",
+  "Dans quelle ère sort « Marjorie » ?",
   "Evermore",
   "Lover",
   "The Tortured Poets Department",
   "Midnights"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Lavender Haze » ?",
+  "De quel album vient « Lavender Haze » ?",
   "Midnights",
   "The Life of a Showgirl",
   "Lover",
   "Evermore"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Anti-Hero » ?",
+  "« Anti-Hero » : c'est sur quel album ?",
   "Midnights",
   "Lover",
   "The Life of a Showgirl",
   "Evermore"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Maroon » ?",
+  "Sur quel album trouve-t-on « Maroon » ?",
   "Midnights",
   "Folklore",
   "Evermore",
   "The Tortured Poets Department"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Snow on the Beach » ?",
+  "Quel album contient « Snow on the Beach » ?",
   "Midnights",
   "The Tortured Poets Department",
   "Evermore",
   "Lover"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Bejeweled » ?",
+  "« Bejeweled » fait partie de quel album ?",
   "Midnights",
   "The Life of a Showgirl",
   "Evermore",
   "Folklore"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Karma » ?",
+  "Dans quelle ère sort « Karma » ?",
   "Midnights",
   "Lover",
   "Evermore",
   "The Life of a Showgirl"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Mastermind » ?",
+  "De quel album vient « Mastermind » ?",
   "Midnights",
   "Lover",
   "Folklore",
   "Evermore"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Midnight Rain » ?",
+  "« Midnight Rain » : c'est sur quel album ?",
   "Midnights",
   "Lover",
   "The Life of a Showgirl",
   "Evermore"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Fortnight » ?",
+  "Sur quel album trouve-t-on « Fortnight » ?",
   "The Tortured Poets Department",
   "Midnights",
   "Folklore",
   "Evermore"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Down Bad » ?",
+  "Quel album contient « Down Bad » ?",
   "The Tortured Poets Department",
   "The Life of a Showgirl",
   "Folklore",
   "Evermore"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « So Long, London » ?",
+  "« So Long, London » fait partie de quel album ?",
   "The Tortured Poets Department",
   "Folklore",
   "The Life of a Showgirl",
   "Midnights"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « But Daddy I Love Him » ?",
+  "Dans quelle ère sort « But Daddy I Love Him » ?",
   "The Tortured Poets Department",
   "Midnights",
   "Evermore",
   "The Life of a Showgirl"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Florida!!! » ?",
+  "De quel album vient « Florida!!! » ?",
   "The Tortured Poets Department",
   "The Life of a Showgirl",
   "Evermore",
   "Midnights"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Guilty as Sin? » ?",
+  "« Guilty as Sin? » : c'est sur quel album ?",
   "The Tortured Poets Department",
   "Evermore",
   "Folklore",
   "The Life of a Showgirl"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « I Can Do It with a Broken Heart » ?",
+  "Sur quel album trouve-t-on « I Can Do It with a Broken Heart » ?",
   "The Tortured Poets Department",
   "Midnights",
   "Folklore",
   "The Life of a Showgirl"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « The Alchemy » ?",
+  "Quel album contient « The Alchemy » ?",
   "The Tortured Poets Department",
   "Midnights",
   "Evermore",
   "The Life of a Showgirl"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « The Fate of Ophelia » ?",
+  "« The Fate of Ophelia » fait partie de quel album ?",
   "The Life of a Showgirl",
   "Evermore",
   "The Tortured Poets Department",
   "Midnights"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Elizabeth Taylor » ?",
+  "Dans quelle ère sort « Elizabeth Taylor » ?",
   "The Life of a Showgirl",
   "Midnights",
   "Evermore",
   "The Tortured Poets Department"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Opalite » ?",
+  "De quel album vient « Opalite » ?",
   "The Life of a Showgirl",
   "Midnights",
   "The Tortured Poets Department",
   "Evermore"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Father Figure » ?",
+  "« Father Figure » : c'est sur quel album ?",
   "The Life of a Showgirl",
   "Midnights",
   "The Tortured Poets Department",
   "Evermore"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Eldest Daughter » ?",
+  "Sur quel album trouve-t-on « Eldest Daughter » ?",
   "The Life of a Showgirl",
   "Midnights",
   "The Tortured Poets Department",
   "Evermore"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Ruin the Friendship » ?",
+  "Quel album contient « Ruin the Friendship » ?",
   "The Life of a Showgirl",
   "Evermore",
   "The Tortured Poets Department",
   "Midnights"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Wood » ?",
+  "« Wood » fait partie de quel album ?",
   "The Life of a Showgirl",
   "The Tortured Poets Department",
   "Evermore",
   "Midnights"
  ],
  [
-  "Sur quel album de Taylor Swift trouve-t-on « Actually Romantic » ?",
+  "Dans quelle ère sort « Actually Romantic » ?",
   "The Life of a Showgirl",
   "Evermore",
   "The Tortured Poets Department",
