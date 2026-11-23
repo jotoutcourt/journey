@@ -290,7 +290,7 @@ function TraqueBoard({ v, gameId, act, onExit }) {
       <div className="tq-banner">
         {v.phase === 'roll' && myTurn ? <><b>À toi de jouer !</b><small>Lance le dé pour avancer{left != null ? ` · ${Math.ceil(left / 1000)} s` : ''}</small></>
           : v.phase === 'done' ? <b>Partie terminée</b>
-          : <><b style={{ color: SEAT_COLORS[v.turn] }}>{myTurn ? 'Ton tour' : `Au tour de ${turnP?.name?.replace(/ \((facile|moyen|expert)\)$/, '') || '…'}`}</b><small>{(v.log || []).slice(-1)[0]?.t}</small></>}
+          : <><b style={{ color: SEAT_COLORS[v.turn] }}>{myTurn ? 'Ton tour' : `Au tour de ${turnP?.name?.replace(/ \((facile|moyen|expert)\)$/, '') || '…'}`}</b><small>{bare((v.log || []).slice(-1)[0]?.t)}</small></>}
       </div>
       <ul className="tq-others">
         {v.players.filter(p => p.status !== 'declined' && p.seat !== v.me).map(p => (
@@ -375,7 +375,7 @@ function PathBoard({ v, shown, topicOf, owners }) {
             <Fragment key={i}>
               {/* teinte fondue dans la pierre peinte (garde les reflets et l'ombre de l'illustration) */}
               {c.t !== 'general' && <i className={`tq-tint t-${c.t}`} style={{ left: `${x * 100}%`, top: `${y * 100}%`, '--oc': own.length ? SEAT_COLORS[own[0]] : undefined }} />}
-              <div className={`tq-slot t-${c.t}`} style={{ left: `${x * 100}%`, top: `${y * 100}%` }}
+              <div className={`tq-slot t-${c.t}`} style={{ left: `${x * 100}%`, top: `${y * 100}%`, '--oc': own.length ? SEAT_COLORS[own[0]] : undefined }}
                 title={c.t === 'spec' || c.t === 'general' ? `${CELL_LABEL[c.t]} · ${t?.name}` : CELL_LABEL[c.t]}>
                 {CASE_IMG.has(c.t) ? <img className="tq-cimg" src={`/traque/ico/case-${c.t}.webp`} alt="" draggable="false" /> : <span className="tq-ico">{CELL_ICON[c.t] ?? '?'}</span>}
                 {c.t === 'spec' && t?.icon && <span className="tq-tile-topic">{t.icon}</span>}
@@ -401,6 +401,7 @@ function PathBoard({ v, shown, topicOf, owners }) {
 // Cadre illustré (coraux, bulles) : titre dans la plaque du haut, contenu au centre, bouton dans la plaque du bas
 // Dé en relief (faces à points)
 const TITLE_IMG = { duel: '/traque/titre-duel.webp', truce: '/traque/titre-treve.webp', final: '/traque/titre-final2.webp' }
+const bare = (s) => (s || '').replace(/ \((facile|moyen|expert)\)/g, '')
 const Pearl = () => <img className="tq-pearl" src="/traque/perle.webp" alt="perles" />
 
 function Die() {
@@ -409,11 +410,12 @@ function Die() {
 const CASE_IMG = new Set(['general', 'spec', 'truce', 'chest', 'current', 'tentacle', 'shortcut', 'shop'])
 const Obj = ({ k }) => <img className="tq-obj" src={`/traque/ico/obj-${k}.webp`} alt="" draggable="false" />
 
-function Frame({ img = '/traque/cadre-duel.webp', title, children, cta, onClose, className = '' }) {
+function Frame({ img = '/traque/cadre-duel.webp', title, children, cta, onClose, className = '', badge }) {
   return (
     <div className={`tq-frame ${className}`}>
       <div className="tq-frame-in">{children}</div>
       <img className="tq-frame-img" src={img} alt="" draggable="false" />
+      {badge && <img className="tq-frame-badge" src={badge} alt="" draggable="false" />}
       <div className="tq-frame-title">{title}</div>
       {cta && <div className="tq-frame-cta">{cta}</div>}
       <button className="tq-frame-x" onClick={onClose} aria-label="Fermer" />
@@ -439,6 +441,7 @@ function Intro({ v, d, left, topicOf, onReady }) {
       <div className="tq-intro-stack">
       {TITLE_IMG[d.kind] && <img className="tq-title-img" src={TITLE_IMG[d.kind]} alt={info[1]} />}
       <Frame className={`k-${d.kind}`} title={TITLE_IMG[d.kind] ? t.name : info[1]}
+        badge={d.kind === 'solo' ? `/traque/ico/case-${reason === 'own' ? 'spec' : reason === 'shortcut' ? 'shortcut' : 'general'}.webp` : null}
         onClose={() => { setNope(true); setTimeout(() => setNope(false), 2200) }}
         cta={mine && !ready.includes(v.me)
           ? <button onClick={onReady}>Je suis prêt ! ⚡{left != null ? ` ${Math.ceil(left / 1000)} s` : ''}</button>
@@ -464,13 +467,14 @@ function Quiz({ v, d, left, me, topicOf, onAnswer, onJoker }) {
   const picked = Array.isArray(mine) ? mine[0] : null
   const total = d.hard ? 9000 : 12000
   const label = { solo: d.ctx?.reason === 'own' ? '⭐ Ta spécialité' : d.ctx?.reason === 'shortcut' ? '🚪 Raccourci' : '❓ Question', duel: '⚔️ Duel', truce: '🤝 Trêve : remplissez le trésor !', final: '🐙 Combat final' }[d.kind]
-  const who = d.seats?.map(s => v.players.find(p => p.seat === s)?.name).join(' vs ')
+  const who = d.seats?.map(s => s === v.me ? 'Toi' : bare(v.players.find(p => p.seat === s)?.name)).join(' vs ')
   const t = topicOf(d.topic)
   return (
     <div className={`tq-quiz k-${d.kind}`}>
       <div className="tq-quiz-head">
         <span>{label}{d.count > 1 ? ` · ${d.idx + 1}/${d.count}` : ''}</span>
-        <small><TopicIcon topic={t} size={16} /> {t.name}{d.kind === 'duel' ? ` · ${who}` : !inIt ? ` · ${who}` : ''}</small>
+        <small><TopicIcon topic={t} size={16} /> {t.name}</small>
+        {(d.kind === 'duel' || !inIt) && <small className="tq-quiz-who">{who}</small>}
       </div>
       {!d.reveal && left != null && <div className="tq-timer"><i style={{ width: `${Math.min(100, (left / total) * 100)}%` }} /></div>}
       <p className="tq-q"><QuestionText text={d.q} /></p>
