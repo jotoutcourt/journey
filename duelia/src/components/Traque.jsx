@@ -319,7 +319,10 @@ function TraqueBoard({ v, gameId, act, onExit }) {
       {/* Moments forts au centre de l'écran */}
       {v.phase === 'show' && (d.dice || []).length > 0 && <div className="tq-center"><div className="tq-dice">{d.dice.map((n, i) => <span key={i} className="tq-die">{n}</span>)}</div></div>}
       {v.phase === 'event' && <div className="tq-center"><p className="tq-event">{d.text}</p></div>}
-      {v.phase === 'duelroll' && d.winner !== v.me && <div className="tq-center"><p className="tq-event">🎲 {v.players.find(p => p.seat === d.winner)?.name} lance le dé du duel… {v.players.find(p => p.seat === d.loser)?.name} va reculer !</p></div>}
+      {v.phase === 'duelroll' && <div className="tq-center"><p className="tq-event">
+        ⚔️ {d.winner === v.me ? 'Tu gagnes' : `${bare(v.players.find(p => p.seat === d.winner)?.name)} gagne`} {(d.score || []).join('–')}{d.tie ? ' au temps (plus rapide sur les bonnes réponses)' : ''} !<br />
+        {d.winner === v.me ? `Lance le dé : ${bare(v.players.find(p => p.seat === d.loser)?.name)} va reculer d'autant.` : `${d.loser === v.me ? 'Tu vas' : `${bare(v.players.find(p => p.seat === d.loser)?.name)} va`} reculer…`}
+      </p></div>}
       {v.phase === 'intro' && <Intro v={v} d={d} left={left} topicOf={topicOf} onReady={() => act(() => api.traqueReady(gameId))} />}
       {v.phase === 'shop' && <Shop v={v} d={d} me={me} left={left} onBuy={(k) => act(() => api.traqueBuy(gameId, k))} onLeave={() => act(() => api.traqueShopLeave(gameId))} />}
       {v.phase === 'quiz' && <div className="tq-quiz-wrap"><Quiz v={v} d={d} left={left} me={me} topicOf={topicOf} onAnswer={(i) => act(() => api.traqueAnswer(gameId, d.idx, i))}

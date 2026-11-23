@@ -298,15 +298,18 @@ begin
     a := (d -> 'ctx' ->> 'a')::int; b := (d -> 'ctx' ->> 'b')::int; ok := 0; okb := 0; ta := 0; tb := 0;
     for i in 0 .. jsonb_array_length(d -> 'items') - 1 loop
       n := (g.pool -> (d -> 'items' -> i ->> 'topic') -> ((d -> 'items' -> i ->> 'qi')::int) ->> 'c')::int;
-      if (d -> 'ans' -> a::text -> i ->> 0)::int = n then ok := ok + 1; end if;
-      if (d -> 'ans' -> b::text -> i ->> 0)::int = n then okb := okb + 1; end if;
-      ta := ta + coalesce((d -> 'ans' -> a::text -> i ->> 1)::int, 15000);
-      tb := tb + coalesce((d -> 'ans' -> b::text -> i ->> 1)::int, 15000);
+      -- départage : seul le temps des BONNES réponses compte
+      if (d -> 'ans' -> a::text -> i ->> 0)::int = n then ok := ok + 1; ta := ta + coalesce((d -> 'ans' -> a::text -> i ->> 1)::int, 15000); end if;
+      if (d -> 'ans' -> b::text -> i ->> 0)::int = n then okb := okb + 1; tb := tb + coalesce((d -> 'ans' -> b::text -> i ->> 1)::int, 15000); end if;
     end loop;
-    if ok > okb or (ok = okb and ta <= tb) then win := a; lose := b; else win := b; lose := a; end if;
+    if ok = okb and (ok = 0 or ta = tb) then
+      perform tq_event(p_game, '🤝 Match nul ' || ok || '–' || okb || ' entre ' || tq_name(p_game, a) || ' et ' || tq_name(p_game, b) || ' : personne ne bouge.', '{}'::jsonb);
+      return;
+    end if;
+    if ok > okb or (ok = okb and ta < tb) then win := a; lose := b; else win := b; lose := a; end if;
     update traque_players set pearls = pearls + 3 where game_id = p_game and seat = win;
-    perform tq_log(p_game, '⚔️ ' || tq_name(p_game, win) || ' gagne le duel ' || greatest(ok, okb) || '–' || least(ok, okb) || ' (+3 perles)');
-    update traque_games set phase = 'duelroll', data = jsonb_build_object('winner', win, 'loser', lose, 'score', jsonb_build_array(ok, okb), 'a', a, 'b', b),
+    perform tq_log(p_game, '⚔️ ' || tq_name(p_game, win) || ' gagne le duel ' || greatest(ok, okb) || '–' || least(ok, okb) || case when ok = okb then ' au temps' else '' end || ' (+3 perles)');
+    update traque_games set phase = 'duelroll', data = jsonb_build_object('winner', win, 'loser', lose, 'score', jsonb_build_array(greatest(ok, okb), least(ok, okb)), 'tie', ok = okb, 'a', a, 'b', b),
       deadline = now() + make_interval(secs => case when (select bot is not null or status = 'left' from traque_players where game_id = p_game and seat = win) then 2 else 15 end),
       version = version + 1 where id = p_game;
   elsif kind = 'truce' then
