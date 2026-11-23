@@ -1280,3 +1280,14 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
 .tq-shop .kh-play { width: 100%; height: 50px; font-size: 17px; }
 .tq-price { color: var(--gold); font-weight: 800; }
 .tq-quiz-wrap .tq-shop { width: 100%; max-width: 520px; }
+/* Figurines */
+.tq-seat-pawn { width: 48px; height: 48px; object-fit: contain; filter: drop-shadow(0 0 6px var(--c)); }
+.tq-pawn-pick { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.tq-pawn-pick button { aspect-ratio: 1; padding: 3px; border-radius: 14px; border: 1px solid var(--line); background: var(--card); }
+.tq-pawn-pick button.on { border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold), 0 0 12px #ffc94088; }
+.tq-pawn-pick button:disabled { opacity: .3; }
+.tq-pawn-pick img { width: 100%; height: 100%; object-fit: contain; }
+.tq-mini-pawn { width: 30px; height: 30px; object-fit: contain; flex: none; }
+.tq-figure { position: absolute; width: 54px; height: 54px; margin: -46px 0 0 -27px; object-fit: contain; z-index: 3; pointer-events: none;
+  transition: top .16s linear, left .16s linear; filter: drop-shadow(0 0 0 var(--c)) drop-shadow(0 3px 3px #000a) drop-shadow(0 0 5px var(--c)); }
+.tq-figure.active { z-index: 4; width: 66px; height: 66px; margin: -58px 0 0 -33px; animation: tq-bob .8s ease-in-out infinite; filter: drop-shadow(0 3px 3px #000a) drop-shadow(0 0 10px var(--c)) drop-shadow(0 0 4px var(--c)); }

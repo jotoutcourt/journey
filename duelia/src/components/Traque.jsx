@@ -8,7 +8,7 @@ import ConfirmButton from './ConfirmButton.jsx'
 import * as api from '../lib/account.js'
 import { sfx } from '../lib/sound.js'
 import { useGroupVoice } from '../lib/groupVoice.js'
-import { SEAT_COLORS, GENERAL_TOPICS, ITEMS, ITEM_COST, CELL_ICON, CELL_LABEL, buildPool, topicMeta, randomTopics } from '../lib/traque.js'
+import { SEAT_COLORS, GENERAL_TOPICS, ITEMS, ITEM_COST, CELL_ICON, CELL_LABEL, buildPool, topicMeta, randomTopics, PAWNS, pawnImg } from '../lib/traque.js'
 
 // Plateau vertical : un chemin qui serpente du bas (départ) jusqu'à l'antre du Kraken (en haut)
 const STEP = 74, TOP = 250, BOTTOM = 70
@@ -110,7 +110,7 @@ function TraqueLobby({ v, gameId, officials, topics, friends, act, onExit }) {
         {seats.map((p, s) => (
           <li key={s} style={{ '--c': SEAT_COLORS[s] }} className={p ? '' : 'empty'}>
             {p ? <>
-              <Avatar seed={p.avatar} photo={p.photo} size={44} />
+              <img className="tq-seat-pawn" src={pawnImg(p.pawn, p.seat)} alt="" />
               <div className="tq-seat-txt">
                 <b>{p.bot ? '🤖 ' : ''}{p.name}{p.seat === v.me ? ' (toi)' : ''}</b>
                 <small>{p.status === 'invited' ? 'Invitation envoyée…' : p.topics?.length === 3 ? p.topics.map(t => t.name).join(' · ') : 'Choisit ses spécialités…'}</small>
@@ -125,6 +125,21 @@ function TraqueLobby({ v, gameId, officials, topics, friends, act, onExit }) {
           </li>
         ))}
       </ul>
+
+      <section className="tq-mine">
+        <h3 className="sec-title">Ta figurine</h3>
+        <div className="tq-pawn-pick">
+          {PAWNS.map(pw => {
+            const taken = v.players.find(p => p.pawn === pw.id && p.seat !== v.me && ['joined', 'bot', 'invited'].includes(p.status))
+            return (
+              <button key={pw.id} className={`${(me?.pawn || PAWNS[v.me % PAWNS.length].id) === pw.id ? 'on' : ''}`} disabled={!!taken} title={taken ? `Prise par ${taken.name}` : pw.name}
+                onClick={() => act(() => api.setTraquePawn(gameId, pw.id).then(() => api.getTraque(gameId)))}>
+                <img src={pw.img} alt={pw.name} />
+              </button>
+            )
+          })}
+        </div>
+      </section>
 
       <section className="tq-mine">
         <h3 className="sec-title">Tes 3 spécialités</h3>
@@ -275,7 +290,7 @@ function TraqueBoard({ v, gameId, act, onExit }) {
       <ul className="tq-players">
         {v.players.filter(p => p.status !== 'declined').map(p => (
           <li key={p.seat} style={{ '--c': SEAT_COLORS[p.seat] }} className={`${p.seat === v.turn && v.phase !== 'done' ? 'turn' : ''} ${p.status === 'left' ? 'gone' : ''} ${(p.seat === v.me ? voice.speaking.me : voice.speaking[p.player_id]) ? 'speaking' : ''}`}>
-            <Avatar seed={p.avatar} photo={p.photo} size={28} />
+            <img className="tq-mini-pawn" src={pawnImg(p.pawn, p.seat)} alt="" />
             <div><b>{p.seat === v.me ? 'Toi' : p.name.replace(/ \((facile|moyen|expert)\)$/, '')}</b>
               <small>🦪 {p.pearls} · case {p.pos}{p.skip ? ' · ⚓' : ''}{p.items?.length ? ' · 🎒' + p.items.length : ''}{voice.peerMic[p.player_id] ? ' · 🎙️' : ''}</small></div>
           </li>
@@ -362,7 +377,7 @@ function PathBoard({ v, shown, topicOf, owners }) {
           const pos = Math.min(79, Math.max(0, shown[p.seat] ?? p.pos))
           const { x, y } = cellXY(pos)
           const off = [[-16, -14], [16, -14], [-16, 12], [16, 12]][p.seat]
-          return <i key={p.seat} className={`tq-token ${p.seat === v.turn ? 'active' : ''}`}
+          return <img key={p.seat} src={pawnImg(p.pawn, p.seat)} alt="" className={`tq-figure ${p.seat === v.turn ? 'active' : ''}`}
             style={{ '--c': SEAT_COLORS[p.seat], left: `calc(${x}% + ${off[0]}px)`, top: y + off[1] }} />
         })}
       </div>

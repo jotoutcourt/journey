@@ -49,3 +49,11 @@ export function spiral(n = 9) {
   }
   return out
 }
+
+// Figurines (pions) au choix
+export const PAWNS = [
+  { id: 'stitch', name: 'Bonnet bleu' }, { id: 'gilet', name: 'Gilet jaune' }, { id: 'araignee', name: 'Homme-araignée' },
+  { id: 'sorcier', name: 'Apprenti sorcier' }, { id: 'reine-neiges', name: 'Reine des neiges' }, { id: 'liberte', name: 'Liberté' },
+  { id: 'astronaute', name: 'Astronaute' }, { id: 'fantome', name: 'Fantôme' }, { id: 'dormeur', name: 'Marmotte' }, { id: 'eclair', name: 'Pyjama éclair' },
+].map(p => ({ ...p, img: `/traque/pions/${p.id}.webp` }))
+export const pawnImg = (id, seat) => `/traque/pions/${id || PAWNS[seat % PAWNS.length].id}.webp`

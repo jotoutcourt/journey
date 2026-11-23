@@ -510,7 +510,7 @@ begin
     'id', g.id, 'status', g.status, 'host', g.host = p_pid, 'me', me, 'turn', g.turn, 'round', g.round, 'phase', g.phase, 'data', d,
     'treasure', g.treasure, 'winner', g.winner, 'board', g.board, 'topics', g.topics, 'log', g.log, 'version', g.version,
     'players', (select coalesce(json_agg(json_build_object('seat', seat, 'name', name, 'avatar', avatar, 'photo', photo, 'status', status, 'bot', bot,
-        'player_id', player_id, 'topics', topics, 'pos', pos, 'pearls', pearls, 'items', items, 'skip', skip, 'reward', reward,
+        'player_id', player_id, 'pawn', pawn, 'topics', topics, 'pos', pos, 'pearls', pearls, 'items', items, 'skip', skip, 'reward', reward,
         'online', case when player_id is null then true else (select last_seen > now() - interval '70 seconds' from players where id = player_id) end) order by seat), '[]'::json)
       from traque_players where game_id = p_game and status <> 'declined'));
 end $$;
@@ -564,8 +564,9 @@ begin
   s := tq_free_seat(p_game);
   if s is null then raise exception 'salon complet'; end if;
   delete from traque_players where game_id = p_game and seat = s;
-  insert into traque_players (game_id, seat, bot, name, avatar, status, topics)
-  values (p_game, s, p_level, names[1 + floor(random() * array_length(names, 1))::int] || ' (' || p_level || ')', 'robot-' || s, 'bot', p_topics);
+  insert into traque_players (game_id, seat, bot, name, avatar, status, topics, pawn)
+  values (p_game, s, p_level, names[1 + floor(random() * array_length(names, 1))::int] || ' (' || p_level || ')', 'robot-' || s, 'bot', p_topics,
+    (array['stitch', 'gilet', 'araignee', 'sorcier', 'reine-neiges', 'liberte', 'astronaute', 'fantome', 'dormeur', 'eclair'])[1 + floor(random() * 10)::int]);
 end $$;
 
 create or replace function public.remove_traque_seat(p_game uuid, p_seat int) returns void language plpgsql security definer set search_path = public as $$
