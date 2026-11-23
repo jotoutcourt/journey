@@ -1138,3 +1138,26 @@ img { -webkit-user-drag: none; }
 .sb-deco-item { flex: 0 0 auto; width: 76px; height: 76px; padding: 8px; border-radius: 14px; border: 1px solid var(--line); background: #f3ecdc; display: grid; place-items: center; }
 .sb-deco-item img { max-width: 100%; max-height: 100%; object-fit: contain; }
 .sb-deco-list { display: grid; grid-template-rows: repeat(2, 76px); grid-auto-flow: column; grid-auto-columns: 76px; gap: 8px; overflow-x: auto; padding: 4px 0 8px; }
+
+/* ---------- Missions quotidiennes ---------- */
+.missions-chip { position: relative; margin-left: auto; display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 99px; border: 0; cursor: pointer;
+  background: #14082ecc; box-shadow: 0 0 0 1.5px #b48cff88; color: var(--text); font-family: var(--display); font-weight: 700; font-size: 14px; }
+.missions-chip.ready { box-shadow: 0 0 0 1.5px var(--gold), 0 0 14px #ffc94066; animation: mc-pulse 1.6s ease-in-out infinite; }
+@keyframes mc-pulse { 50% { transform: scale(1.06); } }
+.mc-badge { position: absolute; top: -5px; right: -5px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: var(--ko); color: #fff; font-size: 11px; font-style: normal; display: grid; place-items: center; }
+.home .top .missions-chip + .wallet-pill { margin-left: 8px; }
+.missions-sheet h2 { margin: 0; }
+.missions-list { list-style: none; margin: 4px 0; padding: 0; width: 100%; display: grid; gap: 10px; text-align: left; }
+.missions-list li { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; padding: 12px; border-radius: 16px; background: var(--card); border: 1px solid var(--line); }
+.missions-list li.done { border-color: var(--gold); background: color-mix(in srgb, var(--gold) 12%, var(--card)); }
+.missions-list li.claimed { opacity: .6; }
+.ms-icon { font-size: 26px; }
+.ms-body { display: grid; gap: 5px; min-width: 0; }
+.ms-body b { font-size: 14.5px; }
+.ms-body small { color: var(--muted); font-size: 12px; }
+.ms-track { height: 8px; border-radius: 4px; background: var(--card2); overflow: hidden; }
+.ms-track i { display: block; height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--violet), var(--gold)); transition: width .6s ease; }
+.ms-claim { display: inline-flex; align-items: center; gap: 4px; padding: 8px 12px; border-radius: 12px; border: 0; font-weight: 800; color: #2a1600; background: var(--gold); cursor: pointer; }
+.ms-claim .lt-coin { width: 18px; height: 18px; display: inline-block; }
+.ms-claim.locked { background: var(--card2); color: var(--muted); }
+.ms-ok { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--ok); color: #fff; font-weight: 900; }

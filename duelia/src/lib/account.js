@@ -188,3 +188,5 @@ export const duoNext = (id, round) => rpc('duo_next', { p_id: id, p_round: round
 export const duoJoker = (id, round) => rpc('duo_joker', { p_id: id, p_round: round })
 export const placeDecor = (deco, page, x, y, rot, size) => rpc('place_decor', { p_deco: deco, p_page: page, p_x: x, p_y: y, p_rot: rot, p_size: size })
 export const removeDecor = (id) => rpc('remove_decor', { p_id: id })
+export const getMissions = () => rpc('get_missions')
+export const claimMission = (code) => rpc('claim_mission', { p_code: code })

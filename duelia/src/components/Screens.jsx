@@ -32,7 +32,7 @@ export function TopicTile({ topic, onClick, sub, price }) {
 }
 
 /* ---------------- Accueil ---------------- */
-export function Home({ go, wallet, onSolo, oxygen }) {
+export function Home({ go, wallet, onSolo, oxygen, missions }) {
   const [choose, setChoose] = useState(false)
   const modesRef = useRef(null)
   // un appui en dehors des boutons Solo / À deux fait revenir « Jouer » (sans gêner l'appui sur les boutons, iPhone compris)
@@ -51,6 +51,7 @@ export function Home({ go, wallet, onSolo, oxygen }) {
       </div>
       <header className="top">
         <Brand />
+        {missions}
         {wallet && <button className="wallet-pill" title="Boutique" onClick={() => go({ name: 'shop' })}><i className="lt-coin" aria-hidden="true" />{wallet.lingots}<span className="wp-shop">🏪</span></button>}
       </header>
 

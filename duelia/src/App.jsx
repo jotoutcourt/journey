@@ -13,6 +13,8 @@ import Results from './components/Results.jsx'
 import { Home, Topics, TopicPage, Ranking, Matchmaking, CreateTopic, Onboarding } from './components/Screens.jsx'
 import Profile from './components/Profile.jsx'
 import StickerBook from './components/StickerBook.jsx'
+import { MissionsChip, MissionsSheet } from './components/Missions.jsx'
+import { useMissions } from './lib/missions.js'
 import { settleDuel, ranksFor } from './lib/rewards.js'
 import { createOutgoing, tickChallenges, pendingCount, markPlayed } from './lib/challenges.js'
 import { Inbox, ChallengeSheet, NotifyBanner, SentScreen } from './components/Challenges.jsx'
@@ -662,6 +664,10 @@ export default function App() {
   const duoInvite = social.duoInvites.find(i => !dismissedInvites.includes(i.id))
   // Porte-monnaie de lingots (sur le serveur) et Butin solo contre le Kraken
   const [wallet, setWallet] = useState(null)
+  const [missions, refreshMissions, setMissions] = useMissions(online)
+  const [missionsOpen, setMissionsOpen] = useState(false)
+  // les missions avancent pendant les parties : on les relit à chaque retour à l'accueil
+  useEffect(() => { if (online && route.name === 'home') refreshMissions() }, [online, route.name]) // eslint-disable-line react-hooks/exhaustive-deps
   const [walletAt, setWalletAt] = useState(0) // moment de réception (pour le compte à rebours de l'oxygène)
   const [oxySheet, setOxySheet] = useState(null) // { partner? } quand une partie est refusée faute d'oxygène
   const refreshWallet = useCallback(() => api.getWallet().then(w => { if (w) { setWallet(w); setWalletAt(Date.now()) } }).catch(() => {}), [])
@@ -1081,10 +1087,10 @@ export default function App() {
         onTopic={() => (byId(topic.id) ? go({ name: 'topic', id: topic.id }) : go({ name: 'topics' }))}
         onShare={() => shareText(`${route.data.outcome === 'win' ? 'Victoire' : 'Duel'} ${route.data.myScore}–${route.data.oppScore} contre ${route.opponent.name} sur « ${topic.name} » dans Kraken !`)} />
     ); break
-    default: view = <Home st={st} topics={topics} go={go} wallet={wallet} onSolo={startSolo}
+    default: view = <Home st={st} topics={topics} go={go} wallet={wallet} onSolo={startSolo} missions={<MissionsChip data={missions} onOpen={() => setMissionsOpen(true)} />}
       oxygen={<OxygenInline wallet={wallet} at={walletAt} onRefill={refill} onDue={refreshWallet} />} />
   }
-  if (!view) view = <Home st={st} topics={topics} go={go} wallet={wallet} onSolo={startSolo}
+  if (!view) view = <Home st={st} topics={topics} go={go} wallet={wallet} onSolo={startSolo} missions={<MissionsChip data={missions} onOpen={() => setMissionsOpen(true)} />}
     oxygen={<OxygenInline wallet={wallet} at={walletAt} onRefill={refill} onDue={refreshWallet} />} />
 
   return (
@@ -1118,6 +1124,8 @@ export default function App() {
       {partyInvite && !invite && !['duel', 'match', 'invite', 'butingame', 'party'].includes(route.name) && <PartyInviteBanner key={partyInvite.id} invite={partyInvite} onAccept={acceptParty} onDecline={declineParty} />}
       {duoInvite && !invite && !['duel', 'match', 'invite', 'butingame'].includes(route.name) && <DuoInviteBanner key={duoInvite.id} invite={duoInvite} onAccept={acceptDuo} onDecline={declineDuo} />}
       {shift && <RankShift shift={shift} profile={me} onClose={closeShift} />}
+      {missionsOpen && missions && <MissionsSheet data={missions} onClose={() => setMissionsOpen(false)} onToast={setToast}
+        onClaimed={(code, lingots) => { setMissions(d => ({ ...d, missions: d.missions.map(m => m.code === code ? { ...m, claimed: true } : m) })); if (lingots != null) setWallet(w => ({ ...(w || {}), lingots })) }} />}
       {notifAsk && route.name === 'home' && <NotifAsk busy={push === 'busy'} onYes={notifYes} onLater={notifLater} />}
       {!fullscreen && (
         <nav className="tabbar">
