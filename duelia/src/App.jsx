@@ -161,6 +161,16 @@ function initialState() {
     s.follows = s.follows.filter(id => id !== 'pokemon')
     s.starterVersion = 10
   }
+  // Mise à jour unique (v11) : il n'y a plus que des thèmes officiels. Callie & Arizona, La Villa, Gossip Girl et
+  // Pop des années 2000 deviennent officiels ; les copies personnelles d'un thème officiel (même nom) sont retirées.
+  if (s.starterVersion < 11) {
+    const norm = (x) => (x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
+    const officialNames = new Set([...OFFICIAL_TOPICS, ...COMMUNITY_SEED].map(t => norm(t.name)))
+    s.custom = s.custom.filter(t => !(t.own && officialNames.has(norm(t.name))))
+    s.starterVersion = 11
+  }
+  // Toujours : un thème devenu officiel n'a plus de copie dans les créations (sinon il apparaîtrait deux fois)
+  s.custom = s.custom.filter(t => !MADE_OFFICIAL.includes(t.id))
   return s
 }
 

@@ -97,7 +97,6 @@ export function Topics({ topics, go, importTopic, extra, onRequest, lockPrice = 
   const match = (t) => (cat === 'Tous' || t.category === cat) && (!q || norm(t.name + ' ' + t.category).includes(norm(q)))
   // thèmes débloqués d'abord, puis ceux à acheter (du moins cher au plus cher)
   const official = topics.filter(t => t.official && match(t)).map((t, i) => [t, i]).sort((a, b) => lockPrice(a[0]) - lockPrice(b[0]) || a[1] - b[1]).map(([t]) => t)
-  const mine = topics.filter(t => t.own && match(t))
   // thèmes reçus par lien (hors thèmes publiés déjà installés)
   const received = topics.filter(t => !t.official && !t.own && !t.shared && match(t))
 
@@ -128,12 +127,6 @@ export function Topics({ topics, go, importTopic, extra, onRequest, lockPrice = 
         </div>
       </>}
 
-      {mine.length > 0 && <>
-        <h3 className="sec-title">Mes créations</h3>
-        <div className="grid">
-          {mine.map(t => <TopicTile key={t.id} topic={t} onClick={() => go({ name: 'topic', id: t.id })} sub={`${t.questions.length} questions`} />)}
-        </div>
-      </>}
 
       {extra}
 

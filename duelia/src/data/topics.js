@@ -464,8 +464,8 @@ const SEED = [
 
 // Thèmes communautaires livrés avec l'appli
 // Thèmes devenus officiels (ils ne sont plus rangés dans les créations du joueur)
-export const MADE_OFFICIAL = ['c-potter', 'c-eras', 'c-friends', 'c-greys', 'c-disney', 'c-desperate']
-const MINE = ['c-calzona', 'c-villa', 'c-gossip', 'c-pop2000']
+export const MADE_OFFICIAL = ['c-potter', 'c-eras', 'c-friends', 'c-greys', 'c-disney', 'c-desperate', 'c-calzona', 'c-villa', 'c-gossip', 'c-pop2000']
+const MINE = []
 // Anciens thèmes « de la communauté » (attribués à des joueurs simulés) : ce sont désormais des thèmes officiels
 export const COMMUNITY_SEED = SEED.filter(t => !MINE.includes(t.id)).map(({ by, community, ...t }) => ({ ...t, official: true })) // eslint-disable-line no-unused-vars
 
