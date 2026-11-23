@@ -378,9 +378,13 @@ function PathBoard({ v, shown, topicOf, owners }) {
             </div>
           )
         })}
-        {v.players.filter(p => p.status !== 'declined').map(p => {
-          const [x, y] = at(shown[p.seat] ?? p.pos)
-          const off = [[-2.4, -0.4], [2.4, -0.4], [-1.2, 0.5], [1.2, 0.5]][p.seat]
+        {v.players.filter(p => p.status !== 'declined').map((p, _, all) => {
+          const pos = shown[p.seat] ?? p.pos
+          const [x, y] = at(pos)
+          // seul sur sa case : pile au centre ; à plusieurs : on se serre un peu
+          const mates = all.filter(q => (shown[q.seat] ?? q.pos) === pos)
+          const k = mates.findIndex(q => q.seat === p.seat)
+          const off = mates.length === 1 ? [0, 0] : [[-2.6, 0], [2.6, 0], [0, -0.5], [0, 0.5]][k]
           return <img key={p.seat} src={pawnImg(p.pawn, p.seat)} alt="" className={`tq-figure ${p.seat === v.turn ? 'active' : ''}`}
             style={{ '--c': SEAT_COLORS[p.seat], left: `${x * 100 + off[0]}%`, top: `${y * 100 + off[1]}%` }} />
         })}

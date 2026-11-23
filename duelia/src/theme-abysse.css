@@ -1371,3 +1371,5 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
 .tq-slot { font-size: 30px; }
 .tq-slot.t-truce, .tq-slot.t-chest, .tq-slot.t-shop { font-size: 24px; }
 .tq-slot .tq-tile-topic { font-size: 22px; }
+/* Figurines posées au centre des cases, sans tremblement ni lueur */
+.tq-track .tq-figure, .tq-track .tq-figure.active { animation: none; filter: drop-shadow(0 4px 3px #000a); width: 10%; height: auto; margin: 0; transform: translate(-50%, -86%); transition: top .18s ease, left .18s ease; }

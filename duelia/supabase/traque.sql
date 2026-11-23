@@ -54,7 +54,7 @@ revoke all on public.traque_games, public.traque_players from anon, authenticate
 -- Réglages
 create or replace function public.tq_const(k text) returns int language sql immutable as $$
   select case k
-    when 'cells' then 57 when 'answer' then 12 when 'hard' then 9 when 'reveal' then 4 when 'roll' then 30
+    when 'cells' then 83 when 'answer' then 12 when 'hard' then 9 when 'reveal' then 4 when 'roll' then 30
     when 'show' then 3 when 'event' then 5 when 'shop_max' then 3 end
 $$;
 create or replace function public.tq_item_cost(k text) returns int language sql immutable as $$
@@ -640,19 +640,19 @@ begin
   select array_agg(distinct x ->> 'id') into specs from traque_players p, jsonb_array_elements(p.topics) x where p.game_id = p_game and p.status in ('joined', 'bot');
   select array_agg(v) into gen from jsonb_array_elements_text(p_general) v;
   if cardinality(gen) < 3 then raise exception 'thèmes généraux manquants'; end if;
-  -- 55 cases entre le départ (0) et l'antre (56), placées sur les emplacements de l'illustration du plateau
-  types := array_fill('general'::text, array[55]);
-  -- cases spéciales : 12 spécialités, 6 trêves, 4 coffres, 4 courants, 4 tentacules, 3 raccourcis
-  for i in 1 .. 12 loop types[i] := 'spec'; end loop;
-  for i in 13 .. 18 loop types[i] := 'truce'; end loop;
-  for i in 19 .. 22 loop types[i] := 'chest'; end loop;
-  for i in 23 .. 26 loop types[i] := 'current'; end loop;
-  for i in 27 .. 30 loop types[i] := 'tentacle'; end loop;
-  for i in 31 .. 33 loop types[i] := 'shortcut'; end loop;
+  -- 81 cases entre le départ (0) et l'antre (82), posées sur les emplacements de l'illustration du plateau
+  types := array_fill('general'::text, array[81]);
+  -- cases spéciales : 16 spécialités, 8 trêves, 6 coffres, 5 courants, 5 tentacules, 4 raccourcis
+  for i in 1 .. 16 loop types[i] := 'spec'; end loop;
+  for i in 17 .. 24 loop types[i] := 'truce'; end loop;
+  for i in 25 .. 30 loop types[i] := 'chest'; end loop;
+  for i in 31 .. 35 loop types[i] := 'current'; end loop;
+  for i in 36 .. 40 loop types[i] := 'tentacle'; end loop;
+  for i in 41 .. 44 loop types[i] := 'shortcut'; end loop;
   select array_agg(x order by random()) into types from unnest(types) x;
   cells := jsonb_build_array(jsonb_build_object('t', 'start'));
   n := 0;
-  for i in 1 .. 55 loop
+  for i in 1 .. 81 loop
     t := types[i];
     if t = 'spec' then
       cells := cells || jsonb_build_array(jsonb_build_object('t', 'spec', 'topic', specs[1 + (n % cardinality(specs))])); n := n + 1;
@@ -661,9 +661,9 @@ begin
     else cells := cells || jsonb_build_array(jsonb_build_object('t', t)); end if;
   end loop;
   cells := cells || jsonb_build_array(jsonb_build_object('t', 'lair'));
-  -- 4 boutiques : 3 objets tirés au hasard chacune, plus chères en approchant du Kraken
-  for i in 0 .. 3 loop
-    cells := jsonb_set(cells, array[(array[11, 25, 38, 49])[i + 1]::text], jsonb_build_object('t', 'shop', 'k', i,
+  -- 2 boutiques, devant les deux cabanes du plateau : 3 objets tirés au hasard chacune, la seconde plus chère
+  for i in 0 .. 1 loop
+    cells := jsonb_set(cells, array[(array[9, 37])[i + 1]::text], jsonb_build_object('t', 'shop', 'k', i * 2,
       'items', (select jsonb_agg(x) from (select x from unnest(array['double', 'ancre', 'joker', 'vol', 'echange']) x order by random() limit 3) z)));
   end loop;
   update traque_games set status = 'playing', board = cells, topics = p_topics, general = p_general, pool = p_pool, used = '{}'::jsonb,
