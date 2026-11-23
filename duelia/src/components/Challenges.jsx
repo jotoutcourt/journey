@@ -132,14 +132,17 @@ export function Inbox({ st, topics, now, onAccept, onReject, onPlay, onResult, o
     if (!group) continue
     if (c.their_msg) line = <>{line}<span className="ch-their-msg">💬 « {c.their_msg} »</span></>
     items.push({
-      id: 'f-' + c.id, group, line, actions, topic: { id: c.topic_id, ...c.topic }, when: Date.parse(c.answered_at || c.created_at), unseen: group === 'play',
+      id: 'f-' + c.id, group, line, actions, topic: { id: c.topic_id, ...c.topic }, when: Date.parse(c.answered_at || c.created_at),
+      // un résultat déjà vu revient dans la liste quand l'ami y laisse un message
+      seenKey: c.their_msg ? 'f-' + c.id + ':m' : 'f-' + c.id,
+      unseen: group === 'play' || (group === 'results' && !!c.their_msg && !(st.seenResults || []).includes('f-' + c.id + ':m')),
       avatar: c.opponent.avatar, photo: c.opponent.photo, name: `${c.opponent.flag ? c.opponent.flag + ' ' : ''}${c.opponent.name}`,
     })
   }
 
   // les résultats déjà consultés ne restent pas dans la liste
   const seen = new Set(st.seenResults || [])
-  for (let i = items.length - 1; i >= 0; i--) if (items[i].group === 'results' && seen.has(items[i].id)) items.splice(i, 1)
+  for (let i = items.length - 1; i >= 0; i--) if (items[i].group === 'results' && seen.has(items[i].seenKey || items[i].id)) items.splice(i, 1)
 
   const LIMIT = { results: 20, closed: 8 }
   const groups = [

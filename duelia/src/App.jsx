@@ -391,7 +391,7 @@ export default function App() {
         const mine = fromPlain(answers.map(a => [a.choice, a.t]), questions.length)
         const theirs = fromPlain(c.from_answers, questions.length)
         const data = settleFriend(c, res.my_score, res.their_score, logFrom(questions, mine, theirs))
-        setRoute({ ...r, name: 'results', data, friendRematch: c.opponent, friendMsg: { id: c.id, name: c.opponent.name, theirMsg: c.their_msg } })
+        setRoute({ ...r, name: 'results', data, friendRematch: c.opponent, friendMsg: { id: c.id, name: c.opponent.name, theirMsg: res.their_msg ?? c.their_msg } })
         social.refreshChallenges()
       }).catch(() => { setToast('Envoi impossible : vérifie ta connexion. Le défi t\'attend toujours dans Défis.'); setRoute({ name: 'inbox' }) })
       return
@@ -816,6 +816,7 @@ export default function App() {
       if (!data) { setToast('Résultat en cours de récupération…'); return }
       const t = topicOf(c)
       markSeen('f-' + c.id)
+      if (c.their_msg) markSeen('f-' + c.id + ':m')
       setRoute({ name: 'results', id: byId(c.topic_id) ? c.topic_id : undefined, topicObj: byId(c.topic_id) ? null : t, opponent: data.opponent, data: { ...data, topic: t }, friendRematch: c.opponent,
         friendMsg: { id: c.id, name: c.opponent.name, theirMsg: c.their_msg, myMsg: c.my_msg } })
     },
@@ -1063,7 +1064,9 @@ export default function App() {
     }
     case 'results': view = (
       <Results data={route.data} me={me} onBook={() => go({ name: 'book' })}
-        extra={route.friendMsg ? <ChallengeMessage key={route.friendMsg.id} name={route.friendMsg.name} theirMsg={route.friendMsg.theirMsg} myMsg={route.friendMsg.myMsg}
+        extra={route.friendMsg ? <ChallengeMessage key={route.friendMsg.id} name={route.friendMsg.name}
+          theirMsg={(social.challenges || []).find(x => x.id === route.friendMsg.id)?.their_msg || route.friendMsg.theirMsg}
+          myMsg={(social.challenges || []).find(x => x.id === route.friendMsg.id)?.my_msg || route.friendMsg.myMsg}
           onSend={(m) => api.setChallengeMessage(route.friendMsg.id, m).then(social.refreshChallenges)} />
           : route.mode === 'remote' && route.matchId ? <>
             <LiveBetResult matchId={route.matchId} stake={route.stake} name={route.opponent?.name || route.data?.opponent?.name} onWallet={refreshWallet} />
