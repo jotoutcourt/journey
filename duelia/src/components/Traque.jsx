@@ -274,7 +274,8 @@ function TraqueBoard({ v, gameId, act, onExit }) {
     <div className="screen traque game">
       <PathBoard v={v} shown={shown} topicOf={topicOf} owners={owners} />
 
-      {/* HUD du haut */}
+      {/* HUD du haut : une colonne propre, sans chevauchement */}
+      <div className="tq-hud">
       <div className="tq-hud-top">
         <div className="tq-me-card" style={{ '--c': SEAT_COLORS[v.me] }}>
           <img src={pawnImg(me?.pawn, v.me)} alt="" />
@@ -300,6 +301,7 @@ function TraqueBoard({ v, gameId, act, onExit }) {
           </li>
         ))}
       </ul>
+      </div>
       {voice.needTap && <button className="link-btn tq-tap" onClick={voice.unlock}>🔊 Touche ici pour entendre les autres</button>}
 
       {/* HUD du bas */}
@@ -308,10 +310,10 @@ function TraqueBoard({ v, gameId, act, onExit }) {
         <div className="tq-hud-actions">
           {v.phase === 'roll' && myTurn && <>
             <button className="tq-round-btn bag" onClick={() => setBag(true)} disabled={!me?.items?.length} aria-label="Mon sac">🎒<i>{me?.items?.length || 0}</i></button>
-            <button className="tq-dice-btn" onClick={() => act(() => api.traqueRoll(gameId))}><span className="tq-die big">⚄</span><b>Lancer le dé</b></button>
+            <button className="tq-dice-btn" onClick={() => act(() => api.traqueRoll(gameId))}><Die /><b>Lancer le dé</b></button>
           </>}
           {v.phase === 'duelroll' && d.winner === v.me &&
-            <button className="tq-dice-btn" onClick={() => act(() => api.traqueRoll(gameId))}><span className="tq-die big">⚄</span><b>Dé du duel</b></button>}
+            <button className="tq-dice-btn" onClick={() => act(() => api.traqueRoll(gameId))}><Die /><b>Dé du duel</b></button>}
         </div>
       </div>
 
@@ -374,7 +376,6 @@ function PathBoard({ v, shown, topicOf, owners }) {
             <div key={i} className={`tq-slot t-${c.t}`} style={{ left: `${x * 100}%`, top: `${y * 100}%`, '--oc': own.length ? SEAT_COLORS[own[0]] : undefined }}
               title={c.t === 'spec' || c.t === 'general' ? `${CELL_LABEL[c.t]} · ${t?.name}` : CELL_LABEL[c.t]}>
               <span className="tq-ico">{GLYPH[c.t] ?? CELL_ICON[c.t] ?? '?'}</span>
-              {c.t === 'spec' && <small className="tq-tile-topic">{t?.icon}</small>}
             </div>
           )
         })}
@@ -394,6 +395,12 @@ function PathBoard({ v, shown, topicOf, owners }) {
 }
 
 // Cadre illustré (coraux, bulles) : titre dans la plaque du haut, contenu au centre, bouton dans la plaque du bas
+// Dé en relief (faces à points)
+function Die({ n = 5 }) {
+  const P = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] }[n]
+  return <span className="tq-die3d" aria-hidden="true">{Array.from({ length: 9 }, (_, i) => <i key={i} className={P.includes(i) ? 'on' : ''} />)}</span>
+}
+
 function Frame({ img = '/traque/cadre-duel.webp', title, children, cta, onClose, className = '' }) {
   return (
     <div className={`tq-frame ${className}`}>
@@ -412,12 +419,12 @@ function Intro({ v, d, left, topicOf, onReady }) {
   const mine = d.seats?.includes(v.me)
   const ready = d.ready || []
   const reason = d.ctx?.reason
-  const info = d.kind === 'duel' ? ['⚔️', 'Duel !', `${d.count} questions en même temps. Le gagnant lance le dé, le perdant recule d'autant.`]
-    : d.kind === 'truce' ? ['🤝', 'Trêve !', `${d.count} questions pour tout le monde. Chaque bonne réponse remplit le trésor du Kraken… que seul le vainqueur emportera.`]
-    : d.kind === 'final' ? ['🐙', 'Combat final !', '5 questions, dont tes spécialités. 4 bonnes réponses pour tuer le Kraken, sinon il te recrache 6 cases en arrière.']
-    : reason === 'own' ? ['⭐', 'Ta spécialité !', 'Question plus rapide (9 s). Réussis : +3 cases et +3 perles.']
-    : reason === 'shortcut' ? ['🚪', 'Raccourci !', 'Question difficile (9 s). Réussis : tu sautes 5 cases.']
-    : ['❓', 'Question !', 'Bonne réponse : +2 perles. Erreur : tu recules d\'une case.']
+  const info = d.kind === 'duel' ? ['⚔️', 'Duel !', `${d.count} questions · le perdant recule`]
+    : d.kind === 'truce' ? ['🤝', 'Trêve !', `${d.count} questions ensemble · on remplit le trésor`]
+    : d.kind === 'final' ? ['🐙', 'Combat final !', '4 bonnes réponses sur 5 pour tuer le Kraken']
+    : reason === 'own' ? ['⭐', 'Ta spécialité !', 'Réussis : +3 cases et +3 perles']
+    : reason === 'shortcut' ? ['🚪', 'Raccourci !', 'Réussis : tu sautes 5 cases']
+    : ['❓', 'Question !', 'Juste : +2 perles · faux : -1 case']
   const [nope, setNope] = useState(false)
   return (
     <div className="tq-center dim">
@@ -427,13 +434,13 @@ function Intro({ v, d, left, topicOf, onReady }) {
           ? <button onClick={onReady}>Je suis prêt ! ⚡{left != null ? ` ${Math.ceil(left / 1000)} s` : ''}</button>
           : <span>{mine ? 'En attente des autres…' : 'Tu regardes'}{left != null ? ` · ${Math.ceil(left / 1000)} s` : ''}</span>}>
         <div className="tq-intro-topic"><TopicIcon topic={t} size={22} /> {t.name}</div>
-        <div className="tq-intro-who">
+        <div className={`tq-intro-who n${who.length}`}>
           {who.map((p, i) => <span key={p.seat} style={{ '--c': SEAT_COLORS[p.seat] }} className={ready.includes(p.seat) || p.bot ? 'ok' : ''}>
             {i > 0 && d.kind === 'duel' && <em>VS</em>}
-            <img src={pawnImg(p.pawn, p.seat)} alt="" /><small>{p.seat === v.me ? 'Toi' : p.name.replace(/ \((facile|moyen|expert)\)$/, '')}{ready.includes(p.seat) || p.bot ? ' ✓' : ''}</small>
+            <img src={pawnImg(p.pawn, p.seat)} alt="" /><small>{p.seat === v.me ? 'Toi' : p.name.replace(/ \((facile|moyen|expert)\)$/, '').split(' ')[0]}{ready.includes(p.seat) || p.bot ? ' ✓' : ''}</small>
           </span>)}
         </div>
-        <p className="tq-intro-txt">⏱ {info[2]}</p>
+        <p className="tq-intro-txt">{info[2]}</p>
         {nope && <p className="tq-nope">On ne fuit pas le Kraken 😈</p>}
       </Frame>
     </div>
