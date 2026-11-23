@@ -1,0 +1,709 @@
+-- « La Traque du Kraken » : jeu de plateau en direct, de 2 à 4 joueurs (humains ou robots).
+-- Plateau de 80 cases en spirale vers l'antre du Kraken. Le serveur est seul maître du jeu :
+-- il tire les dés, choisit les questions, mesure les temps de réponse, fait jouer les robots et applique les effets.
+-- Chaque appel (vue ou action) fait avancer la partie (traque_tick) : pas besoin de tâche planifiée.
+
+alter table public.wallet_log drop constraint if exists wallet_log_reason_check;
+alter table public.wallet_log add constraint wallet_log_reason_check check (reason in
+  ('butin', 'bonus_jour', 'parfait', 'achat', 'cadeau', 'mise', 'gain_duel', 'remboursement', 'mission', 'traque'));
+
+create table if not exists public.traque_games (
+  id uuid primary key default gen_random_uuid(),
+  host uuid not null references public.players (id) on delete cascade,
+  status text not null default 'lobby' check (status in ('lobby', 'playing', 'done', 'cancelled')),
+  board jsonb not null default '[]'::jsonb,      -- [{t: type, topic?: id}]
+  topics jsonb not null default '{}'::jsonb,     -- id -> {name, icon, color}
+  general jsonb not null default '[]'::jsonb,    -- ids des thèmes « généraux »
+  pool jsonb not null default '{}'::jsonb,       -- id -> [{q, o:[4], c}]
+  used jsonb not null default '{}'::jsonb,       -- id -> [indices déjà posés]
+  turn int not null default 0,
+  round int not null default 0,
+  phase text not null default 'lobby',
+  data jsonb not null default '{}'::jsonb,
+  deadline timestamptz,
+  treasure int not null default 0,
+  winner int,
+  log jsonb not null default '[]'::jsonb,
+  version int not null default 0,
+  started_at timestamptz,
+  created_at timestamptz not null default now()
+);
+create table if not exists public.traque_players (
+  game_id uuid not null references public.traque_games (id) on delete cascade,
+  seat int not null check (seat between 0 and 3),
+  player_id uuid references public.players (id) on delete cascade,
+  bot text check (bot in ('facile', 'moyen', 'expert')),
+  name text not null,
+  avatar text,
+  photo text,
+  status text not null default 'invited' check (status in ('invited', 'joined', 'declined', 'left', 'bot')),
+  topics jsonb not null default '[]'::jsonb,
+  pos int not null default 0,
+  pearls int not null default 0,
+  items jsonb not null default '[]'::jsonb,
+  skip int not null default 0,
+  reward int not null default 0,
+  updated_at timestamptz not null default now(),
+  primary key (game_id, seat)
+);
+create index if not exists traque_players_player on public.traque_players (player_id, status);
+alter table public.traque_games enable row level security;
+alter table public.traque_players enable row level security;
+revoke all on public.traque_games, public.traque_players from anon, authenticated;
+
+-- Réglages
+create or replace function public.tq_const(k text) returns int language sql immutable as $$
+  select case k
+    when 'cells' then 80 when 'answer' then 12 when 'hard' then 9 when 'reveal' then 3 when 'roll' then 30
+    when 'show' then 3 when 'event' then 4 when 'shop_max' then 3 end
+$$;
+create or replace function public.tq_item_cost(k text) returns int language sql immutable as $$
+  select case k when 'double' then 6 when 'ancre' then 5 when 'joker' then 4 when 'vol' then 5 when 'echange' then 8 end
+$$;
+
+-- Journal (30 derniers événements)
+create or replace function public.tq_log(p_game uuid, p_text text) returns void language sql as $$
+  update traque_games set log = (select coalesce(jsonb_agg(x), '[]'::jsonb) from (
+      select x from jsonb_array_elements(log || jsonb_build_array(jsonb_build_object('t', p_text, 'at', extract(epoch from now())))) x
+      offset greatest(0, jsonb_array_length(log) + 1 - 30)) s)
+  where id = p_game
+$$;
+
+-- Tire une question d'un thème (sans répétition tant que possible)
+create or replace function public.tq_pick(p_game uuid, p_topic text) returns jsonb language plpgsql as $$
+declare g traque_games; n int; usd int[]; free int[]; qi int;
+begin
+  select * into g from traque_games where id = p_game;
+  n := jsonb_array_length(coalesce(g.pool -> p_topic, '[]'::jsonb));
+  if n = 0 then
+    -- thème sans questions : un thème général au hasard
+    p_topic := g.general ->> floor(random() * jsonb_array_length(g.general))::int;
+    n := jsonb_array_length(coalesce(g.pool -> p_topic, '[]'::jsonb));
+  end if;
+  select coalesce(array_agg(v::int), '{}') into usd from jsonb_array_elements_text(coalesce(g.used -> p_topic, '[]'::jsonb)) v;
+  select coalesce(array_agg(i), '{}') into free from generate_series(0, n - 1) i where not (i = any(usd));
+  if cardinality(free) = 0 then free := array(select generate_series(0, n - 1)); usd := '{}'; end if;
+  qi := free[1 + floor(random() * cardinality(free))::int];
+  update traque_games set used = jsonb_set(used, array[p_topic], to_jsonb(usd || qi)) where id = p_game;
+  return jsonb_build_object('topic', p_topic, 'qi', qi);
+end $$;
+
+create or replace function public.tq_general(p_game uuid) returns text language sql as $$
+  select general ->> floor(random() * jsonb_array_length(general))::int from traque_games where id = p_game
+$$;
+
+-- Lance une série de questions (kind : solo | duel | truce | final)
+create or replace function public.tq_quiz(p_game uuid, p_kind text, p_seats int[], p_topics text[], p_ctx jsonb, p_hard boolean default false) returns void
+language plpgsql as $$
+declare items jsonb := '[]'::jsonb; t text;
+begin
+  foreach t in array p_topics loop items := items || jsonb_build_array(tq_pick(p_game, t)); end loop;
+  update traque_games set phase = 'quiz',
+    data = jsonb_build_object('kind', p_kind, 'seats', to_jsonb(p_seats), 'items', items, 'idx', 0, 'reveal', false,
+      'ans', '{}'::jsonb, 'jokers', '{}'::jsonb, 'ctx', p_ctx, 'hard', p_hard, 'opened', extract(epoch from now())),
+    deadline = now() + make_interval(secs => case when p_hard then tq_const('hard') else tq_const('answer') end),
+    version = version + 1
+  where id = p_game;
+end $$;
+
+-- Affiche un événement quelques secondes, puis passe au joueur suivant
+create or replace function public.tq_event(p_game uuid, p_text text, p_fx jsonb default '{}'::jsonb) returns void language plpgsql as $$
+begin
+  perform tq_log(p_game, p_text);
+  update traque_games set phase = 'event', data = jsonb_build_object('text', p_text, 'fx', p_fx),
+    deadline = now() + make_interval(secs => tq_const('event')), version = version + 1 where id = p_game;
+end $$;
+
+-- Déplacement « bonus » (sans effet de case, sauf l'antre)
+create or replace function public.tq_shift(p_game uuid, p_seat int, p_delta int) returns int language plpgsql as $$
+declare np int;
+begin
+  update traque_players set pos = greatest(0, least(tq_const('cells') - 1, pos + p_delta)), updated_at = now()
+  where game_id = p_game and seat = p_seat returning pos into np;
+  return np;
+end $$;
+
+create or replace function public.tq_name(p_game uuid, p_seat int) returns text language sql as $$
+  select name from traque_players where game_id = p_game and seat = p_seat
+$$;
+
+-- Combat final contre le Kraken : 5 questions, au moins une dans chaque spécialité
+create or replace function public.tq_final(p_game uuid, p_seat int) returns void language plpgsql as $$
+declare tps text[];
+begin
+  select coalesce(array_agg(x ->> 'id'), '{}') into tps from traque_players, jsonb_array_elements(topics) x where game_id = p_game and seat = p_seat;
+  while cardinality(tps) < 5 loop tps := tps || tq_general(p_game); end loop;
+  perform tq_log(p_game, '🐙 ' || tq_name(p_game, p_seat) || ' entre dans l''antre du Kraken !');
+  perform tq_quiz(p_game, 'final', array[p_seat], tps[1:5], '{}'::jsonb, false);
+end $$;
+
+-- Effet de la case où le joueur vient d'arriver au dé
+create or replace function public.tq_land(p_game uuid, p_seat int) returns void language plpgsql as $$
+declare g traque_games; me traque_players; cell jsonb; typ text; other int; owner int; topic text; n int; ev text; r float;
+begin
+  select * into g from traque_games where id = p_game;
+  select * into me from traque_players where game_id = p_game and seat = p_seat;
+  if me.pos >= tq_const('cells') - 1 then perform tq_final(p_game, p_seat); return; end if;
+  cell := g.board -> me.pos; typ := cell ->> 't'; topic := cell ->> 'topic';
+  -- Deux joueurs sur la même case : duel
+  select seat into other from traque_players where game_id = p_game and seat <> p_seat and pos = me.pos and me.pos > 0
+    and status in ('joined', 'bot', 'left') order by random() limit 1;
+  if other is not null then
+    perform tq_log(p_game, '⚔️ ' || me.name || ' rejoint ' || tq_name(p_game, other) || ' : duel !');
+    perform tq_quiz(p_game, 'duel', array[p_seat, other],
+      array[coalesce(topic, tq_general(p_game)), coalesce(topic, tq_general(p_game)), coalesce(topic, tq_general(p_game))],
+      jsonb_build_object('a', p_seat, 'b', other, 'topic', topic));
+    return;
+  end if;
+  if typ = 'general' then
+    perform tq_quiz(p_game, 'solo', array[p_seat], array[topic], jsonb_build_object('reason', 'general'));
+  elsif typ = 'spec' then
+    if exists (select 1 from jsonb_array_elements(me.topics) x where x ->> 'id' = topic) then
+      perform tq_quiz(p_game, 'solo', array[p_seat], array[topic], jsonb_build_object('reason', 'own'), true);
+    else
+      select seat into owner from traque_players p, jsonb_array_elements(p.topics) x
+        where p.game_id = p_game and p.seat <> p_seat and x ->> 'id' = topic order by random() limit 1;
+      if owner is null then
+        perform tq_quiz(p_game, 'solo', array[p_seat], array[topic], jsonb_build_object('reason', 'general'));
+      else
+        perform tq_log(p_game, '⚔️ ' || me.name || ' entre sur le territoire de ' || tq_name(p_game, owner) || ' : duel !');
+        perform tq_quiz(p_game, 'duel', array[p_seat, owner], array[topic, topic, topic], jsonb_build_object('a', p_seat, 'b', owner, 'topic', topic));
+      end if;
+    end if;
+  elsif typ = 'shortcut' then
+    perform tq_quiz(p_game, 'solo', array[p_seat], array[coalesce(topic, tq_general(p_game))], jsonb_build_object('reason', 'shortcut'), true);
+  elsif typ = 'truce' then
+    perform tq_log(p_game, '🤝 Trêve ! Tout le monde remplit le trésor ensemble.');
+    perform tq_quiz(p_game, 'truce', (select array_agg(seat order by seat) from traque_players where game_id = p_game and status in ('joined', 'bot', 'left')),
+      array[tq_general(p_game), tq_general(p_game), tq_general(p_game), tq_general(p_game), tq_general(p_game)], '{}'::jsonb);
+  elsif typ = 'chest' then
+    n := 3 + floor(random() * 5)::int;
+    update traque_players set pearls = pearls + n where game_id = p_game and seat = p_seat;
+    perform tq_event(p_game, '💰 ' || me.name || ' trouve un coffre : +' || n || ' perles', jsonb_build_object('pearls', n, 'seat', p_seat));
+  elsif typ = 'current' then
+    n := case when random() < 0.5 then 2 else -2 end;
+    perform tq_shift(p_game, p_seat, n);
+    perform tq_event(p_game, '🌊 Un courant emporte ' || me.name || (case when n > 0 then ' de 2 cases en avant' else ' de 2 cases en arrière' end),
+      jsonb_build_object('move', n, 'seat', p_seat));
+  elsif typ = 'tentacle' then
+    r := random();
+    if r < 0.3 then
+      update traque_players set pos = greatest(0, pos - 2) where game_id = p_game and seat <> p_seat;
+      ev := '🐙 Un tentacule balaie le plateau : tous les autres reculent de 2 cases !';
+    elsif r < 0.55 then
+      select seat into other from traque_players where game_id = p_game and seat <> p_seat and status in ('joined', 'bot', 'left') order by random() limit 1;
+      if other is not null then
+        update traque_players t set pos = case when t.seat = p_seat then o.pos else me.pos end
+        from (select pos from traque_players where game_id = p_game and seat = other) o
+        where t.game_id = p_game and t.seat in (p_seat, other);
+        ev := '🐙 Un tentacule échange ' || me.name || ' et ' || tq_name(p_game, other) || ' !';
+      else ev := '🐙 Le tentacule rate sa cible.'; end if;
+    elsif r < 0.8 then
+      update traque_players set skip = skip + 1 where game_id = p_game and seat = p_seat;
+      ev := '🐙 Un tentacule attrape ' || me.name || ' : il passe son prochain tour.';
+    else
+      perform tq_shift(p_game, p_seat, 3);
+      ev := '🐙 Le Kraken éternue : ' || me.name || ' est projeté de 3 cases en avant !';
+    end if;
+    perform tq_event(p_game, ev, jsonb_build_object('tentacle', true));
+  else
+    perform tq_event(p_game, me.name || ' se repose.', '{}'::jsonb);
+  end if;
+end $$;
+
+-- Joueur suivant (en sautant ceux qui sont bloqués)
+create or replace function public.tq_next(p_game uuid) returns void language plpgsql as $$
+declare g traque_games; nxt int; s record; tries int := 0;
+begin
+  select * into g from traque_games where id = p_game;
+  nxt := g.turn;
+  loop
+    tries := tries + 1;
+    select seat into nxt from traque_players where game_id = p_game and status in ('joined', 'bot', 'left') and seat > nxt order by seat limit 1;
+    if nxt is null then
+      select seat into nxt from traque_players where game_id = p_game and status in ('joined', 'bot', 'left') order by seat limit 1;
+      update traque_games set round = round + 1 where id = p_game;
+    end if;
+    select * into s from traque_players where game_id = p_game and seat = nxt;
+    if s.skip > 0 and tries < 8 then
+      update traque_players set skip = skip - 1 where game_id = p_game and seat = nxt;
+      perform tq_log(p_game, '⚓ ' || s.name || ' est bloqué et passe son tour.');
+    else exit; end if;
+  end loop;
+  update traque_games set turn = nxt, phase = 'roll', data = '{}'::jsonb,
+    deadline = now() + make_interval(secs => case when s.bot is not null or s.status = 'left' then 2 else tq_const('roll') end),
+    version = version + 1 where id = p_game;
+end $$;
+
+-- Lancer de dé du joueur actif
+create or replace function public.tq_roll(p_game uuid) returns void language plpgsql as $$
+declare g traque_games; me traque_players; d1 int; d2 int := 0; tot int; np int;
+begin
+  select * into g from traque_games where id = p_game;
+  if g.phase <> 'roll' then return; end if;
+  select * into me from traque_players where game_id = p_game and seat = g.turn;
+  d1 := 1 + floor(random() * 6)::int;
+  if coalesce((g.data ->> 'double')::boolean, false) then d2 := 1 + floor(random() * 6)::int; end if;
+  tot := d1 + d2;
+  np := least(tq_const('cells') - 1, me.pos + tot);
+  update traque_players set pos = np, updated_at = now() where game_id = p_game and seat = g.turn;
+  perform tq_log(p_game, '🎲 ' || me.name || ' fait ' || tot || case when d2 > 0 then ' (' || d1 || ' + ' || d2 || ')' else '' end);
+  update traque_games set phase = 'show', data = jsonb_build_object('dice', jsonb_build_array(d1) || case when d2 > 0 then jsonb_build_array(d2) else '[]'::jsonb end,
+    'from', me.pos, 'to', np, 'seat', g.turn), deadline = now() + make_interval(secs => tq_const('show')), version = version + 1 where id = p_game;
+end $$;
+
+-- Fin de partie : le vainqueur rafle le trésor, les autres convertissent leurs perles (10 perles = 1 lingot)
+create or replace function public.tq_finish(p_game uuid, p_winner int) returns void language plpgsql as $$
+declare g traque_games; p record; amount int;
+begin
+  select * into g from traque_games where id = p_game;
+  for p in select * from traque_players where game_id = p_game loop
+    amount := case when p.seat = p_winner then g.treasure + p.pearls / 10 else p.pearls / 10 end;
+    update traque_players set reward = amount where game_id = p_game and seat = p.seat;
+    if p.player_id is not null and p.bot is null and amount > 0 then perform wallet_credit(p.player_id, amount, 'traque', null); end if;
+  end loop;
+  perform tq_log(p_game, '🏆 ' || tq_name(p_game, p_winner) || ' a tué le Kraken et vole le trésor de ' || g.treasure || ' lingots !');
+  update traque_games set status = 'done', phase = 'done', winner = p_winner, deadline = null, version = version + 1 where id = p_game;
+end $$;
+
+-- Fin d'une série de questions : on applique le résultat
+create or replace function public.tq_quiz_done(p_game uuid) returns void language plpgsql as $$
+declare g traque_games; d jsonb; kind text; s int; ok int; okb int; ta int; tb int; a int; b int; win int; lose int; n int; i int; seat_ int; nm text; reason text;
+begin
+  select * into g from traque_games where id = p_game;
+  d := g.data; kind := d ->> 'kind';
+  if kind = 'solo' then
+    s := (d -> 'seats' ->> 0)::int; nm := tq_name(p_game, s); reason := d -> 'ctx' ->> 'reason';
+    ok := case when (d -> 'ans' -> s::text -> 0 ->> 0)::int = (g.pool -> (d -> 'items' -> 0 ->> 'topic') -> ((d -> 'items' -> 0 ->> 'qi')::int) ->> 'c')::int then 1 else 0 end;
+    if reason = 'general' then
+      if ok = 1 then update traque_players set pearls = pearls + 2 where game_id = p_game and seat = s;
+        perform tq_event(p_game, '✅ ' || nm || ' répond juste : +2 perles', jsonb_build_object('pearls', 2, 'seat', s));
+      else perform tq_shift(p_game, s, -1);
+        perform tq_event(p_game, '❌ ' || nm || ' se trompe et recule d''une case', jsonb_build_object('move', -1, 'seat', s)); end if;
+    elsif reason = 'own' then
+      if ok = 1 then update traque_players set pearls = pearls + 3 where game_id = p_game and seat = s;
+        if tq_shift(p_game, s, 3) >= tq_const('cells') - 1 then perform tq_final(p_game, s); return; end if;
+        perform tq_event(p_game, '⭐ ' || nm || ' brille dans sa spécialité : +3 cases et +3 perles', jsonb_build_object('move', 3, 'seat', s));
+      else perform tq_event(p_game, '😬 ' || nm || ' rate une question de sa propre spécialité…', '{}'::jsonb); end if;
+    elsif reason = 'shortcut' then
+      if ok = 1 then
+        if tq_shift(p_game, s, 5) >= tq_const('cells') - 1 then perform tq_final(p_game, s); return; end if;
+        perform tq_event(p_game, '🚪 ' || nm || ' emprunte le raccourci : +5 cases !', jsonb_build_object('move', 5, 'seat', s));
+      else perform tq_event(p_game, '🚪 Raccourci raté pour ' || nm || '.', '{}'::jsonb); end if;
+    end if;
+  elsif kind = 'duel' then
+    a := (d -> 'ctx' ->> 'a')::int; b := (d -> 'ctx' ->> 'b')::int; ok := 0; okb := 0; ta := 0; tb := 0;
+    for i in 0 .. jsonb_array_length(d -> 'items') - 1 loop
+      n := (g.pool -> (d -> 'items' -> i ->> 'topic') -> ((d -> 'items' -> i ->> 'qi')::int) ->> 'c')::int;
+      if (d -> 'ans' -> a::text -> i ->> 0)::int = n then ok := ok + 1; end if;
+      if (d -> 'ans' -> b::text -> i ->> 0)::int = n then okb := okb + 1; end if;
+      ta := ta + coalesce((d -> 'ans' -> a::text -> i ->> 1)::int, 15000);
+      tb := tb + coalesce((d -> 'ans' -> b::text -> i ->> 1)::int, 15000);
+    end loop;
+    if ok > okb or (ok = okb and ta <= tb) then win := a; lose := b; else win := b; lose := a; end if;
+    update traque_players set pearls = pearls + 3 where game_id = p_game and seat = win;
+    perform tq_log(p_game, '⚔️ ' || tq_name(p_game, win) || ' gagne le duel ' || greatest(ok, okb) || '–' || least(ok, okb) || ' (+3 perles)');
+    update traque_games set phase = 'duelroll', data = jsonb_build_object('winner', win, 'loser', lose, 'score', jsonb_build_array(ok, okb), 'a', a, 'b', b),
+      deadline = now() + make_interval(secs => case when (select bot is not null or status = 'left' from traque_players where game_id = p_game and seat = win) then 2 else 15 end),
+      version = version + 1 where id = p_game;
+  elsif kind = 'truce' then
+    perform tq_event(p_game, '🤝 Fin de la trêve : le trésor contient ' || g.treasure || ' lingots.', jsonb_build_object('treasure', g.treasure));
+  elsif kind = 'final' then
+    s := (d -> 'seats' ->> 0)::int; ok := 0;
+    for i in 0 .. jsonb_array_length(d -> 'items') - 1 loop
+      if (d -> 'ans' -> s::text -> i ->> 0)::int = (g.pool -> (d -> 'items' -> i ->> 'topic') -> ((d -> 'items' -> i ->> 'qi')::int) ->> 'c')::int then ok := ok + 1; end if;
+    end loop;
+    if ok >= 4 then perform tq_finish(p_game, s);
+    else
+      perform tq_shift(p_game, s, -6);
+      perform tq_event(p_game, '🐙 Le Kraken recrache ' || tq_name(p_game, s) || ' (' || ok || '/5) : 6 cases en arrière !', jsonb_build_object('move', -6, 'seat', s));
+    end if;
+  end if;
+end $$;
+
+-- Réponse d'un siège à la question en cours (temps mesuré par le serveur)
+create or replace function public.tq_put_answer(p_game uuid, p_seat int, p_choice int) returns void language plpgsql as $$
+declare g traque_games; d jsonb; idx int; t int;
+begin
+  select * into g from traque_games where id = p_game;
+  d := g.data; idx := (d ->> 'idx')::int;
+  if g.phase <> 'quiz' or (d ->> 'reveal')::boolean or not (to_jsonb(p_seat) <@ (d -> 'seats')) then return; end if;
+  if d -> 'ans' -> p_seat::text -> idx is not null and jsonb_typeof(d -> 'ans' -> p_seat::text -> idx) = 'array' then return; end if;
+  t := greatest(300, floor((extract(epoch from now()) - (d ->> 'opened')::numeric) * 1000)::int);
+  d := jsonb_set(d, array['ans', p_seat::text], coalesce(d -> 'ans' -> p_seat::text, '[]'::jsonb));
+  while jsonb_array_length(d -> 'ans' -> p_seat::text) < idx loop
+    d := jsonb_set(d, array['ans', p_seat::text], (d -> 'ans' -> p_seat::text) || 'null'::jsonb);
+  end loop;
+  d := jsonb_set(d, array['ans', p_seat::text], (d -> 'ans' -> p_seat::text) || jsonb_build_array(jsonb_build_array(p_choice, t)));
+  update traque_games set data = d, version = version + 1 where id = p_game;
+end $$;
+
+-- Fait avancer la partie : délais écoulés, robots, enchaînements
+create or replace function public.traque_tick(p_game uuid) returns void language plpgsql as $$
+declare g traque_games; d jsonb; s record; idx int; all_in boolean; n int; c int; ok int; lvl float; steps int := 0; item jsonb; leader record; due boolean;
+begin
+  loop
+    steps := steps + 1; exit when steps > 12;
+    select * into g from traque_games where id = p_game for update;
+    exit when not found or g.status <> 'playing';
+    d := g.data; due := g.deadline is not null and now() >= g.deadline;
+
+    if g.phase = 'roll' then
+      select * into s from traque_players where game_id = p_game and seat = g.turn;
+      if s.bot is not null and now() >= g.deadline - interval '1 second' then
+        -- petite stratégie des robots : bloquer ou rattraper le meneur
+        select * into leader from traque_players where game_id = p_game and seat <> s.seat and status in ('joined', 'bot', 'left') order by pos desc limit 1;
+        if leader.seat is not null and leader.pos - s.pos >= 12 and s.pearls >= tq_item_cost('echange') and random() < 0.6 then
+          update traque_players set pearls = pearls - tq_item_cost('echange') where game_id = p_game and seat = s.seat;
+          update traque_players t set pos = case when t.seat = s.seat then leader.pos else s.pos end where t.game_id = p_game and t.seat in (s.seat, leader.seat);
+          perform tq_log(p_game, '🔄 ' || s.name || ' échange sa place avec ' || leader.name || ' !');
+        elsif leader.seat is not null and leader.pos > s.pos and s.pearls >= tq_item_cost('ancre') + 3 and random() < 0.4 then
+          update traque_players set pearls = pearls - tq_item_cost('ancre') where game_id = p_game and seat = s.seat;
+          update traque_players set skip = skip + 1 where game_id = p_game and seat = leader.seat;
+          perform tq_log(p_game, '⚓ ' || s.name || ' jette une ancre sur ' || leader.name || ' !');
+        elsif s.pearls >= tq_item_cost('double') + 4 and random() < 0.5 then
+          update traque_players set pearls = pearls - tq_item_cost('double') where game_id = p_game and seat = s.seat;
+          update traque_games set data = data || '{"double": true}'::jsonb where id = p_game;
+        end if;
+        perform tq_roll(p_game);
+      elsif due then perform tq_roll(p_game);
+      else exit; end if;
+
+    elsif g.phase = 'show' then
+      exit when not due;
+      perform tq_land(p_game, (d ->> 'seat')::int);
+
+    elsif g.phase = 'event' then
+      exit when not due;
+      perform tq_next(p_game);
+
+    elsif g.phase = 'duelroll' then
+      select * into s from traque_players where game_id = p_game and seat = (d ->> 'winner')::int;
+      exit when not due and not (s.bot is not null and now() >= g.deadline - interval '1 second');
+      n := 1 + floor(random() * 6)::int;
+      perform tq_shift(p_game, (d ->> 'loser')::int, -n);
+      perform tq_event(p_game, '🎲 ' || s.name || ' fait ' || n || ' : ' || tq_name(p_game, (d ->> 'loser')::int) || ' recule de ' || n || ' cases !',
+        jsonb_build_object('dice', jsonb_build_array(n), 'move', -n, 'seat', (d ->> 'loser')::int));
+
+    elsif g.phase = 'quiz' then
+      idx := (d ->> 'idx')::int;
+      if not (d ->> 'reveal')::boolean then
+        -- les robots répondent après un petit temps de réflexion
+        for s in select * from traque_players where game_id = p_game and to_jsonb(seat) <@ (d -> 'seats') and (bot is not null) loop
+          if d -> 'ans' -> s.seat::text -> idx is null and extract(epoch from now()) - (d ->> 'opened')::numeric >= 2 + (abs(hashtext(p_game::text || s.seat || '-' || idx)) % 5) then
+            c := (g.pool -> (d -> 'items' -> idx ->> 'topic') -> ((d -> 'items' -> idx ->> 'qi')::int) ->> 'c')::int;
+            lvl := case s.bot when 'facile' then 0.45 when 'moyen' then 0.65 else 0.85 end;
+            perform tq_put_answer(p_game, s.seat, case when random() < lvl then c else (c + 1 + floor(random() * 3)::int) % 4 end);
+            select * into g from traque_games where id = p_game; d := g.data;
+          end if;
+        end loop;
+        select bool_and(d -> 'ans' -> seat::text -> idx is not null) into all_in from traque_players
+          where game_id = p_game and to_jsonb(seat) <@ (d -> 'seats') and status in ('joined', 'bot');
+        if coalesce(all_in, true) or due then
+          -- révélation ; pendant une trêve, chaque bonne réponse remplit le trésor
+          if d ->> 'kind' = 'truce' then
+            c := (g.pool -> (d -> 'items' -> idx ->> 'topic') -> ((d -> 'items' -> idx ->> 'qi')::int) ->> 'c')::int;
+            select count(*) filter (where (d -> 'ans' -> seat::text -> idx ->> 0)::int = c), count(*) into ok, n
+              from traque_players where game_id = p_game and to_jsonb(seat) <@ (d -> 'seats');
+            update traque_games set treasure = treasure + ok + case when ok = n and n > 0 then 2 else 0 end where id = p_game;
+          end if;
+          update traque_games set data = jsonb_set(data, '{reveal}', 'true'), deadline = now() + make_interval(secs => tq_const('reveal')), version = version + 1 where id = p_game;
+        else exit; end if;
+      else
+        exit when not due;
+        if idx + 1 < jsonb_array_length(d -> 'items') then
+          update traque_games set data = data || jsonb_build_object('idx', idx + 1, 'reveal', false, 'opened', extract(epoch from now())),
+            deadline = now() + make_interval(secs => case when (d ->> 'hard')::boolean then tq_const('hard') else tq_const('answer') end),
+            version = version + 1 where id = p_game;
+        else perform tq_quiz_done(p_game); end if;
+      end if;
+    else exit; end if;
+  end loop;
+end $$;
+
+-- Vue d'une partie pour un joueur (la bonne réponse n'est donnée qu'à la révélation)
+create or replace function public.traque_view(p_game uuid, p_pid uuid) returns json language plpgsql as $$
+declare g traque_games; d jsonb; me int; idx int; it jsonb; q jsonb;
+begin
+  select * into g from traque_games where id = p_game;
+  if not found then return null; end if;
+  select seat into me from traque_players where game_id = p_game and player_id = p_pid;
+  if me is null and g.host <> p_pid then return null; end if;
+  d := g.data;
+  if g.phase = 'quiz' then
+    idx := (d ->> 'idx')::int; it := d -> 'items' -> idx;
+    q := g.pool -> (it ->> 'topic') -> ((it ->> 'qi')::int);
+    d := d - 'items' || jsonb_build_object(
+      'count', jsonb_array_length(g.data -> 'items'),
+      'topic', it ->> 'topic',
+      'q', q ->> 'q', 'o', q -> 'o',
+      'c', case when (d ->> 'reveal')::boolean then q -> 'c' end,
+      'removed', d -> 'jokers' -> (me::text || ':' || idx),
+      -- pendant la question, on ne voit que qui a répondu, pas quoi
+      'ans', case when (d ->> 'reveal')::boolean then d -> 'ans'
+        else (select coalesce(jsonb_object_agg(k, case when k = me::text then v else to_jsonb(array(select case when e = 'null'::jsonb then null else 'x' end from jsonb_array_elements(v) e)) end), '{}'::jsonb)
+              from jsonb_each(d -> 'ans') kv(k, v)) end,
+      'left_ms', greatest(0, floor(extract(epoch from (g.deadline - now())) * 1000))::int);
+  else
+    d := d || jsonb_build_object('left_ms', case when g.deadline is null then null else greatest(0, floor(extract(epoch from (g.deadline - now())) * 1000))::int end);
+  end if;
+  return json_build_object(
+    'id', g.id, 'status', g.status, 'host', g.host = p_pid, 'me', me, 'turn', g.turn, 'round', g.round, 'phase', g.phase, 'data', d,
+    'treasure', g.treasure, 'winner', g.winner, 'board', g.board, 'topics', g.topics, 'log', g.log, 'version', g.version,
+    'players', (select coalesce(json_agg(json_build_object('seat', seat, 'name', name, 'avatar', avatar, 'photo', photo, 'status', status, 'bot', bot,
+        'player_id', player_id, 'topics', topics, 'pos', pos, 'pearls', pearls, 'items', items, 'skip', skip, 'reward', reward,
+        'online', case when player_id is null then true else (select last_seen > now() - interval '70 seconds' from players where id = player_id) end) order by seat), '[]'::json)
+      from traque_players where game_id = p_game and status <> 'declined'));
+end $$;
+
+create or replace function public.get_traque(p_game uuid) returns json language plpgsql security definer set search_path = public as $$
+declare pid uuid := current_player();
+begin
+  if pid is null then return null; end if;
+  perform traque_tick(p_game);
+  update players set last_seen = now() where id = pid;
+  return traque_view(p_game, pid);
+end $$;
+
+-- ===== Salon =====
+create or replace function public.create_traque() returns uuid language plpgsql security definer set search_path = public as $$
+declare pid uuid := current_player(); gid uuid; me players;
+begin
+  if pid is null then raise exception 'aucun joueur'; end if;
+  delete from traque_games where created_at < now() - interval '2 days';
+  update traque_games set status = 'cancelled' where host = pid and status = 'lobby';
+  select * into me from players where id = pid;
+  insert into traque_games (host) values (pid) returning id into gid;
+  insert into traque_players (game_id, seat, player_id, name, avatar, photo, status) values (gid, 0, pid, me.name, me.avatar, me.photo, 'joined');
+  return gid;
+end $$;
+
+create or replace function public.tq_free_seat(p_game uuid) returns int language sql as $$
+  select min(s) from generate_series(0, 3) s where not exists (select 1 from traque_players where game_id = p_game and seat = s and status in ('invited', 'joined', 'bot'))
+$$;
+
+create or replace function public.invite_traque(p_game uuid, p_friend uuid) returns void language plpgsql security definer set search_path = public as $$
+declare pid uuid := current_player(); s int; f players; me_name text;
+begin
+  if not exists (select 1 from traque_games where id = p_game and host = pid and status = 'lobby') then raise exception 'salon introuvable'; end if;
+  if not are_friends(pid, p_friend) then raise exception 'pas amis'; end if;
+  if exists (select 1 from traque_players where game_id = p_game and player_id = p_friend and status in ('invited', 'joined')) then return; end if;
+  s := tq_free_seat(p_game);
+  if s is null then raise exception 'salon complet'; end if;
+  delete from traque_players where game_id = p_game and (seat = s or player_id = p_friend);
+  select * into f from players where id = p_friend;
+  insert into traque_players (game_id, seat, player_id, name, avatar, photo, status) values (p_game, s, p_friend, f.name, f.avatar, f.photo, 'invited');
+  select name into me_name from players where id = pid;
+  perform notify_player(p_friend, '🐙 La Traque du Kraken', me_name || ' t''invite à traquer le Kraken en direct !', '/');
+end $$;
+
+create or replace function public.add_traque_bot(p_game uuid, p_level text, p_topics jsonb) returns void language plpgsql security definer set search_path = public as $$
+declare pid uuid := current_player(); s int; names text[] := array['Capitaine Crochet-Moule', 'Barbe-Corail', 'Mousse Pétoncle', 'Amiral Calamar', 'Lady Méduse', 'Le Vieux Homard'];
+begin
+  if not exists (select 1 from traque_games where id = p_game and host = pid and status = 'lobby') then raise exception 'salon introuvable'; end if;
+  if p_level not in ('facile', 'moyen', 'expert') or jsonb_typeof(p_topics) <> 'array' or jsonb_array_length(p_topics) <> 3 then raise exception 'robot invalide'; end if;
+  s := tq_free_seat(p_game);
+  if s is null then raise exception 'salon complet'; end if;
+  delete from traque_players where game_id = p_game and seat = s;
+  insert into traque_players (game_id, seat, bot, name, avatar, status, topics)
+  values (p_game, s, p_level, names[1 + floor(random() * array_length(names, 1))::int] || ' (' || p_level || ')', 'robot-' || s, 'bot', p_topics);
+end $$;
+
+create or replace function public.remove_traque_seat(p_game uuid, p_seat int) returns void language plpgsql security definer set search_path = public as $$
+declare pid uuid := current_player();
+begin
+  if not exists (select 1 from traque_games where id = p_game and host = pid and status = 'lobby') then raise exception 'salon introuvable'; end if;
+  delete from traque_players where game_id = p_game and seat = p_seat and seat <> 0;
+end $$;
+
+create or replace function public.respond_traque(p_game uuid, p_accept boolean) returns json language plpgsql security definer set search_path = public as $$
+declare pid uuid := current_player();
+begin
+  update traque_players set status = case when p_accept then 'joined' else 'declined' end, updated_at = now()
+  where game_id = p_game and player_id = pid and status = 'invited'
+    and exists (select 1 from traque_games where id = p_game and status = 'lobby' and created_at > now() - interval '30 minutes');
+  if not found or not p_accept then return null; end if;
+  return traque_view(p_game, pid);
+end $$;
+
+create or replace function public.set_traque_topics(p_game uuid, p_topics jsonb) returns void language plpgsql security definer set search_path = public as $$
+declare pid uuid := current_player();
+begin
+  if jsonb_typeof(p_topics) <> 'array' or jsonb_array_length(p_topics) <> 3 or pg_column_size(p_topics) > 1500 then raise exception 'choisis 3 thèmes'; end if;
+  update traque_players set topics = p_topics, updated_at = now()
+  where game_id = p_game and player_id = pid and status = 'joined' and exists (select 1 from traque_games where id = p_game and status = 'lobby');
+end $$;
+
+create or replace function public.leave_traque(p_game uuid) returns void language plpgsql security definer set search_path = public as $$
+declare pid uuid := current_player(); g traque_games;
+begin
+  select * into g from traque_games where id = p_game;
+  if not found then return; end if;
+  if g.status = 'lobby' then
+    if g.host = pid then update traque_games set status = 'cancelled' where id = p_game;
+    else delete from traque_players where game_id = p_game and player_id = pid; end if;
+  else
+    update traque_players set status = 'left' where game_id = p_game and player_id = pid and status = 'joined';
+    -- plus aucun humain : la partie s'arrête
+    if not exists (select 1 from traque_players where game_id = p_game and status = 'joined') then
+      update traque_games set status = 'cancelled', phase = 'done' where id = p_game and status = 'playing';
+    end if;
+  end if;
+end $$;
+
+-- Lancement : l'hôte envoie les questions des thèmes du plateau ; le serveur construit le plateau
+create or replace function public.start_traque(p_game uuid, p_topics jsonb, p_general jsonb, p_pool jsonb) returns json language plpgsql security definer set search_path = public as $$
+declare pid uuid := current_player(); specs text[]; gen text[]; cells jsonb := '[]'::jsonb; types text[]; i int; t text; k text; n int;
+begin
+  if not exists (select 1 from traque_games where id = p_game and host = pid and status = 'lobby') then raise exception 'salon introuvable'; end if;
+  delete from traque_players where game_id = p_game and status in ('invited', 'declined');
+  if (select count(*) from traque_players where game_id = p_game and status in ('joined', 'bot')) < 2 then raise exception 'il faut au moins 2 joueurs (ou robots)'; end if;
+  if exists (select 1 from traque_players where game_id = p_game and status = 'joined' and jsonb_array_length(topics) <> 3) then raise exception 'tout le monde doit choisir 3 thèmes'; end if;
+  if pg_column_size(p_pool) > 900000 or jsonb_typeof(p_pool) <> 'object' then raise exception 'questions invalides'; end if;
+  for k in select jsonb_object_keys(p_pool) loop
+    if exists (select 1 from jsonb_array_elements(p_pool -> k) q where jsonb_array_length(q -> 'o') <> 4 or (q ->> 'c')::int not between 0 and 3
+      or char_length(q ->> 'q') > 400) then raise exception 'question invalide'; end if;
+  end loop;
+  select array_agg(distinct x ->> 'id') into specs from traque_players p, jsonb_array_elements(p.topics) x where p.game_id = p_game and p.status in ('joined', 'bot');
+  select array_agg(v) into gen from jsonb_array_elements_text(p_general) v;
+  if cardinality(gen) < 3 then raise exception 'thèmes généraux manquants'; end if;
+  -- 78 cases entre le départ (0) et l'antre (79)
+  types := array_fill('general'::text, array[78]);
+  -- cases spéciales : 16 spécialités, 8 trêves, 6 coffres, 5 courants, 5 tentacules, 4 raccourcis
+  for i in 1 .. 16 loop types[i] := 'spec'; end loop;
+  for i in 17 .. 24 loop types[i] := 'truce'; end loop;
+  for i in 25 .. 30 loop types[i] := 'chest'; end loop;
+  for i in 31 .. 35 loop types[i] := 'current'; end loop;
+  for i in 36 .. 40 loop types[i] := 'tentacle'; end loop;
+  for i in 41 .. 44 loop types[i] := 'shortcut'; end loop;
+  select array_agg(x order by random()) into types from unnest(types) x;
+  cells := jsonb_build_array(jsonb_build_object('t', 'start'));
+  n := 0;
+  for i in 1 .. 78 loop
+    t := types[i];
+    if t = 'spec' then
+      cells := cells || jsonb_build_array(jsonb_build_object('t', 'spec', 'topic', specs[1 + (n % cardinality(specs))])); n := n + 1;
+    elsif t in ('general', 'shortcut') then
+      cells := cells || jsonb_build_array(jsonb_build_object('t', t, 'topic', gen[1 + floor(random() * cardinality(gen))::int]));
+    else cells := cells || jsonb_build_array(jsonb_build_object('t', t)); end if;
+  end loop;
+  cells := cells || jsonb_build_array(jsonb_build_object('t', 'lair'));
+  update traque_games set status = 'playing', board = cells, topics = p_topics, general = p_general, pool = p_pool, used = '{}'::jsonb,
+    started_at = now(), turn = -1, round = 1, treasure = 0, phase = 'event', data = jsonb_build_object('text', '🐙 La traque commence ! Le trésor du Kraken est vide…'),
+    deadline = now() + interval '4 seconds', version = version + 1
+  where id = p_game;
+  update traque_players set pos = 0, pearls = 5, items = '[]'::jsonb, skip = 0 where game_id = p_game;
+  perform tq_log(p_game, '🐙 La traque commence !');
+  return traque_view(p_game, pid);
+end $$;
+
+-- ===== Actions en jeu =====
+create or replace function public.tq_my_seat(p_game uuid) returns int language sql stable security definer set search_path = public as $$
+  select seat from traque_players where game_id = p_game and player_id = current_player() and status = 'joined'
+$$;
+
+create or replace function public.traque_roll(p_game uuid) returns json language plpgsql security definer set search_path = public as $$
+declare s int := tq_my_seat(p_game); g traque_games;
+begin
+  perform traque_tick(p_game);
+  select * into g from traque_games where id = p_game for update;
+  if g.phase = 'roll' and g.turn = s then perform tq_roll(p_game);
+  elsif g.phase = 'duelroll' and (g.data ->> 'winner')::int = s then
+    update traque_games set deadline = now() where id = p_game;
+  end if;
+  perform traque_tick(p_game);
+  return traque_view(p_game, current_player());
+end $$;
+
+create or replace function public.traque_buy(p_game uuid, p_item text) returns json language plpgsql security definer set search_path = public as $$
+declare s int := tq_my_seat(p_game); g traque_games; me traque_players;
+begin
+  select * into g from traque_games where id = p_game for update;
+  select * into me from traque_players where game_id = p_game and seat = s;
+  if g.status <> 'playing' or tq_item_cost(p_item) is null then raise exception 'impossible'; end if;
+  if me.pearls < tq_item_cost(p_item) then raise exception 'pas assez de perles'; end if;
+  if jsonb_array_length(me.items) >= tq_const('shop_max') then raise exception 'sac plein (3 objets)'; end if;
+  update traque_players set pearls = pearls - tq_item_cost(p_item), items = items || to_jsonb(p_item) where game_id = p_game and seat = s;
+  update traque_games set version = version + 1 where id = p_game;
+  return traque_view(p_game, current_player());
+end $$;
+
+create or replace function public.traque_use(p_game uuid, p_item text, p_target int default null) returns json language plpgsql security definer set search_path = public as $$
+declare s int := tq_my_seat(p_game); g traque_games; me traque_players; tg traque_players; idx int; d jsonb; c int; wrong int[]; amount int;
+begin
+  select * into g from traque_games where id = p_game for update;
+  select * into me from traque_players where game_id = p_game and seat = s;
+  if g.status <> 'playing' or not (me.items ? p_item) then raise exception 'objet indisponible'; end if;
+  if p_item = 'joker' then
+    d := g.data; idx := (d ->> 'idx')::int;
+    if g.phase <> 'quiz' or (d ->> 'reveal')::boolean or not (to_jsonb(s) <@ (d -> 'seats')) or d ->> 'kind' = 'truce' then raise exception 'pas maintenant'; end if;
+    c := (g.pool -> (d -> 'items' -> idx ->> 'topic') -> ((d -> 'items' -> idx ->> 'qi')::int) ->> 'c')::int;
+    select array_agg(x) into wrong from (select x from generate_series(0, 3) x where x <> c order by random() limit 2) z;
+    update traque_games set data = jsonb_set(data, array['jokers', s::text || ':' || idx], to_jsonb(wrong)), version = version + 1 where id = p_game;
+  else
+    if g.phase <> 'roll' or g.turn <> s then raise exception 'seulement pendant ton tour, avant le dé'; end if;
+    if p_item = 'double' then
+      update traque_games set data = data || '{"double": true}'::jsonb where id = p_game;
+      perform tq_log(p_game, '🎲 ' || me.name || ' sort le double dé !');
+    else
+      select * into tg from traque_players where game_id = p_game and seat = p_target and seat <> s and status in ('joined', 'bot', 'left');
+      if not found then raise exception 'choisis un adversaire'; end if;
+      if p_item = 'ancre' then
+        update traque_players set skip = skip + 1 where game_id = p_game and seat = p_target;
+        perform tq_log(p_game, '⚓ ' || me.name || ' jette une ancre sur ' || tg.name || ' : il passera son tour.');
+      elsif p_item = 'vol' then
+        amount := least(5, tg.pearls);
+        update traque_players set pearls = pearls - amount where game_id = p_game and seat = p_target;
+        update traque_players set pearls = pearls + amount where game_id = p_game and seat = s;
+        perform tq_log(p_game, '🦝 ' || me.name || ' vole ' || amount || ' perles à ' || tg.name || ' !');
+      elsif p_item = 'echange' then
+        update traque_players t set pos = case when t.seat = s then tg.pos else me.pos end where t.game_id = p_game and t.seat in (s, p_target);
+        perform tq_log(p_game, '🔄 ' || me.name || ' échange sa place avec ' || tg.name || ' !');
+      end if;
+    end if;
+  end if;
+  -- retire un exemplaire de l'objet du sac
+  update traque_players set items = items - (select (ord - 1)::int from jsonb_array_elements_text(items) with ordinality e(v, ord) where v = p_item order by ord limit 1)
+  where game_id = p_game and seat = s;
+  update traque_games set version = version + 1 where id = p_game;
+  return traque_view(p_game, current_player());
+end $$;
+
+create or replace function public.traque_answer(p_game uuid, p_idx int, p_choice int) returns json language plpgsql security definer set search_path = public as $$
+declare s int := tq_my_seat(p_game); g traque_games;
+begin
+  select * into g from traque_games where id = p_game for update;
+  if s is not null and g.phase = 'quiz' and (g.data ->> 'idx')::int = p_idx and p_choice between 0 and 3 then
+    perform tq_put_answer(p_game, s, p_choice);
+  end if;
+  perform traque_tick(p_game);
+  return traque_view(p_game, current_player());
+end $$;
+
+-- Invitations en attente (pour le bandeau d'invitation)
+create or replace function public.traque_invites_for(p uuid) returns json language sql stable security definer set search_path = public as $$
+  select coalesce(json_agg(json_build_object('id', g.id, 'from', player_card(g.host), 'created_at', g.created_at) order by g.created_at desc), '[]'::json)
+  from traque_players tp join traque_games g on g.id = tp.game_id
+  where tp.player_id = p and tp.status = 'invited' and g.status = 'lobby' and g.created_at > now() - interval '30 minutes'
+$$;
+
+-- Ma partie en cours (pour y revenir après avoir quitté l'appli)
+create or replace function public.my_traque() returns uuid language sql stable security definer set search_path = public as $$
+  select g.id from traque_games g join traque_players p on p.game_id = g.id
+  where p.player_id = current_player() and p.status = 'joined' and g.status in ('lobby', 'playing') and g.created_at > now() - interval '6 hours'
+  order by g.created_at desc limit 1
+$$;
+
+revoke all on function public.get_traque(uuid), public.create_traque(), public.invite_traque(uuid, uuid), public.add_traque_bot(uuid, text, jsonb),
+  public.remove_traque_seat(uuid, int), public.respond_traque(uuid, boolean), public.set_traque_topics(uuid, jsonb), public.leave_traque(uuid),
+  public.start_traque(uuid, jsonb, jsonb, jsonb), public.traque_roll(uuid), public.traque_buy(uuid, text), public.traque_use(uuid, text, int),
+  public.traque_answer(uuid, int, int), public.my_traque() from public, anon;
+grant execute on function public.get_traque(uuid), public.create_traque(), public.invite_traque(uuid, uuid), public.add_traque_bot(uuid, text, jsonb),
+  public.remove_traque_seat(uuid, int), public.respond_traque(uuid, boolean), public.set_traque_topics(uuid, jsonb), public.leave_traque(uuid),
+  public.start_traque(uuid, jsonb, jsonb, jsonb), public.traque_roll(uuid), public.traque_buy(uuid, text), public.traque_use(uuid, text, int),
+  public.traque_answer(uuid, int, int), public.my_traque() to authenticated;
+revoke all on function public.traque_tick(uuid), public.traque_view(uuid, uuid), public.tq_quiz(uuid, text, int[], text[], jsonb, boolean),
+  public.tq_land(uuid, int), public.tq_next(uuid), public.tq_roll(uuid), public.tq_finish(uuid, int), public.tq_quiz_done(uuid),
+  public.tq_put_answer(uuid, int, int), public.tq_pick(uuid, text), public.tq_event(uuid, text, jsonb), public.tq_shift(uuid, int, int),
+  public.tq_final(uuid, int), public.tq_log(uuid, text), public.tq_general(uuid), public.tq_name(uuid, int), public.tq_free_seat(uuid),
+  public.traque_invites_for(uuid) from public, anon, authenticated;

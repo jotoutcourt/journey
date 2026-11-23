@@ -10,6 +10,7 @@ export function useSocial(online) {
   const [invites, setInvites] = useState([])
   const [duoInvites, setDuoInvites] = useState([])
   const [partyInvites, setPartyInvites] = useState([])
+  const [traqueInvites, setTraqueInvites] = useState([])
   const [counts, setCounts] = useState({ requests: 0, challenges: 0 })
   const countsRef = useRef(counts)
 
@@ -36,6 +37,7 @@ export function useSocial(online) {
         setInvites(h.invites || [])
         setDuoInvites(h.duo_invites || [])
         setPartyInvites(h.party_invites || [])
+        setTraqueInvites(h.traque_invites || [])
         const next = { requests: h.friend_requests || 0, challenges: h.pending_challenges || 0 }
         const prev = countsRef.current
         if (next.challenges !== prev.challenges) refreshChallenges()
@@ -51,7 +53,7 @@ export function useSocial(online) {
     return () => { clearInterval(id); document.removeEventListener('visibilitychange', onVis) }
   }, [online, refreshChallenges, refreshFriends])
 
-  return { code, social, challenges, invites, duoInvites, setDuoInvites, partyInvites, counts, setInvites, refreshFriends, refreshChallenges }
+  return { code, social, challenges, invites, duoInvites, setDuoInvites, partyInvites, traqueInvites, counts, setInvites, refreshFriends, refreshChallenges }
 }
 
 // Joueur réel vu comme adversaire de duel

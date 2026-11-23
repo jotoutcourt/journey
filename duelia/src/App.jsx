@@ -20,6 +20,7 @@ import { createOutgoing, tickChallenges, pendingCount, markPlayed } from './lib/
 import { Inbox, ChallengeSheet, NotifyBanner, SentScreen } from './components/Challenges.jsx'
 import { ButinHome, ButinGame, DuoInviteBanner } from './components/Butin.jsx'
 import { Party, PartyInviteBanner } from './components/Party.jsx'
+import { Traque, TraqueInviteBanner } from './components/Traque.jsx'
 import { OxygenInline, OxygenSheet } from './components/Oxygen.jsx'
 import { Shop, StarterPick } from './components/Shop.jsx'
 import { priceOf, isLockable } from './lib/shop.js'
@@ -214,7 +215,7 @@ export default function App() {
   }, [])
   useEffect(() => { setMusic(st.settings.music !== false) }, [st.settings.music])
   // Musique d'ambiance : seulement dans les menus et à l'accueil, jamais pendant une partie
-  const inGame = ['match', 'duel', 'butingame', 'party', 'invite', 'linkload', 'linkready'].includes(route.name)
+  const inGame = ['match', 'duel', 'butingame', 'party', 'traque', 'invite', 'linkload', 'linkready'].includes(route.name)
   useEffect(() => { setMenuMusic(st.settings.sound && st.settings.menuMusic !== false && !inGame) }, [st.settings.sound, st.settings.menuMusic, inGame])
 
   const update = useCallback((fn) => setSt(s => fn(s) ?? emptyState()), [])
@@ -786,6 +787,26 @@ export default function App() {
   }
   // Duel quiz à plusieurs : créer un salon, ou rejoindre celui d'un ami
   const partyInvite = (social.partyInvites || []).find(i => !dismissedInvites.includes(i.id))
+  // La Traque du Kraken
+  const traqueInvite = (social.traqueInvites || []).find(i => !dismissedInvites.includes(i.id))
+  const startTraque = async () => {
+    try { const id = await api.createTraque(); setRoute({ name: 'traque', gameId: id }) } catch { setToast('Pas de connexion.') }
+  }
+  const acceptTraque = async (inv) => {
+    setDismissedInvites(d => [...d, inv.id])
+    let ok
+    try { ok = await api.respondTraque(inv.id, true) } catch { ok = null }
+    if (!ok) { setToast('Trop tard : la partie a déjà commencé ou a été annulée.'); return }
+    setRoute({ name: 'traque', gameId: inv.id })
+  }
+  const declineTraque = (inv) => { setDismissedInvites(d => [...d, inv.id]); api.respondTraque(inv.id, false).catch(() => {}) }
+  const [traqueResume, setTraqueResume] = useState(null)
+  useEffect(() => {
+    if (!online || route.name !== 'home') return
+    let alive = true
+    api.myTraque().then(id => { if (alive) setTraqueResume(id || null) }).catch(() => {})
+    return () => { alive = false }
+  }, [online, route.name])
   const startPartyFor = async (topic) => {
     try {
       const id = await api.createParty(topic, buildQuestions(topic, st.topicStats[topic.id]?.seen))
@@ -1001,9 +1022,9 @@ export default function App() {
   }
 
   const meForDuel = { ...me, topicXp: st.topicStats[route.id]?.xp || 0 }
-  const fullscreen = ['match', 'duel', 'results', 'butingame', 'party', 'sent', 'invite', 'friendsent', 'linkload', 'linkready', 'linkintro', 'linkreply'].includes(route.name)
+  const fullscreen = ['match', 'duel', 'results', 'butingame', 'party', 'traque', 'sent', 'invite', 'friendsent', 'linkload', 'linkready', 'linkintro', 'linkreply'].includes(route.name)
   // pas de rechargement automatique (nouvelle version) pendant une partie
-  window.__dueliaBusy = ['match', 'duel', 'invite', 'create', 'butingame', 'party'].includes(route.name)
+  window.__dueliaBusy = ['match', 'duel', 'invite', 'create', 'butingame', 'party', 'traque'].includes(route.name)
   const badge = pendingCount(st) + social.counts.challenges
   const friendBadge = social.counts.requests
   let view
@@ -1020,6 +1041,7 @@ export default function App() {
       title={route.friend ? `Livre de ${route.friend.name}` : 'Mon livre de stickers'} onBack={() => go(route.friend ? { name: 'friend', friend: route.friend } : { name: 'profile' })} />; break
     case 'shop': view = <Shop topics={topics} wallet={wallet} online={online && account.status === 'online'} isLocked={(t) => lockPrice(t) > 0}
       onUnlock={unlock} onOpen={(t) => go({ name: 'topic', id: t.id })} onBack={() => go({ name: 'home' })} />; break
+    case 'traque': view = <Traque key={route.gameId} gameId={route.gameId} topics={topics} friends={social.social?.friends || []} onWallet={refreshWallet} onExit={() => go({ name: 'home' })} />; break
     case 'party': view = <Party key={route.partyId} partyId={route.partyId} friends={social.social?.friends} onExit={() => go({ name: 'home' })} />; break
     case 'butin': view = <ButinHome online={online && account.status === 'online'} friends={social.social?.friends} onInvite={startButin} onSolo={startSolo} wallet={wallet}
       onBack={() => go({ name: 'home' })} onAddFriend={() => go({ name: 'friends' })} />; break
@@ -1090,10 +1112,10 @@ export default function App() {
         onTopic={() => (byId(topic.id) ? go({ name: 'topic', id: topic.id }) : go({ name: 'topics' }))}
         onShare={() => shareText(`${route.data.outcome === 'win' ? 'Victoire' : 'Duel'} ${route.data.myScore}–${route.data.oppScore} contre ${route.opponent.name} sur « ${topic.name} » dans Kraken !`)} />
     ); break
-    default: view = <Home st={st} topics={topics} go={go} wallet={wallet} onSolo={startSolo} missions={<MissionsChip data={missions} onOpen={() => setMissionsOpen(true)} />}
+    default: view = <Home st={st} topics={topics} go={go} wallet={wallet} onSolo={startSolo} onTraque={startTraque} traqueResume={traqueResume ? () => go({ name: 'traque', gameId: traqueResume }) : null} missions={<MissionsChip data={missions} onOpen={() => setMissionsOpen(true)} />}
       oxygen={<OxygenInline wallet={wallet} at={walletAt} onRefill={refill} onDue={refreshWallet} />} />
   }
-  if (!view) view = <Home st={st} topics={topics} go={go} wallet={wallet} onSolo={startSolo} missions={<MissionsChip data={missions} onOpen={() => setMissionsOpen(true)} />}
+  if (!view) view = <Home st={st} topics={topics} go={go} wallet={wallet} onSolo={startSolo} onTraque={startTraque} traqueResume={traqueResume ? () => go({ name: 'traque', gameId: traqueResume }) : null} missions={<MissionsChip data={missions} onOpen={() => setMissionsOpen(true)} />}
     oxygen={<OxygenInline wallet={wallet} at={walletAt} onRefill={refill} onDue={refreshWallet} />} />
 
   return (
@@ -1135,6 +1157,7 @@ export default function App() {
         </div>
       )}
       {invite && !['duel', 'match', 'invite'].includes(route.name) && <LiveInviteBanner key={invite.id} invite={invite} onAccept={acceptInvite} onDecline={declineInvite} />}
+      {traqueInvite && !invite && !inGame && <TraqueInviteBanner key={traqueInvite.id} invite={traqueInvite} onAccept={acceptTraque} onDecline={declineTraque} />}
       {partyInvite && !invite && !['duel', 'match', 'invite', 'butingame', 'party'].includes(route.name) && <PartyInviteBanner key={partyInvite.id} invite={partyInvite} onAccept={acceptParty} onDecline={declineParty} />}
       {duoInvite && !invite && !['duel', 'match', 'invite', 'butingame'].includes(route.name) && <DuoInviteBanner key={duoInvite.id} invite={duoInvite} onAccept={acceptDuo} onDecline={declineDuo} />}
       {shift && <RankShift shift={shift} profile={me} onClose={closeShift} />}

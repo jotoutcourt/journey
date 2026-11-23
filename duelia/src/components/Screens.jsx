@@ -32,7 +32,7 @@ export function TopicTile({ topic, onClick, sub, price }) {
 }
 
 /* ---------------- Accueil ---------------- */
-export function Home({ go, wallet, onSolo, oxygen, missions }) {
+export function Home({ go, wallet, onSolo, oxygen, missions, onTraque, traqueResume }) {
   const [choose, setChoose] = useState(false)
   const modesRef = useRef(null)
   // un appui en dehors des boutons Solo / À deux fait revenir « Jouer » (sans gêner l'appui sur les boutons, iPhone compris)
@@ -67,6 +67,7 @@ export function Home({ go, wallet, onSolo, oxygen, missions }) {
             <button className="kh-play kh-mode" onClick={() => { setChoose(false); onSolo() }}><span aria-hidden="true">🏴‍☠️</span>Solo</button>
             <button className="kh-play kh-mode" onClick={() => { setChoose(false); go({ name: 'butin' }) }}><span aria-hidden="true">👥</span>À deux</button>
           </div>}
+        {onTraque && <button className="kh-traque" onClick={traqueResume || onTraque}>🐙 {traqueResume ? 'Reprendre la Traque du Kraken' : 'La Traque du Kraken · 2 à 4 joueurs'}</button>}
         {oxygen}
       </section>
 
