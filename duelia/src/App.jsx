@@ -676,6 +676,27 @@ export default function App() {
   const [wallet, setWallet] = useState(null)
   const [missions, refreshMissions, setMissions] = useMissions(online)
   const [missionsOpen, setMissionsOpen] = useState(false)
+  // Nouveau défi d'un ami reçu pendant qu'on est dans l'appli : bandeau en haut de l'écran (une fois par défi)
+  const [chNotice, setChNotice] = useState(null)
+  useEffect(() => {
+    const incoming = (social.challenges || []).filter(c => c.dir === 'in' && c.status === 'pending')
+    if (!incoming.length) return
+    let seen
+    try { seen = new Set(JSON.parse(localStorage.getItem('kraken-seen-challenges') || '[]')) } catch { seen = new Set() }
+    const fresh = incoming.filter(c => !seen.has(c.id))
+    if (!fresh.length) return
+    const t = setTimeout(() => {
+      fresh.forEach(c => seen.add(c.id))
+      try { localStorage.setItem('kraken-seen-challenges', JSON.stringify([...seen].slice(-200))) } catch { /* stockage indisponible */ }
+      setChNotice({ ...fresh[0], more: fresh.length - 1 })
+    }, 0)
+    return () => clearTimeout(t)
+  }, [social.challenges])
+  useEffect(() => {
+    if (!chNotice) return
+    const t = setTimeout(() => setChNotice(null), 12000)
+    return () => clearTimeout(t)
+  }, [chNotice])
   // les missions avancent pendant les parties : on les relit à chaque retour à l'accueil
   useEffect(() => { if (online && route.name === 'home') refreshMissions() }, [online, route.name]) // eslint-disable-line react-hooks/exhaustive-deps
   const [walletAt, setWalletAt] = useState(0) // moment de réception (pour le compte à rebours de l'oxygène)
@@ -1094,6 +1115,17 @@ export default function App() {
         onLink={() => { const t = friendPick; setFriendPick(null); go({ name: 'linkcreate', id: t.id }) }}
         onAdd={() => { setFriendPick(null); go({ name: 'friends' }) }}
         onCancel={() => setFriendPick(null)} />}
+      {chNotice && !inGame && route.name !== 'inbox' && (
+        <div className="challenge-notice" role="status">
+          <button className="cn-main" onClick={() => { setChNotice(null); go({ name: 'inbox' }) }}>
+            <span className="cn-icon" aria-hidden="true">⚔️</span>
+            <span className="cn-txt"><b>{chNotice.opponent?.name || 'Un ami'} te défie !</b>
+              <small>{chNotice.topic?.name ? `Thème : ${chNotice.topic.name}` : 'Nouveau défi'}{chNotice.more > 0 ? ` · +${chNotice.more} autre${chNotice.more > 1 ? 's' : ''}` : ''}</small></span>
+            <span className="cn-go">Jouer</span>
+          </button>
+          <button className="cn-close" aria-label="Fermer" onClick={() => setChNotice(null)}>×</button>
+        </div>
+      )}
       {invite && !['duel', 'match', 'invite'].includes(route.name) && <LiveInviteBanner key={invite.id} invite={invite} onAccept={acceptInvite} onDecline={declineInvite} />}
       {partyInvite && !invite && !['duel', 'match', 'invite', 'butingame', 'party'].includes(route.name) && <PartyInviteBanner key={partyInvite.id} invite={partyInvite} onAccept={acceptParty} onDecline={declineParty} />}
       {duoInvite && !invite && !['duel', 'match', 'invite', 'butingame'].includes(route.name) && <DuoInviteBanner key={duoInvite.id} invite={duoInvite} onAccept={acceptDuo} onDecline={declineDuo} />}
