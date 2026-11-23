@@ -1365,3 +1365,9 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
 .tq-track .tq-figure { width: 9.5%; height: auto; aspect-ratio: 1; margin: 0; transform: translate(-50%, -88%); }
 .tq-track .tq-figure.active { width: 11.5%; height: auto; margin: 0; }
 .kh-play.kh-chasse.soon { opacity: .6; filter: saturate(.5); cursor: default; }
+/* Vue rapprochée : le plateau est bien plus grand que l'écran, on s'y promène au doigt sans voir ses bords */
+.tq-path { overscroll-behavior: none; background: #0b2a8a; }
+.tq-track { width: max(260%, 1000px); }
+.tq-slot { font-size: 30px; }
+.tq-slot.t-truce, .tq-slot.t-chest, .tq-slot.t-shop { font-size: 24px; }
+.tq-slot .tq-tile-topic { font-size: 22px; }
