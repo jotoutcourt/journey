@@ -30,6 +30,11 @@ import x_secret from './extra/secret-story.js'
 import x_satc from './extra/sex-and-the-city.js'
 import x_1d from './extra/one-direction.js'
 import x_taylor from './extra/taylor-swift.js'
+import x_chanson from './extra/chanson-francaise.js'
+import x_8090 from './extra/annees-80-90.js'
+import x_telerea from './extra/tele-realite.js'
+import x_marvel from './extra/marvel.js'
+import x_nintendo from './extra/nintendo.js'
 import x_dessins_animes from './extra/dessins-animes.js'
 import x_c_series_cultes from './extra/c-series-cultes.js'
 import x_c_espace from './extra/c-espace.js'
@@ -84,6 +89,11 @@ const EXTRA = {
   'sex-and-the-city': x_satc,
   'one-direction': x_1d,
   'taylor-swift': x_taylor,
+  'chanson-francaise': x_chanson,
+  'annees-80-90': x_8090,
+  'tele-realite': x_telerea,
+  'marvel': x_marvel,
+  'nintendo': x_nintendo,
   'secret-story': x_secret,
   'dessins-animes': x_dessins_animes,
   'c-series-cultes': x_c_series_cultes,
@@ -338,6 +348,11 @@ export const OFFICIAL_TOPICS = [
   T('sex-and-the-city', 'Sex and the City', '🍸', '#ff6fa8', 'Cinéma & TV', 'Carrie, Samantha, Charlotte, Miranda… et Mr. Big', 22460, []),
   T('one-direction', 'One Direction', '🎤', '#4aa8ff', 'Musique', 'Harry, Niall, Liam, Louis, Zayn et leurs tubes', 24870, []),
   T('taylor-swift', 'Taylor Swift', '🫶', '#a77bd8', 'Musique', 'Douze albums, des Taylor\'s Version et des records', 31310, []),
+  T('chanson-francaise', 'Chanson française', '🎙️', '#e2475c', 'Musique', 'De Piaf à Aya Nakamura', 0, []),
+  T('annees-80-90', 'Années 80-90', '📼', '#ff7ac6', 'Culture', 'Walkman, Club Dorothée et Coupe du monde 98', 0, []),
+  T('tele-realite', 'Télé-réalité française', '📺', '#ff9f1c', 'Cinéma & TV', 'Du Loft à Koh-Lanta, la sentence est irrévocable', 0, []),
+  T('marvel', 'Marvel', '🦸', '#e23636', 'Cinéma & TV', 'Avengers, rassemblement !', 0, []),
+  T('nintendo', 'Nintendo', '🍄', '#e60012', 'Jeux vidéo', 'Mario, Zelda, Kirby et toute la bande', 0, []),
   T('secret-story', 'Secret Story', '🤫', '#2f6fde', 'Cinéma & TV', 'Les secrets de la Maison, de 2007 à aujourd\'hui', 22610, []),
   T('voitures', 'Voitures', '🏎️', '#ff4d4d', 'Sport', 'Marques, modèles, mécanique et sport auto', 17260, []),
   T('quel-animal', 'Quel est cet animal ?', '📸', '#3ddc84', 'Nature', 'Reconnais l\'animal sur la photo', 18240, []),
