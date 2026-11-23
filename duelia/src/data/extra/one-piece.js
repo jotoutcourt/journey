@@ -22,32 +22,18 @@ export default [
   "V Jump"
  ],
  [
-  "Quel est le rêve de Monkey D. Luffy ?",
-  "Devenir le Roi des pirates",
-  "Devenir amiral",
-  "Trouver All Blue",
-  "Devenir le meilleur épéiste"
+  "Quel fruit du démon Luffy a-t-il mangé enfant, sous son nom connu de tous ?",
+  "Le Gomu Gomu no Mi (fruit du Gum-Gum)",
+  "Le Mera Mera no Mi (Pyro-fruit)",
+  "Le Yami Yami no Mi (fruit des ténèbres)",
+  "Le Moku Moku no Mi (fruit Fumigène)"
  ],
  [
-  "Quel fruit du démon Luffy a-t-il mangé ?",
-  "Le fruit du Gum Gum",
-  "Le fruit du Feu",
-  "Le fruit des Ténèbres",
-  "Le fruit de la Fumée"
- ],
- [
-  "Quel est le vrai nom du fruit de Luffy, révélé à Wano ?",
-  "Le fruit de l'Homme-Homme, modèle Nika",
-  "Le fruit du Soleil",
-  "Le fruit de Kaido",
-  "Le fruit de l'Élastique divin"
- ],
- [
-  "Quel objet Luffy porte-t-il toujours sur la tête ?",
-  "Un chapeau de paille",
-  "Un bandana",
-  "Un bonnet",
-  "Une couronne"
+  "Quel est le vrai nom du fruit de Luffy, révélé au chapitre 1044 ?",
+  "Le Hito Hito no Mi, modèle Nika",
+  "Le Gomu Gomu no Mi, modèle Joy Boy",
+  "Le Taiyo Taiyo no Mi",
+  "Le Hito Hito no Mi, modèle Daibutsu"
  ],
  [
   "Qui a confié son chapeau de paille à Luffy ?",
@@ -69,13 +55,6 @@ export default [
   "Le Roi des mers géant",
   "Un Kraken",
   "Un requin-baleine"
- ],
- [
-  "Comment s'appelle l'équipage de Luffy ?",
-  "L'équipage du Chapeau de paille",
-  "Les Pirates du Soleil",
-  "L'équipage de Barbe Blanche",
-  "Les Pirates Roux"
  ],
  [
   "Quel est le prénom du grand-père de Luffy, vice-amiral de la Marine ?",
@@ -107,10 +86,10 @@ export default [
  ],
  [
   "Quel fruit du démon Portgas D. Ace avait-il mangé ?",
-  "Le fruit du Feu (Pyro)",
-  "Le fruit du Magma",
-  "Le fruit de la Glace",
-  "Le fruit de la Foudre"
+  "Le Mera Mera no Mi (Pyro-fruit)",
+  "Le Magu Magu no Mi (fruit du Magma)",
+  "Le Hie Hie no Mi (fruit du Givre)",
+  "Le Goro Goro no Mi (Fulguro-fruit)"
  ],
  [
   "Qui était le vrai père d'Ace ?",
@@ -134,25 +113,11 @@ export default [
   "Kizaru"
  ],
  [
-  "Qui reprend le fruit du Feu après la mort d'Ace ?",
+  "Qui hérite du Mera Mera no Mi après la mort d'Ace ?",
   "Sabo",
   "Luffy",
   "Marco",
   "Barbe Noire"
- ],
- [
-  "Quel est le nom complet du sabreur de l'équipage ?",
-  "Roronoa Zoro",
-  "Vinsmoke Sanji",
-  "Dracule Mihawk",
-  "Trafalgar Law"
- ],
- [
-  "Combien de sabres Zoro utilise-t-il dans son style ?",
-  "3",
-  "2",
-  "1",
-  "4"
  ],
  [
   "Où Zoro tient-il son troisième sabre ?",
@@ -204,13 +169,6 @@ export default [
   "Murakumogiri"
  ],
  [
-  "Quelle est la navigatrice de l'équipage ?",
-  "Nami",
-  "Robin",
-  "Vivi",
-  "Nojiko"
- ],
- [
   "Qu'adore par-dessus tout Nami ?",
   "L'argent et les mandarines",
   "Les livres",
@@ -239,13 +197,6 @@ export default [
   "Trouver All Blue"
  ],
  [
-  "Qui est le tireur d'élite menteur de l'équipage ?",
-  "Usopp",
-  "Franky",
-  "Brook",
-  "Chopper"
- ],
- [
   "Comment Usopp se fait-il appeler quand il porte un masque ?",
   "Sogeking",
   "Kingsop",
@@ -265,13 +216,6 @@ export default [
   "Rayleigh",
   "Ben Beckman",
   "Lucky Roo"
- ],
- [
-  "Qui est le cuisinier de l'équipage ?",
-  "Sanji",
-  "Zeff",
-  "Brook",
-  "Franky"
  ],
  [
   "Comment Sanji se bat-il ?",
@@ -316,25 +260,11 @@ export default [
   "Les Charlotte"
  ],
  [
-  "Quel animal est Tony Tony Chopper ?",
-  "Un renne",
-  "Un raton laveur",
-  "Un chien",
-  "Un tanuki"
- ],
- [
   "Quel fruit du démon Chopper a-t-il mangé ?",
-  "Le fruit de l'Humain",
-  "Le fruit du Renne",
-  "Le fruit de la Bête",
-  "Le fruit Zoan du Loup"
- ],
- [
-  "Quel est le métier de Chopper dans l'équipage ?",
-  "Médecin",
-  "Charpentier",
-  "Musicien",
-  "Cuisinier"
+  "Le Hito Hito no Mi (fruit de l'humain)",
+  "Le Tori Tori no Mi",
+  "Le Inu Inu no Mi",
+  "Le Ushi Ushi no Mi"
  ],
  [
   "De quelle couleur est le nez de Chopper ?",
@@ -359,10 +289,10 @@ export default [
  ],
  [
   "Quel fruit du démon Nico Robin a-t-elle mangé ?",
-  "Le fruit de l'Éclosion",
-  "Le fruit des Fleurs",
-  "Le fruit des Mains",
-  "Le fruit des Ténèbres"
+  "Le Hana Hana no Mi (fruit de l'éclosion)",
+  "Le Bara Bara no Mi (fruit de la fragmentation)",
+  "Le Ito Ito no Mi (fruit des fils)",
+  "Le Kage Kage no Mi (fruit de l'ombre)"
  ],
  [
   "Quelles pierres anciennes Robin est-elle la seule à savoir lire ?",
@@ -393,13 +323,6 @@ export default [
   "« Sauvez Luffy ! »"
  ],
  [
-  "Qui est le charpentier cyborg de l'équipage ?",
-  "Franky",
-  "Usopp",
-  "Iceburg",
-  "Brook"
- ],
- [
   "Qui a construit le Thousand Sunny ?",
   "Franky",
   "Iceburg",
@@ -428,18 +351,11 @@ export default [
   "« Ouaw ! »"
  ],
  [
-  "Qui est le musicien squelette de l'équipage ?",
-  "Brook",
-  "Franky",
-  "Usopp",
-  "Ryuma"
- ],
- [
   "Quel fruit du démon Brook a-t-il mangé ?",
-  "Le fruit de la Résurrection",
-  "Le fruit des Os",
-  "Le fruit des Âmes",
-  "Le fruit de la Mort"
+  "Le Yomi Yomi no Mi (fruit de la Résurrection)",
+  "Le Horo Horo no Mi",
+  "Le Kage Kage no Mi (fruit de l'ombre)",
+  "Le Hone Hone no Mi"
  ],
  [
   "Comment rit Brook ?",
@@ -508,7 +424,7 @@ export default [
   "Comment s'appelle la dernière île de Grand Line ?",
   "Laugh Tale",
   "Mariejoie",
-  "Raftel seulement",
+  "Ohara",
   "Elbaf"
  ],
  [
@@ -597,10 +513,10 @@ export default [
  ],
  [
   "Quel fruit du démon avait Barbe Blanche ?",
-  "Le fruit du Tremblement",
-  "Le fruit des Ténèbres",
-  "Le fruit du Magma",
-  "Le fruit de la Lumière"
+  "Le Gura Gura no Mi (fruit du tremblement)",
+  "Le Yami Yami no Mi (fruit des ténèbres)",
+  "Le Magu Magu no Mi (fruit du Magma)",
+  "Le Pika Pika no Mi (fruit du flash)"
  ],
  [
   "Quel est le vrai nom de Barbe Noire ?",
@@ -618,10 +534,10 @@ export default [
  ],
  [
   "Quel fruit du démon Barbe Noire a-t-il mangé en premier ?",
-  "Le fruit des Ténèbres",
-  "Le fruit du Tremblement",
-  "Le fruit du Feu",
-  "Le fruit de la Gravité"
+  "Le Yami Yami no Mi (fruit des ténèbres)",
+  "Le Gura Gura no Mi (fruit du tremblement)",
+  "Le Mera Mera no Mi (Pyro-fruit)",
+  "Le Zushi Zushi no Mi (fruit de la pesanteur)"
  ],
  [
   "Comment rit Barbe Noire ?",
@@ -673,7 +589,7 @@ export default [
   "Un serpent"
  ],
  [
-  "Quel pirate a mangé le fruit de l'Op-Op ?",
+  "Quel pirate a mangé l'Ope Ope no Mi (fruit du bistouri) ?",
   "Trafalgar Law",
   "Eustass Kid",
   "Basil Hawkins",
@@ -723,10 +639,10 @@ export default [
  ],
  [
   "Quel fruit du démon Crocodile a-t-il mangé ?",
-  "Le fruit du Sable",
-  "Le fruit de la Fumée",
-  "Le fruit de la Glace",
-  "Le fruit du Magma"
+  "Le Suna Suna no Mi (fruit des sables)",
+  "Le Moku Moku no Mi (fruit Fumigène)",
+  "Le Hie Hie no Mi (fruit du Givre)",
+  "Le Magu Magu no Mi (fruit du Magma)"
  ],
  [
   "Comment s'appelait l'organisation secrète de Crocodile ?",
@@ -750,11 +666,11 @@ export default [
   "Pell"
  ],
  [
-  "Quel est le fruit du démon d'Enel, le dieu de Skypiea ?",
-  "Le fruit de l'Éclair (Goro Goro)",
-  "Le fruit du Feu",
-  "Le fruit de la Lumière",
-  "Le fruit du Vent"
+  "Quel fruit du démon possède Ener, le dieu de Skypiea ?",
+  "Le Goro Goro no Mi (Fulguro-fruit)",
+  "Le Pika Pika no Mi (fruit du flash)",
+  "Le Mera Mera no Mi (Pyro-fruit)",
+  "Le Gura Gura no Mi (fruit du tremblement)"
  ],
  [
   "Comment s'appelle l'île dans le ciel visitée par l'équipage ?",
@@ -764,11 +680,11 @@ export default [
   "Raftel"
  ],
  [
-  "Pourquoi Luffy est-il insensible aux attaques d'Enel ?",
-  "Le caoutchouc ne conduit pas l'électricité",
-  "Il a mangé un fruit d'Enel",
-  "Il porte une armure",
-  "Il est trop rapide"
+  "Pourquoi Luffy est-il insensible aux attaques d'Ener ?",
+  "Son corps en caoutchouc ne conduit pas l'électricité",
+  "Il maîtrise déjà le haki",
+  "Il porte une armure de granit marin",
+  "Ener refuse de le frapper"
  ],
  [
   "Quelle organisation secrète du gouvernement enlève Robin à Water Seven ?",
@@ -933,10 +849,10 @@ export default [
  ],
  [
   "Quel fruit du démon est le prix du tournoi de Dressrosa ?",
-  "Le fruit du Feu d'Ace",
-  "Le fruit de l'Op-Op",
-  "Le fruit du Tremblement",
-  "Le fruit de la Lumière"
+  "Le Mera Mera no Mi d'Ace",
+  "L'Ope Ope no Mi",
+  "Le Gura Gura no Mi",
+  "Le Pika Pika no Mi"
  ],
  [
   "Quelle danseuse et gladiatrice est la fille de Kyros ?",
@@ -1066,27 +982,27 @@ export default [
  ],
  [
   "Quel fruit du démon possède l'amiral Akainu ?",
-  "Le fruit du Magma",
-  "Le fruit du Feu",
-  "Le fruit de la Lave noire",
-  "Le fruit du Volcan"
+  "Le Magu Magu no Mi (fruit du Magma)",
+  "Le Mera Mera no Mi (Pyro-fruit)",
+  "Le Pika Pika no Mi (fruit du flash)",
+  "Le Gura Gura no Mi (fruit du tremblement)"
  ],
  [
   "Quel fruit du démon possède l'amiral Aokiji ?",
-  "Le fruit de la Glace",
-  "Le fruit de la Neige",
-  "Le fruit du Froid",
-  "Le fruit de l'Eau"
+  "Le Hie Hie no Mi (fruit du Givre)",
+  "Le Yuki Yuki no Mi",
+  "Le Magu Magu no Mi (fruit du Magma)",
+  "Le Moku Moku no Mi (fruit Fumigène)"
  ],
  [
   "Quel fruit du démon possède l'amiral Kizaru ?",
-  "Le fruit de la Lumière",
-  "Le fruit de l'Éclair",
-  "Le fruit du Soleil",
-  "Le fruit du Rayon"
+  "Le Pika Pika no Mi (fruit du flash)",
+  "Le Goro Goro no Mi (Fulguro-fruit)",
+  "Le Mera Mera no Mi (Pyro-fruit)",
+  "Le Hie Hie no Mi (fruit du Givre)"
  ],
  [
-  "Quel amiral aveugle utilise la gravité ?",
+  "Quel amiral aveugle a mangé le Zushi Zushi no Mi (fruit de la pesanteur) ?",
   "Fujitora",
   "Ryokugyu",
   "Kizaru",
@@ -1101,10 +1017,10 @@ export default [
  ],
  [
   "Quel fruit du démon possède Smoker ?",
-  "Le fruit de la Fumée",
-  "Le fruit du Sable",
-  "Le fruit du Brouillard",
-  "Le fruit du Gaz"
+  "Le Moku Moku no Mi (fruit Fumigène)",
+  "Le Suna Suna no Mi (fruit des sables)",
+  "Le Gasu Gasu no Mi",
+  "Le Hie Hie no Mi (fruit du Givre)"
  ],
  [
   "Quel jeune marine, ami de Luffy, rêve de devenir amiral ?",
@@ -1142,18 +1058,18 @@ export default [
   "Soleil, Lune et Étoile"
  ],
  [
-  "À quel type de fruit appartient le fruit de la Fumée de Smoker ?",
+  "À quel type appartient le Moku Moku no Mi de Smoker ?",
   "Logia",
   "Zoan",
   "Paramecia",
-  "Mythique"
+  "Zoan mythique"
  ],
  [
-  "À quel type de fruit appartient le fruit de l'Humain de Chopper ?",
+  "À quel type appartient le Hito Hito no Mi de Chopper ?",
   "Zoan",
   "Logia",
   "Paramecia",
-  "Mythique"
+  "Zoan mythique"
  ],
  [
   "Que se passe-t-il si l'on mange deux fruits du démon, en principe ?",
@@ -1280,13 +1196,6 @@ export default [
   "Elle est une épéiste",
   "Elle est médecin",
   "Elle est navigatrice"
- ],
- [
-  "Quelle nourriture Luffy adore-t-il par-dessus tout ?",
-  "La viande",
-  "Les mandarines",
-  "Le poisson cru",
-  "Les gâteaux"
  ],
  [
   "Comment rit Luffy ?",
