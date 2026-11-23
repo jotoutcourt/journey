@@ -494,7 +494,7 @@ begin
   select * into f from players where id = p_friend;
   insert into traque_players (game_id, seat, player_id, name, avatar, photo, status) values (p_game, s, p_friend, f.name, f.avatar, f.photo, 'invited');
   select name into me_name from players where id = pid;
-  perform notify_player(p_friend, '🐙 La Traque du Kraken', me_name || ' t''invite à traquer le Kraken en direct !', '/');
+  perform notify_player(p_friend, '🐙 La Chasse au Kraken', me_name || ' t''invite à chasser le Kraken en direct !', '/');
 end $$;
 
 create or replace function public.add_traque_bot(p_game uuid, p_level text, p_topics jsonb) returns void language plpgsql security definer set search_path = public as $$
@@ -589,11 +589,11 @@ begin
   end loop;
   cells := cells || jsonb_build_array(jsonb_build_object('t', 'lair'));
   update traque_games set status = 'playing', board = cells, topics = p_topics, general = p_general, pool = p_pool, used = '{}'::jsonb,
-    started_at = now(), turn = -1, round = 1, treasure = 0, phase = 'event', data = jsonb_build_object('text', '🐙 La traque commence ! Le trésor du Kraken est vide…'),
+    started_at = now(), turn = -1, round = 1, treasure = 0, phase = 'event', data = jsonb_build_object('text', '🐙 La chasse commence ! Le trésor du Kraken est vide…'),
     deadline = now() + interval '4 seconds', version = version + 1
   where id = p_game;
   update traque_players set pos = 0, pearls = 5, items = '[]'::jsonb, skip = 0 where game_id = p_game;
-  perform tq_log(p_game, '🐙 La traque commence !');
+  perform tq_log(p_game, '🐙 La chasse commence !');
   return traque_view(p_game, pid);
 end $$;
 

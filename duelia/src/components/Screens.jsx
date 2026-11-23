@@ -35,7 +35,7 @@ export function TopicTile({ topic, onClick, sub, price }) {
 export function Home({ go, wallet, onSolo, oxygen, missions, onTraque, traqueResume }) {
   const [choose, setChoose] = useState(false)
   const modesRef = useRef(null)
-  // un appui en dehors des boutons Solo / À deux fait revenir « Jouer » (sans gêner l'appui sur les boutons, iPhone compris)
+  // un appui en dehors des boutons Solo / À deux fait revenir « Les Trappes du Kraken » (sans gêner l'appui sur les boutons, iPhone compris)
   useEffect(() => {
     if (!choose) return
     const away = (e) => { if (modesRef.current && !modesRef.current.contains(e.target)) setChoose(false) }
@@ -62,12 +62,12 @@ export function Home({ go, wallet, onSolo, oxygen, missions, onTraque, traqueRes
         <p className="kh-pitch">Cache tes lingots dans la bonne caisse avant que les tentacules du <b>Kraken</b> ne les reprennent.</p>
         {wallet?.daily_bonus && <span className="bh-bonus">🎁 +5 lingots sur ta première partie du jour</span>}
         {!choose
-          ? <button className="kh-play" onClick={() => setChoose(true)}>Jouer</button>
+          ? <button className="kh-play kh-trappes" onClick={() => setChoose(true)}>Les Trappes du Kraken<small>Solo ou à deux</small></button>
           : <div className="kh-modes" ref={modesRef}>
             <button className="kh-play kh-mode" onClick={() => { setChoose(false); onSolo() }}><span aria-hidden="true">🏴‍☠️</span>Solo</button>
             <button className="kh-play kh-mode" onClick={() => { setChoose(false); go({ name: 'butin' }) }}><span aria-hidden="true">👥</span>À deux</button>
           </div>}
-        {onTraque && <button className="kh-traque" onClick={traqueResume || onTraque}>🐙 {traqueResume ? 'Reprendre la Traque du Kraken' : 'La Traque du Kraken · 2 à 4 joueurs'}</button>}
+        {onTraque && <button className="kh-play kh-chasse" onClick={traqueResume || onTraque}>{traqueResume ? 'Reprendre la Chasse' : 'La Chasse au Kraken'}<small>{traqueResume ? 'Ta partie t\'attend' : 'Jeu de plateau · 2 à 4 joueurs'}</small></button>}
         {oxygen}
       </section>
 

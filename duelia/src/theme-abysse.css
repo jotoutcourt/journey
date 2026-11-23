@@ -1233,3 +1233,10 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
 .tq-players li.speaking { box-shadow: 0 0 0 2.5px #fff, 0 0 18px var(--c); }
 .tq-players li.speaking img, .tq-players li.speaking .avatar { animation: talk .35s ease-in-out infinite alternate; }
 .tq-tap { justify-self: center; }
+/* Deuxième grand bouton de l'accueil : La Chasse au Kraken */
+.kh-play.kh-chasse { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; line-height: 1.05;
+  background: linear-gradient(180deg, #ff5fd6, #b0249d); box-shadow: 0 0 0 2px #ffd6f6aa, 0 8px 24px #ff4fd855; }
+.kh-play.kh-chasse small { font: 700 11.5px var(--body); opacity: .85; letter-spacing: 0; }
+.kh-play.kh-trappes, .kh-play.kh-chasse { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; line-height: 1.05;
+  width: min(84vw, 320px); height: 60px; font-size: 19px; letter-spacing: 0.02em; white-space: nowrap; }
+.kh-play.kh-trappes small { font: 700 11.5px var(--body); opacity: .85; letter-spacing: 0; }

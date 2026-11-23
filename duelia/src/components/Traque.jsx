@@ -20,7 +20,7 @@ export function TraqueInviteBanner({ invite, onAccept, onDecline }) {
     <div className="sheet-backdrop">
       <div className="sheet invite-sheet" role="alertdialog" aria-labelledby="tq-inv-title">
         <Avatar seed={invite.from.avatar} photo={invite.from.photo} size={80} ring="var(--opp)" />
-        <h2 id="tq-inv-title">🐙 {invite.from.name} t'invite à la Traque du Kraken</h2>
+        <h2 id="tq-inv-title">🐙 {invite.from.name} t'invite à la Chasse au Kraken</h2>
         <p className="sheet-sub">Un jeu de plateau en direct, jusqu'à 4 joueurs : le premier à tuer le Kraken vole son trésor.</p>
         <button className="btn btn-primary wide" disabled={busy} onClick={async () => { setBusy(true); await onAccept(invite); setBusy(false) }}>{busy ? 'Connexion…' : 'Rejoindre'}</button>
         <button className="btn btn-ghost wide" onClick={() => onDecline(invite)}>Pas maintenant</button>
@@ -98,7 +98,7 @@ function TraqueLobby({ v, gameId, officials, topics, friends, act, onExit }) {
     <div className="screen traque lobby">
       <header className="top">
         <ConfirmButton className="icon-btn" onConfirm={() => { api.leaveTraque(gameId).catch(() => {}); onExit() }} confirmLabel="Quitter ?">←</ConfirmButton>
-        <h1>La Traque du Kraken</h1>
+        <h1>La Chasse au Kraken</h1>
       </header>
       <p className="tq-pitch">De 2 à 4 joueurs. Avancez sur le plateau, remplissez ensemble le trésor pendant les trêves… et soyez le premier à tuer le Kraken pour tout rafler.</p>
 
@@ -133,7 +133,7 @@ function TraqueLobby({ v, gameId, officials, topics, friends, act, onExit }) {
 
       <div className="tq-dock">
         {v.host
-          ? <button className="kh-play wide" disabled={!ready || starting} onClick={start}>{starting ? 'Préparation du plateau…' : ready ? '🐙 Lancer la traque' : active.length < 2 ? 'Ajoute un ami ou un robot' : 'En attente des spécialités…'}</button>
+          ? <button className="kh-play wide" disabled={!ready || starting} onClick={start}>{starting ? 'Préparation du plateau…' : ready ? '🐙 Lancer la chasse' : active.length < 2 ? 'Ajoute un ami ou un robot' : 'En attente des spécialités…'}</button>
           : <p className="tq-wait">⏳ L'hôte lance la partie dès que tout le monde est prêt.</p>}
       </div>
 
