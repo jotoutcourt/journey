@@ -98,7 +98,7 @@ export function Topics({ topics, go, importTopic, extra, onRequest, lockPrice = 
   // thèmes débloqués d'abord, puis ceux à acheter (du moins cher au plus cher)
   const official = topics.filter(t => t.official && match(t)).map((t, i) => [t, i]).sort((a, b) => lockPrice(a[0]) - lockPrice(b[0]) || a[1] - b[1]).map(([t]) => t)
   const mine = topics.filter(t => t.own && match(t))
-  // thèmes reçus par lien (les thèmes publiés installés apparaissent déjà dans « Publiés par les joueurs »)
+  // thèmes reçus par lien (hors thèmes publiés déjà installés)
   const received = topics.filter(t => !t.official && !t.own && !t.shared && match(t))
 
   function doImport() {
@@ -128,13 +128,8 @@ export function Topics({ topics, go, importTopic, extra, onRequest, lockPrice = 
         </div>
       </>}
 
-      <h3 className="sec-title">Mes créations</h3>
+      <h3 className="sec-title">{mine.length ? 'Mes créations' : 'Un thème te manque ?'}</h3>
       <div className="grid">
-        <button className="topic-tile create-tile" onClick={() => go({ name: 'create' })}>
-          <span className="topic-icon plus" style={{ width: 76, height: 76 }}>+</span>
-          <b>Créer un thème</b>
-          <small>Tes questions, tes règles</small>
-        </button>
         <button className="topic-tile create-tile" onClick={onRequest}>
           <span className="topic-icon plus" style={{ width: 76, height: 76 }}>💡</span>
           <b>Demander un thème</b>
@@ -165,7 +160,7 @@ export function Topics({ topics, go, importTopic, extra, onRequest, lockPrice = 
 }
 
 /* ---------------- Page d'un thème ---------------- */
-export function TopicPage({ st, topic, go, toggleFollow, shareTopic, deleteTopic, online, onPublish, onUnpublish, onPlay, lockPrice = 0, lingots = 0, onUnlock, friends = [], onChallengeFriend }) {
+export function TopicPage({ st, topic, go, toggleFollow, shareTopic, deleteTopic, onUnpublish, onPlay, lockPrice = 0, lingots = 0, onUnlock, friends = [], onChallengeFriend }) {
   const stats = st.topicStats[topic.id] || { xp: 0, played: 0, wins: 0, seen: [] }
   const lvl = levelInfo(stats.xp)
   const following = st.follows.includes(topic.id)
@@ -236,7 +231,6 @@ export function TopicPage({ st, topic, go, toggleFollow, shareTopic, deleteTopic
         <div className="tp-owner">
           <button className="btn btn-ghost" onClick={() => shareTopic(topic)}>🔗 Partager ce thème</button>
           {topic.own && <button className="btn btn-ghost" onClick={() => go({ name: 'create', id: topic.id })}>✏️ Modifier</button>}
-          {topic.own && online && !topic.published && topic.questions.length >= 7 && <button className="btn btn-secondary" onClick={() => onPublish(topic)}>🌍 Publier pour tous</button>}
           {topic.own && topic.published && <ConfirmButton className="btn btn-ghost" onConfirm={() => onUnpublish(topic)} confirmLabel="Ne plus publier ?">🌍 Publié · Retirer</ConfirmButton>}
           {(topic.own || topic.imported) && <ConfirmButton className="btn btn-ghost danger" onConfirm={() => deleteTopic(topic)} confirmLabel="Supprimer pour de bon ?">Supprimer</ConfirmButton>}
         </div>

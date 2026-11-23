@@ -24,7 +24,7 @@ import { OxygenInline, OxygenSheet } from './components/Oxygen.jsx'
 import { Shop, StarterPick } from './components/Shop.jsx'
 import { priceOf, isLockable } from './lib/shop.js'
 import { buildButin } from './lib/butin.js'
-import { FriendsScreen, FriendChallengeSheet, PickFriendSheet, PlayWhoSheet, InviteWaiting, LiveInviteBanner, FriendSent, SharedTopics, ChallengeMessage, FriendProfile, LiveMatchMessage, LiveBetResult } from './components/Social.jsx'
+import { FriendsScreen, FriendChallengeSheet, PickFriendSheet, PlayWhoSheet, InviteWaiting, LiveInviteBanner, FriendSent, ChallengeMessage, FriendProfile, LiveMatchMessage, LiveBetResult } from './components/Social.jsx'
 import * as api from './lib/account.js'
 import TopicRequestSheet from './components/TopicRequest.jsx'
 import { useSocial, friendOpponent, fromPlain, logFrom } from './lib/useSocial.js'
@@ -802,41 +802,6 @@ export default function App() {
   }
   const shareMyCode = () => social.code && shareText(`Ajoute-moi en ami sur Kraken ! Mon code : ${social.code.slice(0, 4)}-${social.code.slice(4)}`, `${baseUrl()}#ami=${social.code}`)
 
-  // Thèmes partagés
-  const listShared = useCallback((q) => api.listSharedTopics(q), [])
-  const installShared = async (id) => {
-    let full
-    try { full = await api.getSharedTopic(id) } catch { full = null }
-    if (!full) { setToast('Impossible d\'ouvrir ce thème (connexion ?).'); return }
-    const t = {
-      id: full.id, ...full.meta, ladder: full.meta.ladder || undefined, questions: full.questions, by: full.by_name,
-      community: true, shared: true, imported: !full.mine, own: !!full.mine, published: !!full.mine, followers: 0, sharedAt: full.updated_at,
-    }
-    update(s => ({
-      ...s,
-      custom: s.custom.some(x => x.id === t.id) ? s.custom.map(x => (x.id === t.id ? { ...x, ...t } : x)) : [t, ...s.custom],
-      follows: s.follows.includes(t.id) ? s.follows : [...s.follows, t.id],
-    }))
-    go({ name: 'topic', id: t.id })
-  }
-  const publishTopic = async (t) => {
-    let id
-    try { id = await api.publishTopic(t, t.id.startsWith('p-') ? t.id : null) } catch { setToast('Publication impossible (connexion ?).'); return }
-    // le thème prend son identifiant public : progression, abonnement et classement suivent
-    update(s => {
-      const rename = (x) => (x === t.id ? id : x)
-      const stats = { ...s.topicStats }
-      if (id !== t.id && stats[t.id]) { stats[id] = stats[t.id]; delete stats[t.id] }
-      return {
-        ...s,
-        custom: s.custom.map(x => (x.id === t.id ? { ...x, id, published: true, shared: true } : x)),
-        follows: s.follows.map(rename),
-        topicStats: stats,
-      }
-    })
-    setToast('Thème publié ! Tous les joueurs peuvent le trouver dans Thèmes.')
-    if (id !== t.id) setRoute({ name: 'topic', id })
-  }
   const unpublishTopic = async (t) => {
     try { await api.unpublishTopic(t.id) } catch { setToast('Pas de connexion.'); return }
     update(s => ({ ...s, custom: s.custom.map(x => (x.id === t.id ? { ...x, published: false } : x)) }))
@@ -1008,8 +973,8 @@ export default function App() {
   if (unlocks?.needs_pick && hasProfile && !['duel', 'match', 'results', 'butingame', 'party', 'linkintro', 'linkload'].includes(route.name)) {
     view = <StarterPick topics={topics} onDone={pickStarters} />
   } else switch (route.name) {
-    case 'topics': view = <Topics topics={topics} go={go} lockPrice={lockPrice} importTopic={importTopic} onRequest={() => setRequestSheet(true)} extra={<SharedTopics online={online} installed={new Set(st.custom.filter(t => t.shared).map(t => t.id))} onOpen={installShared} onList={listShared} />} />; break
-    case 'topic': view = topic ? <TopicPage st={st} topic={topic} go={go} friends={social.social?.friends || []} onChallengeFriend={(f) => setFriendSheet({ ...f, topic })} toggleFollow={toggleFollow} shareTopic={shareTopic} deleteTopic={deleteTopic} online={online} onPublish={publishTopic} onUnpublish={unpublishTopic} onPlay={(t) => { social.refreshFriends?.(); setPlayWho(t) }}
+    case 'topics': view = <Topics topics={topics} go={go} lockPrice={lockPrice} importTopic={importTopic} onRequest={() => setRequestSheet(true)} />; break
+    case 'topic': view = topic ? <TopicPage st={st} topic={topic} go={go} friends={social.social?.friends || []} onChallengeFriend={(f) => setFriendSheet({ ...f, topic })} toggleFollow={toggleFollow} shareTopic={shareTopic} deleteTopic={deleteTopic} onUnpublish={unpublishTopic} onPlay={(t) => { social.refreshFriends?.(); setPlayWho(t) }}
       lockPrice={lockPrice(topic)} lingots={wallet?.lingots || 0} onUnlock={unlock} /> : null; break
     case 'ranking': view = <Ranking st={st} topic={topic} go={go} friends={social.social?.friends || []} onChallenge={(f) => setFriendSheet({ ...f, topic })} />; break
     case 'create': view = <CreateTopic key={route.id || 'new'} st={st} existing={route.id ? topic : null} onSave={saveTopic} go={go} />; break
@@ -1047,8 +1012,7 @@ export default function App() {
       ? <LinkReplyIntro reply={link} known={(st.linkChallenges || []).some(c => c.id === link.id)} onSee={openReply} onHome={() => { setLink(null); go({ name: 'home' }) }} />
       : null; break
     case 'inbox': view = <Inbox st={st} topics={topics} now={clock} {...inboxHandlers}
-      friend={{ list: social.challenges || [], results: st.friendResults, ...friendHandlers }}
-      footer={<button className="btn btn-ghost wide inbox-create" onClick={() => go({ name: 'create' })}>＋ Créer un thème</button>} />; break
+      friend={{ list: social.challenges || [], results: st.friendResults, ...friendHandlers }} />; break
     case 'friends': view = <FriendsScreen online={online} social={social.social} code={social.code} initialCode={route.code} now={clock} push={push} onPush={onPush}
       onAdd={(c) => api.addFriend(c).then(r => { social.refreshFriends(); return r })}
       onRespond={(f, yes) => api.respondFriend(f.player_id, yes).then(social.refreshFriends).catch(() => setToast('Pas de connexion.'))}
