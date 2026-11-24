@@ -1628,3 +1628,7 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
   background: linear-gradient(135deg, color-mix(in srgb, var(--tc) 55%, #1f1060), #1f1060); box-shadow: 0 0 0 2px color-mix(in srgb, var(--tc) 70%, #fff), 0 6px 14px #000a; }
 .tq-reveal-card .back { transform: rotateY(180deg); background: url(/traque/dos-carte.webp) center / cover, #2a1580; box-shadow: 0 0 0 2px #ffc940, 0 6px 14px #000a; }
 @keyframes tq-flip2 { from { transform: rotateY(180deg) scale(.85); } to { transform: rotateY(0) scale(1); } }
+.tq-pawn-buy { box-shadow: 0 0 0 1px var(--line); }
+.tq-pawn-buy.on { box-shadow: 0 0 0 1.5px var(--gold), 0 0 14px #ffc94055; }
+.tq-mystery { font-size: 30px; width: 44px; text-align: center; }
+.tq-pawn-won img { animation: sb-pop .5s both; }

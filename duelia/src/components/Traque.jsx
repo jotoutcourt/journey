@@ -77,16 +77,19 @@ export function Traque({ gameId, topics, friends = [], onExit, onWallet }) {
 function TraqueLobby({ v, gameId, officials, topics, friends, act, onExit, onWallet }) {
   // figurines achetées par le joueur (les 4 premières sont offertes)
   const [owned, setOwned] = useState(null)
-  const [buying, setBuying] = useState(null)
+  const [buying, setBuying] = useState(false)
   const [buyErr, setBuyErr] = useState('')
+  const [won, setWon] = useState(null)
   useEffect(() => { api.myPawns().then(setOwned).catch(() => setOwned([])) }, [])
   const hasPawn = (id) => FREE_PAWNS.includes(id) || (owned || []).includes(id)
-  async function buy(pw) {
+  const lockedLeft = PAWNS.filter(pw => !hasPawn(pw.id)).length
+  async function buy() {
     setBuyErr('')
     try {
-      const r = await api.buyPawn(pw.id)
-      setOwned(r.pawns || []); setBuying(null); onWallet?.()
-      await act(() => api.setTraquePawn(gameId, pw.id).then(() => api.getTraque(gameId)))
+      const r = await api.buyRandomPawn()
+      setOwned(r.pawns || []); setBuying(false); onWallet?.()
+      setWon(PAWNS.find(pw => pw.id === r.pawn) || null)
+      await act(() => api.setTraquePawn(gameId, r.pawn).then(() => api.getTraque(gameId)))
     } catch (e) { setBuyErr(/lingots/.test(e?.message || '') ? 'Pas assez de lingots 😕' : 'Achat impossible, réessaie.') }
   }
   const [picking, setPicking] = useState(false)
@@ -147,18 +150,22 @@ function TraqueLobby({ v, gameId, officials, topics, friends, act, onExit, onWal
             const taken = v.players.find(p => p.pawn === pw.id && p.seat !== v.me && ['joined', 'bot', 'invited'].includes(p.status))
             return (
               <button key={pw.id} className={`${(me?.pawn || PAWNS[v.me % PAWNS.length].id) === pw.id ? 'on' : ''} ${hasPawn(pw.id) ? '' : 'locked'} ${buying?.id === pw.id ? 'sel' : ''}`} disabled={!!taken} title={taken ? `Prise par ${taken.name}` : pw.name}
-                onClick={() => hasPawn(pw.id) ? act(() => api.setTraquePawn(gameId, pw.id).then(() => api.getTraque(gameId))) : (setBuying(pw), setBuyErr(''))}>
+                onClick={() => hasPawn(pw.id) ? act(() => api.setTraquePawn(gameId, pw.id).then(() => api.getTraque(gameId))) : (setBuying(true), setBuyErr(''))}>
                 <img src={pw.img} alt={pw.name} />
-                {!hasPawn(pw.id) && <span className="tq-pawn-price">🔒 {PAWN_PRICE}</span>}
+                {!hasPawn(pw.id) && <span className="tq-pawn-price">🔒</span>}
               </button>
             )
           })}
         </div>
-        {buying && <div className="tq-pawn-buy">
-          <img src={buying.img} alt="" />
-          <span><b>{buying.name}</b><small>{buyErr || `Débloque cette figurine pour ${PAWN_PRICE} lingots, pour toujours.`}</small></span>
-          <button className="btn btn-small btn-gold" onClick={() => buy(buying)}>Acheter</button>
-          <button className="tq-x" aria-label="Annuler" onClick={() => setBuying(null)}>×</button>
+        {owned && lockedLeft > 0 && !won && <div className={`tq-pawn-buy ${buying ? 'on' : ''}`}>
+          <span className="tq-mystery">🎁</span>
+          <span><b>Figurine mystère</b><small>{buyErr || `${PAWN_PRICE} lingots : une figurine au hasard parmi les ${lockedLeft} que tu n'as pas encore.`}</small></span>
+          <button className="btn btn-small btn-gold" onClick={buy}><i className="lt-coin" aria-hidden="true" /> {PAWN_PRICE}</button>
+        </div>}
+        {won && <div className="tq-pawn-buy on tq-pawn-won">
+          <img src={won.img} alt="" />
+          <span><b>🎉 {won.name} !</b><small>Nouvelle figurine débloquée et équipée.</small></span>
+          <button className="tq-x" aria-label="Fermer" onClick={() => setWon(null)}>×</button>
         </div>}
       </section>
 

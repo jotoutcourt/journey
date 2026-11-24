@@ -66,7 +66,7 @@ export const PAWNS = [
   { id: 'sorcier', name: 'Apprenti sorcier' }, { id: 'reine-neiges', name: 'Reine des neiges' }, { id: 'liberte', name: 'Liberté' },
   { id: 'astronaute', name: 'Astronaute' }, { id: 'fantome', name: 'Fantôme' }, { id: 'dormeur', name: 'Marmotte' }, { id: 'eclair', name: 'Pyjama éclair' },
 ].map(p => ({ ...p, img: `/traque/pions/${p.id}.webp` }))
-// les 4 premières figurines sont offertes, les autres s'achètent (30 lingots)
+// les 4 premières figurines sont offertes ; les autres se débloquent au hasard (figurine mystère, 20 lingots)
 export const FREE_PAWNS = ['stitch', 'gilet', 'araignee', 'sorcier']
-export const PAWN_PRICE = 30
+export const PAWN_PRICE = 20
 export const pawnImg = (id, seat) => `/traque/pions/${id || PAWNS[seat % PAWNS.length].id}.webp`
