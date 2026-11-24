@@ -232,6 +232,7 @@ begin
       update traque_players t set pos = case when t.seat = p_seat then o.pos else me.pos end
       from (select pos from traque_players where game_id = p_game and seat = other) o
       where t.game_id = p_game and t.seat in (p_seat, other);
+      update traque_games set board = jsonb_set(board, array[me.pos::text], jsonb_build_object('t', 'general', 'topic', tq_general(p_game))) where id = p_game;
       perform tq_event(p_game, '🦀 Le crabe farceur pince ' || me.name || ' et l''échange de place avec ' || tq_name(p_game, other) || ' !', jsonb_build_object('crab', true, 'seat', p_seat, 'other', other));
     else perform tq_event(p_game, '🦀 Le crabe farceur cherche quelqu''un à pincer… personne !', '{}'::jsonb); end if;
   elsif typ = 'bubble' then
@@ -826,12 +827,6 @@ begin
   for i in 31 .. 35 loop types[i] := 'current'; end loop;
   for i in 36 .. 40 loop types[i] := 'tentacle'; end loop;
   for i in 41 .. 44 loop types[i] := 'shortcut'; end loop;
-  -- cases loufoques : 3 crabes, 3 bulles, 3 coffres maudits (permanents), 2 poissons-ballons et 2 tourbillons (une seule fois)
-  for i in 45 .. 47 loop types[i] := 'crab'; end loop;
-  for i in 48 .. 50 loop types[i] := 'bubble'; end loop;
-  for i in 51 .. 53 loop types[i] := 'cursed'; end loop;
-  for i in 54 .. 55 loop types[i] := 'puffer'; end loop;
-  for i in 56 .. 57 loop types[i] := 'whirl'; end loop;
   select array_agg(x order by random()) into types from unnest(types) x;
   cells := jsonb_build_array(jsonb_build_object('t', 'start'));
   n := 0;
@@ -847,6 +842,21 @@ begin
   -- 1 requin, dans le dernier tiers du plateau
   select gs.x into n from generate_series(55, 78) gs(x) where cells -> gs.x ->> 't' = 'general' and gs.x <> 37 order by random() limit 1;
   if n is not null then cells := jsonb_set(cells, array[n::text], jsonb_build_object('t', 'shark')); end if;
+  -- cases loufoques, placées à des endroits stratégiques (une seule fois chacune) :
+  -- poisson-ballon au milieu (tout le monde a des perles), crabe dans le dernier tiers (un échange renverse la course),
+  -- tourbillon tout près de l'antre (chaos maximal) ; 2 coffres maudits et 2 ou 3 bulles au hasard
+  select gs.x into n from generate_series(30, 42) gs(x) where cells -> gs.x ->> 't' = 'general' and gs.x not in (9, 37) order by random() limit 1;
+  if n is not null then cells := jsonb_set(cells, array[n::text], jsonb_build_object('t', 'puffer')); end if;
+  select gs.x into n from generate_series(60, 68) gs(x) where cells -> gs.x ->> 't' = 'general' order by random() limit 1;
+  if n is not null then cells := jsonb_set(cells, array[n::text], jsonb_build_object('t', 'crab')); end if;
+  select gs.x into n from generate_series(70, 77) gs(x) where cells -> gs.x ->> 't' = 'general' order by random() limit 1;
+  if n is not null then cells := jsonb_set(cells, array[n::text], jsonb_build_object('t', 'whirl')); end if;
+  for n in select gs.x from generate_series(15, 75) gs(x) where cells -> gs.x ->> 't' = 'general' and gs.x not in (9, 37) order by random() limit 2 loop
+    cells := jsonb_set(cells, array[n::text], jsonb_build_object('t', 'cursed'));
+  end loop;
+  for n in select gs.x from generate_series(8, 70) gs(x) where cells -> gs.x ->> 't' = 'general' and gs.x not in (9, 37) order by random() limit (2 + floor(random() * 2)::int) loop
+    cells := jsonb_set(cells, array[n::text], jsonb_build_object('t', 'bubble'));
+  end loop;
   -- 2 boutiques, devant les deux cabanes du plateau : 3 objets tirés au hasard chacune, la seconde plus chère
   for i in 0 .. 1 loop
     cells := jsonb_set(cells, array[(array[9, 37])[i + 1]::text], jsonb_build_object('t', 'shop', 'k', i * 2,
