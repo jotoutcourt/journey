@@ -362,7 +362,7 @@ function TraqueBoard({ v, gameId, act, onExit }) {
 
       {/* Moments forts au centre de l'écran */}
       {v.phase === 'show' && (d.dice || []).length > 0 && <div className="tq-center"><div className="tq-dice">{d.dice.map((n, i) => <DieFace key={i} n={n} />)}</div></div>}
-      {v.phase === 'event' && (d.reveal ? <Reveal ids={d.reveal} topicOf={topicOf} /> : <div className="tq-center"><p className="tq-event">{d.text}</p></div>)}
+      {v.phase === 'event' && (d.reveal ? <Reveal ids={d.reveal} topicOf={topicOf} /> : <EventView key={d.text} d={d} />)}
       {v.phase === 'haunt' && d.seat === v.me && <Haunt v={v} onPick={(s) => act(() => api.traqueHaunt(gameId, s))} />}
       {v.phase === 'pick' && <Cursed v={v} d={d} left={left} onPick={(i) => act(() => api.traqueCursed(gameId, i))} />}
       {v.phase === 'duelroll' && <div className="tq-center"><p className="tq-event">
@@ -415,6 +415,15 @@ function PathBoard({ v, shown, topicOf, owners }) {
   return (
     <div className="tq-path" ref={ref} onTouchStart={mark} onWheel={mark} onPointerDown={mark}>
       <div className="tq-track" style={{ aspectRatio: BOARD_RATIO }}>
+        {/* décor : tentacules qui sortent de l'eau, requin qui dort à côté de sa case */}
+        <img className="tq-deco tent l" src="/traque/deco-tentacule.webp" alt="" style={{ left: '1%', top: '60%' }} />
+        <img className="tq-deco tent r" src="/traque/deco-tentacule.webp" alt="" style={{ left: '84%', top: '45%' }} />
+        {(() => {
+          const k = (v.board || []).findIndex(c => c.t === 'shark')
+          if (k < 0) return null
+          const [x, y] = at(k)
+          return <img className="tq-deco shark" src="/traque/requin-dort.webp" alt="" style={{ left: x < 0.5 ? '2%' : '80%', top: `${y * 100 - 2}%` }} />
+        })()}
         {v.board.slice(0, BOARD_PTS.length).map((c, i) => {
           if (c.t === 'lair') return null
           const [x, y] = at(i)
@@ -462,7 +471,7 @@ function DieFace({ n }) {
 function Die() {
   return <img className="tq-die-img" src="/traque/de.webp" alt="" draggable="false" />
 }
-const CASE_IMG = new Set(['general', 'spec', 'truce', 'chest', 'current', 'tentacle', 'shortcut', 'shop'])
+const CASE_IMG = new Set(['general', 'spec', 'truce', 'chest', 'current', 'tentacle', 'shortcut', 'shop', 'crab', 'bubble', 'cursed', 'puffer', 'whirl', 'shark'])
 const OBJ_IMG = ['double', 'ancre', 'joker', 'vol', 'echange']
 const Obj = ({ k }) => OBJ_IMG.includes(k) ? <img className="tq-obj" src={`/traque/ico/obj-${k}.webp`} alt="" draggable="false" /> : <span className="tq-obj tq-obj-emo">{ITEMS[k]?.icon || '❔'}</span>
 
@@ -498,7 +507,7 @@ function Intro({ v, d, left, topicOf, onReady }) {
       <div className="tq-intro-stack">
       {TITLE_IMG[d.kind] && <img className="tq-title-img" src={TITLE_IMG[d.kind]} alt={info[1]} />}
       <Frame className={`k-${d.kind}`} title={TITLE_IMG[d.kind] ? t.name : info[1]}
-        badge={d.kind === 'solo' && reason !== 'shark' ? `/traque/ico/case-${reason === 'own' ? 'spec' : reason === 'shortcut' ? 'shortcut' : 'general'}.webp` : null}
+        badge={d.kind !== 'solo' ? null : reason === 'shark' ? '/traque/requin-attaque.webp' : `/traque/ico/case-${reason === 'own' ? 'spec' : reason === 'shortcut' ? 'shortcut' : 'general'}.webp`}
         onClose={() => { setNope(true); setTimeout(() => setNope(false), 2200) }}
         cta={mine && !ready.includes(v.me)
           ? <button onClick={onReady}>Je suis prêt ! ⚡{left != null ? ` ${Math.ceil(left / 1000)} s` : ''}</button>
@@ -612,16 +621,46 @@ function Shop({ v, d, me, left, onBuy, onLeave }) {
   )
 }
 
+// Événement : animation illustrée (si on en a une) au-dessus de la plaque de texte
+const CHEST_OPEN = { pearls: '/traque/coffre-perles.webp', item: '/traque/coffre-objet.webp', tentacle: '/traque/coffre-tentacule.webp' }
+function eventAnim(d) {
+  const fx = d.fx || {}
+  if (fx.crab) return ['/traque/anim/crabe.webp', 'anim']
+  if (fx.whirl) return ['/traque/anim/tourbillon.webp', 'anim']
+  if (fx.puffer) return ['/traque/anim/poisson.webp', 'anim']
+  if (fx.cursed != null && fx.box) return [CHEST_OPEN[fx.box[fx.cursed]], 'still']
+  if (fx.shark === 'eaten') return ['/traque/requin-attaque.webp', 'still shark']
+  if (fx.shark === 'escape' || fx.harpon) return ['/traque/requin-boude.webp', 'still shark']
+  if ((d.text || '').startsWith('🌊')) return ['/traque/anim/courant.webp', 'wave']
+  return null
+}
+function EventView({ d }) {
+  const [t0] = useState(() => Date.now())
+  const a = eventAnim(d)
+  return (
+    <div className="tq-center">
+      {a?.[1] === 'wave' && <img className="tq-ev-wave" src={`${a[0]}?t=${t0}`} alt="" />}
+      <div className="tq-ev-stack">
+        {a && a[1] !== 'wave' && <img className={`tq-ev-anim ${a[1]}`} src={a[1] === 'anim' ? `${a[0]}?t=${t0}` : a[0]} alt="" />}
+        <p className="tq-event">{d.text}</p>
+      </div>
+    </div>
+  )
+}
+
 // Lancement : révélation des 8 thèmes du plateau, une carte après l'autre
 function Reveal({ ids, topicOf }) {
   return (
     <div className="tq-center dim">
       <div className="tq-reveal">
-        <h2>Les thèmes de la chasse</h2>
+        <img className="tq-reveal-title" src="/traque/titre-themes.webp" alt="Les thèmes de la chasse" />
         <div className="tq-reveal-grid">
           {ids.map((id, i) => {
             const t = topicOf(id)
-            return <div key={id} className="tq-reveal-card" style={{ '--i': i, '--tc': t.color || '#7b5cff' }}><span>{t.icon}</span><b>{t.name}</b></div>
+            return <div key={id} className="tq-reveal-card" style={{ '--i': i, '--tc': t.color || '#7b5cff' }}>
+              <div className="face"><span>{t.icon}</span><b>{t.name}</b></div>
+              <div className="back" />
+            </div>
           })}
         </div>
         <p>+ les spécialités de chacun</p>
@@ -655,10 +694,10 @@ function Cursed({ v, d, left, onPick }) {
   return (
     <div className="tq-center dim">
       <div className="tq-cursed">
-        <h2>🎁 Le coffre maudit</h2>
+        <img className="tq-cursed-title" src="/traque/titre-coffre-maudit.webp" alt="Coffre maudit" />
         <p>{mine ? 'Choisis un coffre : perles, objet… ou tentacule !' : `${bare(who?.name)} choisit un coffre…`}{left != null ? ` · ${Math.ceil(left / 1000)} s` : ''}</p>
         <div className="tq-cursed-row">
-          {[0, 1, 2].map(i => <button key={i} disabled={!mine} onClick={() => onPick(i)} style={{ '--i': i }}><img src="/traque/ico/case-chest.webp" alt={`Coffre ${i + 1}`} /></button>)}
+          {[0, 1, 2].map(i => <button key={i} disabled={!mine} onClick={() => onPick(i)} style={{ '--i': i }}><img src="/traque/coffre-ferme.webp" alt={`Coffre ${i + 1}`} /></button>)}
         </div>
       </div>
     </div>
@@ -672,7 +711,7 @@ function Finale({ v, onExit, voice, onHangUp }) {
     <div className="tq-finale">
       {v.winner == null
         ? <><h2>🦈 Le Kraken a gagné…</h2><p>Tout le monde a été dévoré. Le trésor de <b>{v.treasure} lingots</b> reste au fond de l'océan.</p></>
-        : <><h2>🏆 {v.winner === v.me ? 'Tu as tué le Kraken !' : `${w?.name} a tué le Kraken !`}</h2><p>Trésor volé : <b>{v.treasure} lingots</b></p></>}
+        : <><img className="tq-victory" src="/traque/titre-victoire.webp" alt="Victoire !" /><h2>🏆 {v.winner === v.me ? 'Tu as tué le Kraken !' : `${w?.name} a tué le Kraken !`}</h2><p>Trésor volé : <b>{v.treasure} lingots</b></p></>}
       <ul>
         {[...v.players].filter(p => p.status !== 'declined').sort((a, b) => (b.seat === v.winner) - (a.seat === v.winner) || b.pos - a.pos).map(p => (
           <li key={p.seat} style={{ '--c': SEAT_COLORS[p.seat] }}><b>{p.name}</b><span>{p.bot ? '—' : `+${p.reward} lingots`}</span></li>
