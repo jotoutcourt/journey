@@ -8,6 +8,7 @@ import { PushCard } from './Social.jsx'
 import { levelInfo } from '../lib/levels.js'
 import { topicTitle } from '../lib/titles.js'
 import { COUNTRIES, computeStats, bestBadge, resizeImage } from '../lib/profile.js'
+import PawnCollection from './PawnCollection.jsx'
 import { STICKERS, STICKER_LEVEL, unlockedLocally } from '../lib/stickers.js'
 
 const fmt = (n) => n.toLocaleString('fr-FR')
@@ -238,6 +239,8 @@ export default function Profile({ st, topics, update, go, account, onMakeCode, o
       </div>
 
       {onBook && <BookCard st={st} topics={topics} onOpen={onBook} />}
+
+      <PawnCollection />
 
       <h3 className="sec-title">Statistiques</h3>
       {stats.played === 0 ? (

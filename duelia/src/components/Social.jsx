@@ -5,6 +5,7 @@ import ConfirmButton from './ConfirmButton.jsx'
 import Mascot from './Mascot.jsx'
 import * as api from '../lib/account.js'
 import { sendTestPush } from '../lib/push.js'
+import PawnCollection from './PawnCollection.jsx'
 import { levelInfo } from '../lib/levels.js'
 
 const fmtCode = (c) => (c ? `${c.slice(0, 4)}-${c.slice(4)}` : '…')
@@ -474,6 +475,7 @@ export function FriendProfile({ friend, topics, onChallenge, onRemove, onBack, o
           <div><small>Lingots volés</small><b>{p.kraken.earned}</b><span>au total</span></div>
           <div><small>Votre record à deux</small><b>{p.duo?.best ?? '–'}</b><span>{p.duo ? `en ${p.duo.games} partie${p.duo.games > 1 ? 's' : ''}` : 'jouez ensemble !'}</span></div>
         </div>
+        <PawnCollection playerId={friend.player_id} title="Sa collection de pions" />
         {p.top.length > 0 && <>
           <h3 className="sec-title">Ses thèmes favoris</h3>
           <ul className="pf-topics">

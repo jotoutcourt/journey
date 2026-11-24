@@ -97,3 +97,10 @@ begin
   insert into pawn_unlocks (player_id, pawn_id) values (pid, pick);
   return json_build_object('pawn', pick, 'pawns', my_pawns(), 'wallet', get_wallet());
 end $$;
+
+-- Collection de figurines d'un joueur (affichée sur son profil et celui de ses amis)
+create or replace function public.player_pawns(p_player uuid) returns json language sql stable security definer set search_path = public as $$
+  select coalesce(json_agg(pawn_id), '[]'::json) from pawn_unlocks where player_id = p_player
+$$;
+revoke all on function public.player_pawns(uuid) from public, anon;
+grant execute on function public.player_pawns(uuid) to authenticated;

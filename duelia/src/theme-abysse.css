@@ -1661,3 +1661,11 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
 .tq-pause-ask span { display: flex; gap: 8px; justify-content: center; }
 .tq-pause-ask.mine { font-weight: 700; font-size: 13px; box-shadow: 0 0 0 1.5px #b8a4ff, 0 10px 24px #000c; }
 .tq-round-btn:disabled { opacity: .5; }
+/* Collection de pions (profils) */
+.pc-count { font: 700 13px var(--body); color: var(--muted); margin-left: 6px; }
+.pc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.pc-grid figure { margin: 0; display: grid; justify-items: center; gap: 2px; padding: 6px 2px; border-radius: 14px; background: #ffffff08; }
+.pc-grid img { width: 100%; max-width: 72px; aspect-ratio: 1; object-fit: contain; }
+.pc-grid figcaption { font-size: 10.5px; font-weight: 700; text-align: center; line-height: 1.15; }
+.pc-grid figure.locked img { filter: brightness(0) drop-shadow(0 0 1px #9d8cff); opacity: .8; }
+.pc-grid figure.locked figcaption { color: var(--muted); }
