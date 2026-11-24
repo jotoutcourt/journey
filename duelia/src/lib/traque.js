@@ -2,7 +2,14 @@
 export const SEAT_COLORS = ['#2ee6c5', '#ff4fd8', '#ffc940', '#5b9cff']
 export const SEAT_NAMES = ['Turquoise', 'Rose', 'Or', 'Bleu']
 // Thèmes « généraux » posés sur les cases ordinaires du plateau
-export const GENERAL_TOPICS = ['culture-g', 'histoire', 'cinema', 'sciences', 'capitales', 'musique', 'animaux', 'sports', 'expressions', 'monuments']
+// Cases « Question » : 8 thèmes grand public tirés au hasard à chaque partie (hors spécialités des joueurs)
+export const GENERAL_TOPICS = ['culture-g', 'histoire', 'cinema', 'sciences', 'capitales', 'musique', 'animaux', 'sports', 'expressions', 'monuments',
+  'gastronomie', 'mythologie', 'france', 'corps', 'litterature', 'art', 'inventions', 'anglais', 'orthographe', 'dessins-animes',
+  'annees-80-90', 'chanson-francaise', 'jeux-video', 'drapeaux']
+export function pickGeneral(topics, exclude = []) {
+  const ok = GENERAL_TOPICS.filter(id => !exclude.includes(id) && (topics.find(t => t.id === id)?.questions || []).filter(q => !q.img && q.a?.length === 4).length >= 20)
+  return shuffle(ok).slice(0, 8)
+}
 export const ITEMS = {
   double: { icon: '🎲', name: 'Double dé', desc: 'Lance 2 dés ce tour-ci', target: false },
   ancre: { icon: '⚓', name: 'Ancre', desc: 'Un adversaire passe son prochain tour', target: true },

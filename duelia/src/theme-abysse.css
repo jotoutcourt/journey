@@ -1530,7 +1530,8 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
 .tq-hud { isolation: isolate; }
 .tq-hud::before { content: ''; position: absolute; z-index: -1; pointer-events: none; left: -10px; right: -10px;
   top: calc(-8px - env(safe-area-inset-top)); bottom: -90px;
-  background: linear-gradient(180deg, #000 0%, #000000f2 calc(env(safe-area-inset-top) + 40%), #000000b3 70%, #00000059 85%, transparent 100%); }
+  background: linear-gradient(180deg, #000000c7 0%, #000000a6 calc(env(safe-area-inset-top) + 35%), #00000066 65%, #00000026 85%, transparent 100%); }
+.tq-finale-voice { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 6px 0 12px; font-size: 13px; color: #d8ccff; }
 .tq-hud .tq-me-card, .tq-hud .tq-others li, .tq-hud-right .tq-treasure { background: linear-gradient(180deg, #3d22a0, #1f1060) !important; }
 .tq-hud .tq-banner b { font-size: 17px; }
 .tq-hud .tq-banner { background: none !important; box-shadow: none !important; min-height: 0; padding: 2px 8px; text-align: center; }

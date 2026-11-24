@@ -9,7 +9,7 @@ import * as api from '../lib/account.js'
 import { sfx } from '../lib/sound.js'
 import { useGroupVoice } from '../lib/groupVoice.js'
 import { BOARD_PTS, BOARD_RATIO } from '../lib/traqueBoard.js'
-import { SEAT_COLORS, GENERAL_TOPICS, ITEMS, ITEM_COST, CELL_ICON, CELL_LABEL, buildPool, topicMeta, randomTopics, PAWNS, pawnImg } from '../lib/traque.js'
+import { SEAT_COLORS, pickGeneral, ITEMS, ITEM_COST, CELL_ICON, CELL_LABEL, buildPool, topicMeta, randomTopics, PAWNS, pawnImg } from '../lib/traque.js'
 
 const errText = (e) => (e?.message || '').replace(/^.*?: /, '') || 'Pas de connexion.'
 
@@ -87,7 +87,7 @@ function TraqueLobby({ v, gameId, officials, topics, friends, act, onExit }) {
   async function start() {
     setStarting(true)
     const specs = [...new Set(active.flatMap(p => p.topics.map(t => t.id)))]
-    const general = GENERAL_TOPICS.filter(id => topics.some(t => t.id === id))
+    const general = pickGeneral(topics, specs)
     const ids = [...new Set([...specs, ...general])]
     const meta = Object.fromEntries(ids.map(id => topics.find(t => t.id === id)).filter(Boolean).map(t => [t.id, topicMeta(t)]))
     await act(() => api.startTraque(gameId, meta, general, buildPool(topics, ids)))
@@ -243,7 +243,9 @@ function TraqueBoard({ v, gameId, act, onExit }) {
   }, [fl])
   // voix : une connexion vers chaque autre joueur humain encore là
   const peers = v.players.filter(p => p.player_id && p.seat !== v.me && p.status === 'joined').map(p => p.player_id)
-  const voice = useGroupVoice(gameId, me?.player_id, peers, v.status === 'playing' && !!me && peers.length > 0)
+  // la voix reste ouverte après la victoire, pour débriefer : chacun raccroche quand il veut
+  const [hungUp, setHungUp] = useState(false)
+  const voice = useGroupVoice(gameId, me?.player_id, peers, ['playing', 'done'].includes(v.status) && !hungUp && !!me && peers.length > 0)
 
   // animation des pions : on avance case par case
   const [shown, setShown] = useState(() => Object.fromEntries(v.players.map(p => [p.seat, p.pos])))
@@ -342,7 +344,7 @@ function TraqueBoard({ v, gameId, act, onExit }) {
       {v.phase === 'shop' && <Shop v={v} d={d} me={me} left={left} onBuy={(k) => act(() => api.traqueBuy(gameId, k))} onLeave={() => act(() => api.traqueShopLeave(gameId))} />}
       {v.phase === 'quiz' && <div className="tq-quiz-wrap"><Quiz v={v} d={d} left={left} me={me} topicOf={topicOf} onAnswer={(i) => act(() => api.traqueAnswer(gameId, d.idx, i))}
         onJoker={() => act(() => api.traqueUse(gameId, 'joker'))} /></div>}
-      {v.phase === 'done' && <div className="tq-quiz-wrap"><Finale v={v} onExit={onExit} /></div>}
+      {v.phase === 'done' && <div className="tq-quiz-wrap"><Finale v={v} onExit={onExit} voice={peers.length > 0 && !hungUp ? voice : null} onHangUp={() => setHungUp(true)} /></div>}
 
       {bag && <Bag me={me} v={v} onClose={() => setBag(false)}
         onUse={(k) => { if (ITEMS[k].target) { setTarget(k); setBag(false) } else { setBag(false); act(() => api.traqueUse(gameId, k)) } }} />}
@@ -579,7 +581,7 @@ function Shop({ v, d, me, left, onBuy, onLeave }) {
   )
 }
 
-function Finale({ v, onExit }) {
+function Finale({ v, onExit, voice, onHangUp }) {
   const w = v.players.find(p => p.seat === v.winner)
   const mine = v.players.find(p => p.seat === v.me)
   return (
@@ -592,6 +594,12 @@ function Finale({ v, onExit }) {
         ))}
       </ul>
       {mine && !mine.bot && <p className="muted small">Les perles restantes sont converties : 10 perles = 1 lingot.</p>}
+      {voice && <div className="tq-finale-voice">
+        <button className={`tq-round-btn mic ${voice.mic}`} onClick={voice.toggleMic} disabled={voice.mic === 'asking' || voice.mic === 'unsupported'} aria-label="Micro">
+          {{ on: '🎙️', muted: '🔇', asking: '⏳', denied: '🚫', unsupported: '🚫' }[voice.mic] || '🎙️'}</button>
+        <span>Le vocal reste ouvert pour débriefer</span>
+        <button className="btn btn-small btn-ghost" onClick={onHangUp}>📞 Raccrocher</button>
+      </div>}
       <button className="kh-play wide" onClick={onExit}>Retour à l'accueil</button>
     </div>
   )
