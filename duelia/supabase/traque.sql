@@ -49,6 +49,8 @@ create table if not exists public.traque_players (
 alter table public.traque_players add column if not exists bubble boolean not null default false;
 -- questions des spécialités, envoyées par chaque joueur (l'hôte ne les voit pas)
 alter table public.traque_players add column if not exists pool jsonb;
+-- dévoré par le requin : fantôme (ne peut plus gagner, hante les autres)
+alter table public.traque_players add column if not exists ghost boolean not null default false;
 create index if not exists traque_players_player on public.traque_players (player_id, status);
 alter table public.traque_games enable row level security;
 alter table public.traque_players enable row level security;
@@ -61,7 +63,7 @@ create or replace function public.tq_const(k text) returns int language sql immu
     when 'show' then 3 when 'event' then 5 when 'shop_max' then 3 end
 $$;
 create or replace function public.tq_item_cost(k text) returns int language sql immutable as $$
-  select case k when 'double' then 6 when 'ancre' then 5 when 'joker' then 4 when 'vol' then 5 when 'echange' then 8 end
+  select case k when 'double' then 6 when 'ancre' then 5 when 'joker' then 4 when 'vol' then 5 when 'echange' then 8 when 'harpon' then 7 end
 $$;
 
 -- Journal (30 derniers événements)
@@ -143,7 +145,7 @@ end $$;
 
 -- Effet de la case où le joueur vient d'arriver au dé
 create or replace function public.tq_land(p_game uuid, p_seat int) returns void language plpgsql as $$
-declare g traque_games; me traque_players; cell jsonb; typ text; other int; owner int; topic text; n int; ev text; r float;
+declare g traque_games; me traque_players; cell jsonb; typ text; other int; owner int; topic text; n int; ev text; r float; tps text[];
 begin
   select * into g from traque_games where id = p_game;
   select * into me from traque_players where game_id = p_game and seat = p_seat;
@@ -151,7 +153,7 @@ begin
   cell := g.board -> me.pos; typ := cell ->> 't'; topic := cell ->> 'topic';
   -- Deux joueurs sur la même case : duel
   select seat into other from traque_players where game_id = p_game and seat <> p_seat and pos = me.pos and me.pos > 0
-    and status in ('joined', 'bot', 'left') order by random() limit 1;
+    and status in ('joined', 'bot', 'left') and not ghost order by random() limit 1;
   if other is not null then
     perform tq_log(p_game, '⚔️ ' || me.name || ' rejoint ' || tq_name(p_game, other) || ' : duel !');
     perform tq_quiz(p_game, 'duel', array[p_seat, other],
@@ -195,7 +197,7 @@ begin
       update traque_players set pos = greatest(0, pos - 2) where game_id = p_game and seat <> p_seat;
       ev := '🐙 Un tentacule balaie le plateau : tous les autres reculent de 2 cases !';
     elsif r < 0.55 then
-      select seat into other from traque_players where game_id = p_game and seat <> p_seat and status in ('joined', 'bot', 'left') order by random() limit 1;
+      select seat into other from traque_players where game_id = p_game and seat <> p_seat and status in ('joined', 'bot', 'left') and not ghost order by random() limit 1;
       if other is not null then
         update traque_players t set pos = case when t.seat = p_seat then o.pos else me.pos end
         from (select pos from traque_players where game_id = p_game and seat = other) o
@@ -210,9 +212,22 @@ begin
       ev := '🐙 Le Kraken éternue : ' || me.name || ' est projeté de 3 cases en avant !';
     end if;
     perform tq_event(p_game, ev, jsonb_build_object('tentacle', true));
+  elsif typ = 'shark' then
+    if me.items ? 'harpon' then
+      update traque_players set items = items - (select (ord - 1)::int from jsonb_array_elements_text(items) with ordinality e(v, ord) where v = 'harpon' order by ord limit 1),
+        pearls = pearls + 3 where game_id = p_game and seat = p_seat;
+      perform tq_event(p_game, '🔱 ' || me.name || ' repousse le requin d''un coup de harpon : +3 perles !', jsonb_build_object('harpon', true, 'seat', p_seat));
+    else
+      -- 2 questions difficiles dans les spécialités des adversaires : une seule bonne réponse suffit
+      select array_agg(t) into tps from (select x ->> 'id' t from traque_players p, jsonb_array_elements(p.topics) x
+        where p.game_id = p_game and p.seat <> p_seat and x ? 'id' and g.pool ? (x ->> 'id') order by random() limit 2) z;
+      while coalesce(cardinality(tps), 0) < 2 loop tps := coalesce(tps, '{}'::text[]) || tq_general(p_game); end loop;
+      perform tq_log(p_game, '🦈 Un requin fonce sur ' || me.name || ' !');
+      perform tq_quiz(p_game, 'solo', array[p_seat], tps, jsonb_build_object('reason', 'shark'), true);
+    end if;
   elsif typ = 'crab' then
     -- Crabe farceur : échange de place avec un joueur tiré au hasard
-    select seat into other from traque_players where game_id = p_game and seat <> p_seat and status in ('joined', 'bot', 'left') order by random() limit 1;
+    select seat into other from traque_players where game_id = p_game and seat <> p_seat and status in ('joined', 'bot', 'left') and not ghost order by random() limit 1;
     if other is not null then
       update traque_players t set pos = case when t.seat = p_seat then o.pos else me.pos end
       from (select pos from traque_players where game_id = p_game and seat = other) o
@@ -230,7 +245,7 @@ begin
     perform tq_event(p_game, '🐡 Le poisson-ballon explose ! Tout le monde gagne 2 perles… sauf ' || me.name || ', qui en perd 2.', jsonb_build_object('puffer', true, 'seat', p_seat));
   elsif typ = 'whirl' then
     -- Tourbillon (une seule fois) : tous les pions sont mélangés
-    with a as (select seat, pos, row_number() over (order by seat) rn from traque_players where game_id = p_game and status in ('joined', 'bot', 'left')),
+    with a as (select seat, pos, row_number() over (order by seat) rn from traque_players where game_id = p_game and status in ('joined', 'bot', 'left') and not ghost),
          b as (select pos, row_number() over (order by random()) rn from a)
     update traque_players t set pos = b.pos from a join b using (rn) where t.game_id = p_game and t.seat = a.seat;
     update traque_games set board = jsonb_set(board, array[me.pos::text], jsonb_build_object('t', 'general', 'topic', tq_general(p_game))) where id = p_game;
@@ -260,10 +275,10 @@ begin
     perform tq_event(p_game, '🎁 ' || nm || ' ouvre le bon coffre : +6 perles !', jsonb_build_object('cursed', p_choice, 'box', g.data -> 'box', 'seat', s));
   elsif what = 'item' then
     select jsonb_array_length(items) into bag from traque_players where game_id = p_game and seat = s;
-    it := (array['double', 'ancre', 'joker', 'vol', 'echange'])[1 + floor(random() * 5)::int];
+    it := (array['double', 'ancre', 'joker', 'vol', 'echange', 'harpon'])[1 + floor(random() * 6)::int];
     if bag < 3 then
       update traque_players set items = items || to_jsonb(it) where game_id = p_game and seat = s;
-      perform tq_event(p_game, '🎁 ' || nm || ' trouve un objet dans le coffre : ' || case it when 'double' then 'le double dé' when 'ancre' then 'l''ancre' when 'joker' then 'le joker 50/50' when 'vol' then 'le vol' else 'l''échange' end || ' !', jsonb_build_object('cursed', p_choice, 'box', g.data -> 'box', 'seat', s, 'item', it));
+      perform tq_event(p_game, '🎁 ' || nm || ' trouve un objet dans le coffre : ' || case it when 'double' then 'le double dé' when 'ancre' then 'l''ancre' when 'joker' then 'le joker 50/50' when 'vol' then 'le vol' when 'harpon' then 'le harpon' else 'l''échange' end || ' !', jsonb_build_object('cursed', p_choice, 'box', g.data -> 'box', 'seat', s, 'item', it));
     else
       update traque_players set pearls = pearls + 4 where game_id = p_game and seat = s;
       perform tq_event(p_game, '🎁 Un objet dans le coffre, mais le sac de ' || nm || ' est plein : +4 perles à la place.', jsonb_build_object('cursed', p_choice, 'box', g.data -> 'box', 'seat', s));
@@ -302,9 +317,37 @@ begin
       perform tq_log(p_game, '⚓ ' || s.name || ' est bloqué et passe son tour.');
     else exit; end if;
   end loop;
-  update traque_games set turn = nxt, phase = 'roll', data = '{}'::jsonb,
+  update traque_games set turn = nxt, phase = case when s.ghost then 'haunt' else 'roll' end,
+    data = case when s.ghost then jsonb_build_object('seat', nxt) else '{}'::jsonb end,
     deadline = now() + make_interval(secs => case when s.bot is not null or s.status = 'left' then 2 else tq_const('roll') end),
     version = version + 1 where id = p_game;
+end $$;
+
+-- Le fantôme hante un joueur : il lance le dé, la cible recule d'autant
+create or replace function public.tq_haunt(p_game uuid, p_target int) returns void language plpgsql as $$
+declare g traque_games; s int; tg int; d int;
+begin
+  select * into g from traque_games where id = p_game;
+  if g.phase <> 'haunt' then return; end if;
+  s := (g.data ->> 'seat')::int;
+  select seat into tg from traque_players where game_id = p_game and seat = p_target and seat <> s and not ghost and status in ('joined', 'bot', 'left');
+  if tg is null then
+    select seat into tg from traque_players where game_id = p_game and seat <> s and not ghost and status in ('joined', 'bot', 'left') order by pos desc limit 1;
+  end if;
+  if tg is null then perform tq_event(p_game, '👻 ' || tq_name(p_game, s) || ' erre sur le plateau… personne à hanter.', '{}'::jsonb); return; end if;
+  d := 1 + floor(random() * 6)::int;
+  perform tq_shift(p_game, tg, -d);
+  perform tq_event(p_game, '👻 ' || tq_name(p_game, s) || ' hante ' || tq_name(p_game, tg) || ' : 🎲 ' || d || ', il recule de ' || d || ' case' || case when d > 1 then 's' else '' end || ' !',
+    jsonb_build_object('haunt', true, 'dice', d, 'seat', tg, 'by', s));
+end $$;
+
+create or replace function public.traque_haunt(p_game uuid, p_target int) returns json language plpgsql security definer set search_path = public as $$
+declare s int := tq_my_seat(p_game); g traque_games;
+begin
+  select * into g from traque_games where id = p_game for update;
+  if g.phase = 'haunt' and (g.data ->> 'seat')::int = s then perform tq_haunt(p_game, p_target); end if;
+  perform traque_tick(p_game);
+  return traque_view(p_game, current_player());
 end $$;
 
 -- Annonce d'un objet utilisé, affichée en grand à tous les joueurs (en plus du journal)
@@ -370,6 +413,25 @@ begin
         if tq_shift(p_game, s, 3) >= tq_const('cells') - 1 then perform tq_final(p_game, s); return; end if;
         perform tq_event(p_game, '⭐ ' || nm || ' brille dans sa spécialité : +3 cases et +3 perles', jsonb_build_object('move', 3, 'seat', s));
       else perform tq_event(p_game, '😬 ' || nm || ' rate une question de sa propre spécialité…', '{}'::jsonb); end if;
+    elsif reason = 'shark' then
+      ok := 0;
+      for i in 0 .. jsonb_array_length(d -> 'items') - 1 loop
+        if (d -> 'ans' -> s::text -> i ->> 0)::int = (g.pool -> (d -> 'items' -> i ->> 'topic') -> ((d -> 'items' -> i ->> 'qi')::int) ->> 'c')::int then ok := ok + 1; end if;
+      end loop;
+      if ok >= 1 then
+        perform tq_event(p_game, '🦈 ' || nm || ' échappe au requin (' || ok || '/2) !', jsonb_build_object('shark', 'escape', 'seat', s));
+      else
+        update traque_players set ghost = true, bubble = false, skip = 0 where game_id = p_game and seat = s;
+        if not exists (select 1 from traque_players where game_id = p_game and not ghost and status in ('joined', 'bot', 'left')) then
+          -- plus personne en vie : le Kraken garde son trésor, chacun convertit ses perles
+          update traque_players set reward = pearls / 10 where game_id = p_game;
+          perform wallet_credit(player_id, pearls / 10, 'traque', null) from traque_players where game_id = p_game and player_id is not null and bot is null and pearls >= 10;
+          perform tq_log(p_game, '🦈 Le requin dévore ' || nm || '… plus personne ne peut battre le Kraken !');
+          update traque_games set status = 'done', phase = 'done', winner = null, deadline = null, version = version + 1 where id = p_game;
+          return;
+        end if;
+        perform tq_event(p_game, '🦈 Le requin dévore ' || nm || ' ! Il devient un fantôme 👻 : il ne peut plus gagner, mais il hantera les autres.', jsonb_build_object('shark', 'eaten', 'seat', s));
+      end if;
     elsif reason = 'shortcut' then
       if ok = 1 then
         if tq_shift(p_game, s, 5) >= tq_const('cells') - 1 then perform tq_final(p_game, s); return; end if;
@@ -477,7 +539,7 @@ begin
       select * into s from traque_players where game_id = p_game and seat = g.turn;
       if s.bot is not null and now() >= g.deadline - interval '1 second' then
         -- petite stratégie des robots : bloquer ou rattraper le meneur
-        select * into leader from traque_players where game_id = p_game and seat <> s.seat and status in ('joined', 'bot', 'left') order by pos desc limit 1;
+        select * into leader from traque_players where game_id = p_game and seat <> s.seat and status in ('joined', 'bot', 'left') and not ghost order by pos desc limit 1;
         if leader.seat is not null and leader.pos - s.pos >= 12 and s.items ? 'echange' and random() < 0.6 then
           update traque_players set items = items - (select (ord - 1)::int from jsonb_array_elements_text(items) with ordinality e(v, ord) where v = 'echange' order by ord limit 1) where game_id = p_game and seat = s.seat;
           update traque_players t set pos = case when t.seat = s.seat then leader.pos else s.pos end where t.game_id = p_game and t.seat in (s.seat, leader.seat);
@@ -512,11 +574,17 @@ begin
       if s.bot is not null and now() >= g.deadline - interval '1 second' then
         -- le robot achète ce qu'il peut, en commençant par les objets les plus utiles
         for item in select x from jsonb_array_elements(g.board -> (d ->> 'cell')::int -> 'items') x
-          order by array_position(array['"echange"', '"ancre"', '"double"', '"vol"', '"joker"'], x::text) loop
+          order by array_position(array['"harpon"', '"echange"', '"ancre"', '"double"', '"vol"', '"joker"'], x::text) loop
           begin perform tq_shop_buy(p_game, s.seat, item #>> '{}'); exception when others then null; end;
         end loop;
         perform tq_shop_leave(p_game);
       elsif due then perform tq_shop_leave(p_game);
+      else exit; end if;
+
+    elsif g.phase = 'haunt' then
+      select * into s from traque_players where game_id = p_game and seat = (d ->> 'seat')::int;
+      -- robot ou temps écoulé : on hante le joueur en tête
+      if (s.bot is not null and now() >= g.deadline - interval '1 second') or due then perform tq_haunt(p_game, -1);
       else exit; end if;
 
     elsif g.phase = 'pick' then
@@ -617,7 +685,7 @@ begin
     'players', (select coalesce(json_agg(json_build_object('seat', seat, 'name', name, 'avatar', avatar, 'photo', photo, 'status', status, 'bot', bot,
         'player_id', player_id, 'pawn', pawn,
         -- au salon, les spécialités des adversaires restent secrètes (on ne voit que leur nombre)
-        'topics', case when g.status = 'lobby' and seat is distinct from me and player_id is not null then (select coalesce(jsonb_agg('{}'::jsonb), '[]'::jsonb) from jsonb_array_elements(topics)) else topics end, 'pos', pos, 'pearls', pearls, 'items', items, 'skip', skip, 'bubble', bubble, 'reward', reward,
+        'topics', case when g.status = 'lobby' and seat is distinct from me and player_id is not null then (select coalesce(jsonb_agg('{}'::jsonb), '[]'::jsonb) from jsonb_array_elements(topics)) else topics end, 'pos', pos, 'pearls', pearls, 'items', items, 'skip', skip, 'bubble', bubble, 'ghost', ghost, 'reward', reward,
         'online', case when player_id is null then true else (select last_seen > now() - interval '70 seconds' from players where id = player_id) end) order by seat), '[]'::json)
       from traque_players where game_id = p_game and status <> 'declined'));
 end $$;
@@ -776,10 +844,13 @@ begin
     else cells := cells || jsonb_build_array(jsonb_build_object('t', t)); end if;
   end loop;
   cells := cells || jsonb_build_array(jsonb_build_object('t', 'lair'));
+  -- 1 requin, dans le dernier tiers du plateau
+  select gs.x into n from generate_series(55, 78) gs(x) where cells -> gs.x ->> 't' = 'general' and gs.x <> 37 order by random() limit 1;
+  if n is not null then cells := jsonb_set(cells, array[n::text], jsonb_build_object('t', 'shark')); end if;
   -- 2 boutiques, devant les deux cabanes du plateau : 3 objets tirés au hasard chacune, la seconde plus chère
   for i in 0 .. 1 loop
     cells := jsonb_set(cells, array[(array[9, 37])[i + 1]::text], jsonb_build_object('t', 'shop', 'k', i * 2,
-      'items', (select jsonb_agg(x) from (select x from unnest(array['double', 'ancre', 'joker', 'vol', 'echange']) x order by random() limit 3) z)));
+      'items', (select jsonb_agg(x) from (select x from unnest(array['double', 'ancre', 'joker', 'vol', 'echange', 'harpon']) x order by random() limit 3) z)));
   end loop;
   update traque_games set status = 'playing', board = cells, topics = mt, general = to_jsonb(gen), pool = mp, used = '{}'::jsonb,
     started_at = now(), turn = -1, round = 1, treasure = 0, phase = 'event', data = jsonb_build_object('text', '🐙 La chasse commence ! Le trésor du Kraken est vide…', 'reveal', to_jsonb(gen)),
@@ -831,6 +902,8 @@ begin
   select * into g from traque_games where id = p_game for update;
   select * into me from traque_players where game_id = p_game and seat = s;
   if g.status <> 'playing' or not (me.items ? p_item) then raise exception 'objet indisponible'; end if;
+  if p_item = 'harpon' then raise exception 'le harpon s''utilise tout seul face au requin'; end if;
+  if me.ghost then raise exception 'un fantôme ne peut plus utiliser d''objets'; end if;
   if p_item = 'joker' then
     d := g.data; idx := (d ->> 'idx')::int;
     if g.phase <> 'quiz' or (d ->> 'reveal')::boolean or not (to_jsonb(s) <@ (d -> 'seats')) or d ->> 'kind' = 'truce' then raise exception 'pas maintenant'; end if;
@@ -843,7 +916,7 @@ begin
       update traque_games set data = data || '{"double": true}'::jsonb where id = p_game;
       perform tq_flash(p_game, 'double', s, null, '🎲 ' || me.name || ' sort le double dé !');
     else
-      select * into tg from traque_players where game_id = p_game and seat = p_target and seat <> s and status in ('joined', 'bot', 'left');
+      select * into tg from traque_players where game_id = p_game and seat = p_target and seat <> s and status in ('joined', 'bot', 'left') and not ghost;
       if not found then raise exception 'choisis un adversaire'; end if;
       if p_item = 'ancre' then
         update traque_players set skip = skip + 1 where game_id = p_game and seat = p_target;
@@ -909,9 +982,9 @@ revoke all on function public.get_traque(uuid), public.create_traque(), public.i
 grant execute on function public.get_traque(uuid), public.create_traque(), public.invite_traque(uuid, uuid), public.add_traque_bot(uuid, text, jsonb),
   public.remove_traque_seat(uuid, int), public.respond_traque(uuid, boolean), public.set_traque_topics(uuid, jsonb, jsonb), public.leave_traque(uuid),
   public.start_traque(uuid, jsonb, jsonb, jsonb), public.traque_roll(uuid), public.traque_buy(uuid, text), public.traque_use(uuid, text, int),
-  public.traque_answer(uuid, int, int), public.my_traque(), public.traque_shop_leave(uuid), public.traque_ready(uuid), public.traque_cursed(uuid, int) to authenticated;
+  public.traque_answer(uuid, int, int), public.my_traque(), public.traque_shop_leave(uuid), public.traque_ready(uuid), public.traque_cursed(uuid, int), public.traque_haunt(uuid, int) to authenticated;
 revoke all on function public.traque_tick(uuid), public.traque_view(uuid, uuid), public.tq_quiz(uuid, text, int[], text[], jsonb, boolean),
   public.tq_land(uuid, int), public.tq_next(uuid), public.tq_roll(uuid), public.tq_finish(uuid, int), public.tq_quiz_done(uuid),
   public.tq_put_answer(uuid, int, int), public.tq_pick(uuid, text), public.tq_event(uuid, text, jsonb), public.tq_shift(uuid, int, int),
   public.tq_final(uuid, int), public.tq_log(uuid, text), public.tq_general(uuid), public.tq_name(uuid, int), public.tq_free_seat(uuid),
-  public.traque_invites_for(uuid), public.tq_shop_buy(uuid, int, text), public.tq_shop_leave(uuid), public.tq_shop_price(uuid, text), public.tq_flash(uuid, text, int, int, text), public.tq_cursed_open(uuid, int) from public, anon, authenticated;
+  public.traque_invites_for(uuid), public.tq_shop_buy(uuid, int, text), public.tq_shop_leave(uuid), public.tq_shop_price(uuid, text), public.tq_flash(uuid, text, int, int, text), public.tq_cursed_open(uuid, int), public.tq_haunt(uuid, int) from public, anon, authenticated;

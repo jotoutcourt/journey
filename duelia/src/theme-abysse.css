@@ -1592,3 +1592,15 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
 .tq-pawn-buy img { width: 44px; height: 44px; object-fit: contain; }
 .tq-pawn-buy span { flex: 1; display: grid; min-width: 0; }
 .tq-pawn-buy small { color: var(--muted); font-size: 12px; }
+/* Requin, fantômes, harpon */
+.tq-tint.t-shark { --sc: #0b2a4a; }
+.tq-slot.t-shark .tq-ico { font-size: clamp(20px, 5.6vw, 28px); }
+.tq-track .tq-figure.ghost { opacity: .45; filter: grayscale(.6) drop-shadow(0 0 8px #cfe8ff) !important; }
+.tq-obj-emo { display: inline-grid; place-items: center; font-size: 1.3em; }
+.tq-it-ico .tq-obj-emo, .tq-shop-ico .tq-obj-emo { font-size: 34px; width: auto; height: auto; }
+.tq-haunt-row { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; }
+.tq-haunt-row button { display: grid; justify-items: center; gap: 2px; padding: 8px 10px; min-width: 88px; border: 0; border-radius: 16px; cursor: pointer; color: #fff;
+  background: #ffffff14; box-shadow: inset 0 0 0 2px var(--c); }
+.tq-haunt-row img { width: 54px; height: 54px; object-fit: contain; }
+.tq-haunt-row b { font: 800 13px var(--display); }
+.tq-haunt-row small { font-size: 11px; color: #d8ccff; }
