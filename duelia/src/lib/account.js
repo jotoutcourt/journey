@@ -211,4 +211,6 @@ export const traqueSignalsSince = (id, after) => rpc('traque_signals_since', { p
 export const traqueShopLeave = (id) => rpc('traque_shop_leave', { p_game: id })
 export const setTraquePawn = (id, pawn) => rpc('set_traque_pawn', { p_game: id, p_pawn: pawn })
 export const traqueReady = (id) => rpc('traque_ready', { p_game: id })
+export const myPawns = () => rpc('my_pawns')
+export const buyPawn = (id) => rpc('buy_pawn', { p_pawn: id })
 export const traqueCursed = (id, choice) => rpc('traque_cursed', { p_game: id, p_choice: choice })

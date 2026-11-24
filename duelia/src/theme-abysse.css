@@ -1579,3 +1579,16 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
 .tq-reveal-card b { font: 800 13.5px var(--display); line-height: 1.15; }
 @keyframes tq-flip { to { opacity: 1; transform: none; } }
 @keyframes tq-fade { to { opacity: 1; } }
+/* Salon : spécialités visibles, figurines à acheter */
+.tq-seat-topics { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; }
+.tq-seat-topics i { font-style: normal; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 99px; background: color-mix(in srgb, var(--c) 22%, #ffffff10);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 55%, transparent); white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.tq-seat-topics i.wait { background: none; box-shadow: none; color: var(--muted); }
+.tq-pawn-pick button { position: relative; }
+.tq-pawn-pick button.locked img { filter: grayscale(.85) brightness(.7); }
+.tq-pawn-pick button.sel { border-color: var(--gold); }
+.tq-pawn-price { position: absolute; left: 50%; bottom: 3px; transform: translateX(-50%); font: 800 10px var(--body); padding: 1px 6px; border-radius: 99px; background: #000b; color: #ffd76a; white-space: nowrap; }
+.tq-pawn-buy { display: flex; align-items: center; gap: 10px; margin-top: 8px; padding: 8px 10px; border-radius: 16px; background: var(--card); box-shadow: 0 0 0 1.5px var(--gold); }
+.tq-pawn-buy img { width: 44px; height: 44px; object-fit: contain; }
+.tq-pawn-buy span { flex: 1; display: grid; min-width: 0; }
+.tq-pawn-buy small { color: var(--muted); font-size: 12px; }
