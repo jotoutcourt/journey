@@ -312,7 +312,7 @@ function TraqueBoard({ v, gameId, act, onExit }) {
     if (lastPhase.current === v.phase + d.idx + d.reveal) return
     lastPhase.current = v.phase + d.idx + d.reveal
     try {
-      if (v.phase === 'show') sfx.tap?.()
+      if (v.phase === 'show') sfx.dice?.()
       if (v.phase === 'quiz' && d.reveal) (d.ans?.[v.me]?.[d.idx]?.[0] === d.c ? sfx.good : sfx.bad)?.()
       if (v.phase === 'done') sfx.levelUp?.()
     } catch { /* sons facultatifs */ }

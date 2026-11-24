@@ -34,10 +34,31 @@ function tone(freq, dur = 0.12, type = 'sine', gain = 0.12, delay = 0, to = null
   } catch { /* audio indisponible */ }
 }
 
+// Petit claquement (bruit filtré), pour le dé qui roule
+function knock(delay = 0, gain = 0.25, freq = 1800) {
+  if (!enabled) return
+  try {
+    ctx = ctx || new (window.AudioContext || window.webkitAudioContext)()
+    if (ctx.state === 'suspended') ctx.resume()
+    const t0 = ctx.currentTime + delay, len = Math.floor(ctx.sampleRate * 0.04)
+    const buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0)
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3)
+    const src = ctx.createBufferSource(), bp = ctx.createBiquadFilter(), g = ctx.createGain()
+    src.buffer = buf; bp.type = 'bandpass'; bp.frequency.value = freq; bp.Q.value = 2.5; g.gain.value = gain
+    src.connect(bp).connect(g).connect(ctx.destination); src.start(t0)
+  } catch { /* audio indisponible */ }
+}
+
 // Durée du suspense avant la révélation du Kraken (ms)
 export const SUSPENSE_MS = 2600
 
 export const sfx = {
+  // dé qui roule sur la table puis s'arrête : chocs de plus en plus espacés, et un dernier « clac »
+  dice: () => {
+    let t = 0, gap = 0.045
+    for (let i = 0; i < 9; i++) { knock(t, 0.16 + Math.random() * 0.1, 1400 + Math.random() * 1400); t += gap; gap *= 1.22 }
+    knock(t + 0.03, 0.3, 900); tone(180, 0.08, 'sine', 0.08, t + 0.03)
+  },
   // pas d'un pion sur le plateau : petit « tok » de bois, légèrement différent à chaque case
   step: () => { const f = 480 + Math.random() * 120; tone(f, 0.05, 'triangle', 0.09); tone(f / 2, 0.07, 'sine', 0.06, 0.005) },
   // Petit « pop » doux sur chaque bouton
