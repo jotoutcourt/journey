@@ -1549,3 +1549,33 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
 /* événements : texte posé sur la plaque illustrée */
 .tq-center .tq-event { width: min(94vw, 420px); max-width: none; min-height: calc(min(94vw, 420px) * 282 / 900); display: grid; place-items: center; padding: 4% 13%; box-sizing: border-box;
   background: url(/traque/plaque.webp) center / 100% 100% no-repeat; box-shadow: none; border-radius: 0; font-size: clamp(13px, 3.6vw, 15px); line-height: 1.25; text-shadow: 0 2px 4px #000; filter: drop-shadow(0 10px 20px #000c); }
+/* ===== Cases loufoques ===== */
+.tq-tint.t-crab { --sc: #ff5a36; }
+.tq-tint.t-bubble { --sc: #7fe3ff; }
+.tq-tint.t-puffer { --sc: #ffd23f; }
+.tq-tint.t-whirl { --sc: #b14dff; }
+.tq-tint.t-cursed { --sc: #7a1fd6; }
+.tq-slot .tq-ico { font-size: clamp(16px, 4.6vw, 22px); }
+/* coffre maudit */
+.tq-cursed { pointer-events: auto; text-align: center; width: min(92vw, 400px); padding: 18px 14px; border-radius: 24px;
+  background: linear-gradient(180deg, #3d22a0f2, #1f1060f2); box-shadow: 0 0 0 2px #b48cff, 0 0 30px #7a1fd6aa, 0 12px 30px #000c; animation: sb-pop .35s both; }
+.tq-cursed h2 { margin: 0 0 4px; font: 800 20px var(--display); }
+.tq-cursed p { margin: 0 0 12px; color: #e6dcff; font-size: 13px; }
+.tq-cursed-row { display: flex; justify-content: center; gap: 10px; }
+.tq-cursed-row button { border: 0; background: none; padding: 0; cursor: pointer; animation: tq-cursed-wobble 1.4s ease-in-out infinite; animation-delay: calc(var(--i) * .2s); }
+.tq-cursed-row button:disabled { cursor: default; }
+.tq-cursed-row img { width: clamp(76px, 24vw, 104px); filter: hue-rotate(230deg) saturate(1.3) drop-shadow(0 6px 10px #000a) drop-shadow(0 0 12px #b14dffaa); }
+.tq-cursed-row button:not(:disabled):active img { transform: scale(.92); }
+@keyframes tq-cursed-wobble { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-4deg); } 75% { transform: rotate(4deg); } }
+/* révélation des thèmes au lancement */
+.tq-reveal { pointer-events: auto; text-align: center; width: min(94vw, 420px); }
+.tq-reveal h2 { margin: 0 0 12px; font: 900 22px var(--display); text-shadow: 0 2px 8px #000, 0 0 18px #b48cff; animation: sb-pop .4s both; }
+.tq-reveal p { margin: 12px 0 0; color: #e6dcff; font-weight: 700; text-shadow: 0 2px 4px #000; opacity: 0; animation: tq-fade .4s both; animation-delay: calc(8 * .75s + .4s); }
+.tq-reveal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; perspective: 800px; }
+.tq-reveal-card { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 16px; text-align: left;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--tc) 55%, #1f1060), #1f1060); box-shadow: 0 0 0 2px color-mix(in srgb, var(--tc) 70%, #fff), 0 6px 14px #000a;
+  opacity: 0; transform: rotateY(90deg) scale(.8); animation: tq-flip .55s cubic-bezier(.2, 1.4, .4, 1) both; animation-delay: calc(var(--i) * .75s + .3s); }
+.tq-reveal-card span { font-size: 26px; line-height: 1; }
+.tq-reveal-card b { font: 800 13.5px var(--display); line-height: 1.15; }
+@keyframes tq-flip { to { opacity: 1; transform: none; } }
+@keyframes tq-fade { to { opacity: 1; } }

@@ -18,10 +18,11 @@ export const ITEMS = {
   echange: { icon: '🔄', name: 'Échange', desc: 'Échange ta place avec un adversaire', target: true },
 }
 export const ITEM_COST = { double: 6, ancre: 5, joker: 4, vol: 5, echange: 8 }
-export const CELL_ICON = { shop: '🏪', start: '⚓', truce: '🤝', chest: '💰', current: '🌊', tentacle: '🐙', shortcut: '🚪', lair: '💀' }
+export const CELL_ICON = { shop: '🏪', start: '⚓', truce: '🤝', chest: '💰', current: '🌊', tentacle: '🐙', shortcut: '🚪', lair: '💀', crab: '🦀', bubble: '🫧', puffer: '🐡', whirl: '🌀', cursed: '🎁' }
 export const CELL_LABEL = {
   shop: 'Boutique : on s\'y arrête en passant pour acheter des objets', start: 'Départ', general: 'Question', spec: 'Spécialité', truce: 'Trêve : défi commun pour remplir le trésor', chest: 'Coffre : des perles',
-  current: 'Courant : ±2 cases', tentacle: 'Tentacule : événement surprise', shortcut: 'Raccourci : question difficile, +5 cases', lair: 'Antre du Kraken',
+  current: 'Courant : ±2 cases', crab: 'Crabe farceur : échange de place avec un joueur au hasard', bubble: 'Bulle : ton prochain dé compte double (sans arrêt en boutique)',
+  puffer: 'Poisson-ballon (une seule fois) : +2 perles pour les autres, -2 pour toi', whirl: 'Tourbillon (une seule fois) : tous les pions sont mélangés', cursed: 'Coffre maudit : 3 coffres, perles, objet… ou tentacule', tentacle: 'Tentacule : événement surprise', shortcut: 'Raccourci : question difficile, +5 cases', lair: 'Antre du Kraken',
 }
 
 const shuffle = (a) => { const b = [...a]; for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]] } return b }

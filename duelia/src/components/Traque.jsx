@@ -290,7 +290,7 @@ function TraqueBoard({ v, gameId, act, onExit }) {
       <div className="tq-hud-top">
         <div className="tq-me-card" style={{ '--c': SEAT_COLORS[v.me] }}>
           <span className="tq-ring"><img src={pawnImg(me?.pawn, v.me)} alt="" /></span>
-          <div><b>{me?.name}</b><small><Pearl /> {me?.pearls ?? 0} · case {me?.pos ?? 0}{me?.items?.length ? ` · 🎒 ${me.items.length}` : ''}</small></div>
+          <div><b>{me?.name}</b><small><Pearl /> {me?.pearls ?? 0} · case {me?.pos ?? 0}{me?.items?.length ? ` · 🎒 ${me.items.length}` : ''}{me?.bubble ? ' · 🫧' : ''}</small></div>
         </div>
         <div className="tq-hud-right">
           <div className="tq-treasure" title="Trésor du Kraken"><span><img src="/traque/ico/case-chest.webp" alt="" /> <b>{v.treasure}</b></span></div>
@@ -335,7 +335,8 @@ function TraqueBoard({ v, gameId, act, onExit }) {
 
       {/* Moments forts au centre de l'écran */}
       {v.phase === 'show' && (d.dice || []).length > 0 && <div className="tq-center"><div className="tq-dice">{d.dice.map((n, i) => <DieFace key={i} n={n} />)}</div></div>}
-      {v.phase === 'event' && <div className="tq-center"><p className="tq-event">{d.text}</p></div>}
+      {v.phase === 'event' && (d.reveal ? <Reveal ids={d.reveal} topicOf={topicOf} /> : <div className="tq-center"><p className="tq-event">{d.text}</p></div>)}
+      {v.phase === 'pick' && <Cursed v={v} d={d} left={left} onPick={(i) => act(() => api.traqueCursed(gameId, i))} />}
       {v.phase === 'duelroll' && <div className="tq-center"><p className="tq-event">
         ⚔️ {d.winner === v.me ? 'Tu gagnes' : `${bare(v.players.find(p => p.seat === d.winner)?.name)} gagne`} {(d.score || []).join('–')}{d.tie ? ' au temps (plus rapide sur les bonnes réponses)' : ''} !<br />
         {d.winner === v.me ? `Lance le dé : ${bare(v.players.find(p => p.seat === d.loser)?.name)} va reculer d'autant.` : `${d.loser === v.me ? 'Tu vas' : `${bare(v.players.find(p => p.seat === d.loser)?.name)} va`} reculer…`}
@@ -577,6 +578,41 @@ function Shop({ v, d, me, left, onBuy, onLeave }) {
           ))}
         </div>
       </Frame>
+    </div>
+  )
+}
+
+// Lancement : révélation des 8 thèmes du plateau, une carte après l'autre
+function Reveal({ ids, topicOf }) {
+  return (
+    <div className="tq-center dim">
+      <div className="tq-reveal">
+        <h2>Les thèmes de la chasse</h2>
+        <div className="tq-reveal-grid">
+          {ids.map((id, i) => {
+            const t = topicOf(id)
+            return <div key={id} className="tq-reveal-card" style={{ '--i': i, '--tc': t.color || '#7b5cff' }}><span>{t.icon}</span><b>{t.name}</b></div>
+          })}
+        </div>
+        <p>+ les spécialités de chacun</p>
+      </div>
+    </div>
+  )
+}
+
+// Coffre maudit : 3 coffres fermés, un seul choix
+function Cursed({ v, d, left, onPick }) {
+  const mine = d.seat === v.me
+  const who = v.players.find(p => p.seat === d.seat)
+  return (
+    <div className="tq-center dim">
+      <div className="tq-cursed">
+        <h2>🎁 Le coffre maudit</h2>
+        <p>{mine ? 'Choisis un coffre : perles, objet… ou tentacule !' : `${bare(who?.name)} choisit un coffre…`}{left != null ? ` · ${Math.ceil(left / 1000)} s` : ''}</p>
+        <div className="tq-cursed-row">
+          {[0, 1, 2].map(i => <button key={i} disabled={!mine} onClick={() => onPick(i)} style={{ '--i': i }}><img src="/traque/ico/case-chest.webp" alt={`Coffre ${i + 1}`} /></button>)}
+        </div>
+      </div>
     </div>
   )
 }

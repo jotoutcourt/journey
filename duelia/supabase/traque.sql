@@ -46,6 +46,7 @@ create table if not exists public.traque_players (
   updated_at timestamptz not null default now(),
   primary key (game_id, seat)
 );
+alter table public.traque_players add column if not exists bubble boolean not null default false;
 create index if not exists traque_players_player on public.traque_players (player_id, status);
 alter table public.traque_games enable row level security;
 alter table public.traque_players enable row level security;
@@ -207,9 +208,77 @@ begin
       ev := '🐙 Le Kraken éternue : ' || me.name || ' est projeté de 3 cases en avant !';
     end if;
     perform tq_event(p_game, ev, jsonb_build_object('tentacle', true));
+  elsif typ = 'crab' then
+    -- Crabe farceur : échange de place avec un joueur tiré au hasard
+    select seat into other from traque_players where game_id = p_game and seat <> p_seat and status in ('joined', 'bot', 'left') order by random() limit 1;
+    if other is not null then
+      update traque_players t set pos = case when t.seat = p_seat then o.pos else me.pos end
+      from (select pos from traque_players where game_id = p_game and seat = other) o
+      where t.game_id = p_game and t.seat in (p_seat, other);
+      perform tq_event(p_game, '🦀 Le crabe farceur pince ' || me.name || ' et l''échange de place avec ' || tq_name(p_game, other) || ' !', jsonb_build_object('crab', true, 'seat', p_seat, 'other', other));
+    else perform tq_event(p_game, '🦀 Le crabe farceur cherche quelqu''un à pincer… personne !', '{}'::jsonb); end if;
+  elsif typ = 'bubble' then
+    update traque_players set bubble = true where game_id = p_game and seat = p_seat;
+    perform tq_event(p_game, '🫧 ' || me.name || ' est pris dans une bulle : son prochain dé comptera double, sans arrêt en boutique !', jsonb_build_object('bubble', true, 'seat', p_seat));
+  elsif typ = 'puffer' then
+    -- Poisson-ballon (une seule fois) : +2 perles pour les autres, -2 pour le joueur
+    update traque_players set pearls = pearls + 2 where game_id = p_game and seat <> p_seat and status in ('joined', 'bot', 'left');
+    update traque_players set pearls = greatest(0, pearls - 2) where game_id = p_game and seat = p_seat;
+    update traque_games set board = jsonb_set(board, array[me.pos::text], jsonb_build_object('t', 'general', 'topic', tq_general(p_game))) where id = p_game;
+    perform tq_event(p_game, '🐡 Le poisson-ballon explose ! Tout le monde gagne 2 perles… sauf ' || me.name || ', qui en perd 2.', jsonb_build_object('puffer', true, 'seat', p_seat));
+  elsif typ = 'whirl' then
+    -- Tourbillon (une seule fois) : tous les pions sont mélangés
+    with a as (select seat, pos, row_number() over (order by seat) rn from traque_players where game_id = p_game and status in ('joined', 'bot', 'left')),
+         b as (select pos, row_number() over (order by random()) rn from a)
+    update traque_players t set pos = b.pos from a join b using (rn) where t.game_id = p_game and t.seat = a.seat;
+    update traque_games set board = jsonb_set(board, array[me.pos::text], jsonb_build_object('t', 'general', 'topic', tq_general(p_game))) where id = p_game;
+    perform tq_event(p_game, '🌀 ' || me.name || ' déclenche un tourbillon : tous les pions sont mélangés !', jsonb_build_object('whirl', true));
+  elsif typ = 'cursed' then
+    -- Coffre maudit : 3 coffres fermés, à choisir
+    update traque_games set phase = 'pick',
+      data = jsonb_build_object('seat', p_seat, 'cell', me.pos, 'box', (select jsonb_agg(x order by random()) from unnest(array['pearls', 'item', 'tentacle']) x)),
+      deadline = now() + make_interval(secs => case when me.bot is not null or me.status = 'left' then 2 else 15 end), version = version + 1
+    where id = p_game;
+    perform tq_log(p_game, '🎁 ' || me.name || ' tombe sur le coffre maudit : trois coffres, un seul choix…');
   else
     perform tq_event(p_game, me.name || ' se repose.', '{}'::jsonb);
   end if;
+end $$;
+
+-- Ouverture d'un des 3 coffres maudits
+create or replace function public.tq_cursed_open(p_game uuid, p_choice int) returns void language plpgsql as $$
+declare g traque_games; s int; nm text; what text; it text; bag int;
+begin
+  select * into g from traque_games where id = p_game;
+  if g.phase <> 'pick' then return; end if;
+  s := (g.data ->> 'seat')::int; nm := tq_name(p_game, s);
+  what := g.data -> 'box' ->> least(2, greatest(0, p_choice));
+  if what = 'pearls' then
+    update traque_players set pearls = pearls + 6 where game_id = p_game and seat = s;
+    perform tq_event(p_game, '🎁 ' || nm || ' ouvre le bon coffre : +6 perles !', jsonb_build_object('cursed', p_choice, 'box', g.data -> 'box', 'seat', s));
+  elsif what = 'item' then
+    select jsonb_array_length(items) into bag from traque_players where game_id = p_game and seat = s;
+    it := (array['double', 'ancre', 'joker', 'vol', 'echange'])[1 + floor(random() * 5)::int];
+    if bag < 3 then
+      update traque_players set items = items || to_jsonb(it) where game_id = p_game and seat = s;
+      perform tq_event(p_game, '🎁 ' || nm || ' trouve un objet dans le coffre : ' || case it when 'double' then 'le double dé' when 'ancre' then 'l''ancre' when 'joker' then 'le joker 50/50' when 'vol' then 'le vol' else 'l''échange' end || ' !', jsonb_build_object('cursed', p_choice, 'box', g.data -> 'box', 'seat', s, 'item', it));
+    else
+      update traque_players set pearls = pearls + 4 where game_id = p_game and seat = s;
+      perform tq_event(p_game, '🎁 Un objet dans le coffre, mais le sac de ' || nm || ' est plein : +4 perles à la place.', jsonb_build_object('cursed', p_choice, 'box', g.data -> 'box', 'seat', s));
+    end if;
+  else
+    perform tq_shift(p_game, s, -3);
+    perform tq_event(p_game, '🐙 Coffre maudit ! Un tentacule en jaillit et entraîne ' || nm || ' 3 cases en arrière.', jsonb_build_object('cursed', p_choice, 'box', g.data -> 'box', 'seat', s, 'tentacle', true));
+  end if;
+end $$;
+
+create or replace function public.traque_cursed(p_game uuid, p_choice int) returns json language plpgsql security definer set search_path = public as $$
+declare s int := tq_my_seat(p_game); g traque_games;
+begin
+  select * into g from traque_games where id = p_game for update;
+  if g.phase = 'pick' and (g.data ->> 'seat')::int = s then perform tq_cursed_open(p_game, p_choice); end if;
+  perform traque_tick(p_game);
+  return traque_view(p_game, current_player());
 end $$;
 
 -- Joueur suivant (en sautant ceux qui sont bloqués)
@@ -254,10 +323,13 @@ begin
   d1 := 1 + floor(random() * 6)::int;
   if coalesce((g.data ->> 'double')::boolean, false) then d2 := 1 + floor(random() * 6)::int; end if;
   tot := d1 + d2;
+  if me.bubble then tot := tot * 2; update traque_players set bubble = false where game_id = p_game and seat = g.turn; end if;
   np := least(tq_const('cells') - 1, me.pos + tot);
-  select min(i) into shop from generate_series(me.pos + 1, np) i where g.board -> i ->> 't' = 'shop';
+  if not me.bubble then
+    select min(i) into shop from generate_series(me.pos + 1, np) i where g.board -> i ->> 't' = 'shop';
+  end if;
   update traque_players set pos = coalesce(shop, np), updated_at = now() where game_id = p_game and seat = g.turn;
-  perform tq_log(p_game, '🎲 ' || me.name || ' fait ' || tot || case when d2 > 0 then ' (' || d1 || ' + ' || d2 || ')' else '' end);
+  perform tq_log(p_game, '🎲 ' || me.name || ' fait ' || tot || case when d2 > 0 then ' (' || d1 || ' + ' || d2 || ')' else '' end || case when me.bubble then ' : la bulle double le dé ! 🫧' else '' end);
   update traque_games set phase = 'show', data = jsonb_build_object('dice', jsonb_build_array(d1) || case when d2 > 0 then jsonb_build_array(d2) else '[]'::jsonb end,
     'from', me.pos, 'to', coalesce(shop, np), 'seat', g.turn) || case when g.data ? 'flash' then jsonb_build_object('flash', g.data -> 'flash') else '{}'::jsonb end || case when shop is not null then jsonb_build_object('shop', shop, 'rest', np - shop) else '{}'::jsonb end,
     deadline = now() + make_interval(secs => tq_const('show')), version = version + 1 where id = p_game;
@@ -445,6 +517,11 @@ begin
       elsif due then perform tq_shop_leave(p_game);
       else exit; end if;
 
+    elsif g.phase = 'pick' then
+      select * into s from traque_players where game_id = p_game and seat = (d ->> 'seat')::int;
+      if (s.bot is not null and now() >= g.deadline - interval '1 second') or due then perform tq_cursed_open(p_game, floor(random() * 3)::int);
+      else exit; end if;
+
     elsif g.phase = 'event' then
       exit when not due;
       perform tq_next(p_game);
@@ -529,13 +606,14 @@ begin
               from jsonb_each(d -> 'ans') kv(k, v)) end,
       'left_ms', greatest(0, floor(extract(epoch from (g.deadline - now())) * 1000))::int);
   else
+    if g.phase = 'pick' then d := d - 'box'; end if;
     d := d || jsonb_build_object('left_ms', case when g.deadline is null then null else greatest(0, floor(extract(epoch from (g.deadline - now())) * 1000))::int end);
   end if;
   return json_build_object(
     'id', g.id, 'status', g.status, 'host', g.host = p_pid, 'me', me, 'turn', g.turn, 'round', g.round, 'phase', g.phase, 'data', d,
     'treasure', g.treasure, 'winner', g.winner, 'board', g.board, 'topics', g.topics, 'log', g.log, 'version', g.version,
     'players', (select coalesce(json_agg(json_build_object('seat', seat, 'name', name, 'avatar', avatar, 'photo', photo, 'status', status, 'bot', bot,
-        'player_id', player_id, 'pawn', pawn, 'topics', topics, 'pos', pos, 'pearls', pearls, 'items', items, 'skip', skip, 'reward', reward,
+        'player_id', player_id, 'pawn', pawn, 'topics', topics, 'pos', pos, 'pearls', pearls, 'items', items, 'skip', skip, 'bubble', bubble, 'reward', reward,
         'online', case when player_id is null then true else (select last_seen > now() - interval '70 seconds' from players where id = player_id) end) order by seat), '[]'::json)
       from traque_players where game_id = p_game and status <> 'declined'));
 end $$;
@@ -661,6 +739,12 @@ begin
   for i in 31 .. 35 loop types[i] := 'current'; end loop;
   for i in 36 .. 40 loop types[i] := 'tentacle'; end loop;
   for i in 41 .. 44 loop types[i] := 'shortcut'; end loop;
+  -- cases loufoques : 3 crabes, 3 bulles, 3 coffres maudits (permanents), 2 poissons-ballons et 2 tourbillons (une seule fois)
+  for i in 45 .. 47 loop types[i] := 'crab'; end loop;
+  for i in 48 .. 50 loop types[i] := 'bubble'; end loop;
+  for i in 51 .. 53 loop types[i] := 'cursed'; end loop;
+  for i in 54 .. 55 loop types[i] := 'puffer'; end loop;
+  for i in 56 .. 57 loop types[i] := 'whirl'; end loop;
   select array_agg(x order by random()) into types from unnest(types) x;
   cells := jsonb_build_array(jsonb_build_object('t', 'start'));
   n := 0;
@@ -679,8 +763,8 @@ begin
       'items', (select jsonb_agg(x) from (select x from unnest(array['double', 'ancre', 'joker', 'vol', 'echange']) x order by random() limit 3) z)));
   end loop;
   update traque_games set status = 'playing', board = cells, topics = p_topics, general = p_general, pool = p_pool, used = '{}'::jsonb,
-    started_at = now(), turn = -1, round = 1, treasure = 0, phase = 'event', data = jsonb_build_object('text', '🐙 La chasse commence ! Le trésor du Kraken est vide…'),
-    deadline = now() + interval '4 seconds', version = version + 1
+    started_at = now(), turn = -1, round = 1, treasure = 0, phase = 'event', data = jsonb_build_object('text', '🐙 La chasse commence ! Le trésor du Kraken est vide…', 'reveal', p_general),
+    deadline = now() + interval '11 seconds', version = version + 1
   where id = p_game;
   update traque_players set pos = 0, pearls = 5, items = '[]'::jsonb, skip = 0 where game_id = p_game;
   perform tq_log(p_game, '🐙 La chasse commence !');
@@ -806,9 +890,9 @@ revoke all on function public.get_traque(uuid), public.create_traque(), public.i
 grant execute on function public.get_traque(uuid), public.create_traque(), public.invite_traque(uuid, uuid), public.add_traque_bot(uuid, text, jsonb),
   public.remove_traque_seat(uuid, int), public.respond_traque(uuid, boolean), public.set_traque_topics(uuid, jsonb), public.leave_traque(uuid),
   public.start_traque(uuid, jsonb, jsonb, jsonb), public.traque_roll(uuid), public.traque_buy(uuid, text), public.traque_use(uuid, text, int),
-  public.traque_answer(uuid, int, int), public.my_traque(), public.traque_shop_leave(uuid), public.traque_ready(uuid) to authenticated;
+  public.traque_answer(uuid, int, int), public.my_traque(), public.traque_shop_leave(uuid), public.traque_ready(uuid), public.traque_cursed(uuid, int) to authenticated;
 revoke all on function public.traque_tick(uuid), public.traque_view(uuid, uuid), public.tq_quiz(uuid, text, int[], text[], jsonb, boolean),
   public.tq_land(uuid, int), public.tq_next(uuid), public.tq_roll(uuid), public.tq_finish(uuid, int), public.tq_quiz_done(uuid),
   public.tq_put_answer(uuid, int, int), public.tq_pick(uuid, text), public.tq_event(uuid, text, jsonb), public.tq_shift(uuid, int, int),
   public.tq_final(uuid, int), public.tq_log(uuid, text), public.tq_general(uuid), public.tq_name(uuid, int), public.tq_free_seat(uuid),
-  public.traque_invites_for(uuid), public.tq_shop_buy(uuid, int, text), public.tq_shop_leave(uuid), public.tq_shop_price(uuid, text), public.tq_flash(uuid, text, int, int, text) from public, anon, authenticated;
+  public.traque_invites_for(uuid), public.tq_shop_buy(uuid, int, text), public.tq_shop_leave(uuid), public.tq_shop_price(uuid, text), public.tq_flash(uuid, text, int, int, text), public.tq_cursed_open(uuid, int) from public, anon, authenticated;
