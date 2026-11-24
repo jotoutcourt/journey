@@ -1653,3 +1653,11 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
 .tq-lobby-voice > span { flex: 1; display: grid; min-width: 0; }
 .tq-lobby-voice small { color: var(--muted); font-size: 12px; }
 .tq-seats li.speaking { box-shadow: 0 0 0 2px var(--c), 0 0 18px var(--c) !important; }
+/* reprendre plus tard */
+.tq-pause-ask { position: absolute; left: 50%; top: calc(env(safe-area-inset-top) + 200px); transform: translateX(-50%); z-index: 25; width: min(92vw, 380px);
+  display: grid; gap: 6px; padding: 12px 14px; border-radius: 18px; text-align: center; background: linear-gradient(180deg, #3d22a0f5, #1f1060f5);
+  box-shadow: 0 0 0 2px #ffc940, 0 10px 24px #000c; animation: sb-pop .35s both; }
+.tq-pause-ask small { color: #d8ccff; font-size: 12px; }
+.tq-pause-ask span { display: flex; gap: 8px; justify-content: center; }
+.tq-pause-ask.mine { font-weight: 700; font-size: 13px; box-shadow: 0 0 0 1.5px #b8a4ff, 0 10px 24px #000c; }
+.tq-round-btn:disabled { opacity: .5; }

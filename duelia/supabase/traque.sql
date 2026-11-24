@@ -10,7 +10,7 @@ alter table public.wallet_log add constraint wallet_log_reason_check check (reas
 create table if not exists public.traque_games (
   id uuid primary key default gen_random_uuid(),
   host uuid not null references public.players (id) on delete cascade,
-  status text not null default 'lobby' check (status in ('lobby', 'playing', 'done', 'cancelled')),
+  status text not null default 'lobby' check (status in ('lobby', 'playing', 'paused', 'done', 'cancelled')),
   board jsonb not null default '[]'::jsonb,      -- [{t: type, topic?: id}]
   topics jsonb not null default '{}'::jsonb,     -- id -> {name, icon, color}
   general jsonb not null default '[]'::jsonb,    -- ids des thèmes « généraux »
@@ -322,6 +322,7 @@ begin
     data = case when s.ghost then jsonb_build_object('seat', nxt) else '{}'::jsonb end,
     deadline = now() + make_interval(secs => case when s.bot is not null or s.status = 'left' then 2 else tq_const('roll') end),
     version = version + 1 where id = p_game;
+  perform tq_pause_check(p_game);
 end $$;
 
 -- Le fantôme hante un joueur : il lance le dé, la cible recule d'autant
@@ -683,6 +684,7 @@ begin
   return json_build_object(
     'id', g.id, 'status', g.status, 'host', g.host = p_pid, 'me', me, 'turn', g.turn, 'round', g.round, 'phase', g.phase, 'data', d,
     'treasure', g.treasure, 'winner', g.winner, 'board', g.board, 'topics', g.topics, 'log', g.log, 'version', g.version,
+    'pause', g.pause, 'back', g.back, 'paused_at', g.paused_at,
     'players', (select coalesce(json_agg(json_build_object('seat', seat, 'name', name, 'avatar', avatar, 'photo', photo, 'status', status, 'bot', bot,
         'player_id', player_id, 'pawn', pawn,
         -- au salon, les spécialités des adversaires restent secrètes (on ne voit que leur nombre)
@@ -695,6 +697,7 @@ create or replace function public.get_traque(p_game uuid) returns json language 
 declare pid uuid := current_player();
 begin
   if pid is null then return null; end if;
+  perform tq_pause_expire(p_game);
   perform traque_tick(p_game);
   update players set last_seen = now() where id = pid;
   return traque_view(p_game, pid);
@@ -705,7 +708,7 @@ create or replace function public.create_traque() returns uuid language plpgsql 
 declare pid uuid := current_player(); gid uuid; me players;
 begin
   if pid is null then raise exception 'aucun joueur'; end if;
-  delete from traque_games where created_at < now() - interval '2 days';
+  delete from traque_games where (created_at < now() - interval '2 days' and status <> 'paused') or (status = 'paused' and paused_at < now() - interval '30 days');
   update traque_games set status = 'cancelled' where host = pid and status = 'lobby';
   select * into me from players where id = pid;
   insert into traque_games (host) values (pid) returning id into gid;

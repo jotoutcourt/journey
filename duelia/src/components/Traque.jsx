@@ -64,7 +64,7 @@ export function Traque({ gameId, topics, friends = [], onExit, onWallet }) {
   const [hungUp, setHungUp] = useState(false)
   const meP = v?.players.find(p => p.seat === v.me)
   const peers = v ? v.players.filter(p => p.player_id && p.seat !== v.me && p.status === 'joined').map(p => p.player_id) : []
-  const voice = useGroupVoice(gameId, meP?.player_id, peers, !!v && ['lobby', 'playing', 'done'].includes(v.status) && !hungUp && !!meP && peers.length > 0)
+  const voice = useGroupVoice(gameId, meP?.player_id, peers, !!v && ['lobby', 'playing', 'paused', 'done'].includes(v.status) && !hungUp && !!meP && peers.length > 0)
   const vc = { voice, peers, hungUp, onHangUp: () => setHungUp(true) }
 
   // fin de partie : le portefeuille se met à jour
@@ -74,10 +74,53 @@ export function Traque({ gameId, topics, friends = [], onExit, onWallet }) {
   if (v.status === 'cancelled') return (
     <div className="screen traque center"><p>La partie a été annulée.</p><button className="btn btn-primary" onClick={onExit}>Retour</button></div>
   )
-  const body = v.status === 'lobby'
+  const body = v.status === 'paused'
+    ? <PausedRoom v={v} gameId={gameId} act={act} onExit={onExit} vc={vc} />
+    : v.status === 'lobby'
     ? <TraqueLobby v={v} gameId={gameId} officials={officials} topics={topics} friends={friends} act={act} onExit={onExit} onWallet={onWallet} vc={vc} />
     : <TraqueBoard v={v} gameId={gameId} act={act} onExit={onExit} vc={vc} />
   return <>{body}{toast && <div className="toast" role="status">{toast}</div>}</>
+}
+
+/* ---------- Partie en pause : on attend que tout le monde revienne ---------- */
+function PausedRoom({ v, gameId, act, onExit, vc }) {
+  const { voice, peers } = vc
+  const back = v.back || []
+  const humans = v.players.filter(p => p.player_id && p.status === 'joined')
+  const meBack = back.includes(v.me)
+  // ouvrir la partie en pause = « je suis de retour »
+  useEffect(() => { if (!meBack) act(() => api.traqueBack(gameId)) }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  const [now] = useState(() => Date.now())
+  const days = v.paused_at ? Math.max(0, 7 - Math.floor((now - Date.parse(v.paused_at)) / 86400000)) : 7
+  return (
+    <div className="screen traque lobby">
+      <header className="top">
+        <button className="icon-btn" onClick={onExit} aria-label="Plus tard">←</button>
+        <h1>Partie en pause</h1>
+      </header>
+      <p className="tq-pitch">Tour {v.round} · trésor de {v.treasure} lingots. La chasse reprend dès que tout le monde est revenu{days < 7 ? ` (encore ${days} jour${days > 1 ? 's' : ''})` : ''}.</p>
+      <ul className="tq-seats">
+        {humans.map(p => (
+          <li key={p.seat} style={{ '--c': SEAT_COLORS[p.seat] }} className={voice.speaking[p.seat === v.me ? 'me' : p.player_id] ? 'speaking' : ''}>
+            <img className="tq-seat-pawn" src={pawnImg(p.pawn, p.seat)} alt="" />
+            <div className="tq-seat-txt"><b>{bare(p.name)}{p.seat === v.me ? ' (toi)' : ''}</b>
+              <small>{back.includes(p.seat) ? '✅ De retour' : '⏳ Pas encore là (notifié)'} · case {p.pos} · {p.pearls} perles</small></div>
+          </li>
+        ))}
+      </ul>
+      {peers.length > 0 && <div className="tq-lobby-voice">
+        <button className={`tq-round-btn mic ${voice.mic}`} onClick={voice.toggleMic} disabled={voice.mic === 'asking' || voice.mic === 'unsupported'} aria-label="Micro">
+          {{ on: '🎙️', muted: '🔇', asking: '⏳', denied: '🚫', unsupported: '🚫' }[voice.mic] || '🎙️'}</button>
+        <span><b>Vocal</b><small>Discutez en attendant les autres.</small></span>
+        {voice.needTap && <button className="btn btn-small btn-ghost" onClick={voice.unlock}>🔊 Entendre</button>}
+      </div>}
+      <div className="tq-dock">
+        {v.host && back.length < humans.length
+          ? <ConfirmButton className="kh-play wide" onConfirm={() => act(() => api.traqueResumeNow(gameId))} confirmLabel="Les absents seront joués par des robots, sûr ?">▶️ Reprendre sans les absents</ConfirmButton>
+          : <p className="tq-wait">{back.length < humans.length ? '⏳ La chasse reprend dès que tout le monde est là.' : '▶️ C\'est reparti !'}</p>}
+      </div>
+    </div>
+  )
 }
 
 /* ---------- Salon ---------- */
@@ -353,6 +396,8 @@ function TraqueBoard({ v, gameId, act, onExit, vc }) {
           <div className="tq-treasure" title="Trésor du Kraken"><span><img src="/traque/ico/case-chest.webp" alt="" /> <b>{v.treasure}</b></span></div>
           {peers.length > 0 && <button className={`tq-round-btn mic ${voice.mic}`} onClick={voice.toggleMic} disabled={voice.mic === 'asking' || voice.mic === 'unsupported'} aria-label="Micro">
             {{ on: '🎙️', muted: '🔇', asking: '⏳', denied: '🚫', unsupported: '🚫' }[voice.mic] || '🎙️'}</button>}
+          {v.status === 'playing' && !v.pause && <button className="tq-round-btn" aria-label="Reprendre plus tard" title="Reprendre plus tard"
+            disabled={v.phase !== 'roll'} onClick={() => act(() => api.traquePauseAsk(gameId))}>⏸️</button>}
           <ConfirmButton className="tq-round-btn" onConfirm={() => { api.leaveTraque(gameId).catch(() => {}); onExit() }} confirmLabel="Quitter ?">✕</ConfirmButton>
         </div>
       </div>
@@ -373,6 +418,15 @@ function TraqueBoard({ v, gameId, act, onExit, vc }) {
       </ul>
       </div>
       {voice.needTap && <button className="link-btn tq-tap" onClick={voice.unlock}>🔊 Touche ici pour entendre les autres</button>}
+      {v.pause && v.status === 'playing' && (
+        (v.pause.yes || []).includes(v.me)
+          ? <div className="tq-pause-ask mine">⏸️ Pause proposée · en attente des autres joueurs…</div>
+          : <div className="tq-pause-ask">
+              <b>⏸️ {bare(v.players.find(p => p.seat === v.pause.by)?.name)} propose de reprendre la partie plus tard</b>
+              <small>Tout est sauvegardé, la partie vous attendra 7 jours.</small>
+              <span><button className="btn btn-small btn-gold" onClick={() => act(() => api.traquePauseVote(gameId, true))}>D'accord</button>
+                <button className="btn btn-small btn-ghost" onClick={() => act(() => api.traquePauseVote(gameId, false))}>On continue</button></span>
+            </div>)}
 
       {/* HUD du bas */}
       <div className="tq-hud-bottom">
