@@ -149,9 +149,9 @@ function TraqueLobby({ v, gameId, officials, topics, friends, act, onExit, onWal
           {PAWNS.map(pw => {
             const taken = v.players.find(p => p.pawn === pw.id && p.seat !== v.me && ['joined', 'bot', 'invited'].includes(p.status))
             return (
-              <button key={pw.id} className={`${(me?.pawn || PAWNS[v.me % PAWNS.length].id) === pw.id ? 'on' : ''} ${hasPawn(pw.id) ? '' : 'locked'} ${buying?.id === pw.id ? 'sel' : ''}`} disabled={!!taken} title={taken ? `Prise par ${taken.name}` : pw.name}
+              <button key={pw.id} className={`${(me?.pawn || PAWNS[v.me % PAWNS.length].id) === pw.id ? 'on' : ''} ${hasPawn(pw.id) ? '' : 'locked'} ${buying?.id === pw.id ? 'sel' : ''}`} disabled={!!taken} title={taken ? `Prise par ${taken.name}` : hasPawn(pw.id) ? pw.name : 'Figurine mystère'}
                 onClick={() => hasPawn(pw.id) ? act(() => api.setTraquePawn(gameId, pw.id).then(() => api.getTraque(gameId))) : (setBuying(true), setBuyErr(''))}>
-                <img src={pw.img} alt={pw.name} />
+                <img src={pw.img} alt={hasPawn(pw.id) ? pw.name : 'Figurine mystère'} />
                 {!hasPawn(pw.id) && <span className="tq-pawn-price">🔒</span>}
               </button>
             )
