@@ -60,6 +60,13 @@ export function Traque({ gameId, topics, friends = [], onExit, onWallet }) {
     catch (e) { setToast(errText(e)); setTimeout(() => setToast(null), 2600) }
   }
 
+  // vocal : ouvert dès le salon et gardé pendant toute la partie (chacun raccroche quand il veut à la fin)
+  const [hungUp, setHungUp] = useState(false)
+  const meP = v?.players.find(p => p.seat === v.me)
+  const peers = v ? v.players.filter(p => p.player_id && p.seat !== v.me && p.status === 'joined').map(p => p.player_id) : []
+  const voice = useGroupVoice(gameId, meP?.player_id, peers, !!v && ['lobby', 'playing', 'done'].includes(v.status) && !hungUp && !!meP && peers.length > 0)
+  const vc = { voice, peers, hungUp, onHangUp: () => setHungUp(true) }
+
   // fin de partie : le portefeuille se met à jour
   useEffect(() => { if (v?.status === 'done') onWallet?.() }, [v?.status]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -68,13 +75,14 @@ export function Traque({ gameId, topics, friends = [], onExit, onWallet }) {
     <div className="screen traque center"><p>La partie a été annulée.</p><button className="btn btn-primary" onClick={onExit}>Retour</button></div>
   )
   const body = v.status === 'lobby'
-    ? <TraqueLobby v={v} gameId={gameId} officials={officials} topics={topics} friends={friends} act={act} onExit={onExit} onWallet={onWallet} />
-    : <TraqueBoard v={v} gameId={gameId} act={act} onExit={onExit} />
+    ? <TraqueLobby v={v} gameId={gameId} officials={officials} topics={topics} friends={friends} act={act} onExit={onExit} onWallet={onWallet} vc={vc} />
+    : <TraqueBoard v={v} gameId={gameId} act={act} onExit={onExit} vc={vc} />
   return <>{body}{toast && <div className="toast" role="status">{toast}</div>}</>
 }
 
 /* ---------- Salon ---------- */
-function TraqueLobby({ v, gameId, officials, topics, friends, act, onExit, onWallet }) {
+function TraqueLobby({ v, gameId, officials, topics, friends, act, onExit, onWallet, vc }) {
+  const { voice, peers } = vc
   // figurines achetées par le joueur (les 4 premières sont offertes)
   const [owned, setOwned] = useState(null)
   const [buying, setBuying] = useState(false)
@@ -122,7 +130,7 @@ function TraqueLobby({ v, gameId, officials, topics, friends, act, onExit, onWal
 
       <ul className="tq-seats">
         {seats.map((p, s) => (
-          <li key={s} style={{ '--c': SEAT_COLORS[s] }} className={p ? '' : 'empty'}>
+          <li key={s} style={{ '--c': SEAT_COLORS[s] }} className={`${p ? '' : 'empty'} ${p?.player_id && (p.seat === v.me ? voice.speaking.me : voice.speaking[p.player_id]) ? 'speaking' : ''}`}>
             {p ? <>
               <img className="tq-seat-pawn" src={pawnImg(p.pawn, p.seat)} alt="" />
               <div className="tq-seat-txt">
@@ -142,6 +150,17 @@ function TraqueLobby({ v, gameId, officials, topics, friends, act, onExit, onWal
           </li>
         ))}
       </ul>
+
+      {/* vocal dès le salon : on discute en attendant le lancement */}
+      <div className="tq-lobby-voice">
+        {peers.length > 0 ? <>
+          <button className={`tq-round-btn mic ${voice.mic}`} onClick={voice.toggleMic} disabled={voice.mic === 'asking' || voice.mic === 'unsupported'} aria-label="Micro">
+            {{ on: '🎙️', muted: '🔇', asking: '⏳', denied: '🚫', unsupported: '🚫' }[voice.mic] || '🎙️'}</button>
+          <span><b>{voice.mic === 'on' ? 'Micro allumé' : voice.mic === 'muted' ? 'Micro coupé' : voice.mic === 'denied' ? 'Micro refusé' : 'Vocal du salon'}</b>
+            <small>{voice.mic === 'denied' ? 'Autorise le micro dans les réglages du téléphone.' : voice.mic === 'unsupported' ? 'Pas de micro sur cet appareil.' : 'Discutez en attendant le lancement, ça continue en partie.'}</small></span>
+          {voice.needTap && <button className="btn btn-small btn-ghost" onClick={voice.unlock}>🔊 Entendre</button>}
+        </> : <span><b>🎙️ Vocal du salon</b><small>Il s'active dès qu'un ami a rejoint.</small></span>}
+      </div>
 
       <section className="tq-mine">
         <h3 className="sec-title">Ta figurine</h3>
@@ -255,7 +274,7 @@ function useTicker(ms, deps) {
   return ms == null ? null : left
 }
 
-function TraqueBoard({ v, gameId, act, onExit }) {
+function TraqueBoard({ v, gameId, act, onExit, vc }) {
   const [bag, setBag] = useState(false)
   const [target, setTarget] = useState(null) // objet en attente d'une cible
   const me = v.players.find(p => p.seat === v.me)
@@ -274,10 +293,8 @@ function TraqueBoard({ v, gameId, act, onExit }) {
     setTimeout(() => setFlash(x => (x?.id === fl.id ? null : x)), 4000)
   }, [fl])
   // voix : une connexion vers chaque autre joueur humain encore là
-  const peers = v.players.filter(p => p.player_id && p.seat !== v.me && p.status === 'joined').map(p => p.player_id)
   // la voix reste ouverte après la victoire, pour débriefer : chacun raccroche quand il veut
-  const [hungUp, setHungUp] = useState(false)
-  const voice = useGroupVoice(gameId, me?.player_id, peers, ['playing', 'done'].includes(v.status) && !hungUp && !!me && peers.length > 0)
+  const { voice, peers, hungUp, onHangUp } = vc
 
   // animation des pions : on avance case par case
   const [shown, setShown] = useState(() => Object.fromEntries(v.players.map(p => [p.seat, p.pos])))
@@ -388,7 +405,7 @@ function TraqueBoard({ v, gameId, act, onExit }) {
       {v.phase === 'shop' && <Shop v={v} d={d} me={me} left={left} onBuy={(k) => act(() => api.traqueBuy(gameId, k))} onLeave={() => act(() => api.traqueShopLeave(gameId))} />}
       {v.phase === 'quiz' && <div className="tq-quiz-wrap"><Quiz v={v} d={d} left={left} me={me} topicOf={topicOf} onAnswer={(i) => act(() => api.traqueAnswer(gameId, d.idx, i))}
         onJoker={() => act(() => api.traqueUse(gameId, 'joker'))} /></div>}
-      {v.phase === 'done' && <div className="tq-quiz-wrap"><Finale v={v} onExit={onExit} voice={peers.length > 0 && !hungUp ? voice : null} onHangUp={() => setHungUp(true)} /></div>}
+      {v.phase === 'done' && <div className="tq-quiz-wrap"><Finale v={v} onExit={onExit} voice={peers.length > 0 && !hungUp ? voice : null} onHangUp={onHangUp} /></div>}
 
       {bag && <Bag me={me} v={v} onClose={() => setBag(false)}
         onUse={(k) => { if (ITEMS[k].target) { setTarget(k); setBag(false) } else { setBag(false); act(() => api.traqueUse(gameId, k)) } }} />}
@@ -459,10 +476,11 @@ function PathBoard({ v, shown, topicOf, owners }) {
         {v.players.filter(p => p.status !== 'declined').map((p, _, all) => {
           const pos = shown[p.seat] ?? p.pos
           const [x, y] = at(pos)
-          // seul sur sa case : pile au centre ; à plusieurs : on se serre un peu
+          // seul sur sa case : pile au centre
           const mates = all.filter(q => (shown[q.seat] ?? q.pos) === pos)
           const k = mates.findIndex(q => q.seat === p.seat)
-          const off = mates.length === 1 ? [0, 0] : [[-3, 0], [3, 0], [0, -0.6], [0, 0.6]][k]
+          // plusieurs pions sur la même case : simplement côte à côte (un socle d'écart), centrés sur la case
+          const off = [(k - (mates.length - 1) / 2) * 6.4, 0]
           return <img key={p.seat} src={pawnImg(p.pawn, p.seat)} alt="" className={`tq-figure ${p.seat === v.turn ? 'active' : ''} ${p.ghost ? 'ghost' : ''}`}
             style={{ '--c': SEAT_COLORS[p.seat], left: `${x * 100 + off[0]}%`, top: `${y * 100 + off[1]}%` }} />
         })}

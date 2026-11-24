@@ -100,6 +100,8 @@ export function useGroupVoice(gameId, myId, peerIds, active) {
       } catch { /* réseau : on réessaie */ } finally { busy = false }
     }
     poll()
+    // micro déjà ouvert (ex. quelqu'un vient d'arriver au salon) : on le signale aux nouveaux venus
+    if (s.stream && s.micOn) ids.forEach(id => send(id, 'mic', { on: true }))
     const iv = setInterval(poll, 900)
     const lv = setInterval(() => {
       const t = performance.now()
@@ -113,11 +115,25 @@ export function useGroupVoice(gameId, myId, peerIds, active) {
       alive = false; clearInterval(iv); clearInterval(lv)
       ids.forEach(id => { send(id, 'bye'); s.peers[id]?.pc?.close(); if (s.peers[id]?.audio) s.peers[id].audio.srcObject = null })
       s.peers = {}
-      s.stream?.getTracks().forEach(t => t.stop()); s.stream = null
-      s.ctx?.close().catch(() => {}); s.ctx = null; s.myLevel = null
+      // le micro reste ouvert quand seuls les participants changent (il n'est coupé qu'à la sortie)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active, gameId, myId, peersKey])
+
+  // sortie du vocal (fin, raccroché, écran quitté) : on coupe vraiment le micro
+  useEffect(() => {
+    const s = r.current
+    const close = () => {
+      s.stream?.getTracks().forEach(t => t.stop()); s.stream = null; s.micOn = false
+      s.ctx?.close().catch(() => {}); s.ctx = null; s.myLevel = null
+    }
+    if (!active) { close(); setTimeout(() => { setMic(m => (m === 'unsupported' ? m : 'off')); setPeerMic({}) }, 0) }
+  }, [active])
+  useEffect(() => () => {
+    const s = r.current
+    s.stream?.getTracks().forEach(t => t.stop()); s.stream = null
+    s.ctx?.close().catch(() => {}); s.ctx = null
+  }, [])
 
   const toggleMic = useCallback(async () => {
     const s = r.current

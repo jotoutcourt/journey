@@ -1648,3 +1648,8 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
 @keyframes tq-count { 0% { transform: scale(2.2); opacity: 0; } 25% { transform: scale(1); opacity: 1; } 80% { opacity: 1; } 100% { transform: scale(.7); opacity: 0; } }
 .tq-reveal-card { animation-delay: calc(var(--i) * .75s + 3.2s) !important; }
 .tq-reveal p { animation-delay: calc(8 * .75s + 3.4s) !important; }
+/* vocal du salon */
+.tq-lobby-voice { display: flex; align-items: center; gap: 10px; margin: 10px 0 4px; padding: 8px 12px; border-radius: 16px; background: var(--card); box-shadow: 0 0 0 1px var(--line); }
+.tq-lobby-voice > span { flex: 1; display: grid; min-width: 0; }
+.tq-lobby-voice small { color: var(--muted); font-size: 12px; }
+.tq-seats li.speaking { box-shadow: 0 0 0 2px var(--c), 0 0 18px var(--c) !important; }
