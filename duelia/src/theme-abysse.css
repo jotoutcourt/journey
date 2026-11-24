@@ -1641,3 +1641,10 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
 .tq-pawn-buy .tq-mystery { flex: 0 0 44px; }
 /* figurines pas encore débloquées : silhouette noire, la surprise reste entière */
 .tq-pawn-pick button.locked img { filter: brightness(0) drop-shadow(0 0 1px #9d8cff) !important; opacity: .85; }
+/* décompte avant la révélation des thèmes */
+.tq-countdown { position: absolute; inset: 0; z-index: 30; display: grid; place-items: center; pointer-events: none;
+  font: 900 clamp(110px, 38vw, 180px) var(--display); color: #ffd76a; text-shadow: 0 0 0 #000, 0 6px 0 #a25c00, 0 0 40px #ffc940, 0 10px 30px #000c;
+  animation: tq-count .8s cubic-bezier(.2, 1.4, .4, 1) both; }
+@keyframes tq-count { 0% { transform: scale(2.2); opacity: 0; } 25% { transform: scale(1); opacity: 1; } 80% { opacity: 1; } 100% { transform: scale(.7); opacity: 0; } }
+.tq-reveal-card { animation-delay: calc(var(--i) * .75s + 3.2s) !important; }
+.tq-reveal p { animation-delay: calc(8 * .75s + 3.4s) !important; }

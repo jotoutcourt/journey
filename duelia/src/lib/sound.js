@@ -53,6 +53,10 @@ function knock(delay = 0, gain = 0.25, freq = 1800) {
 export const SUSPENSE_MS = 2600
 
 export const sfx = {
+  // décompte avant la révélation : « bip » pour 3, 2, 1, et un « bip » plus aigu et plus long pour 0
+  count: (n) => { n > 0 ? tone(660, 0.14, 'square', 0.06) : (tone(990, 0.35, 'square', 0.07), tone(1320, 0.35, 'sine', 0.04, 0.02)) },
+  // carte qui se retourne : petit « flap » de papier + note qui monte
+  flip: () => { knock(0, 0.14, 2600); knock(0.05, 0.1, 1800); tone(520, 0.12, 'triangle', 0.05, 0.03, 880) },
   // dé qui roule sur la table puis s'arrête : chocs de plus en plus espacés, et un dernier « clac »
   dice: () => {
     let t = 0, gap = 0.045

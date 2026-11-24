@@ -854,7 +854,7 @@ begin
   end loop;
   update traque_games set status = 'playing', board = cells, topics = mt, general = to_jsonb(gen), pool = mp, used = '{}'::jsonb,
     started_at = now(), turn = -1, round = 1, treasure = 0, phase = 'event', data = jsonb_build_object('text', '🐙 La chasse commence ! Le trésor du Kraken est vide…', 'reveal', to_jsonb(gen)),
-    deadline = now() + interval '11 seconds', version = version + 1
+    deadline = now() + interval '13 seconds', version = version + 1
   where id = p_game;
   update traque_players set pos = 0, pearls = 5, items = '[]'::jsonb, skip = 0 where game_id = p_game;
   perform tq_log(p_game, '🐙 La chasse commence !');

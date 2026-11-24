@@ -664,9 +664,20 @@ function EventView({ d }) {
 }
 
 // Lancement : révélation des 8 thèmes du plateau, une carte après l'autre
+const REVEAL_START = 3.2 // s : décompte 3, 2, 1, 0 avant que les cartes se retournent
+const REVEAL_GAP = 0.75 // s entre deux cartes
 function Reveal({ ids, topicOf }) {
+  const [n, setN] = useState(3)
+  useEffect(() => {
+    const ts = [3, 2, 1, 0].map((k, i) => setTimeout(() => { setN(k); try { sfx.count?.(k) } catch { /* son facultatif */ } }, i * 800))
+    ts.push(setTimeout(() => setN(null), 3 * 800 + 700))
+    // un son à chaque carte retournée, calé sur l'animation
+    ids.forEach((_, i) => ts.push(setTimeout(() => { try { sfx.flip?.() } catch { /* son facultatif */ } }, (REVEAL_START + i * REVEAL_GAP + 0.25) * 1000)))
+    return () => ts.forEach(clearTimeout)
+  }, [ids.length]) // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <div className="tq-center dim">
+      {n != null && <div className="tq-countdown" key={n}>{n}</div>}
       <div className="tq-reveal">
         <img className="tq-reveal-title" src="/traque/titre-themes.webp" alt="Les thèmes de la chasse" />
         <div className="tq-reveal-grid">
