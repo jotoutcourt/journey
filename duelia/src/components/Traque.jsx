@@ -164,7 +164,7 @@ function TraqueLobby({ v, gameId, officials, topics, friends, act, onExit, onWal
         </div>}
         {won && <div className="tq-pawn-buy on tq-pawn-won">
           <img src={won.img} alt="" />
-          <span><b>🎉 {won.name} !</b><small>Nouvelle figurine débloquée et équipée.</small></span>
+          <span><b>🎉 Bravo, tu as obtenu le pion : {won.name} !</b><small>Il est équipé pour cette partie.</small></span>
           <button className="tq-x" aria-label="Fermer" onClick={() => setWon(null)}>×</button>
         </div>}
       </section>
