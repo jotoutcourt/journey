@@ -6,7 +6,7 @@
 import { audioFor } from './sound.js'
 
 // Deux pistes : les menus, et la Chasse au Kraken (jeu de plateau, volume bas pour laisser passer le vocal)
-const TRACKS = { menu: { file: '/musique/menu.mp3', vol: 0.28 }, traque: { file: '/musique/kraken-plateau.mp3', vol: 0.08 } }
+const TRACKS = { menu: { file: '/musique/menu.mp3', vol: 0.28 }, traque: { file: '/musique/kraken-plateau.mp3', vol: 0.04 } }
 let track = 'menu', cur = null // piste voulue / piste chargée dans le lecteur
 const blobs = {}
 const VOL_OF = () => TRACKS[track].vol
