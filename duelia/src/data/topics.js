@@ -370,7 +370,7 @@ export const OFFICIAL_TOPICS = [
   T('marvel', 'Marvel', '🦸', '#e23636', 'Cinéma & TV', 'Avengers, rassemblement !', 0, []),
   T('nintendo', 'Nintendo', '🍄', '#e60012', 'Jeux vidéo', 'Mario, Zelda, Kirby et toute la bande', 0, []),
   T('one-piece', 'One Piece', '🏴‍☠️', '#e8a33a', 'Cinéma & TV', 'En route pour Grand Line avec Luffy et son équipage', 0, []),
-  { ...T('the-100', 'The 100', '🚀', '#3d8f5f', 'Cinéma & TV', 'De l\'Arche à la Terre : survivre, encore et toujours', 0, []), releaseAt: Date.parse('2026-11-24T16:00:00Z') },
+  T('the-100', 'The 100', '🚀', '#3d8f5f', 'Cinéma & TV', 'De l\'Arche à la Terre : survivre, encore et toujours', 0, []),
   T('biathlon', 'Biathlon', '🎿', '#3fa9f5', 'Sport', 'Ski de fond, carabine et nerfs d\'acier', 0, []),
   T('secret-story', 'Secret Story', '🤫', '#2f6fde', 'Cinéma & TV', 'Les secrets de la Maison, de 2007 à aujourd\'hui', 22610, []),
   T('voitures', 'Voitures', '🏎️', '#ff4d4d', 'Sport', 'Marques, modèles, mécanique et sport auto', 17260, []),
