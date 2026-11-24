@@ -80,14 +80,14 @@ function TraqueLobby({ v, gameId, officials, topics, friends, act, onExit, onWal
   const [buying, setBuying] = useState(false)
   const [buyErr, setBuyErr] = useState('')
   const [won, setWon] = useState(null)
-  useEffect(() => { api.myPawns().then(setOwned).catch(() => setOwned([])) }, [])
+  useEffect(() => { api.myPawns().then(r => setOwned(Array.isArray(r) ? r : [])).catch(() => setOwned([])) }, [])
   const hasPawn = (id) => FREE_PAWNS.includes(id) || (owned || []).includes(id)
   const lockedLeft = PAWNS.filter(pw => !hasPawn(pw.id)).length
   async function buy() {
     setBuyErr('')
     try {
       const r = await api.buyRandomPawn()
-      setOwned(r.pawns || []); setBuying(false); onWallet?.()
+      setOwned(Array.isArray(r?.pawns) ? r.pawns : []); setBuying(false); onWallet?.()
       setWon(PAWNS.find(pw => pw.id === r.pawn) || null)
       await act(() => api.setTraquePawn(gameId, r.pawn).then(() => api.getTraque(gameId)))
     } catch (e) { setBuyErr(/lingots/.test(e?.message || '') ? 'Pas assez de lingots 😕' : 'Achat impossible, réessaie.') }
@@ -145,7 +145,7 @@ function TraqueLobby({ v, gameId, officials, topics, friends, act, onExit, onWal
 
       <section className="tq-mine">
         <h3 className="sec-title">Ta figurine</h3>
-        <div className="tq-pawn-pick">
+        <div className="tq-pawn-pick" ref={el => { const on = el?.querySelector('button.on'); if (el && on && !el.dataset.done) { el.dataset.done = '1'; el.scrollLeft = on.offsetLeft - 8 } }}>
           {PAWNS.map(pw => {
             const taken = v.players.find(p => p.pawn === pw.id && p.seat !== v.me && ['joined', 'bot', 'invited'].includes(p.status))
             return (
