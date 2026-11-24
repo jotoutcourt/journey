@@ -8,7 +8,7 @@ export const GENERAL_TOPICS = ['culture-g', 'histoire', 'cinema', 'sciences', 'c
   'annees-80-90', 'chanson-francaise', 'jeux-video', 'drapeaux']
 export function pickGeneral(topics, exclude = []) {
   const ok = GENERAL_TOPICS.filter(id => !exclude.includes(id) && (topics.find(t => t.id === id)?.questions || []).filter(q => !q.img && q.a?.length === 4).length >= 20)
-  return shuffle(ok).slice(0, 8)
+  return shuffle(ok).slice(0, 16) // le serveur retire les spécialités (secrètes) de tous les joueurs et en garde 8
 }
 export const ITEMS = {
   double: { icon: '🎲', name: 'Double dé', desc: 'Lance 2 dés ce tour-ci', target: false },

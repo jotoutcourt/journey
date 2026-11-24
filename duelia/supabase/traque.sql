@@ -745,8 +745,10 @@ begin
       or char_length(q ->> 'q') > 400) then raise exception 'question invalide'; end if;
   end loop;
   select array_agg(distinct x ->> 'id') into specs from traque_players p, jsonb_array_elements(p.topics) x where p.game_id = p_game and p.status in ('joined', 'bot');
-  select array_agg(v) into gen from jsonb_array_elements_text(p_general) v;
-  if cardinality(gen) < 3 then raise exception 'thèmes généraux manquants'; end if;
+  -- thèmes généraux : l'hôte propose une liste mélangée ; on retire toutes les spécialités des joueurs et on en garde 8
+  select array_agg(v order by o) into gen from jsonb_array_elements_text(p_general) with ordinality e(v, o) where v <> all (coalesce(specs, '{}'::text[]));
+  gen := gen[1:8];
+  if coalesce(cardinality(gen), 0) < 3 then raise exception 'thèmes généraux manquants'; end if;
   -- 81 cases entre le départ (0) et l'antre (82), posées sur les emplacements de l'illustration du plateau
   types := array_fill('general'::text, array[81]);
   -- cases spéciales : 16 spécialités, 8 trêves, 6 coffres, 5 courants, 5 tentacules, 4 raccourcis
@@ -779,8 +781,8 @@ begin
     cells := jsonb_set(cells, array[(array[9, 37])[i + 1]::text], jsonb_build_object('t', 'shop', 'k', i * 2,
       'items', (select jsonb_agg(x) from (select x from unnest(array['double', 'ancre', 'joker', 'vol', 'echange']) x order by random() limit 3) z)));
   end loop;
-  update traque_games set status = 'playing', board = cells, topics = mt, general = p_general, pool = mp, used = '{}'::jsonb,
-    started_at = now(), turn = -1, round = 1, treasure = 0, phase = 'event', data = jsonb_build_object('text', '🐙 La chasse commence ! Le trésor du Kraken est vide…', 'reveal', p_general),
+  update traque_games set status = 'playing', board = cells, topics = mt, general = to_jsonb(gen), pool = mp, used = '{}'::jsonb,
+    started_at = now(), turn = -1, round = 1, treasure = 0, phase = 'event', data = jsonb_build_object('text', '🐙 La chasse commence ! Le trésor du Kraken est vide…', 'reveal', to_jsonb(gen)),
     deadline = now() + interval '11 seconds', version = version + 1
   where id = p_game;
   update traque_players set pos = 0, pearls = 5, items = '[]'::jsonb, skip = 0 where game_id = p_game;
