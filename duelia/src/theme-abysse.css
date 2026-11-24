@@ -1243,7 +1243,7 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
 
 /* Figurines */
 .tq-seat-pawn { width: 48px; height: 48px; object-fit: contain; filter: drop-shadow(0 0 6px var(--c)); }
-.tq-pawn-pick { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.tq-pawn-pick { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
 .tq-pawn-pick button { aspect-ratio: 1; padding: 3px; border-radius: 14px; border: 1px solid var(--line); background: var(--card); }
 .tq-pawn-pick button.on { border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold), 0 0 12px #ffc94088; }
 .tq-pawn-pick button:disabled { opacity: .3; }

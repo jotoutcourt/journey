@@ -62,11 +62,14 @@ export function spiral(n = 9) {
 
 // Figurines (pions) au choix
 export const PAWNS = [
-  { id: 'stitch', name: 'Bonnet bleu' }, { id: 'gilet', name: 'Gilet jaune' }, { id: 'araignee', name: 'Homme-araignée' },
-  { id: 'sorcier', name: 'Apprenti sorcier' }, { id: 'reine-neiges', name: 'Reine des neiges' }, { id: 'liberte', name: 'Liberté' },
+  // les 4 premières sont offertes
+  { id: 'stitch', name: 'Bonnet bleu' }, { id: 'araignee', name: 'Homme-araignée' }, { id: 'pirate', name: 'Capitaine pirate' }, { id: 'dino', name: 'Petit dino' },
+  // les autres se débloquent avec la figurine mystère
+  { id: 'gilet', name: 'Gilet jaune' }, { id: 'sorcier', name: 'Apprenti sorcier' }, { id: 'reine-neiges', name: 'Reine des neiges' }, { id: 'liberte', name: 'Liberté' },
   { id: 'astronaute', name: 'Astronaute' }, { id: 'fantome', name: 'Fantôme' }, { id: 'dormeur', name: 'Marmotte' }, { id: 'eclair', name: 'Pyjama éclair' },
+  { id: 'heros', name: 'Héros des bois' }, { id: 'ane', name: 'Âne mélancolique' }, { id: 'retro', name: 'Rétro 80' }, { id: 'seigneur', name: 'Seigneur noir' },
 ].map(p => ({ ...p, img: `/traque/pions/${p.id}.webp` }))
 // les 4 premières figurines sont offertes ; les autres se débloquent au hasard (figurine mystère, 20 lingots)
-export const FREE_PAWNS = ['stitch', 'gilet', 'araignee', 'sorcier']
+export const FREE_PAWNS = ['stitch', 'araignee', 'pirate', 'dino']
 export const PAWN_PRICE = 20
 export const pawnImg = (id, seat) => `/traque/pions/${id || PAWNS[seat % PAWNS.length].id}.webp`

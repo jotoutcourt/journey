@@ -298,6 +298,14 @@ function TraqueBoard({ v, gameId, act, onExit }) {
     return () => clearInterval(iv)
   }, [v.version]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // un « tok » à chaque case franchie par un pion
+  const prevShown = useRef(shown)
+  useEffect(() => {
+    const before = prevShown.current
+    prevShown.current = shown
+    if (before !== shown && Object.keys(shown).some(k => before[k] !== undefined && before[k] !== shown[k])) { try { sfx.step?.() } catch { /* son facultatif */ } }
+  }, [shown])
+
   // petits sons
   const lastPhase = useRef(null)
   useEffect(() => {

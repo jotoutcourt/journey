@@ -5,27 +5,31 @@
 // - Le son passe par Web Audio pour que le volume soit respecté sur iPhone.
 import { audioFor } from './sound.js'
 
-const FILE = '/musique/menu.mp3'
-const VOL = 0.28
-let el = null, gain = null, want = false, stopTimer = null, src = null
+// Deux pistes : les menus, et la Chasse au Kraken (jeu de plateau, volume bas pour laisser passer le vocal)
+const TRACKS = { menu: { file: '/musique/menu.mp3', vol: 0.28 }, traque: { file: '/musique/kraken-plateau.mp3', vol: 0.08 } }
+let track = 'menu', cur = null // piste voulue / piste chargée dans le lecteur
+const blobs = {}
+const VOL_OF = () => TRACKS[track].vol
+let el = null, gain = null, want = false, stopTimer = null
 
-// Téléchargement immédiat (pendant l'écran de chargement), en entier : lecture fluide et mise en cache
-function load() {
-  src = src || fetch(FILE).then(r => (r.ok ? r.blob() : Promise.reject(new Error('musique')))).then(b => URL.createObjectURL(b)).catch(() => FILE)
-  return src
+// Téléchargement en entier (lecture fluide et mise en cache) ; la piste des menus dès l'écran de chargement
+function load(t = 'menu') {
+  blobs[t] = blobs[t] || fetch(TRACKS[t].file).then(r => (r.ok ? r.blob() : Promise.reject(new Error('musique')))).then(b => URL.createObjectURL(b)).catch(() => TRACKS[t].file)
+  return blobs[t]
 }
+const ready = {} // adresses déjà téléchargées (blob), par piste
+const urlOf = (t) => ready[t] || TRACKS[t].file
 
 // Son d'« ambiance » (Safari 17+) : ne coupe pas la musique du joueur (Spotify…), respecte le mode silencieux
 // et n'apparaît pas comme un lecteur sur l'écran verrouillé
 // (seulement dans les menus : pendant une partie on revient au réglage normal, pour le micro du chat vocal)
 const session = (type) => { try { if (navigator.audioSession) navigator.audioSession.type = type } catch { /* rien */ } }
-let file = '' // adresse du fichier en cours (gardée pour reprendre après l'arrière-plan)
 
 // En arrière-plan : on détache complètement le son, pour que le téléphone n'affiche plus de lecteur
 function detach() {
   if (!el) return
   el.pause()
-  if (el.getAttribute('src')) { if (!file) file = el.src; el.removeAttribute('src'); el.load() }
+  if (el.getAttribute('src')) { el.removeAttribute('src'); el.load(); cur = null }
   try { if (navigator.mediaSession) { navigator.mediaSession.metadata = null; navigator.mediaSession.playbackState = 'none' } } catch { /* rien */ }
 }
 
@@ -33,7 +37,7 @@ function element() {
   if (!el) {
     el = new Audio(); el.loop = true; el.preload = 'auto'
     // si le fichier complet arrive avant que la musique ait démarré, on le prend (lecture plus fluide)
-    load().then(u => { file = u; if (!el.getAttribute('src') && !document.hidden) el.src = u; if (want && el.paused) start() })
+    load('menu').then(u => { ready.menu = u; if (!el.getAttribute('src') && track === 'menu' && !document.hidden) { el.src = u; cur = 'menu' } if (want && el.paused) start() })
   }
   return el
 }
@@ -46,7 +50,7 @@ function route() {
 }
 
 function fade(to, secs) {
-  if (!gain) { if (el) el.volume = Math.min(1, to / VOL); return }
+  if (!gain) { if (el) el.volume = Math.min(1, to / 0.28); return }
   const ctx = gain.context, now = ctx.currentTime
   gain.gain.cancelScheduledValues(now); gain.gain.setValueAtTime(gain.gain.value, now); gain.gain.linearRampToValueAtTime(to, now + secs)
 }
@@ -56,12 +60,12 @@ function start() {
   element()
   // fichier pas encore téléchargé : on le lit directement depuis le serveur, sans attendre
   // (indispensable sur iPhone : la lecture doit démarrer pendant le geste du joueur)
-  if (!el.getAttribute('src')) el.src = file || FILE
+  if (!el.getAttribute('src') || cur !== track) { el.src = urlOf(track); cur = track }
   route()
   clearTimeout(stopTimer)
-  if (!el.paused) { fade(VOL, 1.5); return }
+  if (!el.paused) { fade(VOL_OF(), 1.5); return }
   if (gain) gain.gain.value = 0; else el.volume = 0
-  el.play().then(() => fade(VOL, 1.2)).catch(() => { /* lecture bloquée : on réessaie au premier toucher */ })
+  el.play().then(() => fade(VOL_OF(), 1.2)).catch(() => { /* lecture bloquée : on réessaie au premier toucher */ })
 }
 function stop() {
   if (!el) return
@@ -70,11 +74,19 @@ function stop() {
   stopTimer = setTimeout(() => el.pause(), 900)
 }
 
-export function setMenuMusic(on) {
-  if (on === want) return
-  want = on
-  session(on ? 'ambient' : 'auto')
-  on ? start() : stop()
+export function setMenuMusic(on, t = 'menu') {
+  if (on === want && t === track) return
+  const switching = t !== track && el && !el.paused
+  track = t; want = on
+  // dans les menus, son « d'ambiance » ; sur le plateau, réglage normal (le micro du vocal doit marcher)
+  session(on && t === 'menu' ? 'ambient' : 'auto')
+  if (on && t !== 'menu') load(t).then(u => { ready[t] = u })
+  if (!on) { stop(); return }
+  if (switching) {
+    // fondu, puis changement de piste
+    fade(0, 0.6); clearTimeout(stopTimer)
+    stopTimer = setTimeout(() => { el.pause(); cur = null; start() }, 650)
+  } else start()
 }
 
 if (typeof document !== 'undefined') {

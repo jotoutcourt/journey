@@ -741,7 +741,7 @@ begin
   delete from traque_players where game_id = p_game and seat = s;
   insert into traque_players (game_id, seat, bot, name, avatar, status, topics, pawn)
   values (p_game, s, p_level, names[1 + floor(random() * array_length(names, 1))::int] || ' (' || p_level || ')', 'robot-' || s, 'bot', p_topics,
-    (array['stitch', 'gilet', 'araignee', 'sorcier', 'reine-neiges', 'liberte', 'astronaute', 'fantome', 'dormeur', 'eclair'])[1 + floor(random() * 10)::int]);
+    (array['stitch', 'araignee', 'pirate', 'dino', 'gilet', 'sorcier', 'reine-neiges', 'liberte', 'astronaute', 'fantome', 'dormeur', 'eclair', 'heros', 'ane', 'retro', 'seigneur'])[1 + floor(random() * 16)::int]);
 end $$;
 
 create or replace function public.remove_traque_seat(p_game uuid, p_seat int) returns void language plpgsql security definer set search_path = public as $$

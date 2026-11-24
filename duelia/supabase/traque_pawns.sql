@@ -79,3 +79,21 @@ revoke all on function public.buy_random_pawn() from public, anon;
 grant execute on function public.buy_random_pawn() to authenticated;
 -- l'achat d'une figurine précise n'est plus proposé
 revoke execute on function public.buy_pawn(text) from authenticated;
+
+-- 16 figurines : 4 offertes (bonnet bleu, homme-araignée, capitaine pirate, petit dino), 12 à gagner avec la figurine mystère
+create or replace function public.pawn_price(p_pawn text) returns int language sql immutable as $$
+  select case when p_pawn in ('stitch', 'araignee', 'pirate', 'dino') then 0 else 20 end
+$$;
+
+create or replace function public.buy_random_pawn() returns json language plpgsql security definer set search_path = public as $$
+declare pid uuid := current_player(); pick text;
+begin
+  if pid is null then raise exception 'aucun joueur'; end if;
+  select x into pick from unnest(array['gilet', 'sorcier', 'reine-neiges', 'liberte', 'astronaute', 'fantome', 'dormeur', 'eclair', 'heros', 'ane', 'retro', 'seigneur']) x
+    where not exists (select 1 from pawn_unlocks where player_id = pid and pawn_id = x) order by random() limit 1;
+  if pick is null then raise exception 'toutes les figurines sont déjà débloquées'; end if;
+  if coalesce((select lingots from wallets where player_id = pid for update), 0) < 20 then raise exception 'pas assez de lingots'; end if;
+  perform wallet_credit(pid, -20, 'achat', null);
+  insert into pawn_unlocks (player_id, pawn_id) values (pid, pick);
+  return json_build_object('pawn', pick, 'pawns', my_pawns(), 'wallet', get_wallet());
+end $$;

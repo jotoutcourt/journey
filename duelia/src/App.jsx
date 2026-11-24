@@ -219,7 +219,9 @@ export default function App() {
   useEffect(() => { setMusic(st.settings.music !== false) }, [st.settings.music])
   // Musique d'ambiance : seulement dans les menus et à l'accueil, jamais pendant une partie
   const inGame = ['match', 'duel', 'butingame', 'party', 'traque', 'invite', 'linkload', 'linkready'].includes(route.name)
-  useEffect(() => { setMenuMusic(st.settings.sound && st.settings.menuMusic !== false && !inGame) }, [st.settings.sound, st.settings.menuMusic, inGame])
+  // musique : celle des menus, ou celle du plateau pendant la Chasse au Kraken
+  const musicTrack = route.name === 'traque' ? 'traque' : 'menu'
+  useEffect(() => { setMenuMusic(st.settings.sound && st.settings.menuMusic !== false && (!inGame || musicTrack === 'traque'), musicTrack) }, [st.settings.sound, st.settings.menuMusic, inGame, musicTrack])
 
   const update = useCallback((fn) => setSt(s => fn(s) ?? emptyState()), [])
   // Les thèmes du joueur sont signés de son pseudo actuel

@@ -38,6 +38,8 @@ function tone(freq, dur = 0.12, type = 'sine', gain = 0.12, delay = 0, to = null
 export const SUSPENSE_MS = 2600
 
 export const sfx = {
+  // pas d'un pion sur le plateau : petit « tok » de bois, légèrement différent à chaque case
+  step: () => { const f = 480 + Math.random() * 120; tone(f, 0.05, 'triangle', 0.09); tone(f / 2, 0.07, 'sine', 0.06, 0.005) },
   // Petit « pop » doux sur chaque bouton
   click: () => { tone(560, 0.07, 'sine', 0.07, 0, 340); tone(1200, 0.03, 'triangle', 0.02) },
   // Suspense : battements de cœur qui accélèrent sur un grondement qui monte, puis silence avant le verdict
