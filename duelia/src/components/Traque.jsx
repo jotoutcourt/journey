@@ -100,7 +100,8 @@ function TraqueLobby({ v, gameId, officials, topics, friends, act, onExit, onWal
 
   async function start() {
     setStarting(true)
-    const specs = [...new Set(active.flatMap(p => p.topics.map(t => t.id)))]
+    // spécialités connues de l'hôte : les siennes et celles des robots (celles des autres joueurs sont secrètes, ils envoient eux-mêmes leurs questions)
+    const specs = [...new Set(active.flatMap(p => p.topics.map(t => t.id)).filter(Boolean))]
     const general = pickGeneral(topics, specs)
     const ids = [...new Set([...specs, ...general])]
     const meta = Object.fromEntries(ids.map(id => topics.find(t => t.id === id)).filter(Boolean).map(t => [t.id, topicMeta(t)]))
@@ -124,7 +125,8 @@ function TraqueLobby({ v, gameId, officials, topics, friends, act, onExit, onWal
               <div className="tq-seat-txt">
                 <b>{p.bot ? '🤖 ' : ''}{p.name}{p.seat === v.me ? ' (toi)' : ''}</b>
                 {p.status === 'invited' ? <small>Invitation envoyée…</small>
-                  : p.topics?.length ? <span className="tq-seat-topics">{p.topics.map(t => <i key={t.id} title={t.name}>{t.icon} {t.name}</i>)}{p.topics.length < 3 && <i className="wait">{p.topics.length}/3…</i>}</span>
+                  : p.topics?.length === 3 && p.seat === v.me ? <span className="tq-seat-topics">{p.topics.map(t => <i key={t.id} title={t.name}>{t.icon} {t.name}</i>)}</span>
+                  : p.topics?.length === 3 ? <small>✅ Spécialités choisies (secrètes)</small>
                   : <small>Choisit ses spécialités…</small>}
               </div>
               {v.host && s !== 0 && <button className="tq-x" aria-label="Retirer" onClick={() => act(() => api.removeTraqueSeat(gameId, s).then(() => api.getTraque(gameId)))}>×</button>}
@@ -176,7 +178,7 @@ function TraqueLobby({ v, gameId, officials, topics, friends, act, onExit, onWal
       </div>
 
       {picking && <TopicPicker officials={officials} initial={me?.topics || []} onCancel={() => setPicking(false)}
-        onDone={(list) => { setPicking(false); act(() => api.setTraqueTopics(gameId, list).then(() => api.getTraque(gameId))) }} />}
+        onDone={(list) => { setPicking(false); act(() => api.setTraqueTopics(gameId, list, buildPool(topics, list.map(t => t.id))).then(() => api.getTraque(gameId))) }} />}
       {inviting && (
         <div className="sheet-backdrop" onClick={() => setInviting(false)}>
           <div className="sheet" onClick={e => e.stopPropagation()}>

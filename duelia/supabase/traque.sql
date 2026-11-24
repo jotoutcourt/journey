@@ -47,6 +47,8 @@ create table if not exists public.traque_players (
   primary key (game_id, seat)
 );
 alter table public.traque_players add column if not exists bubble boolean not null default false;
+-- questions des spécialités, envoyées par chaque joueur (l'hôte ne les voit pas)
+alter table public.traque_players add column if not exists pool jsonb;
 create index if not exists traque_players_player on public.traque_players (player_id, status);
 alter table public.traque_games enable row level security;
 alter table public.traque_players enable row level security;
@@ -613,7 +615,9 @@ begin
     'id', g.id, 'status', g.status, 'host', g.host = p_pid, 'me', me, 'turn', g.turn, 'round', g.round, 'phase', g.phase, 'data', d,
     'treasure', g.treasure, 'winner', g.winner, 'board', g.board, 'topics', g.topics, 'log', g.log, 'version', g.version,
     'players', (select coalesce(json_agg(json_build_object('seat', seat, 'name', name, 'avatar', avatar, 'photo', photo, 'status', status, 'bot', bot,
-        'player_id', player_id, 'pawn', pawn, 'topics', topics, 'pos', pos, 'pearls', pearls, 'items', items, 'skip', skip, 'bubble', bubble, 'reward', reward,
+        'player_id', player_id, 'pawn', pawn,
+        -- au salon, les spécialités des adversaires restent secrètes (on ne voit que leur nombre)
+        'topics', case when g.status = 'lobby' and seat is distinct from me and player_id is not null then (select coalesce(jsonb_agg('{}'::jsonb), '[]'::jsonb) from jsonb_array_elements(topics)) else topics end, 'pos', pos, 'pearls', pearls, 'items', items, 'skip', skip, 'bubble', bubble, 'reward', reward,
         'online', case when player_id is null then true else (select last_seen > now() - interval '70 seconds' from players where id = player_id) end) order by seat), '[]'::json)
       from traque_players where game_id = p_game and status <> 'declined'));
 end $$;
@@ -689,11 +693,18 @@ begin
   return traque_view(p_game, pid);
 end $$;
 
-create or replace function public.set_traque_topics(p_game uuid, p_topics jsonb) returns void language plpgsql security definer set search_path = public as $$
-declare pid uuid := current_player();
+drop function if exists public.set_traque_topics(uuid, jsonb);
+create or replace function public.set_traque_topics(p_game uuid, p_topics jsonb, p_pool jsonb default null) returns void language plpgsql security definer set search_path = public as $$
+declare pid uuid := current_player(); k text;
 begin
   if jsonb_typeof(p_topics) <> 'array' or jsonb_array_length(p_topics) <> 3 or pg_column_size(p_topics) > 1500 then raise exception 'choisis 3 thèmes'; end if;
-  update traque_players set topics = p_topics, updated_at = now()
+  if p_pool is not null then
+    if pg_column_size(p_pool) > 200000 or jsonb_typeof(p_pool) <> 'object' then raise exception 'questions invalides'; end if;
+    for k in select jsonb_object_keys(p_pool) loop
+      if not exists (select 1 from jsonb_array_elements(p_topics) x where x ->> 'id' = k) then raise exception 'questions invalides'; end if;
+    end loop;
+  end if;
+  update traque_players set topics = p_topics, pool = p_pool, updated_at = now()
   where game_id = p_game and player_id = pid and status = 'joined' and exists (select 1 from traque_games where id = p_game and status = 'lobby');
 end $$;
 
@@ -717,14 +728,20 @@ end $$;
 -- Lancement : l'hôte envoie les questions des thèmes du plateau ; le serveur construit le plateau
 create or replace function public.start_traque(p_game uuid, p_topics jsonb, p_general jsonb, p_pool jsonb) returns json language plpgsql security definer set search_path = public as $$
 declare pid uuid := current_player(); specs text[]; gen text[]; cells jsonb := '[]'::jsonb; types text[]; i int; t text; k text; n int;
+  mp jsonb := p_pool; mt jsonb := p_topics; r record;
 begin
+  -- on complète avec les questions et les fiches des spécialités envoyées par chaque joueur (secrètes pour l'hôte)
+  for r in select pool, topics from traque_players where game_id = p_game and status in ('joined', 'bot') loop
+    if jsonb_typeof(r.pool) = 'object' then mp := r.pool || mp; end if;
+    mt := coalesce((select jsonb_object_agg(x ->> 'id', x) from jsonb_array_elements(r.topics) x where x ? 'id'), '{}'::jsonb) || mt;
+  end loop;
   if not exists (select 1 from traque_games where id = p_game and host = pid and status = 'lobby') then raise exception 'salon introuvable'; end if;
   delete from traque_players where game_id = p_game and status in ('invited', 'declined');
   if (select count(*) from traque_players where game_id = p_game and status in ('joined', 'bot')) < 2 then raise exception 'il faut au moins 2 joueurs (ou robots)'; end if;
   if exists (select 1 from traque_players where game_id = p_game and status = 'joined' and jsonb_array_length(topics) <> 3) then raise exception 'tout le monde doit choisir 3 thèmes'; end if;
-  if pg_column_size(p_pool) > 900000 or jsonb_typeof(p_pool) <> 'object' then raise exception 'questions invalides'; end if;
-  for k in select jsonb_object_keys(p_pool) loop
-    if exists (select 1 from jsonb_array_elements(p_pool -> k) q where jsonb_array_length(q -> 'o') <> 4 or (q ->> 'c')::int not between 0 and 3
+  if pg_column_size(mp) > 1200000 or jsonb_typeof(mp) <> 'object' then raise exception 'questions invalides'; end if;
+  for k in select jsonb_object_keys(mp) loop
+    if exists (select 1 from jsonb_array_elements(mp -> k) q where jsonb_array_length(q -> 'o') <> 4 or (q ->> 'c')::int not between 0 and 3
       or char_length(q ->> 'q') > 400) then raise exception 'question invalide'; end if;
   end loop;
   select array_agg(distinct x ->> 'id') into specs from traque_players p, jsonb_array_elements(p.topics) x where p.game_id = p_game and p.status in ('joined', 'bot');
@@ -762,7 +779,7 @@ begin
     cells := jsonb_set(cells, array[(array[9, 37])[i + 1]::text], jsonb_build_object('t', 'shop', 'k', i * 2,
       'items', (select jsonb_agg(x) from (select x from unnest(array['double', 'ancre', 'joker', 'vol', 'echange']) x order by random() limit 3) z)));
   end loop;
-  update traque_games set status = 'playing', board = cells, topics = p_topics, general = p_general, pool = p_pool, used = '{}'::jsonb,
+  update traque_games set status = 'playing', board = cells, topics = mt, general = p_general, pool = mp, used = '{}'::jsonb,
     started_at = now(), turn = -1, round = 1, treasure = 0, phase = 'event', data = jsonb_build_object('text', '🐙 La chasse commence ! Le trésor du Kraken est vide…', 'reveal', p_general),
     deadline = now() + interval '11 seconds', version = version + 1
   where id = p_game;
@@ -884,11 +901,11 @@ create or replace function public.my_traque() returns uuid language sql stable s
 $$;
 
 revoke all on function public.get_traque(uuid), public.create_traque(), public.invite_traque(uuid, uuid), public.add_traque_bot(uuid, text, jsonb),
-  public.remove_traque_seat(uuid, int), public.respond_traque(uuid, boolean), public.set_traque_topics(uuid, jsonb), public.leave_traque(uuid),
+  public.remove_traque_seat(uuid, int), public.respond_traque(uuid, boolean), public.set_traque_topics(uuid, jsonb, jsonb), public.leave_traque(uuid),
   public.start_traque(uuid, jsonb, jsonb, jsonb), public.traque_roll(uuid), public.traque_buy(uuid, text), public.traque_use(uuid, text, int),
   public.traque_answer(uuid, int, int), public.my_traque(), public.traque_shop_leave(uuid), public.traque_ready(uuid) from public, anon;
 grant execute on function public.get_traque(uuid), public.create_traque(), public.invite_traque(uuid, uuid), public.add_traque_bot(uuid, text, jsonb),
-  public.remove_traque_seat(uuid, int), public.respond_traque(uuid, boolean), public.set_traque_topics(uuid, jsonb), public.leave_traque(uuid),
+  public.remove_traque_seat(uuid, int), public.respond_traque(uuid, boolean), public.set_traque_topics(uuid, jsonb, jsonb), public.leave_traque(uuid),
   public.start_traque(uuid, jsonb, jsonb, jsonb), public.traque_roll(uuid), public.traque_buy(uuid, text), public.traque_use(uuid, text, int),
   public.traque_answer(uuid, int, int), public.my_traque(), public.traque_shop_leave(uuid), public.traque_ready(uuid), public.traque_cursed(uuid, int) to authenticated;
 revoke all on function public.traque_tick(uuid), public.traque_view(uuid, uuid), public.tq_quiz(uuid, text, int[], text[], jsonb, boolean),

@@ -198,7 +198,7 @@ export const inviteTraque = (id, friend) => rpc('invite_traque', { p_game: id, p
 export const addTraqueBot = (id, level, topics) => rpc('add_traque_bot', { p_game: id, p_level: level, p_topics: topics })
 export const removeTraqueSeat = (id, seat) => rpc('remove_traque_seat', { p_game: id, p_seat: seat })
 export const respondTraque = (id, accept) => rpc('respond_traque', { p_game: id, p_accept: accept })
-export const setTraqueTopics = (id, topics) => rpc('set_traque_topics', { p_game: id, p_topics: topics })
+export const setTraqueTopics = (id, topics, pool) => rpc('set_traque_topics', { p_game: id, p_topics: topics, p_pool: pool ?? null })
 export const leaveTraque = (id) => rpc('leave_traque', { p_game: id })
 export const startTraque = (id, topics, general, pool) => rpc('start_traque', { p_game: id, p_topics: topics, p_general: general, p_pool: pool })
 export const traqueRoll = (id) => rpc('traque_roll', { p_game: id })
