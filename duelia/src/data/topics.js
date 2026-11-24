@@ -37,6 +37,7 @@ import x_marvel from './extra/marvel.js'
 import x_nintendo from './extra/nintendo.js'
 import x_onepiece from './extra/one-piece.js'
 import x_biathlon from './extra/biathlon.js'
+import x_the100 from './extra/the-100.js'
 import x_dessins_animes from './extra/dessins-animes.js'
 import x_c_series_cultes from './extra/c-series-cultes.js'
 import x_c_espace from './extra/c-espace.js'
@@ -98,6 +99,7 @@ const EXTRA = {
   'nintendo': x_nintendo,
   'one-piece': x_onepiece,
   'biathlon': x_biathlon,
+  'the-100': x_the100,
   'secret-story': x_secret,
   'dessins-animes': x_dessins_animes,
   'c-series-cultes': x_c_series_cultes,
@@ -119,9 +121,19 @@ const EXTRA = {
 // des questions déjà vues par les joueurs.
 const MORE = Object.fromEntries(Object.entries(import.meta.glob('./more/*.js', { eager: true, import: 'default' }))
   .map(([path, rows]) => [path.slice(7, -3), rows]))
+// « Qui joue / incarne… » : pas plus de quelques-unes par thème, l'histoire d'abord (le cinéma en garde un peu plus)
+const CASTING = /qui (joue|incarne|interpr[eè]te)|quel(le)? (acteur|actrice|comédien(ne)?) (joue|incarne|interpr)|incarn[ée]e? par|interpr[ée]t[ée]e? par/i
+const CASTING_MAX = { cinema: 15 }
+// thèmes musicaux : « qui interprète » désigne le chanteur, pas un rôle → pas de limite
+for (const id of ['musique', 'chanson-francaise', 'annees-80-90', 'pop-girlies', 'taylor-swift', 'one-direction', 'c-eras', 'c-pop2000']) CASTING_MAX[id] = Infinity
 const merge = (id, base) => {
   const seen = new Set()
-  return [...base, ...(EXTRA[id] || []), ...(MORE[id] || [])].filter(([q]) => !seen.has(q) && seen.add(q)).map(([q, ...a]) => ({ q, a }))
+  const all = [...base, ...(EXTRA[id] || []), ...(MORE[id] || [])].filter(([q]) => !seen.has(q) && seen.add(q))
+  const nCast = all.filter(([q]) => CASTING.test(q)).length
+  // on garde au moins 60 questions dans le thème, quitte à laisser un peu plus de casting
+  const max = Math.max(CASTING_MAX[id] ?? 6, nCast - (all.length - 60))
+  let casting = 0
+  return all.filter(([q]) => !CASTING.test(q) || ++casting <= max).map(([q, ...a]) => ({ q, a }))
 }
 
 // Un thème peut avoir une sortie programmée : { ...T(…), releaseAt: Date.parse('AAAA-MM-JJTHH:MM:SSZ') }
@@ -358,6 +370,7 @@ export const OFFICIAL_TOPICS = [
   T('marvel', 'Marvel', '🦸', '#e23636', 'Cinéma & TV', 'Avengers, rassemblement !', 0, []),
   T('nintendo', 'Nintendo', '🍄', '#e60012', 'Jeux vidéo', 'Mario, Zelda, Kirby et toute la bande', 0, []),
   T('one-piece', 'One Piece', '🏴‍☠️', '#e8a33a', 'Cinéma & TV', 'En route pour Grand Line avec Luffy et son équipage', 0, []),
+  { ...T('the-100', 'The 100', '🚀', '#3d8f5f', 'Cinéma & TV', 'De l\'Arche à la Terre : survivre, encore et toujours', 0, []), releaseAt: Date.parse('2026-11-24T16:00:00Z') },
   T('biathlon', 'Biathlon', '🎿', '#3fa9f5', 'Sport', 'Ski de fond, carabine et nerfs d\'acier', 0, []),
   T('secret-story', 'Secret Story', '🤫', '#2f6fde', 'Cinéma & TV', 'Les secrets de la Maison, de 2007 à aujourd\'hui', 22610, []),
   T('voitures', 'Voitures', '🏎️', '#ff4d4d', 'Sport', 'Marques, modèles, mécanique et sport auto', 17260, []),
