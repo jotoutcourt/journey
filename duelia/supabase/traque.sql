@@ -126,6 +126,7 @@ declare np int;
 begin
   update traque_players set pos = greatest(0, least(tq_const('cells') - 1, pos + p_delta)), updated_at = now()
   where game_id = p_game and seat = p_seat returning pos into np;
+  if p_delta < 0 then perform tq_stat(p_game, p_seat, 'back', -p_delta); end if;
   return np;
 end $$;
 
@@ -185,6 +186,7 @@ begin
   elsif typ = 'chest' then
     n := 3 + floor(random() * 5)::int;
     update traque_players set pearls = pearls + n where game_id = p_game and seat = p_seat;
+    perform tq_stat(p_game, p_seat, 'chest', n);
     perform tq_event(p_game, '💰 ' || me.name || ' trouve un coffre : +' || n || ' perles', jsonb_build_object('pearls', n, 'seat', p_seat));
   elsif typ = 'current' then
     n := case when random() < 0.5 then 2 else -2 end;
@@ -421,9 +423,11 @@ begin
         if (d -> 'ans' -> s::text -> i ->> 0)::int = (g.pool -> (d -> 'items' -> i ->> 'topic') -> ((d -> 'items' -> i ->> 'qi')::int) ->> 'c')::int then ok := ok + 1; end if;
       end loop;
       if ok >= 1 then
+        perform tq_stat(p_game, s, 'shark_ok');
         perform tq_event(p_game, '🦈 ' || nm || ' échappe au requin (' || ok || '/2) !', jsonb_build_object('shark', 'escape', 'seat', s));
       else
         update traque_players set ghost = true, bubble = false, skip = 0 where game_id = p_game and seat = s;
+        perform tq_stat(p_game, s, 'eaten');
         if not exists (select 1 from traque_players where game_id = p_game and not ghost and status in ('joined', 'bot', 'left')) then
           -- plus personne en vie : le Kraken garde son trésor, chacun convertit ses perles
           update traque_players set reward = pearls / 10 where game_id = p_game;
@@ -454,6 +458,7 @@ begin
     end if;
     if ok > okb or (ok = okb and ta < tb) then win := a; lose := b; else win := b; lose := a; end if;
     update traque_players set pearls = pearls + 3 where game_id = p_game and seat = win;
+    perform tq_stat(p_game, win, 'duel_won'); perform tq_stat(p_game, lose, 'duel_lost');
     perform tq_log(p_game, '⚔️ ' || tq_name(p_game, win) || ' gagne le duel ' || greatest(ok, okb) || '–' || least(ok, okb) || case when ok = okb then ' au temps' else '' end || ' (+3 perles)');
     update traque_games set phase = 'duelroll', data = jsonb_build_object('winner', win, 'loser', lose, 'score', jsonb_build_array(greatest(ok, okb), least(ok, okb)), 'tie', ok = okb, 'a', a, 'b', b),
       deadline = now() + make_interval(secs => case when (select bot is not null or status = 'left' from traque_players where game_id = p_game and seat = win) then 4 else 17 end),
@@ -639,6 +644,11 @@ begin
               from traque_players where game_id = p_game and to_jsonb(seat) <@ (d -> 'seats');
             update traque_games set treasure = treasure + ok + case when ok = n and n > 0 then 2 else 0 end where id = p_game;
           end if;
+          c := (g.pool -> (d -> 'items' -> idx ->> 'topic') -> ((d -> 'items' -> idx ->> 'qi')::int) ->> 'c')::int;
+          update traque_players set stats = jsonb_set(jsonb_set(coalesce(stats, '{}'::jsonb), '{ok}', to_jsonb(coalesce((stats ->> 'ok')::int, 0)
+              + case when (d -> 'ans' -> seat::text -> idx ->> 0)::int = c then 1 else 0 end)),
+              '{ko}', to_jsonb(coalesce((stats ->> 'ko')::int, 0) + case when (d -> 'ans' -> seat::text -> idx ->> 0)::int is distinct from c then 1 else 0 end))
+            where game_id = p_game and to_jsonb(seat) <@ (d -> 'seats');
           update traque_games set data = jsonb_set(data, '{reveal}', 'true'), deadline = now() + make_interval(secs => tq_const('reveal')), version = version + 1 where id = p_game;
         else exit; end if;
       else
@@ -687,10 +697,12 @@ begin
     'id', g.id, 'status', g.status, 'host', g.host = p_pid, 'me', me, 'turn', g.turn, 'round', g.round, 'phase', g.phase, 'data', d,
     'treasure', g.treasure, 'winner', g.winner, 'board', g.board, 'topics', g.topics, 'log', g.log, 'version', g.version,
     'pause', g.pause, 'back', g.back, 'paused_at', g.paused_at,
+    'reacts', (select coalesce(json_agg(json_build_object('id', id, 'seat', seat, 'e', emoji) order by id), '[]'::json)
+      from traque_reactions where game_id = p_game and at > now() - interval '4 seconds'),
     'players', (select coalesce(json_agg(json_build_object('seat', seat, 'name', name, 'avatar', avatar, 'photo', photo, 'status', status, 'bot', bot,
         'player_id', player_id, 'pawn', pawn,
         -- au salon, les spécialités des adversaires restent secrètes (on ne voit que leur nombre)
-        'topics', case when g.status = 'lobby' and seat is distinct from me and player_id is not null then (select coalesce(jsonb_agg('{}'::jsonb), '[]'::jsonb) from jsonb_array_elements(topics)) else topics end, 'pos', pos, 'pearls', pearls, 'items', items, 'skip', skip, 'bubble', bubble, 'ghost', ghost, 'reward', reward,
+        'topics', case when g.status = 'lobby' and seat is distinct from me and player_id is not null then (select coalesce(jsonb_agg('{}'::jsonb), '[]'::jsonb) from jsonb_array_elements(topics)) else topics end, 'pos', pos, 'pearls', pearls, 'items', items, 'skip', skip, 'bubble', bubble, 'ghost', ghost, 'stats', stats, 'reward', reward,
         'online', case when player_id is null then true else (select last_seen > now() - interval '70 seconds' from players where id = player_id) end) order by seat), '[]'::json)
       from traque_players where game_id = p_game and status <> 'declined'));
 end $$;
@@ -940,6 +952,7 @@ begin
         amount := least(5, tg.pearls);
         update traque_players set pearls = pearls - amount where game_id = p_game and seat = p_target;
         update traque_players set pearls = pearls + amount where game_id = p_game and seat = s;
+        perform tq_stat(p_game, s, 'stolen', amount); perform tq_stat(p_game, p_target, 'robbed', amount);
         perform tq_flash(p_game, 'vol', s, p_target, '🪝 ' || me.name || ' vole ' || amount || ' perle' || case when amount > 1 then 's' else '' end || ' à ' || tg.name || ' !');
       elsif p_item = 'echange' then
         update traque_players t set pos = case when t.seat = s then tg.pos else me.pos end where t.game_id = p_game and t.seat in (s, p_target);

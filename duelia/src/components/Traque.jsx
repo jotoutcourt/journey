@@ -183,6 +183,7 @@ function TraqueLobby({ v, gameId, officials, topics, friends, act, onExit, onWal
               {p.bot ? <img className="ts-pawn" src={pawnImg(p.pawn, p.seat)} alt="" /> : <span className="ts-av"><Avatar seed={p.avatar} photo={p.photo} size={40} /><img className="ts-mini" src={pawnImg(p.pawn, p.seat)} alt="" /></span>}
               <b>{p.seat === v.me ? 'Toi' : bare(p.name).split(' ')[0]}</b>
               <small>{p.status === 'invited' ? '⏳ invité' : p.topics?.length === 3 ? (p.bot ? `🤖 ${p.bot}` : '✅ prêt') : '✏️ choisit'}</small>
+              {(v.reacts || []).filter(r => r.seat === p.seat).map(r => <span key={r.id} className="tq-react in-seat">{r.e}</span>)}
               {v.host && s !== 0 && <button className="ts-x" aria-label="Retirer" onClick={() => act(() => api.removeTraqueSeat(gameId, s).then(() => api.getTraque(gameId)))}>×</button>}
             </> : v.host
               ? <button className="ts-add" onClick={() => setSeatMenu(true)} aria-label="Ajouter un joueur">+</button>
@@ -202,6 +203,7 @@ function TraqueLobby({ v, gameId, officials, topics, friends, act, onExit, onWal
         </> : <span><b>🎙️ Vocal du salon</b><small>Il s'active dès qu'un ami a rejoint.</small></span>}
       </div>
 
+      <ReactBar gameId={gameId} inline />
       <h3 className="tq-ready-title">Pour être paré, choisis ton pion et tes spécialités</h3>
       <div className="tq-two">
         <button className="tq-sq" onClick={() => setPawnSheet(true)}>
@@ -392,6 +394,15 @@ function TraqueBoard({ v, gameId, act, onExit, vc }) {
     if (before !== shown && Object.keys(shown).some(k => before[k] !== undefined && before[k] !== shown[k])) { try { sfx.step?.() } catch { /* son facultatif */ } }
   }, [shown])
 
+  // un petit « pop » quand quelqu'un réagit
+  const seenReact = useRef(0)
+  const lastReact = (v.reacts || []).slice(-1)[0]
+  useEffect(() => {
+    if (!lastReact || lastReact.id <= seenReact.current) return
+    seenReact.current = lastReact.id
+    if (lastReact.seat !== v.me) { try { sfx.click?.() } catch { /* son facultatif */ } }
+  }, [lastReact?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
   // petits sons
   const lastPhase = useRef(null)
   useEffect(() => {
@@ -416,7 +427,7 @@ function TraqueBoard({ v, gameId, act, onExit, vc }) {
       <div className="tq-hud">
       <div className="tq-hud-top">
         <div className="tq-me-card" style={{ '--c': SEAT_COLORS[v.me] }}>
-          <span className="tq-ring"><Avatar seed={me?.avatar} photo={me?.photo} size={38} /></span>
+          <span className="tq-ring"><Avatar seed={me?.avatar} photo={me?.photo} size={38} />{(v.reacts || []).filter(r => r.seat === v.me).map(r => <span key={r.id} className="tq-react hud">{r.e}</span>)}</span>
           <div><b>{me?.name}</b><small><Pearl /> {me?.pearls ?? 0} · case {me?.pos ?? 0}{me?.items?.length ? ` · 🎒 ${me.items.length}` : ''}{me?.bubble ? ' · 🫧' : ''}{me?.ghost ? ' · 👻 fantôme' : ''}</small></div>
         </div>
         <div className="tq-hud-right">
@@ -439,6 +450,7 @@ function TraqueBoard({ v, gameId, act, onExit, vc }) {
         {v.players.filter(p => p.status !== 'declined' && p.seat !== v.me).map(p => (
           <li key={p.seat} style={{ '--c': SEAT_COLORS[p.seat] }} className={`${p.seat === v.turn ? 'turn' : ''} ${p.status === 'left' ? 'gone' : ''} ${voice.speaking[p.player_id] ? 'speaking' : ''}`}>
             {p.bot ? <img src={pawnImg(p.pawn, p.seat)} alt="" /> : <Avatar seed={p.avatar} photo={p.photo} size={26} />}
+            {(v.reacts || []).filter(r => r.seat === p.seat).map(r => <span key={r.id} className="tq-react hud">{r.e}</span>)}
             <span><b>{p.name.replace(/ \((facile|moyen|expert)\)$/, '')}</b><small><Pearl /> {p.pearls} · {p.pos}{p.skip ? ' ⚓' : ''}{voice.peerMic[p.player_id] ? ' 🎙️' : ''}</small></span>
           </li>
         ))}
@@ -458,6 +470,7 @@ function TraqueBoard({ v, gameId, act, onExit, vc }) {
       {/* HUD du bas */}
       <div className="tq-hud-bottom">
         <div className="tq-round-card"><img src="/mascotte/pirate.webp" alt="" /><span><b>Tour {v.round}</b><small>{v.players.length} joueurs</small></span></div>
+        <ReactBar gameId={gameId} />
         <div className="tq-hud-actions">
           {v.phase === 'roll' && myTurn && <>
             <button className="tq-round-btn bag" onClick={() => setBag(true)} disabled={!me?.items?.length} aria-label="Mon sac"><img src="/traque/ico/case-shop.webp" alt="" /><i>{me?.items?.length || 0}</i></button>
@@ -560,8 +573,9 @@ function PathBoard({ v, shown, topicOf, owners, zoom }) {
           const k = mates.findIndex(q => q.seat === p.seat)
           // plusieurs pions sur la même case : simplement côte à côte (un socle d'écart), centrés sur la case
           const off = [(k - (mates.length - 1) / 2) * Math.min(6.4, 30 / mates.length), 0]
-          return <img key={p.seat} src={pawnImg(p.pawn, p.seat)} alt="" className={`tq-figure ${p.seat === v.turn ? 'active' : ''} ${p.ghost ? 'ghost' : ''}`}
-            style={{ '--c': SEAT_COLORS[p.seat], left: `${x * 100 + off[0]}%`, top: `${y * 100 + off[1]}%` }} />
+          const rs = (v.reacts || []).filter(r => r.seat === p.seat)
+          return <Fragment key={p.seat}>{rs.map(r => <span key={r.id} className="tq-react" style={{ left: `${x * 100 + off[0]}%`, top: `${y * 100 + off[1]}%` }}>{r.e}</span>)}<img src={pawnImg(p.pawn, p.seat)} alt="" className={`tq-figure ${p.seat === v.turn ? 'active' : ''} ${p.ghost ? 'ghost' : ''}`}
+            style={{ '--c': SEAT_COLORS[p.seat], left: `${x * 100 + off[0]}%`, top: `${y * 100 + off[1]}%` }} /></Fragment>
         })}
       </div>
     </div>
@@ -933,6 +947,61 @@ function DuelDice({ v, d }) {
   )
 }
 
+// Réactions rapides : un émoji qui s'envole au-dessus de son pion (vu par tous)
+const REACTS = ['😂', '😱', '🔥', '👏', '😡', '🫡', '💀', '🐙']
+function ReactBar({ gameId, inline = false }) {
+  const [open, setOpen] = useState(inline)
+  const send = (e) => { api.traqueReact(gameId, e).catch(() => {}); if (!inline) setOpen(false) }
+  if (inline) return <div className="tq-reacts inline">{REACTS.map(e => <button key={e} onClick={() => send(e)}>{e}</button>)}</div>
+  return (
+    <div className="tq-react-wrap">
+      {open && <div className="tq-reacts">{REACTS.map(e => <button key={e} onClick={() => send(e)}>{e}</button>)}</div>}
+      <button className="tq-round-btn" onClick={() => setOpen(o => !o)} aria-label="Réagir">😂</button>
+    </div>
+  )
+}
+
+// Récap de fin de partie : les titres de chacun
+const AWARDS = [
+  ['ok', '🧠', 'Le cerveau', n => `${n} bonne${n > 1 ? 's' : ''} réponse${n > 1 ? 's' : ''}`],
+  ['duel_won', '⚔️', 'Le gladiateur', n => `${n} duel${n > 1 ? 's' : ''} gagné${n > 1 ? 's' : ''}`],
+  ['stolen', '🦝', 'Le pickpocket', n => `${n} perle${n > 1 ? 's' : ''} volée${n > 1 ? 's' : ''}`],
+  ['chest', '💰', 'Le chasseur de coffres', n => `${n} perle${n > 1 ? 's' : ''} trouvée${n > 1 ? 's' : ''}`],
+  ['shark_ok', '🦈', 'Le dompteur de requin', n => `${n} fois échappé`],
+  ['back', '🍀', 'Le poissard', n => `${n} case${n > 1 ? 's' : ''} perdue${n > 1 ? 's' : ''}`],
+  ['ko', '🙈', 'La tête en l\'air', n => `${n} mauvaise${n > 1 ? 's' : ''} réponse${n > 1 ? 's' : ''}`],
+  ['eaten', '🍽️', 'Le casse-croûte du requin', () => 'dévoré tout cru'],
+]
+function Recap({ v }) {
+  const ps = v.players.filter(p => p.status !== 'declined')
+  const list = AWARDS.map(([k, ico, title, txt]) => {
+    const best = [...ps].sort((a, b) => (b.stats?.[k] || 0) - (a.stats?.[k] || 0))[0]
+    const n = best?.stats?.[k] || 0
+    return n > 0 ? { k, ico, title, txt: txt(n), p: best } : null
+  }).filter(Boolean)
+  if (!list.length) return null
+  const share = () => {
+    const text = `🐙 La Chasse au Kraken\n${list.map(a => `${a.ico} ${a.title} : ${bare(a.p.name)} (${a.txt})`).join('\n')}`
+    if (navigator.share) navigator.share({ text }).catch(() => {})
+    else navigator.clipboard?.writeText(text)
+  }
+  return (
+    <section className="tq-recap">
+      <h3>Le récap de la chasse</h3>
+      <ul>
+        {list.map((a, i) => (
+          <li key={a.k} style={{ '--c': SEAT_COLORS[a.p.seat], '--i': i }}>
+            <span className="rc-ico">{a.ico}</span>
+            {a.p.bot ? <img src={pawnImg(a.p.pawn, a.p.seat)} alt="" /> : <Avatar seed={a.p.avatar} photo={a.p.photo} size={34} />}
+            <span className="rc-txt"><b>{a.title}</b><small>{a.p.seat === v.me ? 'Toi' : bare(a.p.name)} · {a.txt}</small></span>
+          </li>
+        ))}
+      </ul>
+      <button className="btn btn-small btn-ghost" onClick={share}>📤 Partager le récap</button>
+    </section>
+  )
+}
+
 // Quitter la partie : vraie fenêtre de confirmation
 function QuitButton({ className, label, onQuit, inGame = false }) {
   const [open, setOpen] = useState(false)
@@ -1030,6 +1099,7 @@ function Finale({ v, onExit, voice, onHangUp }) {
         ))}
       </ul>
       {mine && !mine.bot && <p className="muted small">Les perles restantes sont converties : 10 perles = 1 lingot.</p>}
+      <Recap v={v} />
       {voice && <div className="tq-finale-voice">
         <button className={`tq-round-btn mic ${voice.mic}`} onClick={voice.toggleMic} disabled={voice.mic === 'asking' || voice.mic === 'unsupported'} aria-label="Micro">
           {{ on: '🎙️', muted: '🔇', asking: '⏳', denied: '🚫', unsupported: '🚫' }[voice.mic] || '🎙️'}</button>
