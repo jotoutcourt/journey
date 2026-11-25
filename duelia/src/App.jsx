@@ -25,6 +25,7 @@ import { OxygenInline, OxygenSheet } from './components/Oxygen.jsx'
 import { Shop, StarterPick } from './components/Shop.jsx'
 import { priceOf, isLockable } from './lib/shop.js'
 import { buildButin } from './lib/butin.js'
+import { ChatList, ChatThread } from './components/Chat.jsx'
 import { FriendsScreen, FriendChallengeSheet, PickFriendSheet, PlayWhoSheet, InviteWaiting, LiveInviteBanner, FriendSent, ChallengeMessage, FriendProfile, LiveMatchMessage, LiveBetResult } from './components/Social.jsx'
 import * as api from './lib/account.js'
 import TopicRequestSheet from './components/TopicRequest.jsx'
@@ -52,9 +53,10 @@ const SHARED = (() => {
 
 // Raccourcis ouverts par une notification ou un lien d'ami : #defis, #amis, #ami=CODE, #theme=ID
 function readNavHash() {
-  const m = location.hash.match(/^#(defis|amis|ami=([A-Za-z0-9-]{8,9})|theme=([a-z0-9-]{1,60}))$/)
+  const m = location.hash.match(/^#(defis|amis|ami=([A-Za-z0-9-]{8,9})|theme=([a-z0-9-]{1,60})|chat=([0-9a-f-]{36}))$/)
   if (!m) return null
   history.replaceState(null, '', location.pathname + location.search)
+  if (m[4]) return { name: 'chat', peer: { player_id: m[4], name: '…' } } // notification d'un message
   if (m[1] === 'defis') return { name: 'inbox' }
   if (m[3]) return { name: 'topic', id: m[3] } // annonce d'un nouveau thème
   return { name: 'friends', code: m[2] ? m[2].replace('-', '').toUpperCase() : undefined }
@@ -185,6 +187,7 @@ const TABS = [
   { name: 'home', label: 'Accueil', icon: <path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z" /> },
   { name: 'topics', label: 'Thèmes', icon: <><rect x="4" y="4" width="7" height="7" rx="2" /><rect x="13" y="4" width="7" height="7" rx="2" /><rect x="4" y="13" width="7" height="7" rx="2" /><rect x="13" y="13" width="7" height="7" rx="2" /></> },
   { name: 'inbox', label: 'Défis', icon: <><path d="M6 4l6 6M18 4l-6 6M4 20l6-6M20 20l-6-6" /><circle cx="12" cy="12" r="2.5" /></> },
+  { name: 'chat', label: 'Chat', icon: <path d="M4 5h16v11H9l-5 4z" /> },
   { name: 'friends', label: 'Amis', icon: <><circle cx="9" cy="8" r="3.2" /><path d="M3 19c.8-3.2 3.1-5 6-5s5.2 1.8 6 5" /><circle cx="17" cy="9" r="2.4" /><path d="M16 14.2c2.4.2 4.2 1.8 5 4.3" /></> },
   { name: 'profile', label: 'Profil', icon: <><circle cx="12" cy="8" r="4" /><path d="M4 20c1-4 4-6 8-6s7 2 8 6" /></> },
 ]
@@ -631,6 +634,7 @@ export default function App() {
 
   const startFriendDuel = (friend, topic, mode, stake = 0) => {
     setFriendSheet(null)
+    if (friend.fromChat) api.chatSend(friend.player_id, `⚔️ Je te lance un défi en ${topic.name}${mode === 'live' ? ' en direct' : ''} !`, 'invite', { type: 'duel', live: mode === 'live' }).catch(() => {})
     const questions = buildQuestions(topic, st.topicStats[topic.id]?.seen)
     if (mode === 'live') {
       setRoute({ name: 'invite', id: topic.id, friend, inviteId: null, status: 'pending', startedAt: Date.now(), questions, stake })
@@ -1027,11 +1031,12 @@ export default function App() {
   }
 
   const meForDuel = { ...me, topicXp: st.topicStats[route.id]?.xp || 0 }
-  const fullscreen = ['match', 'duel', 'results', 'butingame', 'party', 'traque', 'sent', 'invite', 'friendsent', 'linkload', 'linkready', 'linkintro', 'linkreply'].includes(route.name)
+  const fullscreen = (route.name === 'chat' && !!route.peer) || ['match', 'duel', 'results', 'butingame', 'party', 'traque', 'sent', 'invite', 'friendsent', 'linkload', 'linkready', 'linkintro', 'linkreply'].includes(route.name)
   // pas de rechargement automatique (nouvelle version) pendant une partie
   window.__dueliaBusy = ['match', 'duel', 'invite', 'create', 'butingame', 'party', 'traque'].includes(route.name)
   const badge = pendingCount(st) + social.counts.challenges
   const friendBadge = social.counts.requests
+  const chatBadge = social.counts.chat || 0
   let view
   if (unlocks?.needs_pick && hasProfile && !['duel', 'match', 'results', 'butingame', 'party', 'linkintro', 'linkload'].includes(route.name)) {
     view = <StarterPick topics={topics} onDone={pickStarters} />
@@ -1077,6 +1082,13 @@ export default function App() {
       : null; break
     case 'inbox': view = <Inbox st={st} topics={topics} now={clock} {...inboxHandlers}
       friend={{ list: social.challenges || [], results: st.friendResults, ...friendHandlers }} />; break
+    case 'chat': view = route.peer
+      ? <ChatThread key={route.peer.player_id} peer={route.peer} onBack={() => go({ name: 'chat' })}
+          onChallenge={(f) => setFriendSheet({ ...f, fromChat: true })}
+          onTraque={CHASSE_TESTERS.includes(account.playerId) ? async (f) => { try { const id = await api.createTraque(); await api.inviteTraque(id, f.player_id); setRoute({ name: 'traque', gameId: id }); return id } catch { setToast('Pas de connexion.'); return null } } : null}
+          onJoinTraque={async (id) => { let ok; try { ok = await api.respondTraque(id, true) } catch { ok = null } if (!ok) { setToast('Trop tard : la partie a déjà commencé ou a été annulée.'); return } setRoute({ name: 'traque', gameId: id }) }}
+          onOpenInbox={() => go({ name: 'inbox' })} />
+      : <ChatList onOpen={(peer) => go({ name: 'chat', peer })} onAddFriend={() => go({ name: 'friends' })} />; break
     case 'friends': view = <FriendsScreen online={online} social={social.social} code={social.code} initialCode={route.code} now={clock} push={push} onPush={onPush}
       onAdd={(c) => api.addFriend(c).then(r => { social.refreshFriends(); return r })}
       onRespond={(f, yes) => api.respondFriend(f.player_id, yes).then(social.refreshFriends).catch(() => setToast('Pas de connexion.'))}
@@ -1178,6 +1190,7 @@ export default function App() {
               <span>{t.label}</span>
               {t.name === 'inbox' && badge > 0 && <i className="tab-badge">{badge}</i>}
               {t.name === 'friends' && friendBadge > 0 && <i className="tab-badge">{friendBadge}</i>}
+              {t.name === 'chat' && chatBadge > 0 && <i className="tab-badge">{chatBadge}</i>}
             </button>
           ))}
         </nav>

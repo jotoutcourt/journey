@@ -221,3 +221,8 @@ export const traqueBack = (id) => rpc('traque_back', { p_game: id })
 export const traqueResumeNow = (id) => rpc('traque_resume_now', { p_game: id })
 export const traqueReact = (id, e) => rpc('traque_react', { p_game: id, p_emoji: e })
 export const traqueCursed = (id, choice) => rpc('traque_cursed', { p_game: id, p_choice: choice })
+
+// Chat entre amis
+export const chatList = () => rpc('chat_list')
+export const chatThread = (peer, before = null) => rpc('chat_thread', { p_peer: peer, p_before: before })
+export const chatSend = (peer, body, kind = 'text', payload = null) => rpc('chat_send', { p_peer: peer, p_body: body, p_kind: kind, p_payload: payload })

@@ -11,7 +11,7 @@ export function useSocial(online) {
   const [duoInvites, setDuoInvites] = useState([])
   const [partyInvites, setPartyInvites] = useState([])
   const [traqueInvites, setTraqueInvites] = useState([])
-  const [counts, setCounts] = useState({ requests: 0, challenges: 0 })
+  const [counts, setCounts] = useState({ requests: 0, challenges: 0, chat: 0 })
   const countsRef = useRef(counts)
 
   const refreshFriends = useCallback(() => api.getFriends().then(s => { if (s) setSocial(s) }).catch(() => {}), [])
@@ -38,7 +38,7 @@ export function useSocial(online) {
         setDuoInvites(h.duo_invites || [])
         setPartyInvites(h.party_invites || [])
         setTraqueInvites(h.traque_invites || [])
-        const next = { requests: h.friend_requests || 0, challenges: h.pending_challenges || 0 }
+        const next = { requests: h.friend_requests || 0, challenges: h.pending_challenges || 0, chat: h.chat_unread || 0 }
         const prev = countsRef.current
         if (next.challenges !== prev.challenges) refreshChallenges()
         if (next.requests !== prev.requests) refreshFriends()
