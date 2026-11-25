@@ -226,3 +226,4 @@ export const traqueCursed = (id, choice) => rpc('traque_cursed', { p_game: id, p
 export const chatList = () => rpc('chat_list')
 export const chatThread = (peer, before = null) => rpc('chat_thread', { p_peer: peer, p_before: before })
 export const chatSend = (peer, body, kind = 'text', payload = null) => rpc('chat_send', { p_peer: peer, p_body: body, p_kind: kind, p_payload: payload })
+export const chatResultSeen = (cid) => rpc('chat_result_seen', { p_challenge: cid })

@@ -844,6 +844,7 @@ export default function App() {
     onDecline: (c) => api.declineChallenge(c.id).then(social.refreshChallenges).catch(() => setToast('Pas de connexion.')),
     onCancel: (c) => api.cancelChallenge(c.id).then(social.refreshChallenges).catch(() => setToast('Pas de connexion.')),
     onSee: (c) => {
+      api.chatResultSeen(c.id).catch(() => {})
       const data = st.friendResults?.[c.id]
       if (!data) { setToast('Résultat en cours de récupération…'); return }
       const t = topicOf(c)

@@ -13,6 +13,19 @@ function when(t) {
 }
 const dayLabel = (t) => { const w = when(t); return /:/.test(w) ? 'Aujourd\'hui' : w }
 
+// Actualité commune (défi lancé, relevé, refusé, résultat vu), racontée du point de vue de chacun
+function eventText(m, name) {
+  const p = m.payload || {}, t = p.topic || 'un thème'
+  if (p.ev === 'challenge') return m.mine ? `⚔️ Tu as lancé un défi à ${name} en ${t}` : `⚔️ ${name} t'a lancé un défi en ${t}`
+  if (p.ev === 'played') {
+    const mine = m.mine ? p.to : p.from, theirs = m.mine ? p.from : p.to
+    return m.mine ? `🎯 Tu as relevé le défi de ${name} en ${t} (${mine}–${theirs})` : `🎯 ${name} a relevé ton défi en ${t} (${theirs}–${mine})`
+  }
+  if (p.ev === 'declined') return m.mine ? `🙅 Tu as refusé le défi en ${t}` : `🙅 ${name} a refusé ton défi en ${t}`
+  if (p.ev === 'seen') return m.mine ? `👀 Tu as vu le résultat en ${t}` : `👀 ${name} vient de voir le résultat en ${t}`
+  return m.body
+}
+
 export function ChatList({ onOpen, onAddFriend }) {
   const [list, setList] = useState(null)
   useEffect(() => {
@@ -34,7 +47,7 @@ export function ChatList({ onOpen, onAddFriend }) {
                 <span className="cr-av"><Avatar seed={c.peer.avatar} photo={c.peer.photo} size={48} />{c.peer.online && <i className="cr-on" />}</span>
                 <span className="cr-txt">
                   <b>{c.peer.name}</b>
-                  <small>{c.last ? `${c.last.mine ? 'Toi : ' : ''}${c.last.kind === 'invite' ? '🎮 ' : ''}${c.last.body}` : c.peer.online ? 'En ligne · dis bonjour 👋' : 'Dis bonjour 👋'}</small>
+                  <small>{c.last ? (c.last.kind === 'event' ? eventText(c.last, c.peer.name) : `${c.last.mine ? 'Toi : ' : ''}${c.last.kind === 'invite' ? '🎮 ' : ''}${c.last.body}`) : c.peer.online ? 'En ligne · dis bonjour 👋' : 'Dis bonjour 👋'}</small>
                 </span>
                 <span className="cr-side">{c.last && <small>{when(c.last.at)}</small>}{c.unread > 0 && <i className="cr-badge">{c.unread}</i>}</span>
               </button>
@@ -72,7 +85,7 @@ export function ChatThread({ peer, onBack, onChallenge, onTraque, onJoinTraque, 
     finally { setSending(false) }
   }
   const p = data?.peer || peer
-  const lastMine = [...msgs].reverse().find(m => m.mine)
+  const lastMine = [...msgs].reverse().find(m => m.mine && m.kind !== 'event')
   return (
     <div className="screen chat-thread">
       <header className="top ct-head">
@@ -88,12 +101,17 @@ export function ChatThread({ peer, onBack, onChallenge, onTraque, onJoinTraque, 
           return (
             <div key={m.id}>
               {newDay && <p className="ct-day">{dayLabel(m.created_at)}</p>}
+              {m.kind === 'event' ? <div className="ct-event">
+                <span>{eventText(m, p.name)}</span>
+                {!m.mine && ['challenge', 'played'].includes(m.payload?.ev) && <button className="btn btn-small btn-ghost" onClick={onOpenInbox}>{m.payload.ev === 'challenge' ? 'Jouer' : 'Voir'}</button>}
+                <small>{hhmm(m.created_at)}</small>
+              </div> :
               <div className={`ct-bubble ${m.mine ? 'mine' : ''} ${m.kind}`}>
                 <span>{m.body}</span>
                 {m.kind === 'invite' && !m.mine && m.payload?.type === 'traque' && <button className="btn btn-small btn-gold" onClick={() => onJoinTraque(m.payload.game)}>🐙 Rejoindre la chasse</button>}
                 {m.kind === 'invite' && !m.mine && m.payload?.type === 'duel' && <button className="btn btn-small btn-gold" onClick={onOpenInbox}>⚔️ Voir le défi</button>}
                 <small>{hhmm(m.created_at)}</small>
-              </div>
+              </div>}
               {lastMine && m.id === lastMine.id && data.seen >= m.id && <p className="ct-seen">Vu</p>}
             </div>
           )

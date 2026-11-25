@@ -36,13 +36,13 @@ create or replace function public.chat_list() returns json language sql stable s
   with me as (select current_player() pid),
   fr as (select case when f.a = me.pid then f.b else f.a end peer from friend_links f, me where f.status = 'accepted' and me.pid in (f.a, f.b)),
   last as (
-    select distinct on (fr.peer) fr.peer, m.id, m.body, m.kind, m.sender, m.created_at
+    select distinct on (fr.peer) fr.peer, m.id, m.body, m.kind, m.payload, m.sender, m.created_at
     from fr join chat_messages m on (m.sender = fr.peer and m.recipient = (select pid from me)) or (m.recipient = fr.peer and m.sender = (select pid from me))
     order by fr.peer, m.id desc)
   select coalesce(json_agg(json_build_object(
       'peer', player_card(fr.peer),
-      'last', case when l.id is null then null else json_build_object('body', l.body, 'kind', l.kind, 'mine', l.sender = (select pid from me), 'at', l.created_at) end,
-      'unread', (select count(*) from chat_messages m where m.sender = fr.peer and m.recipient = (select pid from me)
+      'last', case when l.id is null then null else json_build_object('body', l.body, 'kind', l.kind, 'payload', l.payload, 'mine', l.sender = (select pid from me), 'at', l.created_at) end,
+      'unread', (select count(*) from chat_messages m where m.sender = fr.peer and m.recipient = (select pid from me) and m.kind <> 'event'
                  and m.id > coalesce((select last_read from chat_reads r where r.player_id = (select pid from me) and r.peer_id = fr.peer), 0))
     ) order by l.id desc nulls last), '[]'::json)
   from fr left join last l on l.peer = fr.peer
@@ -114,3 +114,51 @@ begin
     'pending_challenges', (select count(*) from friend_challenges where to_player = pid and status = 'pending' and created_at > now() - interval '7 days'),
     'chat_unread', chat_unread_for(pid));
 end $$;
+
+-- ===== Actualité commune dans le chat : défis lancés, relevés, refusés, résultats vus =====
+alter table public.chat_messages drop constraint if exists chat_messages_kind_check;
+alter table public.chat_messages add constraint chat_messages_kind_check check (kind in ('text', 'invite', 'event'));
+
+create or replace function public.chat_event(p_actor uuid, p_other uuid, p_body text, p_payload jsonb) returns void language sql security definer set search_path = public as $$
+  insert into chat_messages (sender, recipient, body, kind, payload)
+  select p_actor, p_other, p_body, 'event', p_payload where p_actor <> p_other and are_friends(p_actor, p_other)
+$$;
+
+create or replace function public.tq_chat_challenge() returns trigger language plpgsql security definer set search_path = public as $$
+declare t text := coalesce(new.topic ->> 'name', new.topic_id);
+begin
+  if tg_op = 'INSERT' then
+    perform chat_event(new.from_player, new.to_player, 'Défi lancé en ' || t, jsonb_build_object('ev', 'challenge', 'topic', t, 'cid', new.id));
+  elsif new.status is distinct from old.status and new.status = 'done' then
+    perform chat_event(new.to_player, new.from_player, 'Défi relevé en ' || t, jsonb_build_object('ev', 'played', 'topic', t, 'cid', new.id, 'from', new.from_score, 'to', new.to_score));
+  elsif new.status is distinct from old.status and new.status = 'declined' then
+    perform chat_event(new.to_player, new.from_player, 'Défi refusé en ' || t, jsonb_build_object('ev', 'declined', 'topic', t, 'cid', new.id));
+  end if;
+  return new;
+exception when others then return new; -- l'actualité ne doit jamais bloquer un défi
+end $$;
+drop trigger if exists chat_challenge_events on public.friend_challenges;
+create trigger chat_challenge_events after insert or update of status on public.friend_challenges
+  for each row execute function public.tq_chat_challenge();
+
+-- « X vient de voir le résultat » (une seule fois par défi)
+create or replace function public.chat_result_seen(p_challenge uuid) returns void language plpgsql security definer set search_path = public as $$
+declare pid uuid := current_player(); c friend_challenges;
+begin
+  select * into c from friend_challenges where id = p_challenge and status = 'done' and pid in (from_player, to_player);
+  if not found then return; end if;
+  if exists (select 1 from chat_messages where kind = 'event' and sender = pid and payload ->> 'ev' = 'seen' and payload ->> 'cid' = p_challenge::text) then return; end if;
+  perform chat_event(pid, case when pid = c.from_player then c.to_player else c.from_player end, 'Résultat vu',
+    jsonb_build_object('ev', 'seen', 'topic', coalesce(c.topic ->> 'name', c.topic_id), 'cid', c.id));
+end $$;
+
+-- l'actualité ne compte pas dans les non-lus (elle a déjà ses propres notifications)
+create or replace function public.chat_unread_for(p uuid) returns int language sql stable security definer set search_path = public as $$
+  select count(*)::int from chat_messages m
+  where m.recipient = p and m.kind <> 'event' and m.id > coalesce((select last_read from chat_reads r where r.player_id = p and r.peer_id = m.sender), 0)
+    and are_friends(p, m.sender)
+$$;
+
+revoke all on function public.chat_event(uuid, uuid, text, jsonb), public.tq_chat_challenge() from public, anon, authenticated;
+revoke all on function public.chat_result_seen(uuid) from public, anon;
+grant execute on function public.chat_result_seen(uuid) to authenticated;

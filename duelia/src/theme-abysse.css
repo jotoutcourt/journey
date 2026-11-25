@@ -1961,3 +1961,17 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
 .ct-send { background: linear-gradient(160deg, #8b5cff, #6a35e8); color: #fff; }
 .ct-send:disabled { opacity: .4; }
 .tabbar button { min-width: 0; }
+/* actualité commune dans le chat */
+.ct-event { align-self: center; max-width: 92%; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px 8px; margin: 6px 0; padding: 6px 12px;
+  border-radius: 14px; background: #ffffff0d; box-shadow: inset 0 0 0 1px var(--line); font-size: 13px; color: #e6dcff; text-align: center; }
+.ct-event small { font-size: 10.5px; color: var(--muted); }
+.ct-event .btn { padding: 4px 10px; min-height: 0; }
+/* zoom plus doux : point d'ancrage fixe, entrée et sortie lentes */
+.tq-track { transition: transform 1.2s cubic-bezier(.45, 0, .2, 1), transform-origin 1.2s cubic-bezier(.45, 0, .2, 1); }
+.tq-track.zoom { transform: scale(1.45); }
+.tq-track .tq-figure, .tq-track .tq-figure.active { transition: top .3s ease-in-out, left .3s ease-in-out; }
+/* réactions : une colonne verticale sur la gauche de l'écran */
+.tq-react-wrap .tq-reacts { position: fixed; left: 10px; bottom: calc(env(safe-area-inset-bottom) + 86px); top: auto; grid-template-columns: 46px; gap: 6px; padding: 6px;
+  border-radius: 26px; animation: tq-react-col .25s ease-out both; }
+.tq-react-wrap .tq-reacts button { width: 46px; height: 46px; border-radius: 50%; }
+@keyframes tq-react-col { from { opacity: 0; transform: translateY(20px); } }

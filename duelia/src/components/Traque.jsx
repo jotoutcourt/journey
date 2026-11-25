@@ -367,6 +367,11 @@ function TraqueBoard({ v, gameId, act, onExit, vc }) {
     const id = setTimeout(() => setDiceOn(false), diceMs)
     return () => clearTimeout(id)
   }, [v.version, rolled]) // eslint-disable-line react-hooks/exhaustive-deps
+  // longueur du trajet (pour le zoom et la vitesse) : lancer normal ou dé du duel
+  const loserP = duelDice ? v.players.find(p => p.seat === v.data.fx.seat) : null
+  const dist = v.phase === 'show' && v.data?.to != null ? Math.abs(v.data.to - v.data.from) : duelDice ? (v.data.fx.dice?.[0] || 0) : 0
+  const stepMs = dist ? Math.min(360, 3200 / dist) : 260
+  const anchor = v.phase === 'show' && v.data?.to != null ? (v.data.from + v.data.to) / 2 : loserP ? loserP.pos + dist / 2 : null
   useEffect(() => {
     const goal = Object.fromEntries(v.players.map(p => [p.seat, p.pos]))
     let iv = null
@@ -381,7 +386,7 @@ function TraqueBoard({ v, gameId, act, onExit, vc }) {
         if (!moved) clearInterval(iv)
         return moved ? next : cur
       })
-    }, 170) }
+    }, stepMs) }
     const wait = setTimeout(go, rolled ? diceMs + 100 : 0)
     return () => { clearTimeout(wait); clearInterval(iv) }
   }, [v.version]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -420,7 +425,7 @@ function TraqueBoard({ v, gameId, act, onExit, vc }) {
 
   return (
     <div className="screen traque game">
-      <PathBoard v={v} shown={shown} topicOf={topicOf} owners={owners} zoom={rolled && !diceOn} />
+      <PathBoard v={v} shown={shown} topicOf={topicOf} owners={owners} zoom={rolled && !diceOn} anchor={rolled && !diceOn ? anchor : null} />
 
       {/* HUD du haut : une colonne propre, sans chevauchement */}
       <i className="tq-veil" aria-hidden="true" />
@@ -517,13 +522,14 @@ function TraqueBoard({ v, gameId, act, onExit, vc }) {
 }
 
 // Plateau illustré : les cases sont posées sur les emplacements peints de l'image
-function PathBoard({ v, shown, topicOf, owners, zoom }) {
+function PathBoard({ v, shown, topicOf, owners, zoom, anchor }) {
   const ref = useRef(null)
   const touchedAt = useRef(0)
   const last = BOARD_PTS.length - 1
   const at = (i) => BOARD_PTS[Math.min(last, Math.max(0, i))]
   const followSeat = v.phase === 'duelroll' ? v.data?.loser : v.data?.fx?.duel ? v.data.fx.seat : v.data?.seat ?? v.turn
-  const followPos = shown[followSeat] ?? v.players.find(p => p.seat === followSeat)?.pos ?? 0
+  // pendant le zoom, la caméra reste fixée au milieu du trajet (mouvement fluide, sans à-coups)
+  const followPos = anchor != null ? Math.round(anchor) : shown[followSeat] ?? v.players.find(p => p.seat === followSeat)?.pos ?? 0
   // la caméra suit le pion qui bouge, sauf si on vient de faire défiler soi-même
   useEffect(() => {
     const el = ref.current
@@ -535,7 +541,7 @@ function PathBoard({ v, shown, topicOf, owners, zoom }) {
   }, [followPos, followSeat]) // eslint-disable-line react-hooks/exhaustive-deps
   const mark = () => { touchedAt.current = Date.now() }
   // lancer normal : la caméra zoome sur le pion pendant qu'il avance, puis revient à la normale
-  const [zx, zy] = at(followPos)
+  const [zx, zy] = anchor != null ? at(Math.round(anchor)) : at(followPos)
   return (
     <div className="tq-path" ref={ref} onTouchStart={mark} onWheel={mark} onPointerDown={mark}>
       <div className={`tq-track ${zoom ? 'zoom' : ''}`} style={{ aspectRatio: BOARD_RATIO, transformOrigin: `${zx * 100}% ${zy * 100}%` }}>
