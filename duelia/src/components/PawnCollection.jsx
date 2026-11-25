@@ -1,5 +1,6 @@
 // Collection de figurines de la Chasse au Kraken (profil, profil d'un ami)
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import * as api from '../lib/account.js'
 import { PAWNS, FREE_PAWNS } from '../lib/traque.js'
 
@@ -26,7 +27,7 @@ export default function PawnCollection({ playerId = null, title = 'Ma collection
           </figure>
         ))}
       </section>
-      {sel && <PawnViewer pawn={sel} onClose={() => setSel(null)} />}
+      {sel && createPortal(<PawnViewer pawn={sel} onClose={() => setSel(null)} />, document.body)}
       {!playerId && n < PAWNS.length && <p className="pf-note">Les autres figurines se débloquent avec la figurine mystère, dans le salon de la Chasse au Kraken.</p>}
     </>
   )
