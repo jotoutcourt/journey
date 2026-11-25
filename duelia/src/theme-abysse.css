@@ -1877,3 +1877,10 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
 .dr-wait { margin: 0; text-align: center; font: 800 15px var(--display); text-shadow: 0 2px 6px #000; }
 .dr-wait small { font: 600 12px var(--body); color: #d8ccff; }
 .tq-event.dr-res { position: absolute; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 120px); transform: translateX(-50%); }
+/* le Kraken se moque (spécialité ratée) */
+.tq-mock { position: relative; width: min(56vw, 230px); margin-bottom: -10px; animation: tq-mock-in .5s cubic-bezier(.2, 1.5, .4, 1) both; }
+.tq-mock img { width: 100%; filter: drop-shadow(0 10px 14px #000a); animation: tq-mock-shake .35s .5s ease-in-out 4; transform-origin: 50% 80%; }
+.tq-mock span { position: absolute; right: -14%; top: -6%; padding: 8px 14px; border-radius: 18px 18px 18px 4px; background: #fff; color: #3a0b5e;
+  font: 900 18px var(--display); white-space: nowrap; box-shadow: 0 6px 14px #000a; transform: rotate(6deg); animation: sb-pop .4s .3s both; }
+@keyframes tq-mock-in { from { transform: translateY(40px) scale(.6); opacity: 0; } }
+@keyframes tq-mock-shake { 50% { transform: rotate(-5deg) translateY(-4px); } }

@@ -70,6 +70,8 @@ function noise(dur, { delay = 0, gain = 0.3, type = 'lowpass', freq = 400, to = 
 }
 
 export const sfx = {
+  // rire moqueur du Kraken : « ha ha ha » qui descend
+  laugh: () => { [520, 470, 420, 360].forEach((f, i) => { tone(f, 0.13, 'sawtooth', 0.05, i * 0.16, f * 0.8); tone(f * 2, 0.1, 'sine', 0.02, i * 0.16) }) },
   // éclair + tonnerre (annonce de duel)
   thunder: () => { noise(0.12, { gain: 0.5, type: 'highpass', freq: 2500 }); noise(1.8, { delay: 0.05, gain: 0.45, freq: 900, to: 60 }); tone(45, 1.4, 'sawtooth', 0.05, 0.08, 30) },
   // coup de poing qui éjecte le perdant

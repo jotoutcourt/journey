@@ -800,8 +800,10 @@ function EventView({ d }) {
   const [t0] = useState(() => Date.now())
   const a = eventAnim(d)
   const regen = (d.text || '').includes('Kraken recrache')
+  // raté sur sa propre spécialité : le Kraken se moque
+  const mock = (d.text || '').startsWith('😬')
   useEffect(() => {
-    try { if (d.fx?.gold > 0) sfx.coins?.(10); if (regen) setTimeout(() => sfx.heal?.(), 300) } catch { /* son facultatif */ }
+    try { if (d.fx?.gold > 0) sfx.coins?.(10); if (regen) setTimeout(() => sfx.heal?.(), 300); if (mock) setTimeout(() => sfx.laugh?.(), 250) } catch { /* son facultatif */ }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <div className="tq-center">
@@ -809,6 +811,7 @@ function EventView({ d }) {
       {d.fx?.gold > 0 && <GoldRain n={d.fx.gold} big />}
       <div className="tq-ev-stack">
         {regen && <KrakenHP hp={4} regen />}
+        {mock && <div className="tq-mock"><img src="/mascotte/victoire.webp" alt="" /><span>Haha, nulos !</span></div>}
         {a && a[1] !== 'wave' && <img className={`tq-ev-anim ${a[1]}`} src={a[1] === 'anim' ? `${a[0]}?t=${t0}` : a[0]} alt="" />}
         <p className="tq-event">{d.text}</p>
       </div>
