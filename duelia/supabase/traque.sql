@@ -181,7 +181,7 @@ begin
   elsif typ = 'truce' then
     perform tq_log(p_game, '🤝 Trêve ! Tout le monde remplit le trésor ensemble.');
     perform tq_quiz(p_game, 'truce', (select array_agg(seat order by seat) from traque_players where game_id = p_game and status in ('joined', 'bot', 'left')),
-      array[tq_general(p_game), tq_general(p_game), tq_general(p_game), tq_general(p_game), tq_general(p_game)], '{}'::jsonb);
+      array[tq_general(p_game), tq_general(p_game), tq_general(p_game), tq_general(p_game), tq_general(p_game)], jsonb_build_object('t0', g.treasure));
   elsif typ = 'chest' then
     n := 3 + floor(random() * 5)::int;
     update traque_players set pearls = pearls + n where game_id = p_game and seat = p_seat;
@@ -459,7 +459,9 @@ begin
       deadline = now() + make_interval(secs => case when (select bot is not null or status = 'left' from traque_players where game_id = p_game and seat = win) then 2 else 15 end),
       version = version + 1 where id = p_game;
   elsif kind = 'truce' then
-    perform tq_event(p_game, '🤝 Fin de la trêve : le trésor contient ' || g.treasure || ' lingots.', jsonb_build_object('treasure', g.treasure));
+    n := g.treasure - coalesce((d -> 'ctx' ->> 't0')::int, g.treasure);
+    perform tq_event(p_game, '🤝 Fin de la trêve : +' || n || ' lingot' || case when n > 1 then 's' else '' end || ' récolté' || case when n > 1 then 's' else '' end || ' ! Le trésor contient ' || g.treasure || ' lingots.',
+      jsonb_build_object('treasure', g.treasure, 'gold', n));
   elsif kind = 'final' then
     s := (d -> 'seats' ->> 0)::int; ok := 0;
     for i in 0 .. jsonb_array_length(d -> 'items') - 1 loop

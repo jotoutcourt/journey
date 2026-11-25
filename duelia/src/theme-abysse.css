@@ -1695,3 +1695,84 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
 @property --mx { syntax: '<percentage>'; inherits: true; initial-value: 30%; }
 @property --my { syntax: '<percentage>'; inherits: true; initial-value: 25%; }
 @keyframes pv-sway { 0%, 100% { transform: rotateX(4deg) rotateY(-14deg); --mx: 22%; --my: 28%; } 50% { transform: rotateX(2deg) rotateY(14deg); --mx: 78%; --my: 22%; } }
+/* ===================== Retours du 25/11 ===================== */
+/* 1. bouton « Lancer la chasse » : plus de bloc d'ombre derrière */
+.tq-dock { background: none; }
+/* 3. voile du haut : net et court, plus d'effet de flou */
+.tq-hud::before { bottom: -24px; background: linear-gradient(180deg, #000000d9 0%, #000000a6 calc(env(safe-area-inset-top) + 30%), #00000059 75%, transparent 100%); }
+/* 7. le fond sombre remplit vraiment l'intérieur des cadres */
+.tq-frame-in { left: 10.5%; right: 10.5%; top: 31.5%; bottom: 17%; border-radius: 30px; padding: 5% 6% 10%; }
+.tq-quiz::before { inset: 6% 3.2% 6% 3.2%; border-radius: 34px; }
+/* 6. intro solo : figurine résine en grand à la place du titre, thème en gros */
+.pv-fig.rp { width: 100%; animation: pv-pop .5s cubic-bezier(.2, 1.4, .4, 1) both, pv-sway 5s ease-in-out .5s infinite; }
+.tq-frame.solo .tq-frame-badge { width: 20%; transform: translate(-50%, -38%); }
+.tq-frame-hero { position: absolute; left: 50%; top: 10%; width: 34%; transform: translateX(-50%); z-index: 4; perspective: 700px; pointer-events: none; filter: drop-shadow(0 10px 12px #000b); }
+.tq-intro-topic.big { font: 900 clamp(22px, 7vw, 30px) var(--display); display: flex; align-items: center; gap: 10px; text-align: left; line-height: 1.1; margin-top: 8%; text-shadow: 0 2px 8px #000; }
+/* 8. photo de profil dans le HUD */
+.tq-ring svg, .tq-ring > img, .tq-ring .avatar { border-radius: 50%; }
+.tq-others li > svg, .tq-others li > .avatar, .tq-others li > img { flex: none; border-radius: 50%; }
+/* 9. annonce de duel */
+.tq-center.dz { pointer-events: auto; background: radial-gradient(circle at 50% 45%, #4a1590f0, #0b0620fa 75%); display: grid; place-items: center; align-content: center; gap: 6px; }
+.dz-flash { position: absolute; inset: 0; background: #fff; opacity: 0; animation: dz-flash 1.1s .25s both; pointer-events: none; }
+@keyframes dz-flash { 0% { opacity: 0; } 6% { opacity: .9; } 12% { opacity: .1; } 18% { opacity: .7; } 40%, 100% { opacity: 0; } }
+.dz-bolt { position: absolute; top: 18%; left: 50%; width: 70px; transform: translateX(-50%); fill: #ffe066; filter: drop-shadow(0 0 12px #fff6) drop-shadow(0 0 30px #ffd23f); opacity: 0; animation: dz-bolt 1.2s .25s both; }
+@keyframes dz-bolt { 0% { opacity: 0; transform: translateX(-50%) scale(1.6); } 10% { opacity: 1; transform: translateX(-50%) scale(1); } 60% { opacity: 1; } 100% { opacity: .25; } }
+.dz-title { width: min(84vw, 360px); filter: drop-shadow(0 8px 14px #000c); animation: sb-pop .5s .4s both; }
+.dz-topic { display: flex; align-items: center; gap: 8px; font: 900 clamp(20px, 6vw, 26px) var(--display); text-shadow: 0 2px 8px #000; animation: tq-fade .4s .6s both; }
+.dz-arena { position: relative; display: flex; align-items: flex-end; justify-content: center; gap: 0; width: min(96vw, 430px); margin-top: 6px; }
+.dz-side { flex: 1; display: grid; justify-items: center; gap: 4px; perspective: 700px; }
+.dz-side .pv-fig.rp { width: min(44vw, 190px); filter: drop-shadow(0 0 18px color-mix(in srgb, var(--c) 70%, transparent)); }
+.dz-side b { font: 800 16px var(--display); padding: 3px 12px; border-radius: 99px; background: #0008; box-shadow: 0 0 0 2px var(--c); }
+.dz-side.l { animation: dz-in-l .55s .35s cubic-bezier(.2, 1.3, .4, 1) both; }
+.dz-side.r { animation: dz-in-r .55s .35s cubic-bezier(.2, 1.3, .4, 1) both; }
+.dz-side.r .pv-fig.rp { transform: scaleX(-1); animation: none; }
+@keyframes dz-in-l { from { transform: translateX(-120%); opacity: 0; } }
+@keyframes dz-in-r { from { transform: translateX(120%); opacity: 0; } }
+.dz-vs { position: absolute; left: 50%; top: 38%; transform: translate(-50%, -50%); font: 900 54px var(--display); color: #ffe066;
+  text-shadow: 0 0 0 #000, 0 4px 0 #b3540c, 0 0 26px #ff8a00, 0 8px 18px #000; animation: dz-vs .5s .8s cubic-bezier(.2, 1.6, .4, 1) both; z-index: 2; }
+@keyframes dz-vs { from { transform: translate(-50%, -50%) scale(3); opacity: 0; } }
+.dz-rule { margin: 4px 0 0; color: #e6dcff; font-weight: 700; }
+.dz-go { width: min(80vw, 320px) !important; margin-top: 10px; }
+.dz-wait { color: #d8ccff; font-weight: 700; }
+/* 10. résultat du duel : coup et éjection */
+.tq-center.dr { pointer-events: none; background: radial-gradient(circle at 50% 50%, #2a0f60cc, transparent 70%); }
+.dr-w, .dr-l { position: absolute; top: 34%; width: min(42vw, 180px); perspective: 700px; }
+.dr-l { left: 54%; animation: dr-fly 1.4s .7s cubic-bezier(.3, .6, .4, 1) both; }
+.dr-w { left: 6%; animation: dr-hit 1.1s .1s cubic-bezier(.3, 1.2, .4, 1) both; }
+.dr-w .pv-fig.rp, .dr-l .pv-fig.rp { animation: pv-pop .4s both; }
+@keyframes dr-hit { 0% { transform: translateX(-60%); opacity: 0; } 30% { transform: translateX(0); opacity: 1; } 55% { transform: translateX(32%) rotate(14deg); } 75%, 100% { transform: translateX(10%) rotate(0); } }
+@keyframes dr-fly { 0%, 1% { transform: none; } 100% { transform: translate(140vw, -70vh) rotate(720deg); opacity: .9; } }
+.dr-boom { position: absolute; left: 50%; top: 42%; width: 140px; height: 140px; transform: translate(-50%, -50%) scale(0); border-radius: 50%;
+  background: radial-gradient(circle, #fff, #ffe066 30%, #ff8a00 55%, transparent 70%); animation: dr-boom .5s .68s ease-out both; }
+@keyframes dr-boom { 0% { transform: translate(-50%, -50%) scale(0); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(2.4); opacity: 0; } }
+.tq-center.dr-text { align-content: end; padding-bottom: calc(env(safe-area-inset-bottom) + 130px); }
+.tq-center.dr-text .tq-event { animation: tq-fade .4s 1.6s both; }
+/* 11. boutique : confirmation d'achat */
+.tq-shop-got { position: absolute; left: 50%; top: 50%; z-index: 6; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 18px; white-space: nowrap;
+  background: linear-gradient(180deg, #2fd27aee, #13894bee); box-shadow: 0 0 0 2px #b6ffd4, 0 10px 24px #000b; font: 800 15px var(--display); animation: tq-got 2.2s both; }
+.tq-shop-got .tq-obj { width: 38px; height: 38px; }
+@keyframes tq-got { 0% { opacity: 0; transform: translate(-50%, -30%) scale(.6); } 12% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); } 20% { transform: translate(-50%, -50%) scale(1); } 85% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -70%); } }
+/* 12. sac plus grand */
+.tq-round-btn.bag { width: 54px; height: 54px; }
+.tq-round-btn.bag img { width: 44px; height: 44px; }
+/* 13. pluie d'or */
+.tq-gold { position: absolute; inset: 0; z-index: 5; pointer-events: none; overflow: hidden; border-radius: 30px; }
+.tq-gold.big { position: fixed; z-index: 21; border-radius: 0; }
+.tq-gold i { position: absolute; top: -10%; width: calc(26px * var(--s)); height: calc(26px * var(--s)); border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff6c4, #ffd23f 40%, #c98a00 75%); box-shadow: inset 0 -2px 0 #9a6300, 0 2px 6px #0007; animation: tq-fall 1.6s ease-in both; }
+@keyframes tq-fall { to { transform: translateY(130vh) rotate(var(--r)); } }
+.tq-gold b { position: absolute; left: 50%; top: 38%; transform: translate(-50%, -50%); font: 900 clamp(28px, 9vw, 40px) var(--display); color: #ffe066;
+  text-shadow: 0 3px 0 #9a5b00, 0 0 20px #ffb800, 0 6px 14px #000; animation: sb-pop .5s both, tq-fade .4s 1.8s reverse both; }
+.tq-gold.big b { top: 30%; font-size: clamp(34px, 11vw, 50px); }
+/* annexe : barre de vie du Kraken */
+.tq-khp { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; margin: 0 4px 4px; font: 800 13px var(--display); }
+.tq-khp-bar { position: relative; height: 14px; border-radius: 99px; background: #2a0b1a; box-shadow: inset 0 0 0 1.5px #ff5d73aa, 0 0 10px #ff2d5555; overflow: hidden; }
+.tq-khp-bar i { position: absolute; inset: 0 auto 0 0; border-radius: inherit; background: linear-gradient(180deg, #ff8a9a, #e0334f 55%, #a3122e); transition: width .7s cubic-bezier(.3, 1.4, .4, 1); }
+.tq-khp-bar em { position: absolute; top: 0; bottom: 0; width: 2px; background: #0007; }
+.tq-khp.regen .tq-khp-bar i { background: linear-gradient(180deg, #9dffb8, #2fd27a 55%, #13894b); transition-duration: 1.6s; }
+.tq-khp small { font-size: 12px; color: #ffc2cc; }
+.tq-ev-stack .tq-khp { width: min(84vw, 340px); padding: 8px 12px; border-radius: 14px; background: #1b0f3ef2; box-shadow: 0 0 0 1.5px #ff5d73; margin-bottom: 8px; }
+/* 2 & 5. fenêtre « quitter » */
+.tq-quit h2 { margin-top: 0; }
+.tq-quit .btn { margin-top: 8px; }
+.sheet-backdrop.tq-top { z-index: 300; }

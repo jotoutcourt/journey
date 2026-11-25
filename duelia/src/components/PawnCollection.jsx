@@ -64,3 +64,15 @@ function PawnViewer({ pawn, onClose }) {
     </div>
   )
 }
+
+// Figurine « résine » (sans interaction) : balancement 3D et reflets, pour les écrans de jeu
+export function ResinPawn({ id, className = '' }) {
+  const hd = `/traque/pions-hd/${id}.webp`
+  return (
+    <div className={`pv-fig rp ${className}`} style={{ '--img': `url(${hd})` }}>
+      <img src={hd} alt="" draggable="false" />
+      <i className="pv-gloss" />
+      <i className="pv-spec" />
+    </div>
+  )
+}

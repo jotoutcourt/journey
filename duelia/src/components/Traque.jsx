@@ -5,6 +5,7 @@ import Avatar from './Avatar.jsx'
 import TopicIcon from './TopicIcon.jsx'
 import QuestionText from './QuestionText.jsx'
 import ConfirmButton from './ConfirmButton.jsx'
+import { ResinPawn } from './PawnCollection.jsx'
 import * as api from '../lib/account.js'
 import { sfx } from '../lib/sound.js'
 import { useGroupVoice } from '../lib/groupVoice.js'
@@ -88,8 +89,6 @@ function PausedRoom({ v, gameId, act, onExit, vc }) {
   const back = v.back || []
   const humans = v.players.filter(p => p.player_id && p.status === 'joined')
   const meBack = back.includes(v.me)
-  // ouvrir la partie en pause = « je suis de retour »
-  useEffect(() => { if (!meBack) act(() => api.traqueBack(gameId)) }, []) // eslint-disable-line react-hooks/exhaustive-deps
   const [now] = useState(() => Date.now())
   const days = v.paused_at ? Math.max(0, 7 - Math.floor((now - Date.parse(v.paused_at)) / 86400000)) : 7
   return (
@@ -104,7 +103,7 @@ function PausedRoom({ v, gameId, act, onExit, vc }) {
           <li key={p.seat} style={{ '--c': SEAT_COLORS[p.seat] }} className={voice.speaking[p.seat === v.me ? 'me' : p.player_id] ? 'speaking' : ''}>
             <img className="tq-seat-pawn" src={pawnImg(p.pawn, p.seat)} alt="" />
             <div className="tq-seat-txt"><b>{bare(p.name)}{p.seat === v.me ? ' (toi)' : ''}</b>
-              <small>{back.includes(p.seat) ? '✅ De retour' : '⏳ Pas encore là (notifié)'} · case {p.pos} · {p.pearls} perles</small></div>
+              <small>{back.includes(p.seat) ? '✅ Prêt à reprendre' : p.seat === v.me ? '⏸️ En pause' : '⏳ Pas encore revenu'} · case {p.pos} · {p.pearls} perles</small></div>
           </li>
         ))}
       </ul>
@@ -115,7 +114,9 @@ function PausedRoom({ v, gameId, act, onExit, vc }) {
         {voice.needTap && <button className="btn btn-small btn-ghost" onClick={voice.unlock}>🔊 Entendre</button>}
       </div>}
       <div className="tq-dock">
-        {v.host && back.length < humans.length
+        {!meBack
+          ? <button className="kh-play wide" onClick={() => act(() => api.traqueBack(gameId))}>▶️ Je suis prêt à reprendre</button>
+          : v.host && back.length < humans.length
           ? <ConfirmButton className="kh-play wide" onConfirm={() => act(() => api.traqueResumeNow(gameId))} confirmLabel="Les absents seront joués par des robots, sûr ?">▶️ Reprendre sans les absents</ConfirmButton>
           : <p className="tq-wait">{back.length < humans.length ? '⏳ La chasse reprend dès que tout le monde est là.' : '▶️ C\'est reparti !'}</p>}
       </div>
@@ -166,7 +167,7 @@ function TraqueLobby({ v, gameId, officials, topics, friends, act, onExit, onWal
   return (
     <div className="screen traque lobby">
       <header className="top">
-        <ConfirmButton className="icon-btn" onConfirm={() => { api.leaveTraque(gameId).catch(() => {}); onExit() }} confirmLabel="Quitter ?">←</ConfirmButton>
+        <QuitButton className="icon-btn" label="←" onQuit={() => { api.leaveTraque(gameId).catch(() => {}); onExit() }} />
         <h1>La Chasse au Kraken</h1>
       </header>
       <p className="tq-pitch">De 2 à 4 joueurs. Avancez sur le plateau, remplissez ensemble le trésor pendant les trêves… et soyez le premier à tuer le Kraken pour tout rafler.</p>
@@ -389,7 +390,7 @@ function TraqueBoard({ v, gameId, act, onExit, vc }) {
       <div className="tq-hud">
       <div className="tq-hud-top">
         <div className="tq-me-card" style={{ '--c': SEAT_COLORS[v.me] }}>
-          <span className="tq-ring"><img src={pawnImg(me?.pawn, v.me)} alt="" /></span>
+          <span className="tq-ring"><Avatar seed={me?.avatar} photo={me?.photo} size={44} /></span>
           <div><b>{me?.name}</b><small><Pearl /> {me?.pearls ?? 0} · case {me?.pos ?? 0}{me?.items?.length ? ` · 🎒 ${me.items.length}` : ''}{me?.bubble ? ' · 🫧' : ''}{me?.ghost ? ' · 👻 fantôme' : ''}</small></div>
         </div>
         <div className="tq-hud-right">
@@ -398,7 +399,7 @@ function TraqueBoard({ v, gameId, act, onExit, vc }) {
             {{ on: '🎙️', muted: '🔇', asking: '⏳', denied: '🚫', unsupported: '🚫' }[voice.mic] || '🎙️'}</button>}
           {v.status === 'playing' && !v.pause && <button className="tq-round-btn" aria-label="Reprendre plus tard" title="Reprendre plus tard"
             disabled={v.phase !== 'roll'} onClick={() => act(() => api.traquePauseAsk(gameId))}>⏸️</button>}
-          <ConfirmButton className="tq-round-btn" onConfirm={() => { api.leaveTraque(gameId).catch(() => {}); onExit() }} confirmLabel="Quitter ?">✕</ConfirmButton>
+          <QuitButton className="tq-round-btn" label="✕" inGame onQuit={() => { api.leaveTraque(gameId).catch(() => {}); onExit() }} />
         </div>
       </div>
       <div className="tq-banner">
@@ -411,7 +412,7 @@ function TraqueBoard({ v, gameId, act, onExit, vc }) {
       <ul className="tq-others">
         {v.players.filter(p => p.status !== 'declined' && p.seat !== v.me).map(p => (
           <li key={p.seat} style={{ '--c': SEAT_COLORS[p.seat] }} className={`${p.seat === v.turn ? 'turn' : ''} ${p.status === 'left' ? 'gone' : ''} ${voice.speaking[p.player_id] ? 'speaking' : ''}`}>
-            <img src={pawnImg(p.pawn, p.seat)} alt="" />
+            {p.bot ? <img src={pawnImg(p.pawn, p.seat)} alt="" /> : <Avatar seed={p.avatar} photo={p.photo} size={26} />}
             <span><b>{p.name.replace(/ \((facile|moyen|expert)\)$/, '')}</b><small><Pearl /> {p.pearls} · {p.pos}{p.skip ? ' ⚓' : ''}{voice.peerMic[p.player_id] ? ' 🎙️' : ''}</small></span>
           </li>
         ))}
@@ -451,7 +452,8 @@ function TraqueBoard({ v, gameId, act, onExit, vc }) {
       {v.phase === 'event' && (d.reveal ? <Reveal ids={d.reveal} topicOf={topicOf} /> : <EventView key={d.text} d={d} />)}
       {v.phase === 'haunt' && d.seat === v.me && <Haunt v={v} onPick={(s) => act(() => api.traqueHaunt(gameId, s))} />}
       {v.phase === 'pick' && <Cursed v={v} d={d} left={left} onPick={(i) => act(() => api.traqueCursed(gameId, i))} />}
-      {v.phase === 'duelroll' && <div className="tq-center"><p className="tq-event">
+      {v.phase === 'duelroll' && <DuelResult key={`${d.winner}-${v.version > 0 ? d.loser : 0}`} v={v} d={d} />}
+      {v.phase === 'duelroll' && <div className="tq-center dr-text"><p className="tq-event">
         ⚔️ {d.winner === v.me ? 'Tu gagnes' : `${bare(v.players.find(p => p.seat === d.winner)?.name)} gagne`} {(d.score || []).join('–')}{d.tie ? ' au temps (plus rapide sur les bonnes réponses)' : ''} !<br />
         {d.winner === v.me ? `Lance le dé : ${bare(v.players.find(p => p.seat === d.loser)?.name)} va reculer d'autant.` : `${d.loser === v.me ? 'Tu vas' : `${bare(v.players.find(p => p.seat === d.loser)?.name)} va`} reculer…`}
       </p></div>}
@@ -562,20 +564,54 @@ const CASE_IMG = new Set(['general', 'spec', 'truce', 'chest', 'current', 'tenta
 const OBJ_IMG = ['double', 'ancre', 'joker', 'vol', 'echange']
 const Obj = ({ k }) => OBJ_IMG.includes(k) ? <img className="tq-obj" src={`/traque/ico/obj-${k}.webp`} alt="" draggable="false" /> : <span className="tq-obj tq-obj-emo">{ITEMS[k]?.icon || '❔'}</span>
 
-function Frame({ img = '/traque/cadre-duel.webp', title, children, cta, onClose, className = '', badge }) {
+function Frame({ img = '/traque/cadre-duel.webp', title, children, cta, onClose, className = '', badge, hero }) {
   return (
     <div className={`tq-frame ${className}`}>
       <div className="tq-frame-in">{children}</div>
       <img className="tq-frame-img" src={img} alt="" draggable="false" />
       {badge && <img className="tq-frame-badge" src={badge} alt="" draggable="false" />}
-      <div className="tq-frame-title">{title}</div>
+      {hero && <div className="tq-frame-hero">{hero}</div>}
+      {title && <div className="tq-frame-title">{title}</div>}
       {cta && <div className="tq-frame-cta">{cta}</div>}
       <button className="tq-frame-x" onClick={onClose} aria-label="Fermer" />
     </div>
   )
 }
 
-function Intro({ v, d, left, topicOf, onReady }) {
+function Intro(props) {
+  if (props.d.kind === 'duel') return <DuelIntro {...props} />
+  return <IntroFrame {...props} />
+}
+
+// Annonce de duel : éclair, tonnerre, les deux figurines en grand face à face
+function DuelIntro({ v, d, left, topicOf, onReady }) {
+  const t = topicOf(d.topic)
+  const [a, b] = (d.seats || []).map(s => v.players.find(p => p.seat === s))
+  const ready = d.ready || []
+  const mine = d.seats?.includes(v.me)
+  useEffect(() => { const id = setTimeout(() => { try { sfx.thunder?.() } catch { /* son facultatif */ } }, 250); return () => clearTimeout(id) }, [])
+  const side = (p, cls) => p && (
+    <div className={`dz-side ${cls}`} style={{ '--c': SEAT_COLORS[p.seat] }}>
+      <ResinPawn id={p.pawn || PAWNS[p.seat % PAWNS.length].id} />
+      <b>{p.seat === v.me ? 'Toi' : bare(p.name)}{ready.includes(p.seat) || p.bot ? ' ✓' : ''}</b>
+    </div>
+  )
+  return (
+    <div className="tq-center dz">
+      <i className="dz-flash" />
+      <svg className="dz-bolt" viewBox="0 0 60 140" aria-hidden="true"><path d="M38 0 8 78h20L14 140 52 52H32L46 0z" /></svg>
+      <img className="dz-title" src="/traque/titre-duel.webp" alt="Duel !" />
+      <div className="dz-topic"><TopicIcon topic={t} size={30} /> {t.name}</div>
+      <div className="dz-arena">{side(a, 'l')}<span className="dz-vs">VS</span>{side(b, 'r')}</div>
+      <p className="dz-rule">{d.count} questions · le perdant recule</p>
+      {mine && !ready.includes(v.me)
+        ? <button className="kh-play dz-go" onClick={onReady}>Je suis prêt ! ⚡{left != null ? ` ${Math.ceil(left / 1000)} s` : ''}</button>
+        : <p className="dz-wait">{mine ? 'En attente de l\'adversaire…' : 'Tu regardes le duel'}{left != null ? ` · ${Math.ceil(left / 1000)} s` : ''}</p>}
+    </div>
+  )
+}
+
+function IntroFrame({ v, d, left, topicOf, onReady }) {
   const t = topicOf(d.topic)
   const who = (d.seats || []).map(s => v.players.find(p => p.seat === s)).filter(Boolean)
   const mine = d.seats?.includes(v.me)
@@ -593,19 +629,20 @@ function Intro({ v, d, left, topicOf, onReady }) {
     <div className="tq-center dim">
       <div className="tq-intro-stack">
       {TITLE_IMG[d.kind] && <img className="tq-title-img" src={TITLE_IMG[d.kind]} alt={info[1]} />}
-      <Frame className={`k-${d.kind}`} title={TITLE_IMG[d.kind] ? t.name : info[1]}
+      <Frame className={`k-${d.kind} ${d.kind === 'solo' ? 'solo' : ''}`} title={d.kind === 'solo' ? null : TITLE_IMG[d.kind] ? t.name : info[1]}
+        hero={d.kind === 'solo' && who[0] ? <ResinPawn id={who[0].pawn || PAWNS[who[0].seat % PAWNS.length].id} className="tq-hero" /> : null}
         badge={d.kind !== 'solo' ? null : reason === 'shark' ? '/traque/requin-attaque.webp' : `/traque/ico/case-${reason === 'own' ? 'spec' : reason === 'shortcut' ? 'shortcut' : 'general'}.webp`}
         onClose={() => { setNope(true); setTimeout(() => setNope(false), 2200) }}
         cta={mine && !ready.includes(v.me)
           ? <button onClick={onReady}>Je suis prêt ! ⚡{left != null ? ` ${Math.ceil(left / 1000)} s` : ''}</button>
           : <span>{mine ? 'En attente des autres…' : 'Tu regardes'}{left != null ? ` · ${Math.ceil(left / 1000)} s` : ''}</span>}>
-        {!TITLE_IMG[d.kind] && <div className="tq-intro-topic"><TopicIcon topic={t} size={22} /> {t.name}</div>}
-        <div className={`tq-intro-who n${who.length}`}>
+        {!TITLE_IMG[d.kind] && <div className={`tq-intro-topic ${d.kind === 'solo' ? 'big' : ''}`}><TopicIcon topic={t} size={d.kind === 'solo' ? 40 : 22} /> {t.name}</div>}
+        {d.kind !== 'solo' && <div className={`tq-intro-who n${who.length}`}>
           {who.map((p, i) => <span key={p.seat} style={{ '--c': SEAT_COLORS[p.seat] }} className={ready.includes(p.seat) || p.bot ? 'ok' : ''}>
             {i > 0 && d.kind === 'duel' && <em>VS</em>}
             <img src={pawnImg(p.pawn, p.seat)} alt="" /><small>{p.seat === v.me ? 'Toi' : p.name.replace(/ \((facile|moyen|expert)\)$/, '').split(' ')[0]}{ready.includes(p.seat) || p.bot ? ' ✓' : ''}</small>
           </span>)}
-        </div>
+        </div>}
         <p className="tq-intro-txt">{info[2]}</p>
         {nope && <p className="tq-nope">On ne fuit pas le Kraken 😈</p>}
       </Frame>
@@ -615,6 +652,20 @@ function Intro({ v, d, left, topicOf, onReady }) {
 }
 
 function Quiz({ v, d, left, me, topicOf, onAnswer, onJoker }) {
+  // combat final : on compte les coups portés au Kraken (4 bonnes réponses pour le tuer)
+  const [hitMap, setHitMap] = useState({})
+  const hitNow = d.kind === 'final' && d.reveal && d.ans?.[d.seats?.[0]]?.[d.idx]?.[0] === d.c
+  const hits = Object.entries(hitMap).filter(([k, x]) => x && Number(k) !== d.idx).length + (hitNow ? 1 : 0)
+  // trêve : lingots gagnés sur cette question (1 par bonne réponse, +2 si tout le monde a juste)
+  const goldNow = d.kind === 'truce' && d.reveal ? (() => { const ok = (d.seats || []).filter(s => d.ans?.[s]?.[d.idx]?.[0] === d.c).length; return ok + (ok === (d.seats || []).length && ok > 0 ? 2 : 0) })() : 0
+  useEffect(() => {
+    if (!d.reveal) return
+    try {
+      if (d.kind === 'truce' && goldNow > 0) sfx.coins?.(Math.min(10, goldNow + 2))
+      if (d.kind === 'final' && hitNow) sfx.hit?.()
+    } catch { /* son facultatif */ }
+    if (d.kind === 'final') setTimeout(() => setHitMap(m => ({ ...m, [d.idx]: hitNow })), 0)
+  }, [d.reveal, d.idx]) // eslint-disable-line react-hooks/exhaustive-deps
   const mine = d.ans?.[v.me]?.[d.idx]
   const inIt = d.seats?.includes(v.me)
   const picked = Array.isArray(mine) ? mine[0] : null
@@ -624,6 +675,8 @@ function Quiz({ v, d, left, me, topicOf, onAnswer, onJoker }) {
   const t = topicOf(d.topic)
   return (
     <div className={`tq-quiz k-${d.kind}`}>
+      {d.kind === 'final' && <KrakenHP hp={4 - hits} />}
+      {d.kind === 'truce' && d.reveal && goldNow > 0 && <GoldRain key={d.idx} n={goldNow} />}
       <div className="tq-quiz-head">
         <span>{label}{d.count > 1 ? ` · ${d.idx + 1}/${d.count}` : ''}</span>
         <small><TopicIcon topic={t} size={16} /> {t.name}</small>
@@ -684,6 +737,20 @@ function Bag({ me, v, onClose, onUse }) {
 
 function Shop({ v, d, me, left, onBuy, onLeave }) {
   const cell = v.board[d.cell] || {}
+  // achat réussi : un nouvel objet est apparu dans le sac → bulle de confirmation et bruit de caisse
+  const [got, setGot] = useState(null)
+  const prevItems = useRef(me?.items || [])
+  const items = me?.items
+  useEffect(() => {
+    const before = prevItems.current, now = items || []
+    prevItems.current = now
+    if (d.seat !== v.me || now.length <= before.length) return
+    const k = now.find((x, i) => now.filter(y => y === x).length > before.filter(y => y === x).length && now.indexOf(x) === i) || now[now.length - 1]
+    try { sfx.cash?.() } catch { /* son facultatif */ }
+    setTimeout(() => setGot(k), 0)
+    const id = setTimeout(() => setGot(null), 2200)
+    return () => clearTimeout(id)
+  }, [items]) // eslint-disable-line react-hooks/exhaustive-deps
   const mine = d.seat === v.me
   const who = v.players.find(p => p.seat === d.seat)
   const price = (k) => { const base = ITEM_COST[k] + (cell.k || 0); return d.discount ? Math.ceil(base / 2) : base }
@@ -693,6 +760,7 @@ function Shop({ v, d, me, left, onBuy, onLeave }) {
         cta={mine ? <button onClick={onLeave}>{d.rest > 0 ? `Continuer · ${d.rest} case${d.rest > 1 ? 's' : ''}` : 'Fermer'}</button> : <span>{who?.name} fait ses courses…</span>}>
         <p className="tq-shop-info">{mine ? <><Pearl /> <b>{me?.pearls}</b> perles · sac {me?.items?.length || 0}/3</> : `${who?.name} choisit`}{left != null ? ` · ${Math.ceil(left / 1000)} s` : ''}</p>
         {d.discount && mine && <p className="tq-shop-promo">🎯 Pile dessus : 1er achat à moitié prix !</p>}
+        {got && <div className="tq-shop-got" key={got + (me?.items?.length || 0)}><Obj k={got} /><b>{ITEMS[got]?.name} ajouté à ton sac !</b></div>}
         <div className="tq-shop-grid">
           {(cell.items || []).map(k => (
             <div key={k} className="tq-shop-card">
@@ -724,15 +792,75 @@ function eventAnim(d) {
 function EventView({ d }) {
   const [t0] = useState(() => Date.now())
   const a = eventAnim(d)
+  const regen = (d.text || '').includes('Kraken recrache')
+  useEffect(() => {
+    try { if (d.fx?.gold > 0) sfx.coins?.(10); if (regen) setTimeout(() => sfx.heal?.(), 300) } catch { /* son facultatif */ }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <div className="tq-center">
       {a?.[1] === 'wave' && <img className="tq-ev-wave" src={`${a[0]}?t=${t0}`} alt="" />}
+      {d.fx?.gold > 0 && <GoldRain n={d.fx.gold} big />}
       <div className="tq-ev-stack">
+        {regen && <KrakenHP hp={4} regen />}
         {a && a[1] !== 'wave' && <img className={`tq-ev-anim ${a[1]}`} src={a[1] === 'anim' ? `${a[0]}?t=${t0}` : a[0]} alt="" />}
         <p className="tq-event">{d.text}</p>
       </div>
     </div>
   )
+}
+
+// Pièces d'or qui tombent, avec le nombre de lingots gagnés
+function GoldRain({ n, big = false }) {
+  const [coins] = useState(() => Array.from({ length: big ? 26 : 14 }, (_, i) => ({ x: Math.random() * 100, d: Math.random() * (big ? 1.2 : 0.7), s: 0.7 + Math.random() * 0.6, r: Math.random() * 360, k: i })))
+  return (
+    <div className={`tq-gold ${big ? 'big' : ''}`} aria-hidden="true">
+      {coins.map(c => <i key={c.k} style={{ left: `${c.x}%`, animationDelay: `${c.d}s`, '--s': c.s, '--r': `${c.r}deg` }} />)}
+      <b>+{n} lingot{n > 1 ? 's' : ''}</b>
+    </div>
+  )
+}
+
+// Barre de vie du Kraken (combat final) : elle baisse à chaque bonne réponse, se remplit s'il recrache le joueur
+function KrakenHP({ hp, regen = false }) {
+  const [shown, setShown] = useState(regen ? 1 : hp)
+  useEffect(() => { const id = setTimeout(() => setShown(hp), regen ? 250 : 0); return () => clearTimeout(id) }, [hp, regen])
+  return (
+    <div className={`tq-khp ${regen ? 'regen' : ''}`}>
+      <span>🐙 Kraken</span>
+      <div className="tq-khp-bar"><i style={{ width: `${(Math.max(0, shown) / 4) * 100}%` }} />{[1, 2, 3].map(k => <em key={k} style={{ left: `${k * 25}%` }} />)}</div>
+      <small>{regen ? 'Il se régénère !' : shown <= 0 ? 'K.O. !' : `${shown} PV`}</small>
+    </div>
+  )
+}
+
+// Résultat du duel : le gagnant frappe, le perdant est éjecté de l'écran
+function DuelResult({ v, d }) {
+  const w = v.players.find(p => p.seat === d.winner), l = v.players.find(p => p.seat === d.loser)
+  useEffect(() => { const id = setTimeout(() => { try { sfx.punch?.() } catch { /* son facultatif */ } }, 650); return () => clearTimeout(id) }, [])
+  if (!w || !l) return null
+  return (
+    <div className="tq-center dr" aria-hidden="true">
+      <div className="dr-l"><ResinPawn id={l.pawn || PAWNS[l.seat % PAWNS.length].id} /></div>
+      <div className="dr-w"><ResinPawn id={w.pawn || PAWNS[w.seat % PAWNS.length].id} /></div>
+      <i className="dr-boom" />
+    </div>
+  )
+}
+
+// Quitter la partie : vraie fenêtre de confirmation
+function QuitButton({ className, label, onQuit, inGame = false }) {
+  const [open, setOpen] = useState(false)
+  return <>
+    <button className={className} onClick={() => setOpen(true)} aria-label="Quitter">{label}</button>
+    {open && <div className="sheet-backdrop tq-top" onClick={() => setOpen(false)}>
+      <div className="sheet tq-quit" onClick={e => e.stopPropagation()}>
+        <h2>Quitter la chasse ?</h2>
+        <p className="sheet-sub">{inGame ? 'Tu abandonnes la partie : un robot prendra ta place. Pour la finir plus tard, utilise plutôt ⏸️ « Reprendre plus tard ».' : 'Tu quittes le salon.'}</p>
+        <button className="btn btn-gold wide" onClick={() => { setOpen(false); onQuit() }}>Oui, quitter</button>
+        <button className="btn btn-ghost wide" onClick={() => setOpen(false)}>Rester</button>
+      </div>
+    </div>}
+  </>
 }
 
 // Lancement : révélation des 8 thèmes du plateau, une carte après l'autre
