@@ -22,6 +22,13 @@ function eventText(m, name) {
     return m.mine ? `🎯 Tu as relevé le défi de ${name} en ${t} (${mine}–${theirs})` : `🎯 ${name} a relevé ton défi en ${t} (${theirs}–${mine})`
   }
   if (p.ev === 'declined') return m.mine ? `🙅 Tu as refusé le défi en ${t}` : `🙅 ${name} a refusé ton défi en ${t}`
+  if (p.ev === 'live') {
+    const mine = m.mine ? p.a : p.b, theirs = m.mine ? p.b : p.a
+    const iQuit = p.forfeit && (p.forfeit === 'a') === m.mine
+    if (p.forfeit) return iQuit ? `🏳️ Duel en direct en ${t} : tu as abandonné face à ${name}` : `🏆 Duel en direct en ${t} : ${name} a abandonné, tu gagnes !`
+    return mine > theirs ? `🏆 Duel en direct en ${t} : tu gagnes ${mine}–${theirs} contre ${name}`
+      : mine < theirs ? `⚡ Duel en direct en ${t} : ${name} gagne ${theirs}–${mine}` : `🤝 Duel en direct en ${t} : égalité ${mine}–${theirs}`
+  }
   if (p.ev === 'seen') return m.mine ? `👀 Tu as vu le résultat en ${t}` : `👀 ${name} vient de voir le résultat en ${t}`
   return m.body
 }
@@ -109,7 +116,7 @@ export function ChatThread({ peer, onBack, onChallenge, onTraque, onJoinTraque, 
               <div className={`ct-bubble ${m.mine ? 'mine' : ''} ${m.kind}`}>
                 <span>{m.body}</span>
                 {m.kind === 'invite' && !m.mine && m.payload?.type === 'traque' && <button className="btn btn-small btn-gold" onClick={() => onJoinTraque(m.payload.game)}>🐙 Rejoindre la chasse</button>}
-                {m.kind === 'invite' && !m.mine && m.payload?.type === 'duel' && <button className="btn btn-small btn-gold" onClick={onOpenInbox}>⚔️ Voir le défi</button>}
+                {m.kind === 'invite' && !m.mine && m.payload?.type === 'duel' && !m.payload?.live && <button className="btn btn-small btn-gold" onClick={onOpenInbox}>⚔️ Voir le défi</button>}
                 <small>{hhmm(m.created_at)}</small>
               </div>}
               {lastMine && m.id === lastMine.id && data.seen >= m.id && <p className="ct-seen">Vu</p>}

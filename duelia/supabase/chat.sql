@@ -162,3 +162,46 @@ $$;
 revoke all on function public.chat_event(uuid, uuid, text, jsonb), public.tq_chat_challenge() from public, anon, authenticated;
 revoke all on function public.chat_result_seen(uuid) from public, anon;
 grant execute on function public.chat_result_seen(uuid) to authenticated;
+
+-- ===== Actualité : duels en direct entre amis (compte rendu à la fin, ou à l'abandon) =====
+alter table public.matches add column if not exists chat_done boolean not null default false;
+
+create or replace function public.chat_match_event(p_match uuid) returns void language plpgsql security definer set search_path = public as $$
+declare m record; n int; s1 int := 0; s2 int := 0; a record; pts int; t text;
+begin
+  select * into m from matches where id = p_match for update;
+  if not found or m.chat_done or not are_friends(m.p1, m.p2) then return; end if;
+  n := jsonb_array_length(m.questions);
+  if m.forfeit is null and (select count(*) from match_answers where match_id = p_match) < 2 * n then return; end if;
+  for a in select * from match_answers where match_id = p_match loop
+    if a.choice >= 0 and a.choice = (m.questions -> a.round ->> 'correct')::int then
+      pts := greatest(2, ceil((10000 - a.t) / 1000.0)::int * 2) * (case when a.round = n - 1 then 2 else 1 end);
+      if a.player_id = m.p1 then s1 := s1 + pts; else s2 := s2 + pts; end if;
+    end if;
+  end loop;
+  if m.forfeit = m.p1 then s1 := 0; s2 := greatest(s2, 1); elsif m.forfeit = m.p2 then s2 := 0; s1 := greatest(s1, 1); end if;
+  select coalesce(i.topic ->> 'name', m.topic_id) into t from live_invites i where i.match_id = p_match limit 1;
+  update matches set chat_done = true where id = p_match;
+  perform chat_event(m.p1, m.p2, 'Duel en direct', jsonb_build_object('ev', 'live', 'topic', coalesce(t, m.topic_id), 'a', s1, 'b', s2,
+    'forfeit', case when m.forfeit = m.p1 then 'a' when m.forfeit = m.p2 then 'b' end));
+end $$;
+
+create or replace function public.tq_chat_match() returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  perform chat_match_event(new.match_id);
+  return new;
+exception when others then return new;
+end $$;
+drop trigger if exists chat_match_events on public.match_answers;
+create trigger chat_match_events after insert on public.match_answers for each row execute function public.tq_chat_match();
+
+create or replace function public.tq_chat_forfeit() returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  if new.forfeit is not null and old.forfeit is null then perform chat_match_event(new.id); end if;
+  return new;
+exception when others then return new;
+end $$;
+drop trigger if exists chat_forfeit_events on public.matches;
+create trigger chat_forfeit_events after update of forfeit on public.matches for each row execute function public.tq_chat_forfeit();
+
+revoke all on function public.chat_match_event(uuid), public.tq_chat_match(), public.tq_chat_forfeit() from public, anon, authenticated;
