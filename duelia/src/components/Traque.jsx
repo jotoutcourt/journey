@@ -398,10 +398,11 @@ function TraqueBoard({ v, gameId, act, onExit, vc }) {
       <PathBoard v={v} shown={shown} topicOf={topicOf} owners={owners} />
 
       {/* HUD du haut : une colonne propre, sans chevauchement */}
+      <i className="tq-veil" aria-hidden="true" />
       <div className="tq-hud">
       <div className="tq-hud-top">
         <div className="tq-me-card" style={{ '--c': SEAT_COLORS[v.me] }}>
-          <span className="tq-ring"><Avatar seed={me?.avatar} photo={me?.photo} size={44} /></span>
+          <span className="tq-ring"><Avatar seed={me?.avatar} photo={me?.photo} size={38} /></span>
           <div><b>{me?.name}</b><small><Pearl /> {me?.pearls ?? 0} · case {me?.pos ?? 0}{me?.items?.length ? ` · 🎒 ${me.items.length}` : ''}{me?.bubble ? ' · 🫧' : ''}{me?.ghost ? ' · 👻 fantôme' : ''}</small></div>
         </div>
         <div className="tq-hud-right">
@@ -448,8 +449,6 @@ function TraqueBoard({ v, gameId, act, onExit, vc }) {
             <button className="tq-round-btn bag" onClick={() => setBag(true)} disabled={!me?.items?.length} aria-label="Mon sac"><img src="/traque/ico/case-shop.webp" alt="" /><i>{me?.items?.length || 0}</i></button>
             <button className="tq-dice-btn" onClick={() => act(() => api.traqueRoll(gameId))}><Die /><b>Lancer le dé</b></button>
           </>}
-          {v.phase === 'duelroll' && d.winner === v.me &&
-            <button className="tq-dice-btn" onClick={() => act(() => api.traqueRoll(gameId))}><Die /><b>Dé du duel</b></button>}
         </div>
       </div>
 
@@ -460,14 +459,11 @@ function TraqueBoard({ v, gameId, act, onExit, vc }) {
 
       {/* Moments forts au centre de l'écran */}
       {v.phase === 'show' && (d.dice || []).length > 0 && <div className="tq-center"><div className="tq-dice">{d.dice.map((n, i) => <DieFace key={i} n={n} />)}</div></div>}
-      {v.phase === 'event' && (d.reveal ? <Reveal ids={d.reveal} topicOf={topicOf} /> : <EventView key={d.text} d={d} />)}
+      {v.phase === 'event' && (d.reveal ? <Reveal ids={d.reveal} topicOf={topicOf} /> : d.fx?.duel ? <DuelDice key={d.text} v={v} d={d} /> : <EventView key={d.text} d={d} />)}
       {v.phase === 'haunt' && d.seat === v.me && <Haunt v={v} onPick={(s) => act(() => api.traqueHaunt(gameId, s))} />}
       {v.phase === 'pick' && <Cursed v={v} d={d} left={left} onPick={(i) => act(() => api.traqueCursed(gameId, i))} />}
-      {v.phase === 'duelroll' && <DuelResult key={`${d.winner}-${v.version > 0 ? d.loser : 0}`} v={v} d={d} />}
-      {v.phase === 'duelroll' && <div className="tq-center dr-text"><p className="tq-event">
-        ⚔️ {d.winner === v.me ? 'Tu gagnes' : `${bare(v.players.find(p => p.seat === d.winner)?.name)} gagne`} {(d.score || []).join('–')}{d.tie ? ' au temps (plus rapide sur les bonnes réponses)' : ''} !<br />
-        {d.winner === v.me ? `Lance le dé : ${bare(v.players.find(p => p.seat === d.loser)?.name)} va reculer d'autant.` : `${d.loser === v.me ? 'Tu vas' : `${bare(v.players.find(p => p.seat === d.loser)?.name)} va`} reculer…`}
-      </p></div>}
+      {v.phase === 'duelroll' && <DuelResult key={`${d.winner}-${d.loser}`} v={v} d={d} onRoll={() => act(() => api.traqueRoll(gameId))} />}
+
       {v.phase === 'intro' && <Intro v={v} d={d} left={left} topicOf={topicOf} onReady={() => act(() => api.traqueReady(gameId))} />}
       {v.phase === 'shop' && <Shop v={v} d={d} me={me} left={left} onBuy={(k) => act(() => api.traqueBuy(gameId, k))} onLeave={() => act(() => api.traqueShopLeave(gameId))} />}
       {v.phase === 'quiz' && <div className="tq-quiz-wrap"><Quiz v={v} d={d} left={left} me={me} topicOf={topicOf} onAnswer={(i) => act(() => api.traqueAnswer(gameId, d.idx, i))}
@@ -870,15 +866,50 @@ function KrakenHP({ hp, regen = false }) {
 }
 
 // Résultat du duel : le gagnant frappe, le perdant est éjecté de l'écran
-function DuelResult({ v, d }) {
+function DuelResult({ v, d, onRoll }) {
   const w = v.players.find(p => p.seat === d.winner), l = v.players.find(p => p.seat === d.loser)
-  useEffect(() => { const id = setTimeout(() => { try { sfx.punch?.() } catch { /* son facultatif */ } }, 650); return () => clearTimeout(id) }, [])
+  const [stage, setStage] = useState(0)
+  const [rolling, setRolling] = useState(false)
+  useEffect(() => {
+    const a = setTimeout(() => { try { sfx.punch?.() } catch { /* son facultatif */ } }, 650)
+    const b = setTimeout(() => setStage(1), 1700)
+    return () => { clearTimeout(a); clearTimeout(b) }
+  }, [])
   if (!w || !l) return null
+  const mine = d.winner === v.me
   return (
-    <div className="tq-center dr" aria-hidden="true">
-      <div className="dr-l"><ResinPawn id={l.pawn || PAWNS[l.seat % PAWNS.length].id} /></div>
-      <div className="dr-w"><ResinPawn id={w.pawn || PAWNS[w.seat % PAWNS.length].id} /></div>
+    <div className="tq-center dr">
+      <div className="dr-l" aria-hidden="true"><ResinPawn id={l.pawn || PAWNS[l.seat % PAWNS.length].id} /></div>
+      <div className="dr-w" aria-hidden="true"><ResinPawn id={w.pawn || PAWNS[w.seat % PAWNS.length].id} /></div>
       <i className="dr-boom" />
+      <p className="dr-score">⚔️ {mine ? 'Tu gagnes' : `${bare(w.name)} gagne`} {(d.score || []).join('–')}{d.tie ? ' au temps' : ''} !</p>
+      {stage === 1 && <div className="dr-roll">
+        <div className="dr-die"><DieFace n={5} /></div>
+        {mine
+          ? <button className="kh-play dr-btn" disabled={rolling} onClick={() => { setRolling(true); onRoll() }}>🎲 Lancer le dé</button>
+          : <p className="dr-wait">{bare(w.name)} lance le dé…<br /><small>{d.loser === v.me ? 'tu vas' : `${bare(l.name)} va`} reculer d'autant</small></p>}
+      </div>}
+    </div>
+  )
+}
+
+// Dé du duel : tout le monde voit le dé rouler à côté du gagnant, puis le résultat
+function DuelDice({ v, d }) {
+  const n = d.fx?.dice?.[0] || 1
+  const w = v.players.find(p => p.seat === d.fx?.by), l = v.players.find(p => p.seat === d.fx?.seat)
+  const [face, setFace] = useState(1)
+  const [done, setDone] = useState(false)
+  useEffect(() => {
+    try { sfx.dice?.() } catch { /* son facultatif */ }
+    const iv = setInterval(() => setFace(1 + Math.floor(Math.random() * 6)), 90)
+    const t = setTimeout(() => { clearInterval(iv); setFace(n); setDone(true) }, 1100)
+    return () => { clearInterval(iv); clearTimeout(t) }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  return (
+    <div className="tq-center dr">
+      {w && <div className="dr-w still" aria-hidden="true"><ResinPawn id={w.pawn || PAWNS[w.seat % PAWNS.length].id} /></div>}
+      <div className="dr-roll"><div className={`dr-die ${done ? 'done' : 'spin'}`}><DieFace key={face} n={face} /></div></div>
+      {done && <p className="tq-event dr-res">🎲 {n} ! {l?.seat === v.me ? 'Tu recules' : `${bare(l?.name)} recule`} de {n} case{n > 1 ? 's' : ''}</p>}
     </div>
   )
 }

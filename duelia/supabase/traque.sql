@@ -456,7 +456,7 @@ begin
     update traque_players set pearls = pearls + 3 where game_id = p_game and seat = win;
     perform tq_log(p_game, '⚔️ ' || tq_name(p_game, win) || ' gagne le duel ' || greatest(ok, okb) || '–' || least(ok, okb) || case when ok = okb then ' au temps' else '' end || ' (+3 perles)');
     update traque_games set phase = 'duelroll', data = jsonb_build_object('winner', win, 'loser', lose, 'score', jsonb_build_array(greatest(ok, okb), least(ok, okb)), 'tie', ok = okb, 'a', a, 'b', b),
-      deadline = now() + make_interval(secs => case when (select bot is not null or status = 'left' from traque_players where game_id = p_game and seat = win) then 2 else 15 end),
+      deadline = now() + make_interval(secs => case when (select bot is not null or status = 'left' from traque_players where game_id = p_game and seat = win) then 4 else 17 end),
       version = version + 1 where id = p_game;
   elsif kind = 'truce' then
     n := g.treasure - coalesce((d -> 'ctx' ->> 't0')::int, g.treasure);
@@ -606,7 +606,7 @@ begin
       n := 1 + floor(random() * 6)::int;
       perform tq_shift(p_game, (d ->> 'loser')::int, -n);
       perform tq_event(p_game, '🎲 ' || s.name || ' fait ' || n || ' : ' || tq_name(p_game, (d ->> 'loser')::int) || ' recule de ' || n || ' cases !',
-        jsonb_build_object('dice', jsonb_build_array(n), 'move', -n, 'seat', (d ->> 'loser')::int));
+        jsonb_build_object('dice', jsonb_build_array(n), 'move', -n, 'seat', (d ->> 'loser')::int, 'by', (d ->> 'winner')::int, 'duel', true));
 
     elsif g.phase = 'intro' then
       select bool_and(to_jsonb(seat) <@ (d -> 'ready') or bot is not null or status <> 'joined') into all_in
