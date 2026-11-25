@@ -19,7 +19,14 @@ function meter(ctx, stream) {
   }
 }
 
-export function useGroupVoice(gameId, myId, peerIds, active) {
+// canal de mise en relation : la Chasse (par défaut) ou un duel en direct
+const CHANNELS = {
+  traque: { signal: (...a) => api.traqueSignal(...a), since: (...a) => api.traqueSignalsSince(...a) },
+  match: { signal: (...a) => api.matchSignal(...a), since: (...a) => api.matchSignalsSince(...a) },
+}
+
+export function useGroupVoice(gameId, myId, peerIds, active, channel = 'traque') {
+  const ch = CHANNELS[channel]
   const [mic, setMic] = useState('off') // off | asking | on | muted | denied | unsupported
   const [peerMic, setPeerMic] = useState({}) // id -> bool
   const [speaking, setSpeaking] = useState({}) // id (ou 'me') -> bool
@@ -27,7 +34,7 @@ export function useGroupVoice(gameId, myId, peerIds, active) {
   const r = useRef({ peers: {} })
   const peersKey = peerIds.slice().sort().join(',')
 
-  const send = useCallback((to, kind, payload) => api.traqueSignal(gameId, to, kind, payload ?? {}).catch(() => {}), [gameId])
+  const send = useCallback((to, kind, payload) => ch.signal(gameId, to, kind, payload ?? {}).catch(() => {}), [gameId, ch])
 
   const build = useCallback((id) => {
     const s = r.current
@@ -86,12 +93,12 @@ export function useGroupVoice(gameId, myId, peerIds, active) {
       busy = true
       try {
         if (s.after == null) {
-          const old = await api.traqueSignalsSince(gameId, 0)
+          const old = await ch.since(gameId, 0)
           s.after = old.length ? old[old.length - 1].seq : 0
           ids.forEach(id => send(id, 'bye'))
           return
         }
-        const list = await api.traqueSignalsSince(gameId, s.after)
+        const list = await ch.since(gameId, s.after)
         for (const m of list) {
           s.after = m.seq
           if (!ids.includes(m.from)) continue

@@ -1986,3 +1986,11 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
 .duel-chat button { width: 40px; height: 40px; border-radius: 50%; border: 0; background: linear-gradient(160deg, #8b5cff, #6a35e8); color: #fff; font-size: 17px; }
 .duel-chat button:disabled { opacity: .4; }
 .res-chat { margin-top: 8px; }
+/* duel en direct : émojis rapides et micro */
+.duel-chat .dc-emojis { display: flex; gap: 6px; margin-bottom: 6px; pointer-events: auto; }
+.duel-chat .dc-emojis button { width: 40px; height: 40px; border-radius: 50%; border: 0; background: #140b33dd; box-shadow: inset 0 0 0 1px var(--line); font-size: 20px; }
+.duel-chat .dc-emojis .dc-mic { background: radial-gradient(circle at 35% 30%, #8b6bff, #3b1f9e); }
+.duel-chat .dc-emojis .dc-mic.on { background: radial-gradient(circle at 35% 30%, #7af5dc, #1fbf9f); }
+.duel-chat .dc-emojis .dc-mic.muted { background: radial-gradient(circle at 35% 30%, #ff8a9a, #d63a52); }
+.duel { padding-bottom: calc(env(safe-area-inset-bottom) + 112px); }
+.res-voice { margin: 8px 0; }

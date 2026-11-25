@@ -140,7 +140,8 @@ export function ChatThread({ peer, onBack, onChallenge, onTraque, onJoinTraque, 
 }
 
 // Barre de chat pendant un duel en direct : les messages passent par le chat principal
-export function DuelChat({ peer }) {
+const DUEL_EMOJIS = ['😡', '🐙', '🥰', '🤨', '🤓']
+export function DuelChat({ peer, voice }) {
   const [since] = useState(() => Date.now() - 2000)
   const [msgs, setMsgs] = useState([])
   const [text, setText] = useState('')
@@ -154,11 +155,11 @@ export function DuelChat({ peer }) {
     const id = setInterval(() => { load(); setNow(Date.now()) }, 2000)
     return () => { alive = false; clearInterval(id) }
   }, [peer.player_id, since])
-  async function send(e) {
-    e.preventDefault()
-    const b = text.trim()
+  async function send(e, emoji) {
+    e?.preventDefault?.()
+    const b = (emoji || text).trim()
     if (!b) return
-    setText('')
+    if (!emoji) setText('')
     try { const r = await api.chatSend(peer.player_id, b); if (r) setMsgs((r.messages || []).filter(m => m.kind === 'text' && Date.parse(m.created_at) >= since)) } catch { /* réseau */ }
   }
   // les 3 derniers messages, visibles 8 secondes
@@ -166,6 +167,12 @@ export function DuelChat({ peer }) {
   return (
     <div className="duel-chat">
       <div className="dc-msgs">{shown.map(m => <span key={m.id} className={m.mine ? 'mine' : ''}>{m.mine ? '' : `${peer.name} : `}{m.body}</span>)}</div>
+      <div className="dc-emojis">
+        {voice && <button type="button" className={`dc-mic ${voice.mic}`} onClick={voice.toggleMic} disabled={voice.mic === 'asking' || voice.mic === 'unsupported'} aria-label="Micro">
+          {{ on: '🎙️', muted: '🔇', asking: '⏳', denied: '🚫', unsupported: '🚫' }[voice.mic] || '🎙️'}</button>}
+        {voice?.needTap && <button type="button" className="dc-mic" onClick={voice.unlock} aria-label="Entendre">🔊</button>}
+        {DUEL_EMOJIS.map(em => <button key={em} type="button" onClick={() => send(null, em)}>{em}</button>)}
+      </div>
       <form onSubmit={send}>
         <input value={text} onChange={e => setText(e.target.value.slice(0, 200))} placeholder={`Message à ${peer.name}…`} enterKeyHint="send" />
         <button type="submit" disabled={!text.trim()} aria-label="Envoyer">➤</button>

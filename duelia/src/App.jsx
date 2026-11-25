@@ -26,6 +26,7 @@ import { Shop, StarterPick } from './components/Shop.jsx'
 import { priceOf, isLockable } from './lib/shop.js'
 import { buildButin } from './lib/butin.js'
 import { ChatList, ChatThread } from './components/Chat.jsx'
+import { useGroupVoice } from './lib/groupVoice.js'
 import { FriendsScreen, FriendChallengeSheet, PickFriendSheet, PlayWhoSheet, InviteWaiting, LiveInviteBanner, FriendSent, FriendProfile, LiveBetResult } from './components/Social.jsx'
 import * as api from './lib/account.js'
 import TopicRequestSheet from './components/TopicRequest.jsx'
@@ -809,6 +810,12 @@ export default function App() {
     setRoute({ name: 'traque', gameId: inv.id })
   }
   const declineTraque = (inv) => { setDismissedInvites(d => [...d, inv.id]); api.respondTraque(inv.id, false).catch(() => {}) }
+  // vocal d'un duel en direct entre amis : pendant le duel et sur l'écran de résultat, jusqu'à ce qu'on raccroche
+  const duelFriendId = ['duel', 'results'].includes(route.name) && route.mode === 'remote' && route.matchId
+    ? (route.friend?.player_id || route.opponent?.playerId || route.data?.opponent?.playerId) : null
+  const duelFriend = duelFriendId ? (social.social?.friends || []).find(f => f.player_id === duelFriendId) : null
+  const [hungMatch, setHungMatch] = useState(null)
+  const duelVoice = useGroupVoice(route.matchId || 'none', account.playerId, duelFriend ? [duelFriend.player_id] : [], !!duelFriend && hungMatch !== route.matchId, 'match')
   const [traqueResume, setTraqueResume] = useState(null)
   useEffect(() => {
     if (!online || route.name !== 'home') return
@@ -1065,7 +1072,7 @@ export default function App() {
       live={route.searchLive && account.status === 'online' ? liveSearch : null} makeQuestions={makeMatchQuestions} onLive={startLive} />; break
     case 'duel': view = <Duel key={route.questions.map(q => q.idx).join() + (route.challengeId || '')} topic={topic} me={meForDuel} opponent={route.opponent} ranks={route.ranks} questions={route.questions}
       mode={route.mode} ghost={route.ghost} link={liveLink} onFinish={finishDuel} onQuit={route.challengeId ? () => go({ name: 'inbox' }) : quitDuel}
-      chatPeer={route.mode === 'remote' ? (() => { const pid = route.friend?.player_id || route.opponent?.playerId; const f = (social.social?.friends || []).find(x => x.player_id === pid); return f ? { player_id: f.player_id, name: f.name } : null })() : null}
+      chatPeer={duelFriend ? { player_id: duelFriend.player_id, name: duelFriend.name } : null} voice={duelFriend ? duelVoice : null}
       onForfeit={route.mode === 'remote' || route.friendPlay ? (res) => {
         // abandon contre un ami : compté comme une défaite (et la victoire de l'ami)
         setToast('Abandon : compté comme une défaite.')
@@ -1121,8 +1128,14 @@ export default function App() {
           const pid = route.friendRematch?.player_id || route.friend?.player_id || route.opponent?.playerId || route.data?.opponent?.playerId
           const f = (social.social?.friends || []).find(x => x.player_id === pid)
           const chatBtn = f ? <button className="btn btn-secondary wide res-chat" onClick={() => go({ name: 'chat', peer: f })}>💬 Écrire à {f.name}</button> : null
+          const voiceBar = duelFriend && hungMatch !== route.matchId ? <div className="tq-finale-voice res-voice">
+            <button className={`tq-round-btn mic ${duelVoice.mic}`} onClick={duelVoice.toggleMic} disabled={duelVoice.mic === 'asking' || duelVoice.mic === 'unsupported'} aria-label="Micro">
+              {{ on: '🎙️', muted: '🔇', asking: '⏳', denied: '🚫', unsupported: '🚫' }[duelVoice.mic] || '🎙️'}</button>
+            <span>Vocal avec {duelFriend.name}</span>
+            <button className="btn btn-small btn-ghost" onClick={() => setHungMatch(route.matchId)}>📞 Raccrocher</button>
+          </div> : null
           return route.mode === 'remote' && route.matchId
-            ? <><LiveBetResult matchId={route.matchId} stake={route.stake} name={route.opponent?.name || route.data?.opponent?.name} onWallet={refreshWallet} />{chatBtn}</>
+            ? <>{voiceBar}<LiveBetResult matchId={route.matchId} stake={route.stake} name={route.opponent?.name || route.data?.opponent?.name} onWallet={refreshWallet} />{chatBtn}</>
             : chatBtn
         })()}
         onRematch={() => {
