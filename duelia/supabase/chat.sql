@@ -172,7 +172,8 @@ begin
   select * into m from matches where id = p_match for update;
   if not found or m.chat_done or not are_friends(m.p1, m.p2) then return; end if;
   n := jsonb_array_length(m.questions);
-  if m.forfeit is null and (select count(*) from match_answers where match_id = p_match) < 2 * n then return; end if;
+  -- duel incomplet (quelqu'un est parti, chrono écoulé) : on clôt au bout de 4 minutes avec les points marqués
+  if m.forfeit is null and (select count(*) from match_answers where match_id = p_match) < 2 * n and m.created_at > now() - interval '4 minutes' then return; end if;
   for a in select * from match_answers where match_id = p_match loop
     if a.choice >= 0 and a.choice = (m.questions -> a.round ->> 'correct')::int then
       pts := greatest(2, ceil((10000 - a.t) / 1000.0)::int * 2) * (case when a.round = n - 1 then 2 else 1 end);
@@ -205,3 +206,16 @@ drop trigger if exists chat_forfeit_events on public.matches;
 create trigger chat_forfeit_events after update of forfeit on public.matches for each row execute function public.tq_chat_forfeit();
 
 revoke all on function public.chat_match_event(uuid), public.tq_chat_match(), public.tq_chat_forfeit() from public, anon, authenticated;
+
+-- toutes les minutes : compte rendu des duels en direct restés incomplets
+create or replace function public.chat_close_stale_matches() returns int language plpgsql security definer set search_path = public as $$
+declare r record; n int := 0;
+begin
+  for r in select id from matches where not chat_done and created_at between now() - interval '2 days' and now() - interval '4 minutes' loop
+    perform chat_match_event(r.id); n := n + 1;
+  end loop;
+  return n;
+end $$;
+revoke all on function public.chat_close_stale_matches() from public, anon, authenticated;
+select cron.unschedule('kraken-chat-matches') where exists (select 1 from cron.job where jobname = 'kraken-chat-matches');
+select cron.schedule('kraken-chat-matches', '* * * * *', 'select public.chat_close_stale_matches()');

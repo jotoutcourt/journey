@@ -1,5 +1,6 @@
 // Chat entre amis : liste des conversations et fil d'une conversation (messages privés, invitations à jouer)
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import Avatar from './Avatar.jsx'
 import * as api from '../lib/account.js'
 
@@ -147,21 +148,7 @@ export function ChatThread({ peer, onBack, onChallenge, onTraque, onJoinTraque, 
 // Barre de chat pendant un duel en direct : les messages passent par le chat principal
 const DUEL_EMOJIS = ['😡', '🐙', '🥰', '🤨', '🤓']
 export function DuelChat({ peer, voice, matchId }) {
-  const [since] = useState(() => Date.now() - 2000)
-  const [msgs, setMsgs] = useState([])
-  const [text, setText] = useState('')
-  const [now, setNow] = useState(() => Date.now())
   const [floats, setFloats] = useState([])
-  const bar = useRef(null)
-  useEffect(() => {
-    let alive = true
-    const load = () => api.chatThread(peer.player_id).then(r => {
-      if (alive && r) setMsgs((r.messages || []).filter(m => m.kind === 'text' && Date.parse(m.created_at) >= since))
-    }).catch(() => {})
-    load()
-    const id = setInterval(() => { load(); setNow(Date.now()) }, 2000)
-    return () => { alive = false; clearInterval(id) }
-  }, [peer.player_id, since])
   // émojis flottants : passent par le canal du duel (pas par le chat)
   const pop = (e) => setFloats(f => [...f.slice(-12), { e, k: Math.random(), x: 10 + Math.random() * 70 }])
   useEffect(() => {
@@ -179,42 +166,16 @@ export function DuelChat({ peer, voice, matchId }) {
     return () => { alive = false; clearInterval(id) }
   }, [matchId])
   function react(e) { pop(e); if (matchId) api.matchSignal(matchId, peer.player_id, 'react', { e }).catch(() => {}) }
-  // clavier ouvert : la barre reste collée au-dessus du clavier, sans décaler l'écran du duel
-  useEffect(() => {
-    const vv = window.visualViewport
-    if (!vv) return
-    const fit = () => {
-      const kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop)
-      if (bar.current) bar.current.style.transform = kb > 40 ? `translateY(${-kb + vv.offsetTop}px)` : ''
-    }
-    vv.addEventListener('resize', fit); vv.addEventListener('scroll', fit)
-    return () => { vv.removeEventListener('resize', fit); vv.removeEventListener('scroll', fit) }
-  }, [])
-  async function send(e) {
-    e?.preventDefault?.()
-    const b = text.trim()
-    if (!b) return
-    setText('')
-    try { const r = await api.chatSend(peer.player_id, b); if (r) setMsgs((r.messages || []).filter(m => m.kind === 'text' && Date.parse(m.created_at) >= since)) } catch { /* réseau */ }
-  }
-  // les 3 derniers messages, visibles 8 secondes
-  const shown = msgs.filter(m => now - Date.parse(m.created_at) < 8000).slice(-3)
   return (
     <>
-      <div className="dc-floats" aria-hidden="true">{floats.map(f => <span key={f.k} style={{ left: `${f.x}%` }}>{f.e}</span>)}</div>
-      <div className="duel-chat" ref={bar}>
-        <div className="dc-msgs">{shown.map(m => <span key={m.id} className={m.mine ? 'mine' : ''}>{m.mine ? '' : `${peer.name} : `}{m.body}</span>)}</div>
+      {createPortal(<div className="dc-floats" aria-hidden="true">{floats.map(f => <span key={f.k} style={{ left: `${f.x}%` }}>{f.e}</span>)}</div>, document.body)}
+      <div className="duel-chat">
         <div className="dc-emojis">
           {voice && <button type="button" className={`dc-mic ${voice.mic}`} onClick={voice.toggleMic} disabled={voice.mic === 'asking' || voice.mic === 'unsupported'} aria-label="Micro">
             {{ on: '🎙️', muted: '🔇', asking: '⏳', denied: '🚫', unsupported: '🚫' }[voice.mic] || '🎙️'}</button>}
           {voice?.needTap && <button type="button" className="dc-mic" onClick={voice.unlock} aria-label="Entendre">🔊</button>}
           {DUEL_EMOJIS.map(em => <button key={em} type="button" onClick={() => react(em)}>{em}</button>)}
         </div>
-        <form onSubmit={send}>
-          <input value={text} onChange={e => setText(e.target.value.slice(0, 200))} placeholder={`Message à ${peer.name}…`} enterKeyHint="send"
-            onFocus={() => setTimeout(() => window.scrollTo(0, 0), 60)} />
-          <button type="submit" disabled={!text.trim()} aria-label="Envoyer">➤</button>
-        </form>
       </div>
     </>
   )
