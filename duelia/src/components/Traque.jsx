@@ -354,14 +354,17 @@ function TraqueBoard({ v, gameId, act, onExit, vc }) {
   // animation des pions : on avance case par case
   const [shown, setShown] = useState(() => Object.fromEntries(v.players.map(p => [p.seat, p.pos])))
   // après un lancer normal : on montre d'abord le dé, il disparaît, puis le pion avance
-  const rolled = v.phase === 'show' && (v.data?.dice || []).length > 0
+  // (pareil après le dé du duel : le dé roule, le résultat s'affiche, puis le perdant recule)
+  const duelDice = v.phase === 'event' && !!v.data?.fx?.duel
+  const rolled = (v.phase === 'show' && (v.data?.dice || []).length > 0) || duelDice
+  const diceMs = duelDice ? 2400 : 1300
   const [diceOn, setDiceOn] = useState(false)
   useEffect(() => {
     if (!rolled) return
     setTimeout(() => setDiceOn(true), 0)
-    const id = setTimeout(() => setDiceOn(false), 1300)
+    const id = setTimeout(() => setDiceOn(false), diceMs)
     return () => clearTimeout(id)
-  }, [v.version, rolled])
+  }, [v.version, rolled]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     const goal = Object.fromEntries(v.players.map(p => [p.seat, p.pos]))
     let iv = null
@@ -377,7 +380,7 @@ function TraqueBoard({ v, gameId, act, onExit, vc }) {
         return moved ? next : cur
       })
     }, 170) }
-    const wait = setTimeout(go, rolled ? 1400 : 0)
+    const wait = setTimeout(go, rolled ? diceMs + 100 : 0)
     return () => { clearTimeout(wait); clearInterval(iv) }
   }, [v.version]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -470,7 +473,7 @@ function TraqueBoard({ v, gameId, act, onExit, vc }) {
 
       {/* Moments forts au centre de l'écran */}
       {v.phase === 'show' && diceOn && (d.dice || []).length > 0 && <div className="tq-center"><div className="tq-dice">{d.dice.map((n, i) => <DieFace key={i} n={n} />)}</div></div>}
-      {v.phase === 'event' && (d.reveal ? <Reveal ids={d.reveal} topicOf={topicOf} /> : d.fx?.duel ? <DuelDice key={d.text} v={v} d={d} /> : <EventView key={d.text} d={d} />)}
+      {v.phase === 'event' && (d.reveal ? <Reveal ids={d.reveal} topicOf={topicOf} /> : d.fx?.duel ? (diceOn ? <DuelDice key={d.text} v={v} d={d} /> : null) : <EventView key={d.text} d={d} />)}
       {v.phase === 'haunt' && d.seat === v.me && <Haunt v={v} onPick={(s) => act(() => api.traqueHaunt(gameId, s))} />}
       {v.phase === 'pick' && <Cursed v={v} d={d} left={left} onPick={(i) => act(() => api.traqueCursed(gameId, i))} />}
       {v.phase === 'duelroll' && <DuelResult key={`${d.winner}-${d.loser}`} v={v} d={d} onRoll={() => act(() => api.traqueRoll(gameId))} />}
@@ -506,7 +509,7 @@ function PathBoard({ v, shown, topicOf, owners, zoom }) {
   const touchedAt = useRef(0)
   const last = BOARD_PTS.length - 1
   const at = (i) => BOARD_PTS[Math.min(last, Math.max(0, i))]
-  const followSeat = v.phase === 'duelroll' ? v.data?.loser : v.data?.seat ?? v.turn
+  const followSeat = v.phase === 'duelroll' ? v.data?.loser : v.data?.fx?.duel ? v.data.fx.seat : v.data?.seat ?? v.turn
   const followPos = shown[followSeat] ?? v.players.find(p => p.seat === followSeat)?.pos ?? 0
   // la caméra suit le pion qui bouge, sauf si on vient de faire défiler soi-même
   useEffect(() => {
