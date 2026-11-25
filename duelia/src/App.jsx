@@ -329,7 +329,7 @@ export default function App() {
     result: () => liveResult(route.matchId),
   } : null), [route.matchId])
 
-  const finishDuel = useCallback(({ myScore, oppScore, log, questions }) => {
+  const finishDuel = useCallback(({ myScore, oppScore, log, questions, forfeit = false }) => {
     const r = route, t = r.topicObj || byId(r.id)
     // Défi par lien créé : on enregistre ses réponses et on fabrique le lien à envoyer
     if (r.linkCreate) {
@@ -398,7 +398,7 @@ export default function App() {
     if (r.friendPlay) {
       const c = r.friendPlay
       const answers = plain(log.me, questions.length)
-      api.playChallenge(c.id, answers).then(res => {
+      api.playChallenge(c.id, answers, forfeit).then(res => {
         const mine = fromPlain(answers.map(a => [a.choice, a.t]), questions.length)
         const theirs = fromPlain(c.from_answers, questions.length)
         const data = settleFriend(c, res.my_score, res.their_score, logFrom(questions, mine, theirs))
@@ -1064,7 +1064,13 @@ export default function App() {
     case 'match': view = <Matchmaking key={route.id} topic={topic} opponent={route.opponent} onReady={startDuel} onCancel={() => go({ name: 'topic', id: topic.id })}
       live={route.searchLive && account.status === 'online' ? liveSearch : null} makeQuestions={makeMatchQuestions} onLive={startLive} />; break
     case 'duel': view = <Duel key={route.questions.map(q => q.idx).join() + (route.challengeId || '')} topic={topic} me={meForDuel} opponent={route.opponent} ranks={route.ranks} questions={route.questions}
-      mode={route.mode} ghost={route.ghost} link={liveLink} onFinish={finishDuel} onQuit={route.challengeId ? () => go({ name: 'inbox' }) : quitDuel} />; break
+      mode={route.mode} ghost={route.ghost} link={liveLink} onFinish={finishDuel} onQuit={route.challengeId ? () => go({ name: 'inbox' }) : quitDuel}
+      onForfeit={route.mode === 'remote' || route.friendPlay ? (res) => {
+        // abandon contre un ami : compté comme une défaite (et la victoire de l'ami)
+        setToast('Abandon : compté comme une défaite.')
+        if (route.mode === 'remote' && route.matchId) api.liveForfeit(route.matchId).catch(() => {})
+        finishDuel({ ...res, myScore: route.friendPlay ? res.myScore : 0, oppScore: route.friendPlay ? res.oppScore : Math.max(res.oppScore, 1), forfeit: true })
+      } : undefined} />; break
     case 'linkload': view = <div className="screen link-screen"><div className="link-card"><div className="spinner" aria-hidden="true" /><h1>Ouverture du défi…</h1></div></div>; break
     case 'linkready': view = <LinkReady url={route.url} shortening={route.shortening} score={route.score} topic={topic} onName={nameLinkTarget} onHome={() => go({ name: 'home' })} onTopic={() => go({ name: 'topic', id: topic.id })} />; break
     case 'linkintro': view = link?.kind === 'challenge' ? (

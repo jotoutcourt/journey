@@ -123,7 +123,8 @@ export const sendChallenge = (friendId, topic, questions, answers) => rpc('send_
   p_to: friendId, p_topic_id: topic.id, p_topic: topicMeta(topic), p_questions: questions.map(slimQuestion), p_answers: plainAnswers(answers),
 })
 export const getChallenges = () => rpc('get_challenges')
-export const playChallenge = (id, answers) => rpc('play_challenge', { p_id: id, p_answers: plainAnswers(answers) })
+export const playChallenge = (id, answers, forfeit = false) => rpc('play_challenge', { p_id: id, p_answers: plainAnswers(answers), p_forfeit: forfeit })
+export const liveForfeit = (matchId) => rpc('live_forfeit', { p_match: matchId })
 export const declineChallenge = (id) => rpc('decline_challenge', { p_id: id })
 export const cancelChallenge = (id) => rpc('cancel_challenge', { p_id: id })
 

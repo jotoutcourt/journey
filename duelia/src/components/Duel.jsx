@@ -32,7 +32,7 @@ function RankPlate({ rank }) {
 // 'remote' (vrai joueur en direct : les réponses passent par le serveur, link = { send, poll })
 const GRACE = 3000 // délai accordé à un vrai adversaire après la fin du chrono (réseau)
 
-export default function Duel({ topic, me, opponent, ranks, questions, onFinish, onQuit, mode = 'live', ghost, link }) {
+export default function Duel({ topic, me, opponent, ranks, questions, onFinish, onQuit, onForfeit, mode = 'live', ghost, link }) {
   const blind = mode === 'blind'
   const remote = mode === 'remote'
   const remoteRef = useRef({ got: new Map(), sent: new Set(), misses: 0 })
@@ -236,6 +236,13 @@ export default function Duel({ topic, me, opponent, ranks, questions, onFinish, 
   function quit() {
     if (remote && link) {
       for (let r = 0; r < rounds; r++) if (!remoteRef.current.sent.has(r)) link.send(r, -1, TIME).catch(() => {})
+    }
+    // contre un ami : abandonner = défaite (questions restantes sans réponse)
+    if (onForfeit) {
+      const me2 = Array.from({ length: rounds }, (_, i) => log.me[i] || { choice: -1, t: TIME, pts: 0 })
+      const opp2 = Array.from({ length: rounds }, (_, i) => log.opp[i] || { choice: -1, t: TIME, pts: 0 })
+      onForfeit({ myScore, oppScore, log: { me: me2, opp: opp2 }, questions })
+      return
     }
     onQuit()
   }
