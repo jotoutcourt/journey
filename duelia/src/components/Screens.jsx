@@ -55,21 +55,19 @@ export function Home({ go, wallet, onSolo, oxygen, missions, onTraque, traqueRes
         {wallet && <button className="wallet-pill" title="Boutique" onClick={() => go({ name: 'shop' })}><i className="lt-coin" aria-hidden="true" />{wallet.lingots}<span className="wp-shop">🏪</span></button>}
       </header>
 
-      {/* Le jeu principal : L'Appât du Kraken */}
+      {/* Le jeu principal : la Chasse au Kraken (jeu de plateau) */}
       <section className="kraken-hero">
         <img className="kh-art" src="/mascotte/pirate-anim.webp" alt="" aria-hidden="true" />
-        <h1 className="kraken-sign-img"><img src="/decor/pancarte.webp" alt="L'Appât du Kraken" draggable="false" /></h1>
-        <p className="kh-pitch">Cache tes lingots dans la bonne caisse avant que les tentacules du <b>Kraken</b> ne les reprennent.</p>
+        <h1 className="kraken-sign-img"><img src="/decor/pancarte.webp" alt="Kraken" draggable="false" /></h1>
+        <p className="kh-pitch">Avancez sur le plateau entre amis, remplissez le trésor… et soyez le premier à <b>tuer le Kraken</b> pour tout rafler.</p>
         {wallet?.daily_bonus && <span className="bh-bonus">🎁 +5 lingots sur ta première partie du jour</span>}
+        <button className="kh-play kh-chasse kh-main" onClick={traqueResume || onTraque}>{traqueResume ? 'Reprendre la Chasse' : 'La Chasse au Kraken'}<small>{traqueResume ? 'Ta partie t\'attend' : 'Jeu de plateau · 2 à 8 joueurs'}</small></button>
         {!choose
-          ? <button className="kh-play kh-trappes" onClick={() => setChoose(true)}>Les Trappes du Kraken<small>Solo ou à deux</small></button>
+          ? <button className="kh-play kh-trappes kh-second" onClick={() => setChoose(true)}>Les Trappes du Kraken<small>Solo ou à deux</small></button>
           : <div className="kh-modes" ref={modesRef}>
             <button className="kh-play kh-mode" onClick={() => { setChoose(false); onSolo() }}><span aria-hidden="true">🏴‍☠️</span>Solo</button>
             <button className="kh-play kh-mode" onClick={() => { setChoose(false); go({ name: 'butin' }) }}><span aria-hidden="true">👥</span>À deux</button>
           </div>}
-        {onTraque
-          ? <button className="kh-play kh-chasse" onClick={traqueResume || onTraque}>{traqueResume ? 'Reprendre la Chasse' : 'La Chasse au Kraken'}<small>{traqueResume ? 'Ta partie t\'attend' : 'Jeu de plateau · 2 à 4 joueurs'}</small></button>
-          : <button className="kh-play kh-chasse soon" disabled>La Chasse au Kraken<small>🔒 Bientôt disponible</small></button>}
         {oxygen}
       </section>
 

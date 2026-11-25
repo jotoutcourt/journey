@@ -68,7 +68,6 @@ const NAV = readNavHash()
 const LINK = readLinkFromHash()
 
 // La Chasse au Kraken est en cours de finition : ouverte seulement aux testeurs, « bientôt disponible » pour les autres
-const CHASSE_TESTERS = ['a74d38cf-eaaf-4ba7-a7ec-af1563a1ac93', 'ec682049-9eab-45ca-8bff-4ad866004bab', '3ec2c234-b3b4-415a-80cb-dd9f333470a2', '12a76132-7189-4da3-aa8f-4f530404b2d8', 'cc594dc3-1c8e-4fd1-afb8-897ad53831a9'] // jotoutcourt, Isa (x2), Meg, Amadou
 
 // Adversaire fictif quand on crée un défi par lien : l'ami jouera plus tard
 const FRIEND = { id: 'ami', name: 'Ton ami', avatar: 'ami-mystere', flag: '❔', xp: 0 }
@@ -1099,7 +1098,7 @@ export default function App() {
     case 'chat': view = route.peer
       ? <ChatThread key={route.peer.player_id} peer={route.peer} onBack={() => go({ name: 'chat' })}
           onChallenge={(f) => setFriendSheet({ ...f, fromChat: true })}
-          onTraque={CHASSE_TESTERS.includes(account.playerId) ? async (f) => { try { const id = await api.createTraque(); await api.inviteTraque(id, f.player_id); setRoute({ name: 'traque', gameId: id }); return id } catch { setToast('Pas de connexion.'); return null } } : null}
+          onTraque={async (f) => { try { const id = await api.createTraque(); await api.inviteTraque(id, f.player_id); setRoute({ name: 'traque', gameId: id }); return id } catch { setToast('Pas de connexion.'); return null } }}
           onJoinTraque={async (id) => { let ok; try { ok = await api.respondTraque(id, true) } catch { ok = null } if (!ok) { setToast('Trop tard : la partie a déjà commencé ou a été annulée.'); return } setRoute({ name: 'traque', gameId: id }) }}
           onOpenInbox={() => go({ name: 'inbox' })} />
       : <ChatList onOpen={(peer) => go({ name: 'chat', peer })} onAddFriend={() => go({ name: 'friends' })} challenges={badge} onChallenges={() => go({ name: 'inbox' })} />; break
@@ -1149,10 +1148,10 @@ export default function App() {
         onTopic={() => (byId(topic.id) ? go({ name: 'topic', id: topic.id }) : go({ name: 'topics' }))}
         onShare={() => shareText(`${route.data.outcome === 'win' ? 'Victoire' : 'Duel'} ${route.data.myScore}–${route.data.oppScore} contre ${route.opponent.name} sur « ${topic.name} » dans Kraken !`)} />
     ); break
-    default: view = <Home st={st} topics={topics} go={go} wallet={wallet} onSolo={startSolo} onTraque={CHASSE_TESTERS.includes(account.playerId) ? startTraque : null} traqueResume={traqueResume ? () => go({ name: 'traque', gameId: traqueResume }) : null} missions={<MissionsChip data={missions} onOpen={() => setMissionsOpen(true)} />}
+    default: view = <Home st={st} topics={topics} go={go} wallet={wallet} onSolo={startSolo} onTraque={startTraque} traqueResume={traqueResume ? () => go({ name: 'traque', gameId: traqueResume }) : null} missions={<MissionsChip data={missions} onOpen={() => setMissionsOpen(true)} />}
       oxygen={<OxygenInline wallet={wallet} at={walletAt} onRefill={refill} onDue={refreshWallet} />} />
   }
-  if (!view) view = <Home st={st} topics={topics} go={go} wallet={wallet} onSolo={startSolo} onTraque={CHASSE_TESTERS.includes(account.playerId) ? startTraque : null} traqueResume={traqueResume ? () => go({ name: 'traque', gameId: traqueResume }) : null} missions={<MissionsChip data={missions} onOpen={() => setMissionsOpen(true)} />}
+  if (!view) view = <Home st={st} topics={topics} go={go} wallet={wallet} onSolo={startSolo} onTraque={startTraque} traqueResume={traqueResume ? () => go({ name: 'traque', gameId: traqueResume }) : null} missions={<MissionsChip data={missions} onOpen={() => setMissionsOpen(true)} />}
     oxygen={<OxygenInline wallet={wallet} at={walletAt} onRefill={refill} onDue={refreshWallet} />} />
 
   return (

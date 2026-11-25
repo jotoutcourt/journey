@@ -2010,3 +2010,8 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
 .chat-defis { width: 100%; display: flex; align-items: center; gap: 12px; margin-bottom: 10px; padding: 12px; border: 0; border-radius: 18px; color: #fff; text-align: left; cursor: pointer;
   background: linear-gradient(135deg, #4a2bb8, #22106a); box-shadow: inset 0 0 0 1.5px var(--gold), 0 6px 14px #0007; }
 .chat-defis .cd-ico { width: 48px; height: 48px; flex: none; display: grid; place-items: center; font-size: 26px; border-radius: 50%; background: #ffffff14; }
+/* accueil : la Chasse au Kraken est le jeu principal */
+.kh-play.kh-main { height: 74px; width: min(80vw, 320px); font-size: 23px; }
+.kh-play.kh-main small { font-size: 12.5px; }
+.kh-play.kh-second { height: 54px; width: min(66vw, 260px); font-size: 17px; margin-top: 10px; opacity: .92; }
+.kh-play.kh-second small { font-size: 10.5px; }
