@@ -1072,7 +1072,7 @@ export default function App() {
       live={route.searchLive && account.status === 'online' ? liveSearch : null} makeQuestions={makeMatchQuestions} onLive={startLive} />; break
     case 'duel': view = <Duel key={route.questions.map(q => q.idx).join() + (route.challengeId || '')} topic={topic} me={meForDuel} opponent={route.opponent} ranks={route.ranks} questions={route.questions}
       mode={route.mode} ghost={route.ghost} link={liveLink} onFinish={finishDuel} onQuit={route.challengeId ? () => go({ name: 'inbox' }) : quitDuel}
-      chatPeer={duelFriend ? { player_id: duelFriend.player_id, name: duelFriend.name } : null} voice={duelFriend ? duelVoice : null}
+      chatPeer={duelFriend ? { player_id: duelFriend.player_id, name: duelFriend.name } : null} voice={duelFriend ? duelVoice : null} matchId={route.matchId}
       onForfeit={route.mode === 'remote' || route.friendPlay ? (res) => {
         // abandon contre un ami : compté comme une défaite (et la victoire de l'ami)
         setToast('Abandon : compté comme une défaite.')

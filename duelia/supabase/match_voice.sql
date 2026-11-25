@@ -4,7 +4,7 @@ create table if not exists public.match_signals (
   match_id uuid not null references public.matches (id) on delete cascade,
   from_player uuid not null references public.players (id) on delete cascade,
   to_player uuid not null references public.players (id) on delete cascade,
-  kind text not null check (kind in ('offer', 'answer', 'ice', 'bye', 'mic')),
+  kind text not null check (kind in ('offer', 'answer', 'ice', 'bye', 'mic', 'react')),
   payload jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now()
 );
@@ -36,3 +36,7 @@ end $$;
 
 revoke all on function public.match_signal(uuid, uuid, text, jsonb), public.match_signals_since(uuid, bigint) from public, anon;
 grant execute on function public.match_signal(uuid, uuid, text, jsonb), public.match_signals_since(uuid, bigint) to authenticated;
+
+-- réactions flottantes pendant le duel (émojis) : même canal
+alter table public.match_signals drop constraint if exists match_signals_kind_check;
+alter table public.match_signals add constraint match_signals_kind_check check (kind in ('offer', 'answer', 'ice', 'bye', 'mic', 'react'));
