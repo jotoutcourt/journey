@@ -353,9 +353,19 @@ function TraqueBoard({ v, gameId, act, onExit, vc }) {
 
   // animation des pions : on avance case par case
   const [shown, setShown] = useState(() => Object.fromEntries(v.players.map(p => [p.seat, p.pos])))
+  // après un lancer normal : on montre d'abord le dé, il disparaît, puis le pion avance
+  const rolled = v.phase === 'show' && (v.data?.dice || []).length > 0
+  const [diceOn, setDiceOn] = useState(false)
+  useEffect(() => {
+    if (!rolled) return
+    setTimeout(() => setDiceOn(true), 0)
+    const id = setTimeout(() => setDiceOn(false), 1300)
+    return () => clearTimeout(id)
+  }, [v.version, rolled])
   useEffect(() => {
     const goal = Object.fromEntries(v.players.map(p => [p.seat, p.pos]))
-    const iv = setInterval(() => {
+    let iv = null
+    const go = () => { iv = setInterval(() => {
       setShown(cur => {
         let moved = false
         const next = { ...cur }
@@ -366,8 +376,9 @@ function TraqueBoard({ v, gameId, act, onExit, vc }) {
         if (!moved) clearInterval(iv)
         return moved ? next : cur
       })
-    }, 170)
-    return () => clearInterval(iv)
+    }, 170) }
+    const wait = setTimeout(go, rolled ? 1400 : 0)
+    return () => { clearTimeout(wait); clearInterval(iv) }
   }, [v.version]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // un « tok » à chaque case franchie par un pion
@@ -395,7 +406,7 @@ function TraqueBoard({ v, gameId, act, onExit, vc }) {
 
   return (
     <div className="screen traque game">
-      <PathBoard v={v} shown={shown} topicOf={topicOf} owners={owners} />
+      <PathBoard v={v} shown={shown} topicOf={topicOf} owners={owners} zoom={rolled && !diceOn} />
 
       {/* HUD du haut : une colonne propre, sans chevauchement */}
       <i className="tq-veil" aria-hidden="true" />
@@ -458,7 +469,7 @@ function TraqueBoard({ v, gameId, act, onExit, vc }) {
       </div>}
 
       {/* Moments forts au centre de l'écran */}
-      {v.phase === 'show' && (d.dice || []).length > 0 && <div className="tq-center"><div className="tq-dice">{d.dice.map((n, i) => <DieFace key={i} n={n} />)}</div></div>}
+      {v.phase === 'show' && diceOn && (d.dice || []).length > 0 && <div className="tq-center"><div className="tq-dice">{d.dice.map((n, i) => <DieFace key={i} n={n} />)}</div></div>}
       {v.phase === 'event' && (d.reveal ? <Reveal ids={d.reveal} topicOf={topicOf} /> : d.fx?.duel ? <DuelDice key={d.text} v={v} d={d} /> : <EventView key={d.text} d={d} />)}
       {v.phase === 'haunt' && d.seat === v.me && <Haunt v={v} onPick={(s) => act(() => api.traqueHaunt(gameId, s))} />}
       {v.phase === 'pick' && <Cursed v={v} d={d} left={left} onPick={(i) => act(() => api.traqueCursed(gameId, i))} />}
@@ -490,7 +501,7 @@ function TraqueBoard({ v, gameId, act, onExit, vc }) {
 }
 
 // Plateau illustré : les cases sont posées sur les emplacements peints de l'image
-function PathBoard({ v, shown, topicOf, owners }) {
+function PathBoard({ v, shown, topicOf, owners, zoom }) {
   const ref = useRef(null)
   const touchedAt = useRef(0)
   const last = BOARD_PTS.length - 1
@@ -508,7 +519,6 @@ function PathBoard({ v, shown, topicOf, owners }) {
   }, [followPos, followSeat]) // eslint-disable-line react-hooks/exhaustive-deps
   const mark = () => { touchedAt.current = Date.now() }
   // lancer normal : la caméra zoome sur le pion pendant qu'il avance, puis revient à la normale
-  const zoom = v.phase === 'show'
   const [zx, zy] = at(followPos)
   return (
     <div className="tq-path" ref={ref} onTouchStart={mark} onWheel={mark} onPointerDown={mark}>

@@ -60,7 +60,7 @@ revoke all on public.traque_games, public.traque_players from anon, authenticate
 create or replace function public.tq_const(k text) returns int language sql immutable as $$
   select case k
     when 'cells' then 83 when 'answer' then 12 when 'hard' then 9 when 'reveal' then 4 when 'roll' then 30
-    when 'show' then 3 when 'event' then 5 when 'shop_max' then 3 end
+    when 'show' then 4 when 'event' then 5 when 'shop_max' then 3 end
 $$;
 create or replace function public.tq_item_cost(k text) returns int language sql immutable as $$
   select case k when 'double' then 6 when 'ancre' then 5 when 'joker' then 4 when 'vol' then 5 when 'echange' then 8 when 'harpon' then 7 end
