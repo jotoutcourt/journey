@@ -131,3 +131,38 @@ export function ChatThread({ peer, onBack, onChallenge, onTraque, onJoinTraque, 
     </div>
   )
 }
+
+// Barre de chat pendant un duel en direct : les messages passent par le chat principal
+export function DuelChat({ peer }) {
+  const [since] = useState(() => Date.now() - 2000)
+  const [msgs, setMsgs] = useState([])
+  const [text, setText] = useState('')
+  const [now, setNow] = useState(() => Date.now())
+  useEffect(() => {
+    let alive = true
+    const load = () => api.chatThread(peer.player_id).then(r => {
+      if (alive && r) setMsgs((r.messages || []).filter(m => m.kind === 'text' && Date.parse(m.created_at) >= since))
+    }).catch(() => {})
+    load()
+    const id = setInterval(() => { load(); setNow(Date.now()) }, 2000)
+    return () => { alive = false; clearInterval(id) }
+  }, [peer.player_id, since])
+  async function send(e) {
+    e.preventDefault()
+    const b = text.trim()
+    if (!b) return
+    setText('')
+    try { const r = await api.chatSend(peer.player_id, b); if (r) setMsgs((r.messages || []).filter(m => m.kind === 'text' && Date.parse(m.created_at) >= since)) } catch { /* réseau */ }
+  }
+  // les 3 derniers messages, visibles 8 secondes
+  const shown = msgs.filter(m => now - Date.parse(m.created_at) < 8000).slice(-3)
+  return (
+    <div className="duel-chat">
+      <div className="dc-msgs">{shown.map(m => <span key={m.id} className={m.mine ? 'mine' : ''}>{m.mine ? '' : `${peer.name} : `}{m.body}</span>)}</div>
+      <form onSubmit={send}>
+        <input value={text} onChange={e => setText(e.target.value.slice(0, 200))} placeholder={`Message à ${peer.name}…`} enterKeyHint="send" />
+        <button type="submit" disabled={!text.trim()} aria-label="Envoyer">➤</button>
+      </form>
+    </div>
+  )
+}

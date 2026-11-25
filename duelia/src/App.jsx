@@ -26,7 +26,7 @@ import { Shop, StarterPick } from './components/Shop.jsx'
 import { priceOf, isLockable } from './lib/shop.js'
 import { buildButin } from './lib/butin.js'
 import { ChatList, ChatThread } from './components/Chat.jsx'
-import { FriendsScreen, FriendChallengeSheet, PickFriendSheet, PlayWhoSheet, InviteWaiting, LiveInviteBanner, FriendSent, ChallengeMessage, FriendProfile, LiveMatchMessage, LiveBetResult } from './components/Social.jsx'
+import { FriendsScreen, FriendChallengeSheet, PickFriendSheet, PlayWhoSheet, InviteWaiting, LiveInviteBanner, FriendSent, FriendProfile, LiveBetResult } from './components/Social.jsx'
 import * as api from './lib/account.js'
 import TopicRequestSheet from './components/TopicRequest.jsx'
 import { useSocial, friendOpponent, fromPlain, logFrom } from './lib/useSocial.js'
@@ -1065,6 +1065,7 @@ export default function App() {
       live={route.searchLive && account.status === 'online' ? liveSearch : null} makeQuestions={makeMatchQuestions} onLive={startLive} />; break
     case 'duel': view = <Duel key={route.questions.map(q => q.idx).join() + (route.challengeId || '')} topic={topic} me={meForDuel} opponent={route.opponent} ranks={route.ranks} questions={route.questions}
       mode={route.mode} ghost={route.ghost} link={liveLink} onFinish={finishDuel} onQuit={route.challengeId ? () => go({ name: 'inbox' }) : quitDuel}
+      chatPeer={route.mode === 'remote' ? (() => { const pid = route.friend?.player_id || route.opponent?.playerId; const f = (social.social?.friends || []).find(x => x.player_id === pid); return f ? { player_id: f.player_id, name: f.name } : null })() : null}
       onForfeit={route.mode === 'remote' || route.friendPlay ? (res) => {
         // abandon contre un ami : compté comme une défaite (et la victoire de l'ami)
         setToast('Abandon : compté comme une défaite.')
@@ -1115,15 +1116,15 @@ export default function App() {
     }
     case 'results': view = (
       <Results data={route.data} me={me} onBook={() => go({ name: 'book' })}
-        extra={route.friendMsg ? <ChallengeMessage key={route.friendMsg.id} name={route.friendMsg.name}
-          theirMsg={(social.challenges || []).find(x => x.id === route.friendMsg.id)?.their_msg || route.friendMsg.theirMsg}
-          myMsg={(social.challenges || []).find(x => x.id === route.friendMsg.id)?.my_msg || route.friendMsg.myMsg}
-          onSend={(m) => api.setChallengeMessage(route.friendMsg.id, m).then(social.refreshChallenges)} />
-          : route.mode === 'remote' && route.matchId ? <>
-            <LiveBetResult matchId={route.matchId} stake={route.stake} name={route.opponent?.name || route.data?.opponent?.name} onWallet={refreshWallet} />
-            <LiveMatchMessage matchId={route.matchId} name={route.opponent?.name || route.data?.opponent?.name}
-              quickOnly={!route.friend && !(social.social?.friends || []).some(f => f.player_id === (route.opponent?.playerId || route.data?.opponent?.playerId))} />
-          </> : null}
+        extra={(() => {
+          // un ami : on continue la discussion dans le chat
+          const pid = route.friendRematch?.player_id || route.friend?.player_id || route.opponent?.playerId || route.data?.opponent?.playerId
+          const f = (social.social?.friends || []).find(x => x.player_id === pid)
+          const chatBtn = f ? <button className="btn btn-secondary wide res-chat" onClick={() => go({ name: 'chat', peer: f })}>💬 Écrire à {f.name}</button> : null
+          return route.mode === 'remote' && route.matchId
+            ? <><LiveBetResult matchId={route.matchId} stake={route.stake} name={route.opponent?.name || route.data?.opponent?.name} onWallet={refreshWallet} />{chatBtn}</>
+            : chatBtn
+        })()}
         onRematch={() => {
           const linkish = route.data.link || route.data.fromLink
           if (route.friendRematch) return setFriendSheet({ ...route.friendRematch, online: social.social?.friends?.find(f => f.player_id === route.friendRematch.player_id)?.online })

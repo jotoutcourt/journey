@@ -10,6 +10,7 @@ import { levelInfo } from '../lib/levels.js'
 import { topicTitle } from '../lib/titles.js'
 import { TIME, pointsFor } from '../lib/duel.js'
 import { sfx } from '../lib/sound.js'
+import { DuelChat } from './Chat.jsx'
 import { intro as introMusic, thinking } from '../lib/music.js'
 
 // Intitulé du duel quand un joueur du top 10 mondial est en jeu
@@ -32,7 +33,7 @@ function RankPlate({ rank }) {
 // 'remote' (vrai joueur en direct : les réponses passent par le serveur, link = { send, poll })
 const GRACE = 3000 // délai accordé à un vrai adversaire après la fin du chrono (réseau)
 
-export default function Duel({ topic, me, opponent, ranks, questions, onFinish, onQuit, onForfeit, mode = 'live', ghost, link }) {
+export default function Duel({ topic, me, opponent, ranks, questions, onFinish, onQuit, onForfeit, mode = 'live', ghost, link, chatPeer }) {
   const blind = mode === 'blind'
   const remote = mode === 'remote'
   const remoteRef = useRef({ got: new Map(), sent: new Set(), misses: 0 })
@@ -391,6 +392,7 @@ export default function Duel({ topic, me, opponent, ranks, questions, onFinish, 
           {reveal && mine?.choice === -1 && <p className="timeout-msg">Temps écoulé !</p>}
         </div>
       )}
+      {chatPeer && <DuelChat peer={chatPeer} />}
     </div>
   )
 }

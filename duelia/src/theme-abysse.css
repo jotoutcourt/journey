@@ -1975,3 +1975,14 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
   border-radius: 26px; animation: tq-react-col .25s ease-out both; }
 .tq-react-wrap .tq-reacts button { width: 46px; height: 46px; border-radius: 50%; }
 @keyframes tq-react-col { from { opacity: 0; transform: translateY(20px); } }
+/* chat pendant un duel en direct */
+.duel { padding-bottom: calc(env(safe-area-inset-bottom) + 64px); }
+.duel-chat { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; padding: 6px 12px calc(env(safe-area-inset-bottom) + 8px); pointer-events: none; }
+.duel-chat .dc-msgs { display: grid; justify-items: start; gap: 4px; margin-bottom: 6px; }
+.duel-chat .dc-msgs span { max-width: 85%; padding: 6px 12px; border-radius: 16px 16px 16px 4px; background: #2b1d63ee; font-size: 14px; box-shadow: 0 4px 10px #0007; animation: sb-pop .3s both; }
+.duel-chat .dc-msgs span.mine { justify-self: end; border-radius: 16px 16px 4px 16px; background: linear-gradient(160deg, #8b5cffee, #6a35e8ee); }
+.duel-chat form { display: flex; gap: 8px; pointer-events: auto; }
+.duel-chat input { flex: 1; min-width: 0; height: 40px; padding: 0 14px; border-radius: 20px; border: 1px solid var(--line); background: #140b33ee; color: #fff; font-size: 16px; }
+.duel-chat button { width: 40px; height: 40px; border-radius: 50%; border: 0; background: linear-gradient(160deg, #8b5cff, #6a35e8); color: #fff; font-size: 17px; }
+.duel-chat button:disabled { opacity: .4; }
+.res-chat { margin-top: 8px; }
