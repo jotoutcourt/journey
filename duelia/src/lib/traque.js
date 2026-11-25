@@ -63,11 +63,11 @@ export function spiral(n = 9) {
 // Figurines (pions) au choix
 export const PAWNS = [
   // les 4 premières sont offertes
-  { id: 'stitch', name: 'Bonnet bleu' }, { id: 'araignee', name: 'Homme-araignée' }, { id: 'pirate', name: 'Capitaine pirate' }, { id: 'dino', name: 'Petit dino' },
+  { id: 'stitch', name: 'Stitch' }, { id: 'araignee', name: 'Spider-Man' }, { id: 'pirate', name: 'Jack Sparrow' }, { id: 'dino', name: 'Yoshi' },
   // les autres se débloquent avec la figurine mystère
-  { id: 'gilet', name: 'Gilet jaune' }, { id: 'sorcier', name: 'Apprenti sorcier' }, { id: 'reine-neiges', name: 'Reine des neiges' }, { id: 'liberte', name: 'Liberté' },
-  { id: 'astronaute', name: 'Astronaute' }, { id: 'fantome', name: 'Fantôme' }, { id: 'dormeur', name: 'Marmotte' }, { id: 'eclair', name: 'Pyjama éclair' },
-  { id: 'heros', name: 'Héros des bois' }, { id: 'ane', name: 'Âne mélancolique' }, { id: 'retro', name: 'Rétro 80' }, { id: 'seigneur', name: 'Seigneur noir' },
+  { id: 'gilet', name: 'Gilet jaune' }, { id: 'sorcier', name: 'Harry Potter' }, { id: 'reine-neiges', name: 'Elsa' }, { id: 'liberte', name: 'Statue de la Liberté' },
+  { id: 'astronaute', name: 'Astronaute' }, { id: 'fantome', name: 'Ghostface' }, { id: 'dormeur', name: 'Endormi' }, { id: 'eclair', name: 'Pikachu' },
+  { id: 'heros', name: 'Link' }, { id: 'ane', name: 'Bourriquet' }, { id: 'retro', name: 'Liam Payne' }, { id: 'seigneur', name: 'Dark Vador' },
 ].map(p => ({ ...p, img: `/traque/pions/${p.id}.webp` }))
 // les 4 premières figurines sont offertes ; les autres se débloquent au hasard (figurine mystère, 20 lingots)
 export const FREE_PAWNS = ['stitch', 'araignee', 'pirate', 'dino']
