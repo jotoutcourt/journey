@@ -1,5 +1,5 @@
 // La Traque du Kraken : réglages partagés par le salon et le plateau
-export const SEAT_COLORS = ['#2ee6c5', '#ff4fd8', '#ffc940', '#5b9cff']
+export const SEAT_COLORS = ['#2ee6c5', '#ff4fd8', '#ffc940', '#5b9cff', '#ff7a3d', '#a3e635', '#c77dff', '#ff5d73']
 export const SEAT_NAMES = ['Turquoise', 'Rose', 'Or', 'Bleu']
 // Thèmes « généraux » posés sur les cases ordinaires du plateau
 // Cases « Question » : 8 thèmes grand public tirés au hasard à chaque partie (hors spécialités des joueurs)

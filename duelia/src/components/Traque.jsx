@@ -136,20 +136,20 @@ function TraqueLobby({ v, gameId, officials, topics, friends, act, onExit, onWal
   const hasPawn = (id) => FREE_PAWNS.includes(id) || (owned || []).includes(id)
   const lockedLeft = PAWNS.filter(pw => !hasPawn(pw.id)).length
   async function buy() {
-    setBuyErr('')
+    setBuyErr(''); setBuying(true)
     try {
       const r = await api.buyRandomPawn()
       setOwned(Array.isArray(r?.pawns) ? r.pawns : []); setBuying(false); onWallet?.()
       setWon(PAWNS.find(pw => pw.id === r.pawn) || null)
       await act(() => api.setTraquePawn(gameId, r.pawn).then(() => api.getTraque(gameId)))
-    } catch (e) { setBuyErr(/lingots/.test(e?.message || '') ? 'Pas assez de lingots 😕' : 'Achat impossible, réessaie.') }
+    } catch (e) { setBuying(false); setBuyErr(/lingots/.test(e?.message || '') ? 'Pas assez de lingots 😕' : 'Achat impossible, réessaie.') }
   }
   const [picking, setPicking] = useState(false)
   const [inviting, setInviting] = useState(false)
   const [botLevel, setBotLevel] = useState(null)
   const [starting, setStarting] = useState(false)
   const me = v.players.find(p => p.seat === v.me)
-  const seats = [0, 1, 2, 3].map(s => v.players.find(p => p.seat === s && p.status !== 'declined'))
+  const seats = [0, 1, 2, 3, 4, 5, 6, 7].map(s => v.players.find(p => p.seat === s && p.status !== 'declined'))
   const active = v.players.filter(p => ['joined', 'bot'].includes(p.status))
   const ready = active.length >= 2 && active.every(p => p.topics?.length === 3)
 
@@ -164,82 +164,55 @@ function TraqueLobby({ v, gameId, officials, topics, friends, act, onExit, onWal
     setStarting(false)
   }
 
+  const myPawn = me?.pawn || PAWNS[v.me % PAWNS.length].id
+  const [pawnSheet, setPawnSheet] = useState(false)
+  const [seatMenu, setSeatMenu] = useState(false)
   return (
-    <div className="screen traque lobby">
+    <div className="screen traque lobby tq-lobby2">
       <header className="top">
         <QuitButton className="icon-btn" label="←" onQuit={() => { api.leaveTraque(gameId).catch(() => {}); onExit() }} />
         <h1>La Chasse au Kraken</h1>
       </header>
-      <p className="tq-pitch">De 2 à 4 joueurs. Avancez sur le plateau, remplissez ensemble le trésor pendant les trêves… et soyez le premier à tuer le Kraken pour tout rafler.</p>
+      <p className="tq-pitch">De 2 à 8 joueurs : remplissez le trésor pendant les trêves… et soyez le premier à tuer le Kraken pour tout rafler.</p>
 
-      <ul className="tq-seats">
+      {/* 8 places en carrés */}
+      <ul className="tq-seats8">
         {seats.map((p, s) => (
           <li key={s} style={{ '--c': SEAT_COLORS[s] }} className={`${p ? '' : 'empty'} ${p?.player_id && (p.seat === v.me ? voice.speaking.me : voice.speaking[p.player_id]) ? 'speaking' : ''}`}>
             {p ? <>
-              <img className="tq-seat-pawn" src={pawnImg(p.pawn, p.seat)} alt="" />
-              <div className="tq-seat-txt">
-                <b>{p.bot ? '🤖 ' : ''}{p.name}{p.seat === v.me ? ' (toi)' : ''}</b>
-                {p.status === 'invited' ? <small>Invitation envoyée…</small>
-                  : p.topics?.length === 3 && p.seat === v.me ? <span className="tq-seat-topics">{p.topics.map(t => <i key={t.id} title={t.name}>{t.icon} {t.name}</i>)}</span>
-                  : p.topics?.length === 3 ? <small>✅ Spécialités choisies (secrètes)</small>
-                  : <small>Choisit ses spécialités…</small>}
-              </div>
-              {v.host && s !== 0 && <button className="tq-x" aria-label="Retirer" onClick={() => act(() => api.removeTraqueSeat(gameId, s).then(() => api.getTraque(gameId)))}>×</button>}
-            </> : v.host ? (
-              <div className="tq-seat-add">
-                <button className="btn btn-small btn-secondary" onClick={() => setInviting(true)}>👥 Inviter</button>
-                <button className="btn btn-small btn-ghost" onClick={() => setBotLevel('pick')}>🤖 Robot</button>
-              </div>
-            ) : <small className="muted">Place libre</small>}
+              {p.bot ? <img className="ts-pawn" src={pawnImg(p.pawn, p.seat)} alt="" /> : <span className="ts-av"><Avatar seed={p.avatar} photo={p.photo} size={40} /><img className="ts-mini" src={pawnImg(p.pawn, p.seat)} alt="" /></span>}
+              <b>{p.seat === v.me ? 'Toi' : bare(p.name).split(' ')[0]}</b>
+              <small>{p.status === 'invited' ? '⏳ invité' : p.topics?.length === 3 ? (p.bot ? `🤖 ${p.bot}` : '✅ prêt') : '✏️ choisit'}</small>
+              {v.host && s !== 0 && <button className="ts-x" aria-label="Retirer" onClick={() => act(() => api.removeTraqueSeat(gameId, s).then(() => api.getTraque(gameId)))}>×</button>}
+            </> : v.host
+              ? <button className="ts-add" onClick={() => setSeatMenu(true)} aria-label="Ajouter un joueur">+</button>
+              : <small className="muted">libre</small>}
           </li>
         ))}
       </ul>
 
       {/* vocal dès le salon : on discute en attendant le lancement */}
-      <div className="tq-lobby-voice">
+      <div className="tq-lobby-voice compact">
         {peers.length > 0 ? <>
           <button className={`tq-round-btn mic ${voice.mic}`} onClick={voice.toggleMic} disabled={voice.mic === 'asking' || voice.mic === 'unsupported'} aria-label="Micro">
             {{ on: '🎙️', muted: '🔇', asking: '⏳', denied: '🚫', unsupported: '🚫' }[voice.mic] || '🎙️'}</button>
           <span><b>{voice.mic === 'on' ? 'Micro allumé' : voice.mic === 'muted' ? 'Micro coupé' : voice.mic === 'denied' ? 'Micro refusé' : 'Vocal du salon'}</b>
-            <small>{voice.mic === 'denied' ? 'Autorise le micro dans les réglages du téléphone.' : voice.mic === 'unsupported' ? 'Pas de micro sur cet appareil.' : 'Discutez en attendant le lancement, ça continue en partie.'}</small></span>
-          {voice.needTap && <button className="btn btn-small btn-ghost" onClick={voice.unlock}>🔊 Entendre</button>}
+            <small>{voice.mic === 'denied' ? 'Autorise le micro dans les réglages.' : 'Discutez en attendant le lancement.'}</small></span>
+          {voice.needTap && <button className="btn btn-small btn-ghost" onClick={voice.unlock}>🔊</button>}
         </> : <span><b>🎙️ Vocal du salon</b><small>Il s'active dès qu'un ami a rejoint.</small></span>}
       </div>
 
-      <section className="tq-mine">
-        <h3 className="sec-title">Ta figurine</h3>
-        <div className="tq-pawn-pick" ref={el => { const on = el?.querySelector('button.on'); if (el && on && !el.dataset.done) { el.dataset.done = '1'; el.scrollLeft = on.offsetLeft - 8 } }}>
-          {PAWNS.map(pw => {
-            const taken = v.players.find(p => p.pawn === pw.id && p.seat !== v.me && ['joined', 'bot', 'invited'].includes(p.status))
-            return (
-              <button key={pw.id} className={`${(me?.pawn || PAWNS[v.me % PAWNS.length].id) === pw.id ? 'on' : ''} ${hasPawn(pw.id) ? '' : 'locked'} ${buying?.id === pw.id ? 'sel' : ''}`} disabled={!!taken} title={taken ? `Prise par ${taken.name}` : hasPawn(pw.id) ? pw.name : 'Figurine mystère'}
-                onClick={() => hasPawn(pw.id) ? act(() => api.setTraquePawn(gameId, pw.id).then(() => api.getTraque(gameId))) : (setBuying(true), setBuyErr(''))}>
-                <img src={pw.img} alt={hasPawn(pw.id) ? pw.name : 'Figurine mystère'} />
-                {!hasPawn(pw.id) && <span className="tq-pawn-price">🔒</span>}
-              </button>
-            )
-          })}
-        </div>
-        {owned && lockedLeft > 0 && !won && <div className={`tq-pawn-buy ${buying ? 'on' : ''}`}>
-          <span className="tq-mystery">🎁</span>
-          <span><b>Figurine mystère</b><small>{buyErr || `${PAWN_PRICE} lingots : une figurine au hasard parmi les ${lockedLeft} que tu n'as pas encore.`}</small></span>
-          <button className="btn btn-small btn-gold" onClick={buy}><i className="lt-coin" aria-hidden="true" /> {PAWN_PRICE}</button>
-        </div>}
-        {won && <div className="tq-pawn-buy on tq-pawn-won">
-          <img src={won.img} alt="" />
-          <span><b>🎉 Bravo, tu as obtenu le pion : {won.name} !</b><small>Il est équipé pour cette partie.</small></span>
-          <button className="tq-x" aria-label="Fermer" onClick={() => setWon(null)}>×</button>
-        </div>}
-      </section>
-
-      <section className="tq-mine">
-        <h3 className="sec-title">Tes 3 spécialités</h3>
-        <p className="muted small">Sur le plateau, leurs cases te font avancer plus vite… et si un adversaire tombe dessus, tu peux le défier en duel.</p>
-        <div className="tq-chips">
-          {(me?.topics || []).map(t => <span key={t.id} className="tq-chip"><TopicIcon topic={t} size={22} /> {t.name}</span>)}
-          <button className="btn btn-small btn-gold" onClick={() => setPicking(true)}>{me?.topics?.length === 3 ? 'Changer' : 'Choisir mes 3 thèmes'}</button>
-        </div>
-      </section>
+      <h3 className="tq-ready-title">Pour être paré, choisis ton pion et tes spécialités</h3>
+      <div className="tq-two">
+        <button className="tq-sq" onClick={() => setPawnSheet(true)}>
+          <span className="tq-sq-art"><ResinPawn id={myPawn} /></span>
+          <b>Mon pion</b><small>{PAWNS.find(x => x.id === myPawn)?.name}</small>
+        </button>
+        <button className={`tq-sq ${me?.topics?.length === 3 ? '' : 'todo'}`} onClick={() => setPicking(true)}>
+          <span className="tq-sq-art topics">{me?.topics?.length === 3 ? me.topics.map(t => <TopicIcon key={t.id} topic={t} size={42} />) : <em>3</em>}</span>
+          <b>Mes spécialités</b><small>{me?.topics?.length === 3 ? me.topics.map(t => t.name).join(' · ') : 'À choisir'}</small>
+        </button>
+      </div>
 
       <div className="tq-dock">
         {v.host
@@ -247,6 +220,44 @@ function TraqueLobby({ v, gameId, officials, topics, friends, act, onExit, onWal
           : <p className="tq-wait">⏳ L'hôte lance la partie dès que tout le monde est prêt.</p>}
       </div>
 
+      {seatMenu && (
+        <div className="sheet-backdrop tq-top" onClick={() => setSeatMenu(false)}>
+          <div className="sheet" onClick={e => e.stopPropagation()}>
+            <h2>Ajouter un joueur</h2>
+            <button className="btn btn-gold wide" onClick={() => { setSeatMenu(false); setInviting(true) }}>👥 Inviter un ami</button>
+            <button className="btn btn-secondary wide" style={{ marginTop: 8 }} onClick={() => { setSeatMenu(false); setBotLevel('pick') }}>🤖 Ajouter un robot</button>
+            <button className="btn btn-ghost wide" onClick={() => setSeatMenu(false)}>Annuler</button>
+          </div>
+        </div>
+      )}
+      {pawnSheet && (
+        <div className="sheet-backdrop tq-top" onClick={() => setPawnSheet(false)}>
+          <div className="sheet tq-pawn-sheet" onClick={e => e.stopPropagation()}>
+            <h2>Mon pion</h2>
+            <div className="tq-pawn-grid">
+              {PAWNS.map(pw => {
+                const taken = v.players.find(p => p.pawn === pw.id && p.seat !== v.me && ['joined', 'bot', 'invited'].includes(p.status))
+                const mineOk = hasPawn(pw.id)
+                return (
+                  <button key={pw.id} className={`${myPawn === pw.id ? 'on' : ''} ${mineOk ? '' : 'locked'}`} disabled={!!taken || !mineOk}
+                    title={taken ? `Prise par ${taken.name}` : mineOk ? pw.name : 'Figurine mystère'}
+                    onClick={() => act(() => api.setTraquePawn(gameId, pw.id).then(() => api.getTraque(gameId)))}>
+                    <img src={pw.img} alt={mineOk ? pw.name : 'Figurine mystère'} />
+                    <small>{mineOk ? pw.name : '???'}</small>
+                  </button>
+                )
+              })}
+            </div>
+            {owned && lockedLeft > 0 && <div className="tq-pawn-buy on">
+              <span className="tq-mystery">🎁</span>
+              <span><b>Figurine mystère</b><small>{buyErr || `Une figurine au hasard parmi les ${lockedLeft} que tu n'as pas encore.`}</small></span>
+              <button className="btn btn-small btn-gold" disabled={buying} onClick={buy}><i className="lt-coin" aria-hidden="true" /> {PAWN_PRICE}</button>
+            </div>}
+            <button className="btn btn-ghost wide" onClick={() => setPawnSheet(false)}>Fermer</button>
+          </div>
+        </div>
+      )}
+      {won && <Gumball pawn={won} onClose={() => setWon(null)} />}
       {picking && <TopicPicker officials={officials} initial={me?.topics || []} onCancel={() => setPicking(false)}
         onDone={(list) => { setPicking(false); act(() => api.setTraqueTopics(gameId, list, buildPool(topics, list.map(t => t.id))).then(() => api.getTraque(gameId))) }} />}
       {inviting && (
@@ -536,7 +547,7 @@ function PathBoard({ v, shown, topicOf, owners }) {
           const mates = all.filter(q => (shown[q.seat] ?? q.pos) === pos)
           const k = mates.findIndex(q => q.seat === p.seat)
           // plusieurs pions sur la même case : simplement côte à côte (un socle d'écart), centrés sur la case
-          const off = [(k - (mates.length - 1) / 2) * 6.4, 0]
+          const off = [(k - (mates.length - 1) / 2) * Math.min(6.4, 30 / mates.length), 0]
           return <img key={p.seat} src={pawnImg(p.pawn, p.seat)} alt="" className={`tq-figure ${p.seat === v.turn ? 'active' : ''} ${p.ghost ? 'ghost' : ''}`}
             style={{ '--c': SEAT_COLORS[p.seat], left: `${x * 100 + off[0]}%`, top: `${y * 100 + off[1]}%` }} />
         })}
@@ -804,6 +815,31 @@ function EventView({ d }) {
         {regen && <KrakenHP hp={4} regen />}
         {a && a[1] !== 'wave' && <img className={`tq-ev-anim ${a[1]}`} src={a[1] === 'anim' ? `${a[0]}?t=${t0}` : a[0]} alt="" />}
         <p className="tq-event">{d.text}</p>
+      </div>
+    </div>
+  )
+}
+
+// Figurine mystère : distributeur de boules, la capsule tombe, s'ouvre… et révèle la figurine
+const CAPS = ['#ff6fb5', '#7fd4ff', '#ffe066', '#b18cff', '#7dffb0', '#ff9f5a']
+function Gumball({ pawn, onClose }) {
+  const [balls] = useState(() => Array.from({ length: 16 }, (_, i) => ({ x: 8 + (i % 4) * 22 + Math.random() * 6, y: 10 + Math.floor(i / 4) * 21 + Math.random() * 5, c: CAPS[i % CAPS.length], k: i })))
+  useEffect(() => {
+    const ts = [setTimeout(() => sfx.dice?.(), 100), setTimeout(() => sfx.flip?.(), 1500), setTimeout(() => sfx.levelUp?.(), 2300)]
+    return () => ts.forEach(clearTimeout)
+  }, [])
+  return (
+    <div className="gb" onClick={onClose}>
+      <div className="gb-machine" aria-hidden="true">
+        <div className="gb-dome">{balls.map(b => <i key={b.k} style={{ left: `${b.x}%`, top: `${b.y}%`, '--bc': b.c }} />)}</div>
+        <div className="gb-base"><span className="gb-knob" /><span className="gb-chute" /></div>
+      </div>
+      <div className="gb-cap"><i className="top" /><i className="bot" /></div>
+      <div className="gb-prize" onClick={e => e.stopPropagation()}>
+        <div className="gb-fig"><ResinPawn id={pawn.id} /></div>
+        <b>🎉 Bravo, tu as obtenu le pion : {pawn.name} !</b>
+        <small>Il est équipé pour cette partie.</small>
+        <button className="btn btn-gold" onClick={onClose}>Génial !</button>
       </div>
     </div>
   )

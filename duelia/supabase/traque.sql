@@ -30,7 +30,7 @@ create table if not exists public.traque_games (
 );
 create table if not exists public.traque_players (
   game_id uuid not null references public.traque_games (id) on delete cascade,
-  seat int not null check (seat between 0 and 3),
+  seat int not null check (seat between 0 and 7),
   player_id uuid references public.players (id) on delete cascade,
   bot text check (bot in ('facile', 'moyen', 'expert')),
   name text not null,
@@ -719,7 +719,7 @@ begin
 end $$;
 
 create or replace function public.tq_free_seat(p_game uuid) returns int language sql as $$
-  select min(s) from generate_series(0, 3) s where not exists (select 1 from traque_players where game_id = p_game and seat = s and status in ('invited', 'joined', 'bot'))
+  select min(s) from generate_series(0, 7) s where not exists (select 1 from traque_players where game_id = p_game and seat = s and status in ('invited', 'joined', 'bot'))
 $$;
 
 create or replace function public.invite_traque(p_game uuid, p_friend uuid) returns void language plpgsql security definer set search_path = public as $$
