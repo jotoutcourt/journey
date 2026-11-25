@@ -187,7 +187,6 @@ const FLOW = ['topic', 'ranking', 'match', 'duel', 'results', 'create']
 const TABS = [
   { name: 'home', label: 'Accueil', icon: <path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z" /> },
   { name: 'topics', label: 'Thèmes', icon: <><rect x="4" y="4" width="7" height="7" rx="2" /><rect x="13" y="4" width="7" height="7" rx="2" /><rect x="4" y="13" width="7" height="7" rx="2" /><rect x="13" y="13" width="7" height="7" rx="2" /></> },
-  { name: 'inbox', label: 'Défis', icon: <><path d="M6 4l6 6M18 4l-6 6M4 20l6-6M20 20l-6-6" /><circle cx="12" cy="12" r="2.5" /></> },
   { name: 'chat', label: 'Chat', icon: <path d="M4 5h16v11H9l-5 4z" /> },
   { name: 'friends', label: 'Amis', icon: <><circle cx="9" cy="8" r="3.2" /><path d="M3 19c.8-3.2 3.1-5 6-5s5.2 1.8 6 5" /><circle cx="17" cy="9" r="2.4" /><path d="M16 14.2c2.4.2 4.2 1.8 5 4.3" /></> },
   { name: 'profile', label: 'Profil', icon: <><circle cx="12" cy="8" r="4" /><path d="M4 20c1-4 4-6 8-6s7 2 8 6" /></> },
@@ -1095,7 +1094,7 @@ export default function App() {
     case 'linkreply': view = link?.kind === 'reply'
       ? <LinkReplyIntro reply={link} known={(st.linkChallenges || []).some(c => c.id === link.id)} onSee={openReply} onHome={() => { setLink(null); go({ name: 'home' }) }} />
       : null; break
-    case 'inbox': view = <Inbox st={st} topics={topics} now={clock} {...inboxHandlers}
+    case 'inbox': view = <Inbox st={st} topics={topics} now={clock} {...inboxHandlers} onBack={() => go({ name: 'chat' })}
       friend={{ list: social.challenges || [], results: st.friendResults, ...friendHandlers }} />; break
     case 'chat': view = route.peer
       ? <ChatThread key={route.peer.player_id} peer={route.peer} onBack={() => go({ name: 'chat' })}
@@ -1103,7 +1102,7 @@ export default function App() {
           onTraque={CHASSE_TESTERS.includes(account.playerId) ? async (f) => { try { const id = await api.createTraque(); await api.inviteTraque(id, f.player_id); setRoute({ name: 'traque', gameId: id }); return id } catch { setToast('Pas de connexion.'); return null } } : null}
           onJoinTraque={async (id) => { let ok; try { ok = await api.respondTraque(id, true) } catch { ok = null } if (!ok) { setToast('Trop tard : la partie a déjà commencé ou a été annulée.'); return } setRoute({ name: 'traque', gameId: id }) }}
           onOpenInbox={() => go({ name: 'inbox' })} />
-      : <ChatList onOpen={(peer) => go({ name: 'chat', peer })} onAddFriend={() => go({ name: 'friends' })} />; break
+      : <ChatList onOpen={(peer) => go({ name: 'chat', peer })} onAddFriend={() => go({ name: 'friends' })} challenges={badge} onChallenges={() => go({ name: 'inbox' })} />; break
     case 'friends': view = <FriendsScreen online={online} social={social.social} code={social.code} initialCode={route.code} now={clock} push={push} onPush={onPush}
       onAdd={(c) => api.addFriend(c).then(r => { social.refreshFriends(); return r })}
       onRespond={(f, yes) => api.respondFriend(f.player_id, yes).then(social.refreshFriends).catch(() => setToast('Pas de connexion.'))}
@@ -1205,13 +1204,12 @@ export default function App() {
       {!fullscreen && (
         <nav className="tabbar">
           {TABS.map(t => (
-            <button key={t.name} className={route.name === t.name || (t.name === 'topics' && ['topic', 'ranking'].includes(route.name)) || (t.name === 'friends' && route.name === 'friend') || (t.name === 'profile' && route.name === 'book') ? 'on' : ''}
+            <button key={t.name} className={route.name === t.name || (t.name === 'topics' && ['topic', 'ranking'].includes(route.name)) || (t.name === 'friends' && route.name === 'friend') || (t.name === 'chat' && route.name === 'inbox') || (t.name === 'profile' && route.name === 'book') ? 'on' : ''}
               onClick={() => go({ name: t.name })}>
               <svg viewBox="0 0 24 24">{t.icon}</svg>
               <span>{t.label}</span>
-              {t.name === 'inbox' && badge > 0 && <i className="tab-badge">{badge}</i>}
               {t.name === 'friends' && friendBadge > 0 && <i className="tab-badge">{friendBadge}</i>}
-              {t.name === 'chat' && chatBadge > 0 && <i className="tab-badge">{chatBadge}</i>}
+              {t.name === 'chat' && chatBadge + badge > 0 && <i className="tab-badge">{chatBadge + badge}</i>}
             </button>
           ))}
         </nav>

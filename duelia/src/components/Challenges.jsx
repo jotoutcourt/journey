@@ -69,7 +69,7 @@ export function SentScreen({ challenge, topic, onInbox, onHome }) {
 }
 
 /* ---------- Onglet Défis : une seule liste (défis entre amis, contre des joueurs, par lien) ---------- */
-export function Inbox({ st, topics, now, onAccept, onReject, onPlay, onResult, onDismiss, onResend, onCancel, friend, footer }) {
+export function Inbox({ st, topics, now, onAccept, onReject, onPlay, onResult, onDismiss, onResend, onCancel, friend, footer, onBack }) {
   const byId = (id) => topics.find(t => t.id === id)
   const items = []
 
@@ -155,7 +155,7 @@ export function Inbox({ st, topics, now, onAccept, onReject, onPlay, onResult, o
 
   return (
     <div className="screen inbox">
-      <header className="top"><h1>Défis</h1></header>
+      <header className="top">{onBack && <button className="icon-btn" onClick={onBack} aria-label="Retour">←</button>}<h1>Mes défis</h1></header>
       {groups.length === 0 && (
         <div className="inbox-empty">
           <Mascot pose="anim" size={120} className="empty-mascot" />

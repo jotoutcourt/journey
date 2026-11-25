@@ -2007,3 +2007,6 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
 .tq-react-wrap > .tq-round-btn { width: 50px; height: 50px; font-size: 22px; }
 .tq-react-wrap .tq-reacts { position: absolute; left: -2px; bottom: 58px; top: auto; transform-origin: 50% 100%; animation: tq-react-unroll .22s ease-out both; }
 @keyframes tq-react-unroll { from { opacity: 0; transform: scaleY(.3); } }
+.chat-defis { width: 100%; display: flex; align-items: center; gap: 12px; margin-bottom: 10px; padding: 12px; border: 0; border-radius: 18px; color: #fff; text-align: left; cursor: pointer;
+  background: linear-gradient(135deg, #4a2bb8, #22106a); box-shadow: inset 0 0 0 1.5px var(--gold), 0 6px 14px #0007; }
+.chat-defis .cd-ico { width: 48px; height: 48px; flex: none; display: grid; place-items: center; font-size: 26px; border-radius: 50%; background: #ffffff14; }

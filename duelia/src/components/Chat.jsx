@@ -33,7 +33,7 @@ function eventText(m, name) {
   return m.body
 }
 
-export function ChatList({ onOpen, onAddFriend }) {
+export function ChatList({ onOpen, onAddFriend, challenges = 0, onChallenges }) {
   const [list, setList] = useState(null)
   useEffect(() => {
     let alive = true
@@ -45,6 +45,11 @@ export function ChatList({ onOpen, onAddFriend }) {
   return (
     <div className="screen chat-list">
       <header className="top"><h1>Chat</h1></header>
+      <button className="chat-defis" onClick={onChallenges}>
+        <span className="cd-ico">⚔️</span>
+        <span className="cr-txt"><b>Mes défis</b><small>{challenges > 0 ? `${challenges} défi${challenges > 1 ? 's' : ''} t'attend${challenges > 1 ? 'ent' : ''}` : 'Défis en cours, liens et historique'}</small></span>
+        {challenges > 0 && <i className="cr-badge">{challenges}</i>}
+      </button>
       {!list ? <div className="center"><div className="spinner" /></div>
         : list.length === 0 ? <div className="chat-empty"><p>💬 Ajoute des amis pour discuter avec eux.</p><button className="btn btn-gold" onClick={onAddFriend}>Ajouter un ami</button></div>
         : <ul className="chat-rows">
