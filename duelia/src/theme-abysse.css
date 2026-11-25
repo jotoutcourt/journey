@@ -1669,3 +1669,29 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
 .pc-grid figcaption { font-size: 10.5px; font-weight: 700; text-align: center; line-height: 1.15; }
 .pc-grid figure.locked img { filter: brightness(0) drop-shadow(0 0 1px #9d8cff); opacity: .8; }
 .pc-grid figure.locked figcaption { color: var(--muted); }
+/* Figurine en grand : résine brillante en perspective */
+.pc-grid figure { cursor: pointer; transition: transform .15s; }
+.pc-grid figure:active { transform: scale(.94); }
+.pv-backdrop { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; background: radial-gradient(circle at 50% 40%, #3a1f8cee, #0b0620f5 70%); animation: tq-fade .25s both; }
+.pv-stage { position: relative; display: grid; justify-items: center; gap: 6px; perspective: 900px; touch-action: none; padding: 30px 20px; }
+.pv-fig { --rx: 4deg; --ry: -8deg; --mx: 30%; --my: 25%; position: relative; width: min(78vw, 340px); aspect-ratio: 1; transform-style: preserve-3d;
+  transform: rotateX(var(--rx)) rotateY(var(--ry)); transition: transform .12s ease-out; animation: pv-pop .5s cubic-bezier(.2, 1.4, .4, 1) both, pv-sway 5s ease-in-out .5s infinite; }
+.pv-fig.held { animation: pv-pop .5s cubic-bezier(.2, 1.4, .4, 1) both; }
+.pv-fig img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain;
+  filter: saturate(1.2) contrast(1.08) drop-shadow(0 2px 0 #ffffff55) drop-shadow(0 18px 22px #000a); transform: translateZ(20px); }
+/* reflets de résine : uniquement sur la figurine (masque = sa silhouette) */
+.pv-gloss, .pv-spec { position: absolute; inset: 0; transform: translateZ(22px); pointer-events: none;
+  -webkit-mask: var(--img) center / contain no-repeat; mask: var(--img) center / contain no-repeat; }
+.pv-gloss { background: linear-gradient(115deg, transparent calc(var(--mx) - 28%), #ffffff22 calc(var(--mx) - 12%), #ffffffaa var(--mx), #ffffff22 calc(var(--mx) + 10%), transparent calc(var(--mx) + 24%));
+  mix-blend-mode: screen; transition: background .1s; }
+.pv-spec { background: radial-gradient(circle at var(--mx) var(--my), #ffffffcc 0, #ffffff55 6%, transparent 22%), linear-gradient(180deg, #ffffff30, transparent 35%, #00000030);
+  mix-blend-mode: soft-light; }
+.pv-fig.locked img { filter: brightness(0) drop-shadow(0 0 2px #9d8cff) drop-shadow(0 18px 22px #000a); }
+.pv-shadow { width: min(50vw, 220px); height: 22px; margin-top: -26px; border-radius: 50%; background: radial-gradient(#000a, transparent 70%); filter: blur(2px); }
+.pv-name { font: 900 22px var(--display); text-shadow: 0 2px 8px #000; }
+.pv-hint { color: #d8ccff; font-size: 12px; }
+.pv-close { position: absolute; top: calc(env(safe-area-inset-top) + 14px); right: 16px; width: 42px; height: 42px; border-radius: 50%; border: 0; background: #ffffff1f; color: #fff; font-size: 26px; }
+@keyframes pv-pop { from { opacity: 0; transform: scale(.4) rotateY(-60deg); } }
+@property --mx { syntax: '<percentage>'; inherits: true; initial-value: 30%; }
+@property --my { syntax: '<percentage>'; inherits: true; initial-value: 25%; }
+@keyframes pv-sway { 0%, 100% { transform: rotateX(4deg) rotateY(-14deg); --mx: 22%; --my: 28%; } 50% { transform: rotateX(2deg) rotateY(14deg); --mx: 78%; --my: 22%; } }
