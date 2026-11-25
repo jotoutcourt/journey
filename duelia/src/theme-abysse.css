@@ -1884,3 +1884,6 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
   font: 900 18px var(--display); white-space: nowrap; box-shadow: 0 6px 14px #000a; transform: rotate(6deg); animation: sb-pop .4s .3s both; }
 @keyframes tq-mock-in { from { transform: translateY(40px) scale(.6); opacity: 0; } }
 @keyframes tq-mock-shake { 50% { transform: rotate(-5deg) translateY(-4px); } }
+/* zoom de la caméra sur le pion pendant un lancer normal */
+.tq-track { transition: transform .7s cubic-bezier(.3, .8, .3, 1), transform-origin .17s linear; will-change: transform; }
+.tq-track.zoom { transform: scale(1.5); }

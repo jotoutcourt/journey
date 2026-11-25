@@ -507,9 +507,12 @@ function PathBoard({ v, shown, topicOf, owners }) {
     if (!touchedAt.current) touchedAt.current = 1
   }, [followPos, followSeat]) // eslint-disable-line react-hooks/exhaustive-deps
   const mark = () => { touchedAt.current = Date.now() }
+  // lancer normal : la caméra zoome sur le pion pendant qu'il avance, puis revient à la normale
+  const zoom = v.phase === 'show'
+  const [zx, zy] = at(followPos)
   return (
     <div className="tq-path" ref={ref} onTouchStart={mark} onWheel={mark} onPointerDown={mark}>
-      <div className="tq-track" style={{ aspectRatio: BOARD_RATIO }}>
+      <div className={`tq-track ${zoom ? 'zoom' : ''}`} style={{ aspectRatio: BOARD_RATIO, transformOrigin: `${zx * 100}% ${zy * 100}%` }}>
         {/* décor : tentacules qui sortent de l'eau, requin qui dort à côté de sa case */}
         <img className="tq-deco tent l" src="/traque/deco-tentacule.webp" alt="" style={{ left: '1%', top: '60%' }} />
         <img className="tq-deco tent r" src="/traque/deco-tentacule.webp" alt="" style={{ left: '84%', top: '45%' }} />
