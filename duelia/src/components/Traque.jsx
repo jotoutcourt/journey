@@ -491,6 +491,7 @@ function TraqueBoard({ v, gameId, act, onExit, vc }) {
       {/* Moments forts au centre de l'écran */}
       {v.phase === 'show' && diceOn && (d.dice || []).length > 0 && <div className="tq-center"><div className="tq-dice">{d.dice.map((n, i) => <DieFace key={i} n={n} />)}</div></div>}
       {v.phase === 'event' && (d.reveal ? <Reveal ids={d.reveal} topicOf={topicOf} /> : d.fx?.duel ? (diceOn ? <DuelDice key={d.text} v={v} d={d} /> : null) : <EventView key={d.text} d={d} />)}
+      {v.phase === 'order' && <OrderRoll v={v} d={d} left={left} onRoll={() => act(() => api.traqueOrderRoll(gameId))} />}
       {v.phase === 'haunt' && d.seat === v.me && <Haunt v={v} onPick={(s) => act(() => api.traqueHaunt(gameId, s))} />}
       {v.phase === 'pick' && <Cursed v={v} d={d} left={left} onPick={(i) => act(() => api.traqueCursed(gameId, i))} />}
       {v.phase === 'duelroll' && <DuelResult key={`${d.winner}-${d.loser}`} v={v} d={d} onRoll={() => act(() => api.traqueRoll(gameId))} />}
@@ -874,6 +875,35 @@ function Gumball({ pawn, onClose }) {
         <b>🎉 Bravo, tu as obtenu le pion : {pawn.name} !</b>
         <small>Il est équipé pour cette partie.</small>
         <button className="btn btn-gold" onClick={onClose}>Génial !</button>
+      </div>
+    </div>
+  )
+}
+
+// Début de partie : chacun lance le dé, le plus gros commence
+function OrderRoll({ v, d, left, onRoll }) {
+  const rolls = d.rolls || {}
+  const ps = v.players.filter(p => ['joined', 'bot', 'left'].includes(p.status))
+  const mine = rolls[v.me]
+  const seen = useRef({})
+  useEffect(() => {
+    for (const k of Object.keys(rolls)) if (!seen.current[k]) { seen.current[k] = true; try { sfx.dice?.() } catch { /* son facultatif */ } }
+  }, [Object.keys(rolls).length]) // eslint-disable-line react-hooks/exhaustive-deps
+  return (
+    <div className="tq-center dim">
+      <div className="tq-order">
+        <h2>🎲 Qui commence ?</h2>
+        <p>Chacun lance le dé : le plus gros score joue en premier.{left != null ? ` · ${Math.ceil(left / 1000)} s` : ''}</p>
+        <ul>
+          {ps.map(p => (
+            <li key={p.seat} style={{ '--c': SEAT_COLORS[p.seat] }}>
+              {p.bot ? <img src={pawnImg(p.pawn, p.seat)} alt="" /> : <Avatar seed={p.avatar} photo={p.photo} size={34} />}
+              <b>{p.seat === v.me ? 'Toi' : bare(p.name)}</b>
+              {rolls[p.seat] ? <span className="to-die"><DieFace key={rolls[p.seat]} n={rolls[p.seat]} /></span> : <small>…</small>}
+            </li>
+          ))}
+        </ul>
+        {mine == null && v.me != null && <button className="kh-play to-btn" onClick={onRoll}>🎲 Lancer le dé</button>}
       </div>
     </div>
   )

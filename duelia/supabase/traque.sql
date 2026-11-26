@@ -303,15 +303,22 @@ end $$;
 
 -- Joueur suivant (en sautant ceux qui sont bloqués)
 create or replace function public.tq_next(p_game uuid) returns void language plpgsql as $$
-declare g traque_games; nxt int; s record; tries int := 0;
+declare g traque_games; nxt int; s record; tries int := 0; opos int;
 begin
   select * into g from traque_games where id = p_game;
   nxt := g.turn;
   loop
     tries := tries + 1;
-    select seat into nxt from traque_players where game_id = p_game and status in ('joined', 'bot', 'left') and seat > nxt order by seat limit 1;
+    -- ordre de jeu tiré au dé en début de partie (sinon, ordre des places)
+    opos := coalesce((select o.i from jsonb_array_elements_text(coalesce(g.turn_order, '[]'::jsonb)) with ordinality o(v, i) where o.v::int = nxt), 0);
+    select p.seat into nxt from traque_players p
+      left join jsonb_array_elements_text(coalesce(g.turn_order, '[]'::jsonb)) with ordinality o(v, i) on o.v::int = p.seat
+      where p.game_id = p_game and p.status in ('joined', 'bot', 'left') and coalesce(o.i, 100 + p.seat) > case when g.turn_order is null then 100 + nxt else opos end
+      order by coalesce(o.i, 100 + p.seat) limit 1;
     if nxt is null then
-      select seat into nxt from traque_players where game_id = p_game and status in ('joined', 'bot', 'left') order by seat limit 1;
+      select p.seat into nxt from traque_players p
+        left join jsonb_array_elements_text(coalesce(g.turn_order, '[]'::jsonb)) with ordinality o(v, i) on o.v::int = p.seat
+        where p.game_id = p_game and p.status in ('joined', 'bot', 'left') order by coalesce(o.i, 100 + p.seat) limit 1;
       update traque_games set round = round + 1 where id = p_game;
     end if;
     select * into s from traque_players where game_id = p_game and seat = nxt;
@@ -603,7 +610,25 @@ begin
 
     elsif g.phase = 'event' then
       exit when not due;
-      perform tq_next(p_game);
+      if g.turn = -1 and g.turn_order is null then
+        update traque_games set phase = 'order', data = jsonb_build_object('rolls', '{}'::jsonb), deadline = now() + interval '20 seconds', version = version + 1 where id = p_game;
+      else perform tq_next(p_game); end if;
+
+    elsif g.phase = 'order' then
+      -- les robots lancent tout de suite ; à la fin du délai, on lance pour les retardataires
+      for s in select * from traque_players where game_id = p_game and status in ('joined', 'bot', 'left') and not (d -> 'rolls' ? seat::text)
+        and (bot is not null or status = 'left' or due) loop
+        d := jsonb_set(d, array['rolls', s.seat::text], to_jsonb(1 + floor(random() * 6)::int));
+      end loop;
+      update traque_games set data = d, version = version + case when d <> g.data then 1 else 0 end where id = p_game;
+      exit when exists (select 1 from traque_players where game_id = p_game and status in ('joined', 'bot', 'left') and not (d -> 'rolls' ? seat::text));
+      -- tout le monde a lancé : le plus gros dé commence (égalité : au hasard)
+      update traque_games set turn_order = (select jsonb_agg(p.seat order by (d -> 'rolls' ->> p.seat::text)::int desc, random())
+          from traque_players p where p.game_id = p_game and p.status in ('joined', 'bot', 'left'))
+        where id = p_game;
+      select * into g from traque_games where id = p_game;
+      perform tq_event(p_game, '🎲 Ordre de jeu : ' || (select string_agg(tq_name(p_game, o.v::int) || ' (' || (d -> 'rolls' ->> o.v) || ')', ' → ' order by o.i)
+          from jsonb_array_elements_text(g.turn_order) with ordinality o(v, i)) || '.', jsonb_build_object('order', g.turn_order, 'rolls', d -> 'rolls'));
 
     elsif g.phase = 'duelroll' then
       select * into s from traque_players where game_id = p_game and seat = (d ->> 'winner')::int;

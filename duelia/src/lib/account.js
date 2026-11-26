@@ -230,3 +230,4 @@ export const chatSend = (peer, body, kind = 'text', payload = null) => rpc('chat
 export const chatResultSeen = (cid) => rpc('chat_result_seen', { p_challenge: cid })
 export const matchSignal = (id, to, kind, payload) => rpc('match_signal', { p_match: id, p_to: to, p_kind: kind, p_payload: payload })
 export const matchSignalsSince = (id, after) => rpc('match_signals_since', { p_match: id, p_after: after })
+export const traqueOrderRoll = (id) => rpc('traque_order_roll', { p_game: id })
