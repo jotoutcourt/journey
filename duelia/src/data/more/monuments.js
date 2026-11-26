@@ -162,7 +162,7 @@ export default [
   "Figeac"
  ],
  [
-  "Dans quelle ville se trouve le pont d'Avignon, ou pont Saint-Bénezet ?",
+  "Dans quelle ville se trouve le pont Saint-Bénezet, rendu célèbre par une chanson ?",
   "Avignon",
   "Arles",
   "Lyon",
@@ -617,7 +617,7 @@ export default [
   "Le Caire"
  ],
  [
-  "Dans quelle ville se trouve la Bibliothèque d'Alexandrie moderne, au bord de la mer ?",
+  "Dans quelle ville égyptienne une grande bibliothèque moderne a-t-elle été inaugurée en 2002, en hommage à celle de l'Antiquité ?",
   "Alexandrie",
   "Le Caire",
   "Louxor",

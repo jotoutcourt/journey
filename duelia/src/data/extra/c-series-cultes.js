@@ -88,6 +88,6 @@ export default [
   ['Quelle série italienne suit la Camorra napolitaine ?', 'Gomorra', 'Suburra', 'ZeroZeroZero', 'Romanzo Criminale'],
   ['Quelle série de science-fiction britannique explore les dérives de la technologie en épisodes indépendants ?', 'Black Mirror', 'Love, Death & Robots', 'Westworld', 'Years and Years'],
   ['Quelle série de HBO se déroule dans un parc d\'attractions peuplé d\'androïdes ?', 'Westworld', 'Humans', 'Altered Carbon', 'Raised by Wolves'],
-  ['Quelle série suit les aventures des vikings Ragnar Lothbrok et ses fils ?', 'Vikings', 'The Last Kingdom', 'Barbarians', 'Norsemen'],
+  ['Quelle série suit les aventures de Ragnar Lothbrok et de ses fils ?', 'Vikings', 'The Last Kingdom', 'Barbarians', 'Norsemen'],
   ['Quelle série de Netflix met en scène la reine Charlotte et la famille Bridgerton ?', 'La Chronique des Bridgerton', 'The Crown', 'Downton Abbey', 'The Great'],
 ]

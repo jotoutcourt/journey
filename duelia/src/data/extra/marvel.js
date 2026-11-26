@@ -330,7 +330,7 @@ export default [
   "Captain America: First Avenger"
  ],
  [
-  "Quel film réunit pour la première fois les Avengers en 2012 ?",
+  "Quel film de 2012 réunit pour la première fois Iron Man, Thor, Hulk et Captain America ?",
   "Avengers",
   "Iron Man 3",
   "Avengers : L'Ère d'Ultron",

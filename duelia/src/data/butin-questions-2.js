@@ -1235,7 +1235,7 @@ export default [
  ],
  [
   "Musique",
-  "Quel est le vrai nom du chanteur M (Matthieu Chedid) ?",
+  "Quel est le vrai nom du chanteur -M- ?",
   "Matthieu Chedid",
   "Matthieu Martin",
   "Michel Chedid",

@@ -120,7 +120,7 @@ export default [
   "Alicia Keys"
  ],
  [
-  "Quel album d'Aya Nakamura contient « Pookie » ?",
+  "Quel album de 2018 contient « Pookie » et « Djadja » ?",
   "Nakamura",
   "Journal intime",
   "DNK",

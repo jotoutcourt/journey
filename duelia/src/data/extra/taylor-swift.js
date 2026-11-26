@@ -673,7 +673,7 @@ export default [
   "Midnights"
  ],
  [
-  "Quel est le premier album de Taylor Swift ?",
+  "Comment s'appelle le tout premier album de la chanteuse, sorti en 2006 ?",
   "Taylor Swift",
   "Fearless",
   "Speak Now",

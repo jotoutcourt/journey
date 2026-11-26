@@ -659,7 +659,7 @@ export default [
   "La liaison froide"
  ],
  [
-  "Comment appelle-t-on la cuisson sous vide à basse température dans un bain d'eau ?",
+  "Comment appelle-t-on la cuisson à basse température d'un aliment emballé hermétiquement, dans un bain d'eau ?",
   "La cuisson sous vide",
   "Le bain-marie classique",
   "La vapeur",

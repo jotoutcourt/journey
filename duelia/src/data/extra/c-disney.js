@@ -52,7 +52,7 @@ export default [
   ['En quoi la citrouille de Cendrillon est-elle transformée ?', 'En carrosse', 'En château', 'En robe', 'En cheval'],
   ['Que perd Cendrillon en quittant le bal ?', 'Une pantoufle de verre', 'Son collier', 'Sa couronne', 'Son gant'],
   ['Comment s\'appelle la princesse de « La Belle au bois dormant » ?', 'Aurore', 'Ariel', 'Belle', 'Raiponce'],
-  ['Comment s\'appelle la fée maléfique de « La Belle au bois dormant » ?', 'Maléfique', 'Ursula', 'Mère Gothel', 'Cruella'],
+  ['Comment s\'appelle la fée qui maudit Aurore dans « La Belle au bois dormant » ?', 'Maléfique', 'Ursula', 'Mère Gothel', 'Cruella'],
   ['Comment s\'appellent les trois bonnes fées de « La Belle au bois dormant » ?', 'Flora, Pâquerette et Pimprenelle', 'Iris, Rose et Violette', 'Clochette, Ondine et Perle', 'Aurore, Belle et Flora'],
   ['Comment s\'appelle la fée qui accompagne Peter Pan ?', 'La fée Clochette', 'La fée Marraine', 'Flora', 'Silvermist'],
   ['Quel animal poursuit le capitaine Crochet ?', 'Un crocodile', 'Un requin', 'Un serpent', 'Un aigle'],

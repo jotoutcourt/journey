@@ -75,7 +75,7 @@ export default [
   ['Quelle voiture de course rouge est le héros de « Cars » ?', 'Flash McQueen', 'Martin', 'Doc Hudson', 'Sally'],
   ['Dans quel film Pixar un garçon visite-t-il le pays des morts mexicain ?', 'Coco', 'Luca', 'Encanto', 'Soul'],
   ['Comment s\'appelle le gros robot gonflable soignant ?', 'Baymax', 'WALL-E', 'Bender', 'Iron Giant'],
-  ['Quelles tortues ninja portent des noms de peintres de la Renaissance ?', 'Les Tortues Ninja', 'Les Tortues Génies', 'Les Ninja Turtles Kids', 'Les Shell Brothers'],
+  ['Quels héros de dessin animé portent des noms de peintres de la Renaissance ?', 'Les Tortues Ninja', 'Les Tortues Génies', 'Les Ninja Turtles Kids', 'Les Shell Brothers'],
   ['Comment s\'appelle le maître rat des Tortues Ninja ?', 'Splinter', 'Shredder', 'Krang', 'Rémy'],
   ['Quel chat paresseux adore les lasagnes ?', 'Garfield', 'Félix', 'Tom', 'Grosminet'],
   ['Comment s\'appelle le chien de Garfield ?', 'Odie', 'Snoopy', 'Pluto', 'Scooby'],

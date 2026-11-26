@@ -428,7 +428,7 @@ export default [
   "Al Pacino"
  ],
  [
-  "Quel faux nom Phoebe utilise-t-elle, dont Regina Phalange ?",
+  "Quel faux nom Phoebe utilise-t-elle le plus souvent ?",
   "Regina Phalange",
   "Ursula Buffay",
   "Monica Bing",

@@ -274,7 +274,7 @@ export default [
   "Pleakley"
  ],
  [
-  "Comment s'appelle le lama-empereur de Kuzco ?",
+  "Comment s'appelle l'empereur transformé en lama par Yzma ?",
   "Kuzco",
   "Pacha",
   "Yzma",

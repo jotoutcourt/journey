@@ -652,7 +652,7 @@ export default [
   "Le Queens"
  ],
  [
-  "Quelle comédie de 1987, avec un mannequin de vitrine qui prend vie, Kim Cattrall a-t-elle tournée ?",
+  "Dans quelle comédie de 1987 Kim Cattrall joue-t-elle une statue de grand magasin qui prend vie ?",
   "Mannequin",
   "Big",
   "Splash",

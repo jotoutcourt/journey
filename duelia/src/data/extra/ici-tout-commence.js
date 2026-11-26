@@ -107,7 +107,7 @@ export default [
   "Gloria Vignon"
  ],
  [
-  "Qui a fondé l'Institut Auguste Armand ?",
+  "Quel chef a fondé l'institut culinaire où se déroule la série ?",
   "Auguste Armand",
   "Emmanuel Teyssier",
   "Claire Guinot",

@@ -610,7 +610,7 @@ export default [
   "À Monza, en Italie"
  ],
  [
-  "Dans quel pays se déroule le Grand Prix de Monaco ?",
+  "Dans quel pays se court le Grand Prix disputé dans les rues de Monte-Carlo ?",
   "Monaco",
   "Italie",
   "Espagne",
@@ -1254,14 +1254,14 @@ export default [
   "2JZ-GTE"
  ],
  [
-  "Quel constructeur a été fondé par Enzo Ferrari ?",
+  "Quel constructeur au cheval cabré a été fondé à Maranello par Enzo ?",
   "Ferrari",
   "Lamborghini",
   "Maserati",
   "Alfa Romeo"
  ],
  [
-  "Quel constructeur a été fondé par Soichiro Honda ?",
+  "Quel constructeur japonais a été fondé en 1948 par Soichiro, d'abord pour fabriquer des motos ?",
   "Honda",
   "Toyota",
   "Mazda",

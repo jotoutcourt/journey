@@ -274,7 +274,7 @@ export default [
   "Les Anges"
  ],
  [
-  "Comment s'appelle la voix qui dirige « Secret Story » ?",
+  "Comment surnomme-t-on la présence mystérieuse qui dirige « Secret Story » ?",
   "La Voix",
   "Big Brother",
   "Le Maître",
@@ -666,7 +666,7 @@ export default [
   "10 000 euros"
  ],
  [
-  "Que cherchent les agriculteurs de « L'amour est dans le pré » ?",
+  "Que viennent chercher les agriculteurs de l'émission de M6 présentée par Karine Le Marchand ?",
   "L'amour",
   "Un associé",
   "Un acheteur pour leur ferme",
@@ -848,7 +848,7 @@ export default [
   "Cyril Lignac"
  ],
  [
-  "Comment s'appelle la dernière chance des éliminés de « Top Chef » pour revenir ?",
+  "Comment s'appelle l'épreuve de repêchage des éliminés de « Top Chef » ?",
   "La Dernière Chance",
   "Le Repêchage",
   "La Revanche",
@@ -1079,7 +1079,7 @@ export default [
   "Le présentateur tire au sort"
  ],
  [
-  "Comment s'appellent les élèves de la « Star Academy » ?",
+  "Comment appelle-t-on les candidats de la « Star Academy » ?",
   "Les élèves",
   "Les académiciens",
   "Les étudiants",

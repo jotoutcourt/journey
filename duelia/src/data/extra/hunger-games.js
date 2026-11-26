@@ -1275,7 +1275,7 @@ export default [
   "À célébrer la paix"
  ],
  [
-  "Quel est le nom de la tournée des vainqueurs ?",
+  "Comment s'appelle le voyage officiel des gagnants à travers les districts après les Jeux ?",
   "La tournée des vainqueurs",
   "La Moisson",
   "Le Quarter Quell",

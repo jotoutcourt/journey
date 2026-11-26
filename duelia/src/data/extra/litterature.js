@@ -91,7 +91,7 @@ export default [
   ['Qui a écrit « La Métamorphose », où un homme devient un insecte ?', 'Franz Kafka', 'Thomas Mann', 'Hermann Hesse', 'Stefan Zweig'],
   ['Qui a écrit « Cent ans de solitude » ?', 'Gabriel García Márquez', 'Mario Vargas Llosa', 'Jorge Luis Borges', 'Pablo Neruda'],
   ['Qui a écrit « L\'Alchimiste » ?', 'Paulo Coelho', 'Jorge Amado', 'Gabriel García Márquez', 'Isabel Allende'],
-  ['Qui a écrit « Le Journal d\'Anne Frank » ?', 'Anne Frank', 'Primo Levi', 'Elie Wiesel', 'Irène Némirovsky'],
+  ['Quelle adolescente a tenu un journal caché à Amsterdam pendant l\'occupation nazie ?', 'Anne Frank', 'Primo Levi', 'Elie Wiesel', 'Irène Némirovsky'],
   ['Qui a écrit « L\'Odyssée » selon la tradition ?', 'Homère', 'Virgile', 'Sophocle', 'Ovide'],
   ['Quel héros grec met dix ans à rentrer chez lui dans « L\'Odyssée » ?', 'Ulysse', 'Achille', 'Hector', 'Énée'],
   ['Qui a écrit « Harry Potter » ?', 'J. K. Rowling', 'Suzanne Collins', 'Stephenie Meyer', 'Philip Pullman'],

@@ -43,7 +43,7 @@ export default [
   "Le Pô"
  ],
  [
-  "Quel empereur romain a fait de Constantinople sa capitale ?",
+  "Quel empereur romain a fondé une nouvelle capitale sur le site de Byzance en 330 ?",
   "Constantin",
   "Néron",
   "Auguste",

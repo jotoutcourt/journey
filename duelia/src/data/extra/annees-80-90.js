@@ -1275,7 +1275,7 @@ export default [
   "La Revanche des Sith"
  ],
  [
-  "Quel personnage d'Indiana Jones est un archéologue au fouet ?",
+  "Quel archéologue au fouet et au chapeau est joué par Harrison Ford ?",
   "Indiana Jones",
   "Allan Quatermain",
   "Rick O'Connell",

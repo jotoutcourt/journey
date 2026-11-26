@@ -15,7 +15,7 @@ export default [
   "Evermore"
  ],
  [
-  "Dans quel acte du spectacle est chantée « Lover » ?",
+  "Dans quel acte du spectacle est chantée « Miss Americana & the Heartbreak Prince » ?",
   "Lover",
   "Midnights",
   "The Tortured Poets Department",
@@ -36,7 +36,7 @@ export default [
   "Lover"
  ],
  [
-  "Dans quel acte du spectacle est chantée « Fearless » ?",
+  "Dans quel acte du spectacle est chantée « Love Story » ?",
   "Fearless",
   "Midnights",
   "Lover",

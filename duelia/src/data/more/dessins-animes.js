@@ -197,7 +197,7 @@ export default [
   "Lady Trémaine"
  ],
  [
-  "Comment s'appelle la fée maléfique de La Belle au bois dormant ?",
+  "Comment s'appelle la fée qui maudit Aurore dans La Belle au bois dormant ?",
   "Maléfique",
   "Ursula",
   "Cruella",

@@ -137,7 +137,7 @@ export default [
   ["Qui a réalisé le film Titanic sorti en 1997 ?", "James Cameron", "Steven Spielberg", "Ridley Scott", "Peter Jackson"],
   ["Quel acteur incarne Jack dans Titanic ?", "Leonardo DiCaprio", "Brad Pitt", "Matt Damon", "Tom Cruise"],
   ["Dans quelle saga trouve-t-on le personnage de Katniss Everdeen ?", "Hunger Games", "Divergente", "Le Labyrinthe", "Twilight"],
-  ["Quel studio a créé le personnage de Mickey Mouse avec Walt Disney ?", "Disney", "Pixar", "DreamWorks", "Warner Bros."],
+  ["Quel studio a créé le personnage de Mickey Mouse ?", "Disney", "Pixar", "DreamWorks", "Warner Bros."],
   ["Quel film d'animation met en scène un rat qui rêve de devenir cuisinier à Paris ?", "Ratatouille", "Là-haut", "Rox et Rouky", "Les Aristochats"],
   ["Quel acteur joue Iron Man dans l'univers cinématographique Marvel ?", "Robert Downey Jr.", "Chris Evans", "Chris Hemsworth", "Mark Ruffalo"],
   ["Quel réalisateur est associé à Pulp Fiction ?", "Quentin Tarantino", "Martin Scorsese", "David Fincher", "Tim Burton"],

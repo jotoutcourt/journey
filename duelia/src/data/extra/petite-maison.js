@@ -104,7 +104,7 @@ export default [
   ['Quel drame frappe le fils nouveau-né de Laura et Almanzo ?', 'Il meurt quelques semaines après sa naissance', 'Il est enlevé', 'Il naît aveugle', 'Il est adopté'],
   ['Qui Laura accuse-t-elle à tort de la mort de son bébé ?', 'Le Dr Baker', 'Harriet Oleson', 'Jenny Wilder', 'Caroline Ingalls'],
   ['Qui Willie Oleson épouse-t-il ?', 'Rachel Brown', 'Jenny Wilder', 'Sylvia Webb', 'Christy Kennedy'],
-  ['Quel téléfilm de 1984 raconte l\'enlèvement de la petite Rose ?', 'L\'Enlèvement', 'Noël à Walnut Grove', 'Le Miracle de Noël', 'La Neige sur la prairie'],
+  ['Quel téléfilm de 1984 raconte la disparition de la petite Rose ?', 'L\'Enlèvement', 'Noël à Walnut Grove', 'Le Miracle de Noël', 'La Neige sur la prairie'],
   ['Quel est le premier des trois téléfilms qui concluent la série ?', 'Le Chemin des souvenirs', 'L\'Enlèvement', 'Le Dernier Adieu', 'Retour à Plum Creek'],
   ['Qui veut s\'emparer des terres de Walnut Grove dans « Le Dernier Adieu » ?', 'Nathan Lassiter', 'Cornelius Vanderbilt', 'Leland Stanford', 'M. Sprague'],
   ['Quel bâtiment les habitants épargnent-ils dans « Le Dernier Adieu » ?', 'L\'église', 'Le magasin des Oleson', 'La maison des Ingalls', 'Le restaurant de Nellie'],

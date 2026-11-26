@@ -37,7 +37,7 @@ export default [
   ['Quel acteur joue Numérobis dans « Astérix & Obélix : Mission Cléopâtre » ?', 'Jamel Debbouze', 'Alain Chabat', 'Édouard Baer', 'Gérard Darmon'],
   ['Qui a réalisé « Astérix & Obélix : Mission Cléopâtre » ?', 'Alain Chabat', 'Claude Zidi', 'Thomas Langmann', 'Laurent Tirard'],
   ['Quel film de 2011 a valu à Jean Dujardin l\'Oscar du meilleur acteur ?', 'The Artist', 'OSS 117', 'Brice de Nice', 'Le Loup de Wall Street'],
-  ['Dans quelle saga trouve-t-on l\'agent secret OSS 117 joué par Jean Dujardin ?', 'OSS 117', 'Mission impossible', 'Kingsman', 'Johnny English'],
+  ['Dans quelle saga parodique Jean Dujardin joue-t-il l\'agent Hubert Bonisseur de La Bath ?', 'OSS 117', 'Mission impossible', 'Kingsman', 'Johnny English'],
   ['Quel acteur a incarné James Bond le plus récemment dans « Mourir peut attendre » ?', 'Daniel Craig', 'Pierce Brosnan', 'Sean Connery', 'Roger Moore'],
   ['Quel est le matricule de James Bond ?', '007', '001', '700', '070'],
   ['Qui joue Ethan Hunt dans « Mission impossible » ?', 'Tom Cruise', 'Matt Damon', 'Keanu Reeves', 'Ben Affleck'],

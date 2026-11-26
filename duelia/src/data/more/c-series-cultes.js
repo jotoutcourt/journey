@@ -71,7 +71,7 @@ export default [
   "Narcos"
  ],
  [
-  "Quelle série suit une famille qui blanchit l'argent d'un cartel dans les Ozarks ?",
+  "Quelle série suit une famille qui blanchit l'argent d'un cartel dans le Missouri ?",
   "Ozark",
   "Breaking Bad",
   "Bloodline",
@@ -141,7 +141,7 @@ export default [
   "Smallville"
  ],
  [
-  "Quelle série suit le jeune Clark Kent à Smallville ?",
+  "Quelle série suit la jeunesse de Clark Kent avant qu'il ne devienne Superman ?",
   "Smallville",
   "Supernatural",
   "Lois et Clark",
@@ -246,14 +246,14 @@ export default [
   "Silicon Valley"
  ],
  [
-  "Quelle série suit un consultant mentaliste, Patrick Jane ?",
+  "Quelle série suit Patrick Jane, un consultant qui lit dans les gens comme dans un livre ?",
   "Mentalist",
   "Castle",
   "Lie to Me",
   "Monk"
  ],
  [
-  "Quelle série suit un romancier qui aide la police de New York, Richard Castle ?",
+  "Quelle série suit un auteur de polars qui aide la détective Kate Beckett ?",
   "Castle",
   "Mentalist",
   "Bones",
@@ -309,7 +309,7 @@ export default [
   "Clem"
  ],
  [
-  "Quelle série française suit une commissaire mère de quatre enfants, Candice Renoir ?",
+  "Quelle série française suit une commandante de police mère de quatre enfants, à Sète ?",
   "Candice Renoir",
   "Capitaine Marleau",
   "Section de recherches",
@@ -337,7 +337,7 @@ export default [
   "Mathilde Seigner"
  ],
  [
-  "Quelle série suit les experts scientifiques de Las Vegas ?",
+  "Quelle série suit la police scientifique de Las Vegas, avec Gil Grissom ?",
   "Les Experts",
   "NCIS",
   "Bones",
@@ -526,7 +526,7 @@ export default [
   "Melrose Place"
  ],
  [
-  "Quelle série médicale suivait les urgences du County General de Chicago ?",
+  "Quelle série médicale se déroulait au County General Hospital de Chicago ?",
   "Urgences",
   "Grey's Anatomy",
   "Chicago Med",

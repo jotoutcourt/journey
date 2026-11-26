@@ -29,7 +29,7 @@ export default [
   "Made in the A.M."
  ],
  [
-  "Sur quel album de One Direction trouve-t-on la chanson « Up All Night » ?",
+  "Quel est le tout premier album de One Direction ?",
   "Up All Night",
   "Take Me Home",
   "Midnight Memories",
@@ -232,7 +232,7 @@ export default [
   "Made in the A.M."
  ],
  [
-  "Sur quel album de One Direction trouve-t-on la chanson « Midnight Memories » ?",
+  "Quel album de One Direction sorti en 2013 contient « Story of My Life » ?",
   "Midnight Memories",
   "Take Me Home",
   "Made in the A.M.",
@@ -1310,7 +1310,7 @@ export default [
   "Midnight Memories Live"
  ],
  [
-  "Sur quel album de Harry Styles trouve-t-on Kiwi ?",
+  "Sur quel album de 2017 trouve-t-on « Sign of the Times » et « Kiwi » ?",
   "Harry Styles",
   "Fine Line",
   "Harry's House",
