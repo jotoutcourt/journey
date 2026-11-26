@@ -371,11 +371,20 @@ export function LiveBetResult({ matchId, stake, name, onWallet }) {
     return () => { alive = false; clearInterval(iv); clearTimeout(stop) }
   }, [matchId, onWallet])
   const s = bet?.stake ?? stake
-  if (!s) return null
+  if (!s) {
+    // sans mise : seulement le bonus de victoire
+    if (!bet?.settled || !bet.won) return null
+    return (
+      <section className="bet-result won">
+        <p>🏆 Victoire : <b>+2 lingots</b> !</p>
+        {bet.wallet != null && <small>Ton trésor : {bet.wallet} lingots</small>}
+      </section>
+    )
+  }
   return (
     <section className={`bet-result ${bet?.settled ? (bet.won ? 'won' : bet.draw ? 'draw' : 'lost') : ''}`}>
       {!bet?.settled ? <p>💰 Mise de {s} lingots chacun · en attente de la fin du duel de {name}…</p>
-        : bet.won ? <p>🏆 Tu rafles le pot : <b>+{s * 2} lingots</b> !</p>
+        : bet.won ? <p>🏆 Tu rafles le pot : <b>+{s * 2 + 2} lingots</b> (bonus de victoire compris) !</p>
           : bet.draw ? <p>🤝 Égalité : chacun récupère sa mise de {s} lingots.</p>
             : <p>💸 {name} rafle le pot : tu perds ta mise de <b>{s} lingots</b>.</p>}
       {bet?.settled && bet.wallet != null && <small>Ton trésor : {bet.wallet} lingots</small>}
