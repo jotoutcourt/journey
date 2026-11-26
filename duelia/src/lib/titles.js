@@ -33,6 +33,7 @@ const LADDERS = {
   'taylor-swift': ['Curieux', 'Fan de Fearless', 'Fan de Red', 'Swiftie', 'Chasseur d\'easter eggs', 'Porteur de bracelets', 'Mastermind', 'Taylor\'s Version'],
   'one-direction': ['Curieux', 'Auditionné', 'Directioner', 'Fan de la première heure', 'Up All Night', 'Midnight Memories', 'Membre honoraire', 'Sixième membre'],
   'sex-and-the-city': ['Célibataire', 'Lectrice du New York Star', 'Fan de Cosmo', 'Amie de Stanford', 'Accro aux Manolo', 'Reine du brunch', 'Icône de Manhattan', 'Carrie Bradshaw'],
+  zelda: ['Kokiri sans fée', 'Apprenti épéiste', 'Aventurier d\'Hyrule', 'Chasseur de Bokoblins', 'Explorateur de sanctuaires', 'Prodige', 'Héros du Temps', 'Porteur de la Triforce'],
   food: ['Grignoteur', 'Petit creux', 'Gourmand', 'Gourmet', 'Fine bouche', 'Foodie', 'Critique gastronomique', 'Ogre du buffet'],
   'the-100': ['Délinquant', 'Débarqué', 'Terrien', 'Guerrier de Trikru', 'Natblida', 'Wanheda', 'Heda', 'Survivant de Praimfaya'],
   'hunger-games': ['Habitant du 12', 'Tribut', 'Survivant', 'Carrière', 'Mentor', 'Vainqueur', 'Geai moqueur', 'Fille du feu'],
