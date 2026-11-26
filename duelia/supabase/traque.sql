@@ -611,7 +611,7 @@ begin
     elsif g.phase = 'event' then
       exit when not due;
       if g.turn = -1 and g.turn_order is null then
-        update traque_games set phase = 'order', data = jsonb_build_object('rolls', '{}'::jsonb), deadline = now() + interval '20 seconds', version = version + 1 where id = p_game;
+        update traque_games set phase = 'order', data = jsonb_build_object('rolls', '{}'::jsonb), deadline = now() + interval '60 seconds', version = version + 1 where id = p_game;
       else perform tq_next(p_game); end if;
 
     elsif g.phase = 'order' then

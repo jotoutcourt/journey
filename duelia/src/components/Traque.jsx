@@ -448,7 +448,7 @@ function TraqueBoard({ v, gameId, act, onExit, vc }) {
           : v.phase === 'haunt' ? <><b>👻 {bare(turnP?.name)} hante le plateau…</b><small>Qui va reculer ?</small></>
           : v.phase === 'roll' && myTurn ? <><b>À toi de jouer !</b><small>Lance le dé pour avancer{left != null ? ` · ${Math.ceil(left / 1000)} s` : ''}</small></>
           : v.phase === 'done' ? <b>Partie terminée</b>
-          : <><b style={{ color: SEAT_COLORS[v.turn] }}>{myTurn ? 'Ton tour' : `Au tour de ${turnP?.name?.replace(/ \((facile|moyen|expert)\)$/, '') || '…'}`}</b><small>{bare((v.log || []).slice(-1)[0]?.t)}</small></>}
+          : <><b style={{ color: SEAT_COLORS[v.turn] }}>{v.phase === 'order' ? 'Qui commence ?' : myTurn ? 'Ton tour' : `Au tour de ${turnP?.name?.replace(/ \((facile|moyen|expert)\)$/, '') || '…'}`}</b><small>{bare((v.log || []).slice(-1)[0]?.t)}</small></>}
       </div>
       <ul className="tq-others">
         {v.players.filter(p => p.status !== 'declined' && p.seat !== v.me).map(p => (
@@ -490,8 +490,8 @@ function TraqueBoard({ v, gameId, act, onExit, vc }) {
 
       {/* Moments forts au centre de l'écran */}
       {v.phase === 'show' && diceOn && (d.dice || []).length > 0 && <div className="tq-center"><div className="tq-dice">{d.dice.map((n, i) => <DieFace key={i} n={n} />)}</div></div>}
-      {v.phase === 'event' && (d.reveal ? <Reveal ids={d.reveal} topicOf={topicOf} /> : d.fx?.duel ? (diceOn ? <DuelDice key={d.text} v={v} d={d} /> : null) : <EventView key={d.text} d={d} />)}
-      {v.phase === 'order' && <OrderRoll v={v} d={d} left={left} onRoll={() => act(() => api.traqueOrderRoll(gameId))} />}
+      {v.phase === 'event' && (d.reveal ? <Reveal ids={d.reveal} topicOf={topicOf} /> : d.fx?.order ? null : d.fx?.duel ? (diceOn ? <DuelDice key={d.text} v={v} d={d} /> : null) : <EventView key={d.text} d={d} />)}
+      {(v.phase === 'order' || (v.phase === 'event' && d.fx?.order)) && <OrderRoll key="order" v={v} d={v.phase === 'order' ? d : { ...d, rolls: d.fx.rolls }} done={v.phase !== 'order'} left={left} onRoll={() => act(() => api.traqueOrderRoll(gameId))} />}
       {v.phase === 'haunt' && d.seat === v.me && <Haunt v={v} onPick={(s) => act(() => api.traqueHaunt(gameId, s))} />}
       {v.phase === 'pick' && <Cursed v={v} d={d} left={left} onPick={(i) => act(() => api.traqueCursed(gameId, i))} />}
       {v.phase === 'duelroll' && <DuelResult key={`${d.winner}-${d.loser}`} v={v} d={d} onRoll={() => act(() => api.traqueRoll(gameId))} />}
@@ -880,32 +880,71 @@ function Gumball({ pawn, onClose }) {
   )
 }
 
-// Début de partie : chacun lance le dé, le plus gros commence
-function OrderRoll({ v, d, left, onRoll }) {
+// Début de partie : les pions alignés, un dé au-dessus de chaque tête. Chacun appuie sur GO (= « je suis prêt »),
+// son dé roule puis s'arrête sur le résultat ; le plus gros score commence.
+function OrderRoll({ v, d, left, onRoll, done = false }) {
   const rolls = d.rolls || {}
   const ps = v.players.filter(p => ['joined', 'bot', 'left'].includes(p.status))
-  const mine = rolls[v.me]
-  const seen = useRef({})
-  useEffect(() => {
-    for (const k of Object.keys(rolls)) if (!seen.current[k]) { seen.current[k] = true; try { sfx.dice?.() } catch { /* son facultatif */ } }
-  }, [Object.keys(rolls).length]) // eslint-disable-line react-hooks/exhaustive-deps
+  const [ranked, setRanked] = useState(false)
+  useEffect(() => { if (!done) return; const id = setTimeout(() => setRanked(true), 1200); return () => clearTimeout(id) }, [done])
+  const order = done && ranked ? (d.fx?.order || []) : []
+  const [mine, setMine] = useState(false)
+  const rolled = rolls[v.me] != null || mine
+  const waiting = ps.filter(p => rolls[p.seat] == null).length
   return (
-    <div className="tq-center dim">
+    <div className="tq-center dim tq-order-wrap">
       <div className="tq-order">
-        <h2>🎲 Qui commence ?</h2>
-        <p>Chacun lance le dé : le plus gros score joue en premier.{left != null ? ` · ${Math.ceil(left / 1000)} s` : ''}</p>
-        <ul>
-          {ps.map(p => (
-            <li key={p.seat} style={{ '--c': SEAT_COLORS[p.seat] }}>
-              {p.bot ? <img src={pawnImg(p.pawn, p.seat)} alt="" /> : <Avatar seed={p.avatar} photo={p.photo} size={34} />}
-              <b>{p.seat === v.me ? 'Toi' : bare(p.name)}</b>
-              {rolls[p.seat] ? <span className="to-die"><DieFace key={rolls[p.seat]} n={rolls[p.seat]} /></span> : <small>…</small>}
-            </li>
-          ))}
-        </ul>
-        {mine == null && v.me != null && <button className="kh-play to-btn" onClick={onRoll}>🎲 Lancer le dé</button>}
+        <h2>{order.length ? '🎲 Ordre de jeu' : '🎲 Qui commence ?'}</h2>
+        <p>{order.length ? 'Le plus gros dé ouvre la chasse !' : done ? 'Tout le monde est prêt !'
+          : `Appuie sur GO pour lancer ton dé : le plus gros score joue en premier.${left != null ? ` · ${Math.ceil(left / 1000)} s` : ''}`}</p>
+        <div className="to-row" style={{ '--n': ps.length }}>
+          {ps.map(p => {
+            const rank = order.indexOf(p.seat)
+            return (
+              <div key={p.seat} className={`to-p ${rank === 0 ? 'first' : ''}`} style={{ '--c': SEAT_COLORS[p.seat] }}>
+                <RollingDie n={rolls[p.seat]} spin={p.seat === v.me && mine && rolls[p.seat] == null} />
+                <img className="to-pawn" src={pawnImg(p.pawn, p.seat)} alt="" draggable="false" />
+                <b>{p.seat === v.me ? 'Toi' : bare(p.name)}</b>
+                <small>{rank >= 0 ? (rank === 0 ? '👑 1er' : `${rank + 1}e`) : rolls[p.seat] != null ? 'Prêt ✓' : 'Attend…'}</small>
+              </div>
+            )
+          })}
+        </div>
+        {!done && v.me != null && (rolled
+          ? <p className="to-wait">{waiting > 0 ? `En attente de ${waiting} joueur${waiting > 1 ? 's' : ''}…` : 'Tout le monde est prêt !'}</p>
+          : <button className="to-go" onClick={() => { setMine(true); try { sfx.dice?.() } catch { /* son facultatif */ } onRoll() }}>GO !</button>)}
       </div>
     </div>
+  )
+}
+
+// Dé au-dessus d'un pion : « ? » qui flotte, puis roule ~1 s quand le résultat arrive, puis se pose
+function RollingDie({ n, spin }) {
+  const [face, setFace] = useState(n ?? null)
+  const [rolling, setRolling] = useState(false)
+  const first = useRef(true)
+  useEffect(() => {
+    if (n == null) { first.current = false; return }
+    if (first.current) { first.current = false; setFace(n); return } // déjà lancé quand on arrive : pas d'animation
+    setRolling(true)
+    if (!spin) try { sfx.dice?.() } catch { /* son facultatif */ }
+    let k = 0
+    const id = setInterval(() => {
+      k += 1
+      if (k >= 9) { clearInterval(id); setFace(n); setRolling(false) } else setFace(1 + Math.floor(Math.random() * 6))
+    }, 100)
+    return () => clearInterval(id)
+  }, [n]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!spin) return
+    const id = setInterval(() => setFace(1 + Math.floor(Math.random() * 6)), 100)
+    return () => clearInterval(id)
+  }, [spin])
+  const busy = rolling || spin
+  return (
+    <span className={`to-die ${busy ? 'rolling' : face ? 'landed' : 'idle'}`}>
+      {face ? <DieFace n={face} /> : <span className="tq-dieface to-q">?</span>}
+    </span>
   )
 }
 
