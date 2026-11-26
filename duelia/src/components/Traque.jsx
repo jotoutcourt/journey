@@ -368,10 +368,8 @@ function TraqueBoard({ v, gameId, act, onExit, vc }) {
     return () => clearTimeout(id)
   }, [v.version, rolled]) // eslint-disable-line react-hooks/exhaustive-deps
   // longueur du trajet (pour le zoom et la vitesse) : lancer normal ou dé du duel
-  const loserP = duelDice ? v.players.find(p => p.seat === v.data.fx.seat) : null
   const dist = v.phase === 'show' && v.data?.to != null ? Math.abs(v.data.to - v.data.from) : duelDice ? (v.data.fx.dice?.[0] || 0) : 0
   const stepMs = dist ? Math.min(360, 3200 / dist) : 260
-  const anchor = v.phase === 'show' && v.data?.to != null ? (v.data.from + v.data.to) / 2 : loserP ? loserP.pos + dist / 2 : null
   useEffect(() => {
     const goal = Object.fromEntries(v.players.map(p => [p.seat, p.pos]))
     let iv = null
@@ -425,7 +423,8 @@ function TraqueBoard({ v, gameId, act, onExit, vc }) {
 
   return (
     <div className="screen traque game">
-      <PathBoard v={v} shown={shown} topicOf={topicOf} owners={owners} zoom={rolled && !diceOn} anchor={rolled && !diceOn ? anchor : null} />
+      {/* pas de zoom : la caméra suit simplement le pion qui se déplace, case par case */}
+      <PathBoard v={v} shown={shown} topicOf={topicOf} owners={owners} zoom={false} anchor={null} />
 
       {/* HUD du haut : une colonne propre, sans chevauchement */}
       <i className="tq-veil" aria-hidden="true" />
