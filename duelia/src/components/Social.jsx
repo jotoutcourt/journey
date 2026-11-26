@@ -154,12 +154,8 @@ export function FriendsScreen({ online, social, code, initialCode, now, push, on
 }
 
 /* ---------- Défier un ami : choix du thème et du mode ---------- */
-const STAKES = [0, 5, 10, 20, 50]
-export function FriendChallengeSheet({ friend, topics, initialTopic, onPick, onCancel, lingots }) {
+export function FriendChallengeSheet({ friend, topics, initialTopic, onPick, onCancel }) {
   const [topic, setTopic] = useState(initialTopic || null)
-  const [stake, setStake] = useState(0)
-  const max = Math.min(lingots ?? 0, 1000)
-  const bump = (d) => setStake(s => Math.max(0, Math.min(max, s + d)))
   return (
     <div className="sheet-backdrop" onClick={onCancel}>
       <div className="sheet friend-sheet" role="dialog" aria-labelledby="fsheet-title" onClick={e => e.stopPropagation()}>
@@ -176,21 +172,9 @@ export function FriendChallengeSheet({ friend, topics, initialTopic, onPick, onC
           </div>
         </> : <>
           <div className="sheet-topic"><TopicIcon topic={topic} size={28} /> {topic.name} <button className="link-btn" onClick={() => setTopic(null)}>changer</button></div>
-          <div className="stake-box">
-            <p className="stake-title">💰 Miser des lingots en direct <small>(même somme chacun, le gagnant rafle tout)</small></p>
-            <div className="stake-chips">
-              {STAKES.map(v => <button key={v} className={`stake-chip ${stake === v ? 'on' : ''}`} disabled={v > max} onClick={() => setStake(v)}>{v ? v : 'Sans mise'}</button>)}
-            </div>
-            <div className="stake-step">
-              <button className="stake-btn" onClick={() => bump(-1)} disabled={!stake} aria-label="Miser un lingot de moins">−</button>
-              <b><i className="lt-coin" aria-hidden="true" /> {stake} {stake > 1 ? 'lingots' : 'lingot'}</b>
-              <button className="stake-btn" onClick={() => bump(1)} disabled={stake >= max} aria-label="Miser un lingot de plus">+</button>
-            </div>
-            <small className="stake-wallet">Ton trésor : {lingots ?? '…'} lingots{stake > 0 ? ` · ${friend.name} devra aussi en avoir ${stake}` : ''}</small>
-          </div>
-          {friend.online && <button className="btn btn-primary wide" onClick={() => onPick(topic, 'live', stake)}>⚡ Duel en direct{stake > 0 ? ` · mise ${stake}` : ''} <small>({friend.name} est en ligne)</small></button>}
-          <button className={`btn ${friend.online ? 'btn-secondary' : 'btn-primary'} wide`} onClick={() => onPick(topic, 'async')}>📨 Défi différé <small>(sans mise)</small></button>
-          {!friend.online && <button className="btn btn-secondary wide" onClick={() => onPick(topic, 'live', stake)}>⚡ Demander un duel en direct{stake > 0 ? ` · mise ${stake}` : ''}</button>}
+          {friend.online && <button className="btn btn-primary wide" onClick={() => onPick(topic, 'live')}>⚡ Duel en direct <small>({friend.name} est en ligne)</small></button>}
+          <button className={`btn ${friend.online ? 'btn-secondary' : 'btn-primary'} wide`} onClick={() => onPick(topic, 'async')}>📨 Défi différé</button>
+          {!friend.online && <button className="btn btn-secondary wide" onClick={() => onPick(topic, 'live')}>⚡ Demander un duel en direct</button>}
           <p className="sheet-note">{friend.online
             ? 'En direct : vous jouez en même temps. Différé : tu joues maintenant, il joue quand il veut.'
             : `${friend.name} n'est pas en ligne. Différé : tu joues maintenant, il jouera quand il voudra. En direct : il reçoit une notification et a 2 minutes pour te rejoindre.`}</p>
