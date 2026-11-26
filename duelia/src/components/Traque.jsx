@@ -944,6 +944,7 @@ function RollingDie({ n, spin }) {
   return (
     <span className={`to-die ${busy ? 'rolling' : face ? 'landed' : 'idle'}`}>
       {face ? <DieFace n={face} /> : <span className="tq-dieface to-q">?</span>}
+      {!busy && n != null && <em className="to-num">{n}</em>}
     </span>
   )
 }

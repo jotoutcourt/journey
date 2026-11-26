@@ -2041,6 +2041,7 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
 .tq-order .to-go { width: 100%; height: 58px; border: 0; border-radius: 18px; font: 900 26px var(--display); letter-spacing: 1px; color: #3a1d00; cursor: pointer;
   background: linear-gradient(180deg, #ffe27a, #ffb22e); box-shadow: 0 5px 0 #b86a00, 0 10px 20px #000a; animation: to-pulse 1s ease-in-out infinite alternate; }
 .tq-order .to-go:active { transform: translateY(3px); box-shadow: 0 2px 0 #b86a00; }
+.tq-order .to-num { position: absolute; right: -8px; bottom: -6px; min-width: 22px; height: 22px; border-radius: 11px; display: grid; place-items: center; font: 900 14px var(--display); font-style: normal; color: #3a1d00; background: #ffd45c; box-shadow: 0 2px 0 #b86a00; animation: sb-pop .3s both; }
 .tq-order .to-wait { margin: 0; font-weight: 800; color: #fff; }
 @keyframes to-bob { from { transform: translateY(0) } to { transform: translateY(-6px) } }
 @keyframes to-roll { 0% { transform: translateY(-10px) rotate(0) } 50% { transform: translateY(-18px) rotate(180deg) } 100% { transform: translateY(-10px) rotate(360deg) } }
