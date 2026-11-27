@@ -1025,6 +1025,8 @@ export default function App() {
   }
 
   const shareTopic = (t) => {
+    // thème officiel : un lien court vers le thème, pour inviter des amis à s'inscrire et à jouer
+    if (t.official) return shareText(`🐙 Je joue au quiz « ${t.name} » sur Kraken ! Inscris-toi et viens me défier 👉`, `${location.origin}/#theme=${t.id}`)
     const url = `${location.origin}${location.pathname}#t=${encodeTopic(t)}`
     shareText(`Viens me défier sur mon thème « ${t.name} » !`, url)
   }

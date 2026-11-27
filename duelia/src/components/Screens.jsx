@@ -227,6 +227,11 @@ export function TopicPage({ st, topic, go, toggleFollow, shareTopic, deleteTopic
         </div>
       )}
 
+      {topic.official && (
+        <div className="tp-owner">
+          <button className="btn btn-ghost" onClick={() => shareTopic(topic)}>📣 Partager ce thème</button>
+        </div>
+      )}
       {!topic.official && (
         <div className="tp-owner">
           <button className="btn btn-ghost" onClick={() => shareTopic(topic)}>🔗 Partager ce thème</button>
