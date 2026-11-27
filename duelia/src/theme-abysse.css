@@ -2131,6 +2131,6 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
 .home-v2 .kraken-sign-img { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); margin: 0; }
 .home-v2 .kh-pitch, .home-v2 .kh-sep { display: none; }
 /* fond « Kraken sur le coffre » remonté pour que le coffre reste au-dessus des boutons */
-.home-v2 .home-bg { background: linear-gradient(180deg, transparent 0%, transparent 66%, #0b0420cc 76%, #0b0420 84%), #0b0420 url(/accueil/fond.webp) center -16vh / auto 100vh no-repeat; }
+.home-v2 .home-bg { background: linear-gradient(180deg, transparent 0%, transparent 66%, #0b0420cc 76%, #0b0420 84%), #0b0420 url(/accueil/fond.webp) center top / cover no-repeat; }
 .kh-imgbtn { width: min(80vw, 330px); }
 @media (max-height: 720px) { .kh-imgbtn { width: min(74vw, 290px); } }
