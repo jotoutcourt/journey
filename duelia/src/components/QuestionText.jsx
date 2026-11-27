@@ -4,16 +4,17 @@
 import { CREDITS } from '../data/extra/quel-animal.js'
 
 const FLAG = /\s*([\u{1F1E6}-\u{1F1FF}]{2})\s*$/u
-const PHOTO = /\s*\[photo:(\/animaux\/[a-z0-9-]+\.webp)\]\s*$/
+const PHOTO = /\s*\[photo:(\/(?:animaux|logos)\/[a-z0-9-]+\.webp)\]\s*$/
 
 export default function QuestionText({ text = '' }) {
   const p = text.match(PHOTO)
   if (p) {
     const credit = CREDITS[p[1]]
+    const logo = p[1].startsWith('/logos/')
     return <>
       {text.slice(0, p.index)}
-      <span className="q-photo">
-        <img src={p[1]} alt="Photo de l'animal à deviner" draggable="false" />
+      <span className={`q-photo ${logo ? 'q-logo' : ''}`}>
+        <img src={p[1]} alt={logo ? 'Logo à deviner' : 'Photo de l\'animal à deviner'} draggable="false" />
         {credit && <small>📷 {credit}</small>}
       </span>
     </>
