@@ -376,7 +376,7 @@ export const OFFICIAL_TOPICS = [
   T('marvel', 'Marvel', '🦸', '#e23636', 'Cinéma & TV', 'Avengers, rassemblement !', 0, []),
   T('nintendo', 'Nintendo', '🍄', '#e60012', 'Jeux vidéo', 'Mario, Zelda, Kirby et toute la bande', 0, []),
   T('one-piece', 'One Piece', '🏴‍☠️', '#e8a33a', 'Cinéma & TV', 'En route pour Grand Line avec Luffy et son équipage', 0, []),
-  T('logos', 'Logos et marques', '🏷️', '#ffb020', 'Culture', 'Logos, slogans et secrets de marques', 0, []),
+  T('logos', 'Marques', '🏷️', '#ffb020', 'Culture', 'Logos, slogans et secrets de marques', 0, []),
   T('zelda', 'The Legend of Zelda', '🗡️', '#3fae5a', 'Jeux vidéo', 'Hyrule, la Triforce et l\'Épée de légende', 0, []),
   T('food', 'Food', '🍔', '#ff8a3d', 'Cuisine', 'T\'as faim ou t\'as la dalle ?', 0, []),
   T('the-100', 'The 100', '🚀', '#3d8f5f', 'Cinéma & TV', 'De l\'Arche à la Terre : survivre, encore et toujours', 0, []),
