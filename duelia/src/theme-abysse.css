@@ -2081,3 +2081,5 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
 .nt-topic i { font-style: normal; font-size: 22px; color: #ffd45c; }
 /* logos à deviner : sur une carte blanche, sans recadrage */
 .q-photo.q-logo img { object-fit: contain; padding: 22px; box-sizing: border-box; background: #fff; }
+.ct-event.gift { color: #3a1d00; font-weight: 800; background: linear-gradient(180deg, #ffe27a, #ffb22e); box-shadow: 0 3px 0 #b86a00, 0 0 18px #ffd45c88; }
+.ct-event.gift small { color: #6b4300; }

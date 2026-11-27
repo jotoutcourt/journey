@@ -30,6 +30,7 @@ function eventText(m, name) {
     return mine > theirs ? `🏆 Duel en direct en ${t} : tu gagnes ${mine}–${theirs} contre ${name}`
       : mine < theirs ? `⚡ Duel en direct en ${t} : ${name} gagne ${theirs}–${mine}` : `🤝 Duel en direct en ${t} : égalité ${mine}–${theirs}`
   }
+  if (p.ev === 'gift') return m.mine ? `🎁 Tu as offert ${p.n} lingots à ${name} (cadeau du développeur)` : `🎁 Cadeau du développeur : +${p.n} lingots !`
   if (p.ev === 'seen') return m.mine ? `👀 Tu as vu le résultat en ${t}` : `👀 ${name} vient de voir le résultat en ${t}`
   return m.body
 }
@@ -114,7 +115,7 @@ export function ChatThread({ peer, onBack, onChallenge, onTraque, onJoinTraque, 
           return (
             <div key={m.id}>
               {newDay && <p className="ct-day">{dayLabel(m.created_at)}</p>}
-              {m.kind === 'event' ? <div className="ct-event">
+              {m.kind === 'event' ? <div className={`ct-event ${m.payload?.ev === 'gift' ? 'gift' : ''}`}>
                 <span>{eventText(m, p.name)}</span>
                 {!m.mine && ['challenge', 'played'].includes(m.payload?.ev) && <button className="btn btn-small btn-ghost" onClick={onOpenInbox}>{m.payload.ev === 'challenge' ? 'Jouer' : 'Voir'}</button>}
                 <small>{hhmm(m.created_at)}</small>
