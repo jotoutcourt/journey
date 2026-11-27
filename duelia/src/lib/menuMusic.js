@@ -28,7 +28,12 @@ const session = (type) => { try { if (navigator.audioSession) navigator.audioSes
 // En arrière-plan : on détache complètement le son, pour que le téléphone n'affiche plus de lecteur
 function detach() {
   if (!el) return
+  // d'abord le silence total (sinon l'iPhone peut lâcher un bruit sec à plein volume en coupant le son)
+  try { if (gain) { gain.gain.cancelScheduledValues(0); gain.gain.value = 0 } } catch { /* rien */ }
+  el.muted = true
+  clearTimeout(stopTimer)
   el.pause()
+  try { if (gain && gain.context.state === 'running') gain.context.suspend() } catch { /* rien */ }
   if (el.getAttribute('src')) { el.removeAttribute('src'); el.load(); cur = null }
   try { if (navigator.mediaSession) { navigator.mediaSession.metadata = null; navigator.mediaSession.playbackState = 'none' } } catch { /* rien */ }
 }
@@ -62,6 +67,8 @@ function start() {
   // (indispensable sur iPhone : la lecture doit démarrer pendant le geste du joueur)
   if (!el.getAttribute('src') || cur !== track) { el.src = urlOf(track); cur = track }
   route()
+  el.muted = false
+  try { if (gain && gain.context.state === 'suspended') gain.context.resume() } catch { /* rien */ }
   clearTimeout(stopTimer)
   if (!el.paused) { fade(VOL_OF(), 1.5); return }
   if (gain) gain.gain.value = 0; else el.volume = 0
