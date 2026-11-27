@@ -2129,3 +2129,4 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
 }
 /* plus de panneau « L'Appât du Kraken » sur l'accueil (titre gardé pour les lecteurs d'écran) */
 .home-v2 .kraken-sign-img { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); margin: 0; }
+.home-v2 .kh-pitch, .home-v2 .kh-sep { display: none; }
