@@ -232,3 +232,6 @@ export const chatResultSeen = (cid) => rpc('chat_result_seen', { p_challenge: ci
 export const matchSignal = (id, to, kind, payload) => rpc('match_signal', { p_match: id, p_to: to, p_kind: kind, p_payload: payload })
 export const matchSignalsSince = (id, after) => rpc('match_signals_since', { p_match: id, p_after: after })
 export const traqueOrderRoll = (id) => rpc('traque_order_roll', { p_game: id })
+export const reportQuestion = (topic, question, answer, reason) => rpc('report_question', { p_topic: topic, p_question: question, p_answer: answer, p_reason: reason })
+export const adminReports = () => rpc('admin_reports')
+export const adminReportDone = (ids) => rpc('admin_report_done', { p_ids: ids })

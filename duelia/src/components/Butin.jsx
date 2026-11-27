@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import Avatar from './Avatar.jsx'
 import Mascot from './Mascot.jsx'
 import QuestionText from './QuestionText.jsx'
+import ReportButton from './ReportButton.jsx'
 import ConfirmButton from './ConfirmButton.jsx'
 import * as api from '../lib/account.js'
 import { gold, move, placed, rankFor, RANKS, START, ROUNDS } from '../lib/butin.js'
@@ -367,6 +368,7 @@ export function ButinGame({ gameId, me, onExit, onReplay, replayInvite, onAccept
           {reveal && (
         <div className="lt-reveal-dock over">
         {q?.expl && <p className="lt-expl"><b>💡 {q.options[q.correct]}</b> {q.expl}</p>}
+        {q?.expl && <ReportButton topic={q.topic?.name || 'Trappes'} question={q.q} answer={q.options[q.correct]} />}
         <div className={`lt-dock lt-bubble ${lost ? 'happy' : 'sad'} ${bonus ? 'bonus' : ''}`} role="status">
           <Mascot pose={lost ? 'pirate' : 'defaite'} size={86} className="lt-bubble-kraken" />
           <div>

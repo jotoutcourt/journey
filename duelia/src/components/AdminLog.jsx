@@ -1,12 +1,37 @@
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { adminActivity } from '../lib/account.js'
+import { adminActivity, adminReports, adminReportDone } from '../lib/account.js'
 
 // Historique caché (réservé au créateur) : tout ce qui se passe sur l'appli, jour par jour
 const FILTERS = [['', 'Tout'], ['compte', 'Comptes'], ['social', 'Amis'], ['duel', 'Duels'], ['chasse', 'Chasse'], ['jeu', 'Trappes'], ['achat', 'Achats'], ['theme', 'Thèmes']]
 const DAYS = [1, 7, 30]
 
+const REASON = { reponse: 'Mauvaise réponse', formulation: 'Faute / mal posée', doublon: 'En double', autre: 'Autre' }
+
+// Questions signalées par les joueurs, regroupées : on coche « Corrigé » quand c'est réglé
+function Reports() {
+  const [list, setList] = useState(null)
+  const load = () => adminReports().then(r => setList(Array.isArray(r) ? r : [])).catch(() => setList([]))
+  useEffect(() => { load() }, [])
+  if (!list) return <p className="al-empty">Chargement…</p>
+  if (!list.length) return <p className="al-empty">Aucune question signalée 🎉</p>
+  return (
+    <div className="al-list">
+      {list.map(r => (
+        <div key={r.ids.join('-')} className="al-report">
+          <small>{r.topic || 'Thème inconnu'} · {r.n} signalement{r.n > 1 ? 's' : ''} · {r.reasons.map(x => REASON[x] || x).join(', ')}</small>
+          <p>{r.question}</p>
+          <span>Réponse donnée : <b>{r.answer || '—'}</b></span>
+          <span className="al-who">Par {r.who || '?'} · {new Date(r.last).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>
+          <button className="btn btn-small btn-ghost" onClick={() => adminReportDone(r.ids).then(load)}>✓ Corrigé</button>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export default function AdminLog({ onClose }) {
+  const [tab, setTab] = useState('log')
   const [days, setDays] = useState(7)
   const [data, setData] = useState(null)
   const [err, setErr] = useState(null)
@@ -29,9 +54,13 @@ export default function AdminLog({ onClose }) {
       <header>
         <button className="icon-btn" onClick={onClose} aria-label="Fermer">←</button>
         <h1>🕵️ Historique</h1>
-        <div className="al-days">{DAYS.map(d => <button key={d} className={d === days ? 'on' : ''} onClick={() => setDays(d)}>{d === 1 ? '24 h' : `${d} j`}</button>)}</div>
+        {tab === 'log' && <div className="al-days">{DAYS.map(d => <button key={d} className={d === days ? 'on' : ''} onClick={() => setDays(d)}>{d === 1 ? '24 h' : `${d} j`}</button>)}</div>}
       </header>
-      {err ? <p className="al-empty">{err.includes('réservé') ? 'Accès réservé.' : `Erreur : ${err}`}</p>
+      <div className="al-filters al-tabs">
+        <button className={tab === 'log' ? 'on' : ''} onClick={() => setTab('log')}>🕵️ Historique</button>
+        <button className={tab === 'reports' ? 'on' : ''} onClick={() => setTab('reports')}>⚠️ Signalements</button>
+      </div>
+      {tab === 'reports' ? <Reports /> : err ? <p className="al-empty">{err.includes('réservé') ? 'Accès réservé.' : `Erreur : ${err}`}</p>
         : !data ? <p className="al-empty">Chargement…</p>
           : <>
             <div className="al-stats">

@@ -1,4 +1,5 @@
 import QuestionText from './QuestionText.jsx'
+import ReportButton from './ReportButton.jsx'
 import Mascot from './Mascot.jsx'
 import { useEffect, useState } from 'react'
 import Avatar from './Avatar.jsx'
@@ -190,6 +191,7 @@ export default function Results({ data, me, onRematch, onAnother, onTopic, onSha
                   <span className="recap-ans">{q.options[q.correct]}</span>
                   <span className={o?.pts ? 'ok' : 'ko'}>{o?.pts ? `+${o.pts}` : '✗'} {opponent.name}</span>
                 </div>
+                <ReportButton topic={topic?.name} question={q.q} answer={q.options[q.correct]} />
               </li>
             )
           })}
