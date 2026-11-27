@@ -43,7 +43,7 @@ export function Home({ go, wallet, onSolo, oxygen, missions, onTraque, traqueRes
     return () => { clearTimeout(id); document.removeEventListener('pointerdown', away) }
   }, [choose])
   return (
-    <div className="screen home immersive">
+    <div className="screen home immersive home-v2">
       {/* décor plein écran : grotte sous-marine, rayons de lumière et bulles */}
       <div className="home-bg" aria-hidden="true">
         <i className="rays" />
@@ -52,7 +52,7 @@ export function Home({ go, wallet, onSolo, oxygen, missions, onTraque, traqueRes
       <header className="top">
         <Brand />
         {missions}
-        {wallet && <button className="wallet-pill" title="Boutique" onClick={() => go({ name: 'shop' })}><i className="lt-coin" aria-hidden="true" />{wallet.lingots}<span className="wp-shop">🏪</span></button>}
+        {wallet && <button className="wallet-pill" title="Boutique" onClick={() => go({ name: 'shop' })}><i className="lt-coin" aria-hidden="true" />{wallet.lingots}<span className="wp-plus" aria-hidden="true">+</span></button>}
       </header>
 
       {/* Le jeu principal : la Chasse au Kraken (jeu de plateau) */}
@@ -60,10 +60,14 @@ export function Home({ go, wallet, onSolo, oxygen, missions, onTraque, traqueRes
         <img className="kh-art" src="/mascotte/pirate-anim.webp" alt="" aria-hidden="true" />
         <h1 className="kraken-sign-img"><img src="/decor/pancarte.webp" alt="Kraken" draggable="false" /></h1>
         <p className="kh-pitch">Avancez sur le plateau entre amis, remplissez le trésor… et soyez le premier à <b>tuer le Kraken</b> pour tout rafler.</p>
+        <span className="kh-sep" aria-hidden="true">☠</span>
         {wallet?.daily_bonus && <span className="bh-bonus">🎁 +5 lingots sur ta première partie du jour</span>}
-        <button className="kh-play kh-chasse kh-main" onClick={traqueResume || onTraque}>{traqueResume ? 'Reprendre la Chasse' : 'La Chasse au Kraken'}<small>{traqueResume ? 'Ta partie t\'attend' : 'Jeu de plateau · 2 à 8 joueurs'}</small></button>
+        <button className="kh-imgbtn" onClick={traqueResume || onTraque} aria-label={traqueResume ? 'Reprendre la Chasse au Kraken' : 'La Chasse au Kraken, jeu de plateau de 2 à 8 joueurs'}>
+          <img src="/accueil/btn-chasse.webp" alt="" draggable="false" />
+          {traqueResume && <span className="kh-resume">▶ Ta partie t'attend</span>}
+        </button>
         {!choose
-          ? <button className="kh-play kh-trappes kh-second" onClick={() => setChoose(true)}>Les Trappes du Kraken<small>Solo ou à deux</small></button>
+          ? <button className="kh-imgbtn" onClick={() => setChoose(true)} aria-label="Les Trappes du Kraken, solo ou à deux"><img src="/accueil/btn-trappes.webp" alt="" draggable="false" /></button>
           : <div className="kh-modes" ref={modesRef}>
             <button className="kh-play kh-mode" onClick={() => { setChoose(false); onSolo() }}><span aria-hidden="true">🏴‍☠️</span>Solo</button>
             <button className="kh-play kh-mode" onClick={() => { setChoose(false); go({ name: 'butin' }) }}><span aria-hidden="true">👥</span>À deux</button>
