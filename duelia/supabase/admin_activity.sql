@@ -1,7 +1,7 @@
 -- Historique caché pour le créateur de l'appli : tout ce qui se passe sur Kraken, du plus récent au plus ancien.
 -- Réservé aux comptes de Jo (vérifié par le serveur). Les messages privés n'y figurent pas.
 create or replace function public.is_app_admin() returns boolean language sql stable security definer set search_path = public as $$
-  select current_player() in ('a74d38cf-ebaf-4ba7-a7ec-af1563a1ac93'::uuid, 'ed308d75-6cfb-4dd2-8bbe-b3b7601fb5b3'::uuid, '33ed08ee-e548-4969-988a-e4ab3b5e4d43'::uuid)
+  select current_player() in ('a74d38cf-eaaf-4ba7-a7ec-af1563a1ac93'::uuid, 'ed308d75-6cfb-4dd2-8bbe-b3b7601fb5b3'::uuid, '33ed08ee-e548-4969-988a-e4ab3b5e4d43'::uuid)
 $$;
 
 create or replace function public.admin_activity(p_days int default 7) returns json
