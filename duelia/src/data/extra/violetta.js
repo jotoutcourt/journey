@@ -321,4 +321,7 @@ export default [
   Q('Quelle était la chanson officielle du Studio avant « On Beat » ?', 'Ven y canta', 'Juntos somos más', 'Ser mejor', 'Hoy somos más'),
   Q('Selon le wiki, de quel site célèbre YouMix serait-il une parodie ?', 'YouTube', 'Spotify', 'MySpace', 'Deezer'),
   Q('Quelle chanteuse prête sa voix aux chansons de Violetta en anglais dans les saisons 2 et 3 ?', 'Clara Rugaard', 'Maggie McClure', 'Demi Lovato', 'Dove Cameron'),
+  Q('Quelle est la réplique fétiche de Ludmila quand elle quitte une pièce ?', '« Ludmila s\'en va ! »', '« Je suis une star ! »', '« Nata, de l\'eau ! »', '« Place à la reine ! »'),
+  Q('Quel nom porte le groupe que Ramallo forme avec Olga et Beto, comme sa réplique fétiche ?', 'Espace personnel', 'Les Seniors', 'Olga et les garçons', 'Le Trio Castillo'),
+  Q('Quelle chanson Diego chante-t-il à Violetta au karaoké, déclenchant une bagarre avec León ?', 'Voy por ti', 'Te creo', 'Euforia', 'Código amistad'),
 ]
