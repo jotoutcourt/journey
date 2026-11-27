@@ -43,6 +43,7 @@ import x_zelda from './extra/zelda.js'
 import x_logos from './extra/logos.js'
 import x_dinos from './extra/dinosaures.js'
 import x_violetta from './extra/violetta.js'
+import x_starac from './extra/star-academy.js'
 import x_dessins_animes from './extra/dessins-animes.js'
 import x_c_series_cultes from './extra/c-series-cultes.js'
 import x_c_espace from './extra/c-espace.js'
@@ -110,6 +111,7 @@ const EXTRA = {
   'logos': x_logos,
   'dinosaures': x_dinos,
   'violetta': x_violetta,
+  'star-academy': x_starac,
   'secret-story': x_secret,
   'dessins-animes': x_dessins_animes,
   'c-series-cultes': x_c_series_cultes,
@@ -380,6 +382,7 @@ export const OFFICIAL_TOPICS = [
   T('marvel', 'Marvel', '🦸', '#e23636', 'Cinéma & TV', 'Avengers, rassemblement !', 0, []),
   T('nintendo', 'Nintendo', '🍄', '#e60012', 'Jeux vidéo', 'Mario, Zelda, Kirby et toute la bande', 0, []),
   T('one-piece', 'One Piece', '🏴‍☠️', '#e8a33a', 'Cinéma & TV', 'En route pour Grand Line avec Luffy et son équipage', 0, []),
+  T('star-academy', 'Star Academy', '⭐', '#e94fa3', 'Cinéma & TV', 'La nouvelle génération du château, saisons 10 à 13', 0, []),
   T('violetta', 'Violetta', '💜', '#9b4dca', 'Cinéma & TV', 'Du Studio 21 au On Beat, chante avec Vilu', 0, []),
   T('dinosaures', 'Dinosaures', '🦖', '#5fae3a', 'Nature', 'Du Trias à Jurassic Park', 0, []),
   T('logos', 'Marques', '🏷️', '#ffb020', 'Culture', 'Logos, slogans et secrets de marques', 0, []),
