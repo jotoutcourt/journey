@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { OFFICIAL_TOPICS, COMMUNITY_SEED, STARTER_CREATION, STARTER_CREATIONS, MADE_OFFICIAL } from './data/topics.js'
+import TopicIcon from './components/TopicIcon.jsx'
 import { loadState, saveState, emptyState, encodeTopic, decodeTopic } from './lib/store.js'
 import { findOpponent, getCommunity, leaderboard } from './lib/bots.js'
 import { meEntry } from './lib/profile.js'
@@ -241,6 +242,17 @@ export default function App() {
     ...st.custom.map(t => (t.own && myName ? { ...t, by: myName } : t)),
   ], [st.custom, myName, releaseClock])
   const byId = useCallback((id) => topics.find(t => t.id === id), [topics])
+  // « Depuis ta dernière connexion » : les thèmes officiels sortis depuis la dernière ouverture de l'appli
+  const [newTopics, setNewTopics] = useState(() => {
+    const ids = OFFICIAL_TOPICS.filter(t => !t.releaseAt || t.releaseAt <= Date.now()).map(t => t.id)
+    try {
+      const raw = localStorage.getItem('kraken-known-topics')
+      localStorage.setItem('kraken-known-topics', JSON.stringify(ids))
+      if (!raw) return [] // première ouverture : rien à annoncer
+      const known = new Set(JSON.parse(raw))
+      return ids.filter(id => !known.has(id))
+    } catch { return [] }
+  })
 
   // Animation du classement quand on quitte un thème : rangs au moment où l'on y entre
   const [session, setSession] = useState(null) // { topicId, before, played }
@@ -1162,6 +1174,22 @@ export default function App() {
         <NotifyBanner key={notes[0].text} note={notes[0]}
           onOpen={() => { setNotes(n => n.slice(1)); go({ name: 'inbox' }) }}
           onClose={() => setNotes(n => n.slice(1))} />
+      )}
+      {newTopics.length > 0 && !['duel', 'match', 'traque'].includes(route.name) && (
+        <div className="sheet-backdrop" onClick={() => setNewTopics([])}>
+          <div className="sheet new-topics" role="dialog" aria-labelledby="nt-title" onClick={e => e.stopPropagation()}>
+            <span className="nt-emoji" aria-hidden="true">🎉</span>
+            <h2 id="nt-title">Depuis ta dernière connexion, voici les nouveaux thèmes ajoutés</h2>
+            <div className="nt-list">
+              {newTopics.map(byId).filter(Boolean).map(t => (
+                <button key={t.id} className="nt-topic" onClick={() => { setNewTopics([]); go({ name: 'topic', id: t.id }) }}>
+                  <TopicIcon topic={t} size={34} /><span><b>{t.name}</b><small>{t.questions.length} questions</small></span><i aria-hidden="true">›</i>
+                </button>
+              ))}
+            </div>
+            <button className="btn btn-primary wide" onClick={() => setNewTopics([])}>Super !</button>
+          </div>
+        </div>
       )}
       {sheet && <ChallengeSheet sheet={sheet} onSend={sendChallenge} onCancel={() => setSheet(null)} />}
       {requestSheet && <TopicRequestSheet online={online} api={requestApi} onClose={() => setRequestSheet(false)} />}

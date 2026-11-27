@@ -3,8 +3,9 @@
 import { seeded, shuffle } from './rng.js'
 import BANK1 from '../data/butin-questions.js'
 import BANK2 from '../data/butin-questions-2.js'
+import BANK3 from '../data/butin-questions-3.js'
 // Les nouvelles questions vont toujours à la fin : les numéros des questions déjà vues ne bougent pas
-const BANK = [...BANK1, ...BANK2]
+const BANK = [...BANK1, ...BANK2, ...BANK3]
 
 export const START = 20 // lingots au départ
 export const ROUNDS = 8
