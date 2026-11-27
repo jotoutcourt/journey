@@ -2048,3 +2048,23 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
 @keyframes to-land { from { transform: translateY(-14px) scale(1.3) } to { transform: none } }
 @keyframes to-hop { from { transform: translateY(0) } to { transform: translateY(-6px) } }
 @keyframes to-pulse { from { transform: scale(1) } to { transform: scale(1.04) } }
+
+/* historique caché (créateur) */
+.admin-log { position: fixed; inset: 0; z-index: 600; display: flex; flex-direction: column; background: #0b0420; color: #fff; padding-top: env(safe-area-inset-top); }
+.admin-log header { display: flex; align-items: center; gap: 10px; padding: 10px 16px; }
+.admin-log header h1 { flex: 1; margin: 0; font: 900 20px var(--display); }
+.al-days, .al-filters { display: flex; gap: 6px; }
+.al-filters { padding: 0 16px 10px; overflow-x: auto; scrollbar-width: none; }
+.al-days button, .al-filters button { flex: none; border: 0; border-radius: 99px; padding: 6px 11px; font: 700 12px var(--body, system-ui); color: #d9c8ff; background: #ffffff12; }
+.al-days button.on, .al-filters button.on { color: #2a0f60; background: #ffd45c; }
+.al-stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; padding: 0 16px 10px; }
+.al-stats div { display: flex; flex-direction: column; align-items: center; padding: 8px 2px; border-radius: 12px; background: #ffffff0d; }
+.al-stats b { font: 900 18px var(--display); }
+.al-stats small { font-size: 10px; color: #cbb8ff; }
+.al-list { flex: 1; overflow-y: auto; padding: 0 16px calc(env(safe-area-inset-bottom) + 20px); }
+.al-list h2 { position: sticky; top: 0; margin: 0; padding: 10px 0 6px; font: 800 13px var(--display); text-transform: capitalize; color: #ffd45c; background: #0b0420; }
+.al-row { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid #ffffff10; }
+.al-ico { flex: none; width: 24px; text-align: center; font-size: 17px; }
+.al-row p { flex: 1; margin: 0; font-size: 14px; line-height: 1.35; }
+.al-row time { flex: none; font-size: 12px; color: #a99bd6; }
+.al-empty { padding: 30px 16px; text-align: center; color: #cbb8ff; }

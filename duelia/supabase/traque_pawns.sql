@@ -89,7 +89,8 @@ create or replace function public.buy_random_pawn() returns json language plpgsq
 declare pid uuid := current_player(); pick text;
 begin
   if pid is null then raise exception 'aucun joueur'; end if;
-  select x into pick from unnest(array['gilet', 'sorcier', 'reine-neiges', 'liberte', 'astronaute', 'fantome', 'dormeur', 'eclair', 'heros', 'ane', 'retro', 'seigneur']) x
+  select x into pick from unnest(array['gilet', 'sorcier', 'reine-neiges', 'liberte', 'astronaute', 'fantome', 'dormeur', 'eclair', 'heros', 'ane', 'retro', 'seigneur',
+    'simba', 'dobby', 'tom', 'ghostbuster', 'demogorgon', 'sacha', 'tigrou', 'ariel', 'barbie', 'ironman', 'mickey', 'peterpan', 'luffy', 'dinde', 'dory', 'happymeal', 'marge']) x
     where not exists (select 1 from pawn_unlocks where player_id = pid and pawn_id = x) order by random() limit 1;
   if pick is null then raise exception 'toutes les figurines sont déjà débloquées'; end if;
   if coalesce((select lingots from wallets where player_id = pid for update), 0) < 20 then raise exception 'pas assez de lingots'; end if;

@@ -1,10 +1,11 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import Avatar from './Avatar.jsx'
 import TopicIcon from './TopicIcon.jsx'
 import ConfirmButton from './ConfirmButton.jsx'
 import AccountCard from './AccountCard.jsx'
 import InstallCard from './InstallCard.jsx'
 import { PushCard } from './Social.jsx'
+import AdminLog from './AdminLog.jsx'
 import { levelInfo } from '../lib/levels.js'
 import { topicTitle } from '../lib/titles.js'
 import { COUNTRIES, computeStats, bestBadge, resizeImage } from '../lib/profile.js'
@@ -189,6 +190,14 @@ export default function Profile({ st, topics, update, go, account, onMakeCode, o
   const mine = topics.filter(t => st.topicStats[t.id]?.played)
     .sort((a, b) => (st.topicStats[b.id].xp || 0) - (st.topicStats[a.id].xp || 0))
   const created = st.custom.filter(t => t.own).length
+  // menu caché : 5 appuis rapides sur sa photo ouvrent l'historique (le serveur vérifie l'accès)
+  const [secret, setSecret] = useState(false)
+  const taps = useRef([])
+  const tapAvatar = () => {
+    const now = Date.now()
+    taps.current = [...taps.current.filter(t => now - t < 2000), now]
+    if (taps.current.length >= 5) { taps.current = []; setSecret(true) }
+  }
 
   if (editing) {
     return (
@@ -208,7 +217,8 @@ export default function Profile({ st, topics, update, go, account, onMakeCode, o
     <div className="screen profile">
       <div className="pf-cover" style={me.cover ? { backgroundImage: `url(${me.cover})` } : undefined}>
         <button className="btn btn-small btn-ghost pf-edit-btn" onClick={() => setEditing(true)}>✏️ Modifier</button>
-        <Avatar seed={me.avatar} photo={me.photo} size={112} ring="var(--me)" />
+        <span onClick={tapAvatar}><Avatar seed={me.avatar} photo={me.photo} size={112} ring="var(--me)" /></span>
+        {secret && <AdminLog onClose={() => setSecret(false)} />}
         <h1 className="pf-name">{me.name} <span className="pf-level">{lvl.level}</span></h1>
         <span className="pf-title">{lvl.title}</span>
         <span className="pf-country">{country?.[0]} {country?.[1]}</span>

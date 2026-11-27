@@ -214,6 +214,7 @@ export const setTraquePawn = (id, pawn) => rpc('set_traque_pawn', { p_game: id, 
 export const traqueReady = (id) => rpc('traque_ready', { p_game: id })
 export const myPawns = () => rpc('my_pawns')
 export const playerPawns = (id) => rpc('player_pawns', { p_player: id })
+export const adminActivity = (days) => rpc('admin_activity', { p_days: days })
 export const buyRandomPawn = () => rpc('buy_random_pawn')
 export const traqueHaunt = (id, target) => rpc('traque_haunt', { p_game: id, p_target: target })
 export const traquePauseAsk = (id) => rpc('traque_pause_ask', { p_game: id })

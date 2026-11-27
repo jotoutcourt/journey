@@ -68,6 +68,11 @@ export const PAWNS = [
   { id: 'gilet', name: 'Gilet jaune' }, { id: 'sorcier', name: 'Harry Potter' }, { id: 'reine-neiges', name: 'Elsa' }, { id: 'liberte', name: 'Statue de la Liberté' },
   { id: 'astronaute', name: 'Astronaute' }, { id: 'fantome', name: 'Ghostface' }, { id: 'dormeur', name: 'Endormi' }, { id: 'eclair', name: 'Pikachu' },
   { id: 'heros', name: 'Link' }, { id: 'ane', name: 'Bourriquet' }, { id: 'retro', name: 'Liam Payne' }, { id: 'seigneur', name: 'Dark Vador' },
+  { id: 'simba', name: 'Simba' }, { id: 'dobby', name: 'Dobby' }, { id: 'tom', name: 'Tom' }, { id: 'ghostbuster', name: 'Ghostbuster' },
+  { id: 'demogorgon', name: 'Démogorgon' }, { id: 'sacha', name: 'Sacha' }, { id: 'tigrou', name: 'Tigrou' }, { id: 'ariel', name: 'Ariel' },
+  { id: 'barbie', name: 'Barbie' }, { id: 'ironman', name: 'Iron Man' }, { id: 'mickey', name: 'Mickey (Fantasia)' }, { id: 'peterpan', name: 'Peter Pan' },
+  { id: 'luffy', name: 'Luffy' }, { id: 'dinde', name: 'Monica (la dinde)' }, { id: 'dory', name: 'Dory' }, { id: 'happymeal', name: 'Happy Meal' },
+  { id: 'marge', name: 'Marge' },
 ].map(p => ({ ...p, img: `/traque/pions/${p.id}.webp` }))
 // les 4 premières figurines sont offertes ; les autres se débloquent au hasard (figurine mystère, 20 lingots)
 export const FREE_PAWNS = ['stitch', 'araignee', 'pirate', 'dino']
