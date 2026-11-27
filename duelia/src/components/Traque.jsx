@@ -235,17 +235,20 @@ function TraqueLobby({ v, gameId, officials, topics, friends, act, onExit, onWal
       {pawnSheet && (
         <div className="sheet-backdrop tq-top" onClick={() => setPawnSheet(false)}>
           <div className="sheet tq-pawn-sheet" onClick={e => e.stopPropagation()}>
-            <h2>Mon pion</h2>
-            <div className="tq-pawn-grid">
-              {PAWNS.map(pw => {
+            <header className="tps-head">
+              <h2>Mon pion</h2>
+              <small>{PAWNS.filter(pw => hasPawn(pw.id)).length}/{PAWNS.length} figurines</small>
+              <button className="tps-close" onClick={() => setPawnSheet(false)} aria-label="Fermer">✕</button>
+            </header>
+            <div className="tq-pawn-grid tps-mine">
+              {PAWNS.filter(pw => hasPawn(pw.id)).map(pw => {
                 const taken = v.players.find(p => p.pawn === pw.id && p.seat !== v.me && ['joined', 'bot', 'invited'].includes(p.status))
-                const mineOk = hasPawn(pw.id)
                 return (
-                  <button key={pw.id} className={`${myPawn === pw.id ? 'on' : ''} ${mineOk ? '' : 'locked'}`} disabled={!!taken || !mineOk}
-                    title={taken ? `Prise par ${taken.name}` : mineOk ? pw.name : 'Figurine mystère'}
+                  <button key={pw.id} className={`${myPawn === pw.id ? 'on' : ''} ${taken ? 'taken' : ''}`} disabled={!!taken}
+                    title={taken ? `Prise par ${taken.name}` : pw.name}
                     onClick={() => act(() => api.setTraquePawn(gameId, pw.id).then(() => api.getTraque(gameId)))}>
-                    <img src={pw.img} alt={mineOk ? pw.name : 'Figurine mystère'} />
-                    <small>{mineOk ? pw.name : '???'}</small>
+                    <img src={pw.img} alt={pw.name} />
+                    <small>{taken ? `Pris par ${bare(taken.name)}` : pw.name}</small>
                   </button>
                 )
               })}
@@ -255,7 +258,12 @@ function TraqueLobby({ v, gameId, officials, topics, friends, act, onExit, onWal
               <span><b>Figurine mystère</b><small>{buyErr || `Une figurine au hasard parmi les ${lockedLeft} que tu n'as pas encore.`}</small></span>
               <button className="btn btn-small btn-gold" disabled={buying} onClick={buy}><i className="lt-coin" aria-hidden="true" /> {PAWN_PRICE}</button>
             </div>}
-            <button className="btn btn-ghost wide" onClick={() => setPawnSheet(false)}>Fermer</button>
+            {lockedLeft > 0 && <>
+              <p className="tps-sub">À découvrir · {lockedLeft}</p>
+              <div className="tps-locked" aria-label={`${lockedLeft} figurines à découvrir`}>
+                {PAWNS.filter(pw => !hasPawn(pw.id)).map(pw => <img key={pw.id} src={pw.img} alt="" draggable="false" />)}
+              </div>
+            </>}
           </div>
         </div>
       )}

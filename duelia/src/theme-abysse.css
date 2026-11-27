@@ -2139,3 +2139,25 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
 @media (max-height: 720px) { .home-v2 .kh-art { width: min(60vw, 230px); } }
 .home-v2 .kh-art { display: none; }
 .home-v2 .home-bg { background: linear-gradient(180deg, transparent 0%, transparent 66%, #0b0420cc 76%, #0b0420 84%), #0b0420 url(/accueil/fond.webp) center -10vh / auto 100vh no-repeat; }
+
+/* fenêtre « Mon pion » : mes figurines en grand, celles à découvrir en petites silhouettes */
+.tq-pawn-sheet { max-height: 86dvh; overflow-y: auto; padding-bottom: calc(env(safe-area-inset-bottom) + 18px); }
+.tps-head { position: sticky; top: -16px; z-index: 2; display: flex; align-items: baseline; gap: 10px; margin: -16px -16px 10px; padding: 16px 16px 10px; background: inherit; background-color: #1b0f3e; }
+.tps-head h2 { margin: 0; font: 900 22px var(--display); }
+.tps-head small { flex: 1; color: #cbb8ff; font-weight: 700; font-size: 13px; }
+.tps-close { width: 34px; height: 34px; border: 0; border-radius: 50%; color: #fff; font-size: 16px; background: #ffffff18; cursor: pointer; }
+.tps-mine { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.tps-mine button { position: relative; gap: 4px; padding: 10px 4px 8px; border: 0; border-radius: 18px; background: radial-gradient(circle at 50% 35%, #4a2a9a, #22104f 70%); box-shadow: inset 0 0 0 1.5px #7b5cff66; }
+.tps-mine button img { width: 72px; height: 72px; object-fit: contain; filter: drop-shadow(0 4px 6px #000a); }
+.tps-mine button small { font: 800 12px var(--display); line-height: 1.15; text-align: center; }
+.tps-mine button.on { box-shadow: inset 0 0 0 2.5px #ffd23f, 0 0 16px #ffd23f66; background: radial-gradient(circle at 50% 35%, #6a3fc8, #2a1260 70%); }
+.tps-mine button.on::after { content: '✓'; position: absolute; top: 6px; right: 8px; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 900; color: #3a1d00; background: #ffd23f; }
+.tps-mine button.taken { opacity: 0.45; }
+.tps-sub { margin: 16px 0 8px; font: 800 13px var(--display); color: #cbb8ff; text-transform: uppercase; letter-spacing: .05em; }
+.tps-locked { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+.tps-locked img { width: 100%; aspect-ratio: 1; object-fit: contain; padding: 4px; box-sizing: border-box; border-radius: 12px; background: #ffffff08; filter: brightness(0) drop-shadow(0 0 1px #7b5cff88); opacity: 0.75; }
+.tps-head { position: relative; top: auto; align-self: stretch; width: 100%; box-sizing: border-box; margin: 0 0 12px; padding: 0 0 0 4px; background: none; justify-content: space-between; }
+.tps-head h2 { text-align: left; }
+.tps-head small { text-align: left; }
+.tps-mine button img { width: 96px; height: 96px; margin: -8px 0 -6px; }
+.tps-mine button img { max-width: none; }
