@@ -2138,3 +2138,4 @@ html.abysse .vs-side::after { content: none; } /* petits traits néon retirés *
 .home-v2 .kh-art { display: block; width: min(78vw, 330px); margin-bottom: -6px; position: relative; z-index: 1; }
 @media (max-height: 720px) { .home-v2 .kh-art { width: min(60vw, 230px); } }
 .home-v2 .kh-art { display: none; }
+.home-v2 .home-bg { background: linear-gradient(180deg, transparent 0%, transparent 66%, #0b0420cc 76%, #0b0420 84%), #0b0420 url(/accueil/fond.webp) center -10vh / auto 100vh no-repeat; }
