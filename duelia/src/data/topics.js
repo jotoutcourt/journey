@@ -44,6 +44,7 @@ import x_logos from './extra/logos.js'
 import x_dinos from './extra/dinosaures.js'
 import x_violetta from './extra/violetta.js'
 import x_starac from './extra/star-academy.js'
+import x_mylene from './extra/mylene-farmer.js'
 import x_dessins_animes from './extra/dessins-animes.js'
 import x_c_series_cultes from './extra/c-series-cultes.js'
 import x_c_espace from './extra/c-espace.js'
@@ -112,6 +113,7 @@ const EXTRA = {
   'dinosaures': x_dinos,
   'violetta': x_violetta,
   'star-academy': x_starac,
+  'mylene-farmer': x_mylene,
   'secret-story': x_secret,
   'dessins-animes': x_dessins_animes,
   'c-series-cultes': x_c_series_cultes,
@@ -137,7 +139,7 @@ const MORE = Object.fromEntries(Object.entries(import.meta.glob('./more/*.js', {
 const CASTING = /qui (joue|incarne|interpr[eè]te)|quel(le)? (acteur|actrice|comédien(ne)?) (joue|incarne|interpr)|incarn[ée]e? par|interpr[ée]t[ée]e? par/i
 const CASTING_MAX = { cinema: 15 }
 // thèmes musicaux : « qui interprète » désigne le chanteur, pas un rôle → pas de limite
-for (const id of ['musique', 'chanson-francaise', 'annees-80-90', 'pop-girlies', 'taylor-swift', 'one-direction', 'c-eras', 'c-pop2000']) CASTING_MAX[id] = Infinity
+for (const id of ['musique', 'chanson-francaise', 'annees-80-90', 'pop-girlies', 'taylor-swift', 'one-direction', 'c-eras', 'c-pop2000', 'mylene-farmer']) CASTING_MAX[id] = Infinity
 const merge = (id, base) => {
   const seen = new Set()
   const all = [...base, ...(EXTRA[id] || []), ...(MORE[id] || [])].filter(([q]) => !seen.has(q) && seen.add(q))
@@ -383,6 +385,7 @@ export const OFFICIAL_TOPICS = [
   T('nintendo', 'Nintendo', '🍄', '#e60012', 'Jeux vidéo', 'Mario, Zelda, Kirby et toute la bande', 0, []),
   T('one-piece', 'One Piece', '🏴‍☠️', '#e8a33a', 'Cinéma & TV', 'En route pour Grand Line avec Luffy et son équipage', 0, []),
   T('star-academy', 'Star Academy', '⭐', '#e94fa3', 'Cinéma & TV', 'La nouvelle génération du château, saisons 10 à 14', 0, []),
+  T('mylene-farmer', 'Mylène Farmer', '🦋', '#c0392b', 'Musique', 'De Libertine à L\'Emprise, toute la carrière de Mylène', 0, []),
   T('violetta', 'Violetta', '💜', '#9b4dca', 'Cinéma & TV', 'Du Studio 21 au On Beat, chante avec Vilu', 0, []),
   T('dinosaures', 'Dinosaures', '🦖', '#5fae3a', 'Nature', 'Du Trias à Jurassic Park', 0, []),
   T('logos', 'Marques', '🏷️', '#ffb020', 'Culture', 'Logos, slogans et secrets de marques', 0, []),
