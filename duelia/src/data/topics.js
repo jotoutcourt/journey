@@ -385,7 +385,7 @@ export const OFFICIAL_TOPICS = [
   T('nintendo', 'Nintendo', '🍄', '#e60012', 'Jeux vidéo', 'Mario, Zelda, Kirby et toute la bande', 0, []),
   T('one-piece', 'One Piece', '🏴‍☠️', '#e8a33a', 'Cinéma & TV', 'En route pour Grand Line avec Luffy et son équipage', 0, []),
   T('star-academy', 'Star Academy', '⭐', '#e94fa3', 'Cinéma & TV', 'La nouvelle génération du château, saisons 10 à 14', 0, []),
-  T('mylene-farmer', 'Mylène Farmer', '🦋', '#c0392b', 'Musique', 'De Libertine à L\'Emprise, toute la carrière de Mylène', 0, []),
+  T('mylene-farmer', 'Mylène Farmer', '🦋', '#c0392b', 'Musique', 'De Maman a tort à Égrégore, toute la carrière de Mylène', 0, []),
   T('violetta', 'Violetta', '💜', '#9b4dca', 'Cinéma & TV', 'Du Studio 21 au On Beat, chante avec Vilu', 0, []),
   T('dinosaures', 'Dinosaures', '🦖', '#5fae3a', 'Nature', 'Du Trias à Jurassic Park', 0, []),
   T('logos', 'Marques', '🏷️', '#ffb020', 'Culture', 'Logos, slogans et secrets de marques', 0, []),
