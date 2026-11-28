@@ -45,6 +45,7 @@ import x_dinos from './extra/dinosaures.js'
 import x_violetta from './extra/violetta.js'
 import x_starac from './extra/star-academy.js'
 import x_mylene from './extra/mylene-farmer.js'
+import x_lotr from './extra/seigneur-des-anneaux.js'
 import x_dessins_animes from './extra/dessins-animes.js'
 import x_c_series_cultes from './extra/c-series-cultes.js'
 import x_c_espace from './extra/c-espace.js'
@@ -114,6 +115,7 @@ const EXTRA = {
   'violetta': x_violetta,
   'star-academy': x_starac,
   'mylene-farmer': x_mylene,
+  'seigneur-des-anneaux': x_lotr,
   'secret-story': x_secret,
   'dessins-animes': x_dessins_animes,
   'c-series-cultes': x_c_series_cultes,
@@ -386,6 +388,7 @@ export const OFFICIAL_TOPICS = [
   T('one-piece', 'One Piece', '🏴‍☠️', '#e8a33a', 'Cinéma & TV', 'En route pour Grand Line avec Luffy et son équipage', 0, []),
   T('star-academy', 'Star Academy', '⭐', '#e94fa3', 'Cinéma & TV', 'La nouvelle génération du château, saisons 10 à 14', 0, []),
   T('mylene-farmer', 'Mylène Farmer', '🦋', '#c0392b', 'Musique', 'De Maman a tort à Égrégore, toute la carrière de Mylène', 0, []),
+  T('seigneur-des-anneaux', 'Le Seigneur des Anneaux', '💍', '#c9a227', 'Cinéma & TV', 'De la Comté à la Montagne du Destin, un thème pour les gouverner tous', 0, []),
   T('violetta', 'Violetta', '💜', '#9b4dca', 'Cinéma & TV', 'Du Studio 21 au On Beat, chante avec Vilu', 0, []),
   T('dinosaures', 'Dinosaures', '🦖', '#5fae3a', 'Nature', 'Du Trias à Jurassic Park', 0, []),
   T('logos', 'Marques', '🏷️', '#ffb020', 'Culture', 'Logos, slogans et secrets de marques', 0, []),

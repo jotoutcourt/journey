@@ -35,6 +35,7 @@ const LADDERS = {
   'sex-and-the-city': ['Célibataire', 'Lectrice du New York Star', 'Fan de Cosmo', 'Amie de Stanford', 'Accro aux Manolo', 'Reine du brunch', 'Icône de Manhattan', 'Carrie Bradshaw'],
   'star-academy': ['Fan du canapé', 'Candidat au casting', 'Élève du château', 'Nommé du jeudi', 'Immunisé', 'Finaliste', 'Star du prime', 'Vainqueur de la Star Ac\''],
   'mylene-farmer': ['Curieux désenchanté', 'Auditeur de Libertine', 'Fan de Sans contrefaçon', 'Danseur de XXL', 'Habitué de Bercy', 'Membre du Mylenium', 'Rousse d\'honneur', 'Mylène en personne'],
+  'seigneur-des-anneaux': ['Hobbit casanier', 'Voyageur de Bree', 'Rôdeur du Nord', 'Membre de la Communauté', 'Cavalier du Rohan', 'Gardien de Minas Tirith', 'Porteur de l\'Anneau', 'Roi du Gondor'],
   violetta: ['Fan timide', 'Candidate à l\'audition', 'Élève du Studio 21', 'Membre de la bande', 'Star de YouMix', 'Diva du On Beat', 'Supernova', 'Violetta en personne'],
   dinosaures: ['Œuf de dino', 'Bébé raptor', 'Chercheur de fossiles', 'Fan de Jurassic Park', 'Paléontologue en herbe', 'Paléontologue', 'Gardien du Mésozoïque', 'T. rex suprême'],
   logos: ['Consommateur', 'Lèche-vitrine', 'Fan de pubs', 'Chasseur de logos', 'Expert en slogans', 'Publicitaire', 'Directeur artistique', 'Roi du branding'],
